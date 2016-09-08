@@ -1,0 +1,33 @@
+{
+    "name": "nlb_400",
+    "top_level": "nlb_lpbk_top",
+    "root_language": "systemverilog",
+    "rtl_files": [ "nlb_lpbk_top.sv",
+                   "QSYS_IPs/RAM/lpbk1_RdRspRAM2PORT.qsys",
+                   "QSYS_IPs/RAM/req_C1TxRAM2PORT.qsys",
+                   "nlb_gram_sdp.v",
+                   "nlb_C1Tx_fifo.v",
+                   "test_sw1.sv",
+                   "test_rdwr.sv",
+                   "test_lpbk1.sv",
+                   "requestor.sv",
+                   "nlb_lpbk.sv",
+                   "nlb_csr.sv",
+                   "arbiter.sv",
+                   "par/sdc_nlb.sdc" ],
+    "rtl_paths": [ "include_files/common/" ],
+    "verilog_macros": [ "NLB400_MODE_3" ],
+    "manifest": {
+        "afu-image": {
+            "slot-type-uuid": "166b785b-0a5d-411a-bc2d-5b3d17c479a8",
+            "version": 0.1,
+            "peak-power": 15.0,
+            "afc-clusters": [
+                { "afc-type-uuid": "37b28c44-f6cb-401b-a515-cdb93e7ea210",
+                  "name": "nlb_400",
+                  "total-contexts": 1 
+                }
+            ]
+        }
+    }
+}

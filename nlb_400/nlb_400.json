@@ -17,7 +17,8 @@
                    "par/sdc_nlb.sdc" ],
     "rtl_paths": [ "include_files/common/" ],
     "verilog_macros": [ "NLB400_MODE_3" ],
-    "manifest": {
+    "manifest": [
+    {
         "afu-image": {
             "slot-type-uuid": "166b785b-0a5d-411a-bc2d-5b3d17c479a8",
             "version": 0.1,
@@ -28,6 +29,13 @@
                   "total-contexts": 1 
                 }
             ]
-        }
+        },
+        "register_info": [
+          {
+              "foo_perf" : {"offset": "0x2000", "span": "4", "filename": "status1", "attributes": "ro", "group" : "status_regs"},
+              "foo_perf2" : {"offset": "0x6000", "span": "4", "filename": "ctrl1", "attributes": "rw", "group" : "ctrl_regs"}
+          }
+        ]
     }
+  ]
 }

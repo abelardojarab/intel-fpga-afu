@@ -31,10 +31,8 @@
             ]
         },
         "register_info": [
-          {
-              "foo_perf" : {"offset": "0x2000", "span": "4", "filename": "status1", "attributes": "ro", "group" : "status_regs"},
-              "foo_perf2" : {"offset": "0x6000", "span": "4", "filename": "ctrl1", "attributes": "rw", "group" : "ctrl_regs"}
-          }
+            {"register_name": "status1", "offset": "0x2000", "span": "4", "attributes": "ro", "group" : "status_regs"},
+            {"register_name": "ctrl1", "offset": "0x6000", "span": "4", "attributes": "rw", "group" : "ctrl_regs"}
         ]
     }
   ]

@@ -2,30 +2,28 @@
    "name": "nlb_400",
    "top_level": "green_top",
    "output_dir": "output_files",
-   "manifest": {
-      "afu-image": {
-         "slot-type-uuid": "166b785b-0a5d-411a-bc2d-5b3d17c479a8",
-         "version": 0.1,
-         "power": 15.0,
-         "afc-clusters": {
-            "afc-type-uuid": "37b28c44-f6cb-401b-a515-cdb93e7ea210",
-            "name": "nlb_400",
-            "total-contexts": 1,
-            "register_info": [{
-                  "name": "status1",
-                  "offset": "0x2000",
-                  "span": "4",
-                  "attributes": "ro",
-                  "group": "status_regs"
-               }, {
-                  "name": "ctrl1",
-                  "offset": "0x6000",
-                  "span": "4",
-                  "attributes": "rw",
-                  "group": "ctrl_regs"
-               }
-            ]
-         }
+   "afu-image": {
+      "slot-type-uuid": "166b785b-0a5d-411a-bc2d-5b3d17c479a8",
+      "version": 0.1,
+      "power": 15.0,
+      "afc-clusters": {
+         "afc-type-uuid": "37b28c44-f6cb-401b-a515-cdb93e7ea210",
+         "name": "nlb_400",
+         "total-contexts": 1,
+         "register-info": [{
+               "name": "status1",
+               "offset": "0x2000",
+               "span": "4",
+               "attributes": "ro",
+               "group": "status_regs"
+            }, {
+               "name": "ctrl1",
+               "offset": "0x6000",
+               "span": "4",
+               "attributes": "rw",
+               "group": "ctrl_regs"
+            }
+         ]
       }
    }
 }

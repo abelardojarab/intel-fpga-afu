@@ -7,7 +7,7 @@
       "version": 0.1,
       "power": 15.0,
       "afc-clusters": {
-         "afc-type-uuid": "37b28c44-f6cb-401b-a515-cdb93e7ea210",
+         "afc-type-uuid": "c000c966-0d82-4272-9aef-fe5f84570612",
          "name": "nlb_400",
          "total-contexts": 1,
          "register-info": [{
@@ -23,7 +23,8 @@
                "attributes": "rw",
                "group": "ctrl_regs"
             }
-         ]
+         ],
+         "power" : 10
       }
    }
 }

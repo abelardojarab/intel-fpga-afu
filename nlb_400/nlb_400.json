@@ -2,24 +2,39 @@
    "version": 0.1,
    "afu-image": {
       "slot-type-uuid": "166b785b-0a5d-411a-bc2d-5b3d17c479a8",
-      "clock-frequency-1": 50, 
+      "clock-frequency-1": 50,
       "clock-frequency-2": 200,
-      "power": 10, 
-      "afc-clusters": 
+      "power": 10,
+      "afc-clusters":
          [
             {
                "name": "nlb_400",
                "total-contexts": 1,
                "afc-type-uuid": "c000c966-0d82-4272-9aef-fe5f84570612",
                "register-info": [
-                  {"name":"afh_dfh_base", "offset":"0x0000", "span":"8", "attributes":"ro", "group":"status_regs"},
-                  {"name":"afh_id_l", "offset":"0x0008", "span":"8", "attributes":"ro", "group":"status_regs"},
-                  {"name":"afh_id_h", "offset":"0x0010", "span":"8", "attributes":"ro", "group":"status_regs"},
-                  {"name":"dfh_rsvd0", "offset":"0x0018", "span":"8", "attributes":"ro", "group":"status_regs"},
-                  {"name":"dfh_rsvd1", "offset":"0x0020", "span":"8", "attributes":"ro", "group":"status_regs"}
+                  {"name":"afh_dfh_base", "offset":"0x0000", "span":"8", "attributes":"ro", "group":"cci_regs"},
+                  {"name":"afh_id_l", "offset":"0x0008", "span":"8", "attributes":"ro", "group":"cci_regs"},
+                  {"name":"afh_id_h", "offset":"0x0010", "span":"8", "attributes":"ro", "group":"cci_regs"},
+                  {"name":"dfh_rsvd0", "offset":"0x0018", "span":"8", "attributes":"ro", "group":"cci_regs"},
+                  {"name":"dfh_rsvd1", "offset":"0x0020", "span":"8", "attributes":"ro", "group":"cci_regs"},
+                  {"name":"csr_scratchpad0", "offset":"0x0100", "span":"4", "attributes":"rw", "group":"afu_regs"},
+                  {"name":"csr_scratchpad1", "offset":"0x0104", "span":"4", "attributes":"rw", "group":"afu_regs"},
+                  {"name":"csr_scratchpad2", "offset":"0x0108", "span":"8", "attributes":"rw", "group":"afu_regs"},
+                  {"name":"csr_afu_dsm_basel", "offset":"0x0110", "span":"4", "attributes":"rw", "group":"afu_regs"},
+                  {"name":"csr_afu_dsm_baseh", "offset":"0x0114", "span":"4", "attributes":"rw", "group":"afu_regs"},
+                  {"name":"csr_src_addr", "offset":"0x0120", "span":"8", "attributes":"rw", "group":"afu_regs"},
+                  {"name":"csr_dst_addr", "offset":"0x0128", "span":"8", "attributes":"rw", "group":"afu_regs"},
+                  {"name":"csr_num_lines", "offset":"0x0130", "span":"4", "attributes":"rw", "group":"afu_regs"},
+                  {"name":"csr_ctl", "offset":"0x0138", "span":"4", "attributes":"rw", "group":"afu_regs"},
+                  {"name":"csr_cfg", "offset":"0x0140", "span":"4", "attributes":"rw", "group":"afu_regs"},
+                  {"name":"csr_inact_thresh", "offset":"0x0148", "span":"4", "attributes":"rw", "group":"afu_regs"},
+                  {"name":"csr_swtest_msg", "offset":"0x0158", "span":"4", "attributes":"rw", "group":"afu_regs"},
+                  {"name":"csr_status0", "offset":"0x0160", "span":"4", "attributes":"ro", "group":"afu_regs"},
+                  {"name":"csr_status1", "offset":"0x0168", "span":"4", "attributes":"ro", "group":"afu_regs"},
+                  {"name":"csr_error", "offset":"0x0170", "span":"4", "attributes":"ro", "group":"afu_regs"}
                ]
             }
          ]
-   }   
+   }
 }
 

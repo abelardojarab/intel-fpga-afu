@@ -1,0 +1,22 @@
+{
+   "version": 0.1,
+   "afu-image": {
+      "slot-type-uuid": "166b785b-0a5d-411a-bc2d-5b3d17c479a8",
+      "afc-clusters":
+         [
+            {
+               "name": "hello_afu",
+               "total-contexts": 1,
+               "afc-type-uuid": "850adcc2-6ceb-4b22-9722-d43375b61c66",
+               "register-info": [
+                  {"name":"afh_dfh_base", "offset":"0x0000", "span":"8", "attributes":"ro", "group":"cci_regs"},
+                  {"name":"afh_id_l", "offset":"0x0008", "span":"8", "attributes":"ro", "group":"cci_regs"},
+                  {"name":"afh_id_h", "offset":"0x0010", "span":"8", "attributes":"ro", "group":"cci_regs"},
+                  {"name":"dfh_rsvd0", "offset":"0x0018", "span":"8", "attributes":"ro", "group":"cci_regs"},
+                  {"name":"dfh_rsvd1", "offset":"0x0020", "span":"8", "attributes":"ro", "group":"cci_regs"},
+                  {"name":"scratch_reg", "offset":"0x0080", "span":"8", "attributes":"rw", "group":"afu_regs"}
+               ]
+            }
+         ]
+   }
+}

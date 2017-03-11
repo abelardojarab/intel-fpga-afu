@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<system name="$${FILENAME}">
+<system name="req_C1TxRAM2PORT">
  <component
    name="$${FILENAME}"
    displayName="$${FILENAME}"
    version="1.0"
    description=""
    tags="INTERNAL_COMPONENT=true"
-   categories="System" />
+   categories="System"
+   tool="QsysStandard" />
  <parameter name="bonusData"><![CDATA[bonusData 
 {
    element ram_2port_0
@@ -20,7 +21,7 @@
 }
 ]]></parameter>
  <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
- <parameter name="device" value="10AX115U3F45E2SGE3" />
+ <parameter name="device" value="10AX115U3F45E2SG" />
  <parameter name="deviceFamily" value="Arria 10" />
  <parameter name="deviceSpeedGrade" value="2" />
  <parameter name="fabricMode" value="QSYS" />
@@ -34,6 +35,9 @@
  <parameter name="projectName" value="" />
  <parameter name="sopcBorderPoints" value="false" />
  <parameter name="systemHash" value="0" />
+ <parameter name="systemInfos"><![CDATA[<systemInfosDefinition>
+    <connPtSystemInfos/>
+</systemInfosDefinition>]]></parameter>
  <parameter name="testBenchDutName" value="" />
  <parameter name="timeStamp" value="0" />
  <parameter name="useTestBenchNamingPattern" value="false" />
@@ -43,11 +47,11 @@
    internal="ram_2port_0.ram_input"
    type="conduit"
    dir="end">
-  <port name="data" internal="data" />
-  <port name="wraddress" internal="wraddress" />
-  <port name="rdaddress" internal="rdaddress" />
-  <port name="wren" internal="wren" />
   <port name="clock" internal="clock" />
+  <port name="data" internal="data" />
+  <port name="rdaddress" internal="rdaddress" />
+  <port name="wraddress" internal="wraddress" />
+  <port name="wren" internal="wren" />
  </interface>
  <interface
    name="ram_output"
@@ -59,7 +63,7 @@
  <module
    name="ram_2port_0"
    kind="ram_2port"
-   version="15.1"
+   version="16.0"
    enabled="1"
    autoexport="1">
   <parameter name="DEVICE_FAMILY" value="Arria 10" />
@@ -115,6 +119,7 @@
   <parameter name="GUI_READ_OUTPUT_QB" value="true" />
   <parameter name="GUI_SCLR_READ_OUTPUT_QA" value="false" />
   <parameter name="GUI_SCLR_READ_OUTPUT_QB" value="false" />
+  <parameter name="GUI_TBENCH" value="false" />
   <parameter name="GUI_VAR_WIDTH" value="false" />
   <parameter name="GUI_WIDTH_ECCENCPARITY" value="8" />
   <parameter name="GUI_WRITE_INPUT_PORTS" value="true" />

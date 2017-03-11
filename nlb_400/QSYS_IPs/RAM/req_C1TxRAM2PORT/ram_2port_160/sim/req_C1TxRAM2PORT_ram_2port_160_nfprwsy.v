@@ -15,7 +15,7 @@
 // synopsys translate_off
 `timescale 1 ps / 1 ps
 // synopsys translate_on
-module  lpbk1_RdRspRAM2PORT_ram_2port_151_davj2sq  (
+module  req_C1TxRAM2PORT_ram_2port_160_nfprwsy  (
     clock,
     data,
     rdaddress,
@@ -24,11 +24,11 @@ module  lpbk1_RdRspRAM2PORT_ram_2port_151_davj2sq  (
     q);
 
     input    clock;
-    input  [533:0]  data;
+    input  [555:0]  data;
     input  [8:0]  rdaddress;
     input  [8:0]  wraddress;
     input    wren;
-    output [533:0]  q;
+    output [555:0]  q;
 `ifndef ALTERA_RESERVED_QIS
 // synopsys translate_off
 `endif
@@ -38,8 +38,8 @@ module  lpbk1_RdRspRAM2PORT_ram_2port_151_davj2sq  (
 // synopsys translate_on
 `endif
 
-    wire [533:0] sub_wire0;
-    wire [533:0] q = sub_wire0[533:0];
+    wire [555:0] sub_wire0;
+    wire [555:0] q = sub_wire0[555:0];
 
     altera_syncram  altera_syncram_component (
                 .address_a (wraddress),
@@ -50,6 +50,8 @@ module  lpbk1_RdRspRAM2PORT_ram_2port_151_davj2sq  (
                 .q_b (sub_wire0),
                 .aclr0 (1'b0),
                 .aclr1 (1'b0),
+                .address2_a (1'b1),
+                .address2_b (1'b1),
                 .addressstall_a (1'b0),
                 .addressstall_b (1'b0),
                 .byteena_a (1'b1),
@@ -59,7 +61,7 @@ module  lpbk1_RdRspRAM2PORT_ram_2port_151_davj2sq  (
                 .clocken1 (1'b1),
                 .clocken2 (1'b1),
                 .clocken3 (1'b1),
-                .data_b ({534{1'b1}}),
+                .data_b ({556{1'b1}}),
                 .eccencbypass (1'b0),
                 .eccencparity (8'b0),
                 .eccstatus (),
@@ -87,8 +89,8 @@ module  lpbk1_RdRspRAM2PORT_ram_2port_151_davj2sq  (
         altera_syncram_component.read_during_write_mode_mixed_ports  = "DONT_CARE",
         altera_syncram_component.widthad_a  = 9,
         altera_syncram_component.widthad_b  = 9,
-        altera_syncram_component.width_a  = 534,
-        altera_syncram_component.width_b  = 534,
+        altera_syncram_component.width_a  = 556,
+        altera_syncram_component.width_b  = 556,
         altera_syncram_component.width_byteena_a  = 1;
 
 

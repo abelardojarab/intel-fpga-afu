@@ -12,7 +12,7 @@
 # or its authorized distributors. Please refer to the applicable 
 # agreement for further details.
 
-# ACDS 15.1 192 linux 2016.02.23.17:49:22
+# ACDS 16.0.1 218 linux 2016.06.30.22:05:11
 
 # ----------------------------------------
 # ncsim - auto-generated simulation script
@@ -29,7 +29,7 @@
 # #   ./ncsim.sh
 # #
 # # Do the file copy, dev_com and com steps
-# source ncsim_setup.sh \
+# source ncsim_setup.sh 
 # SKIP_ELAB=1 \
 # SKIP_SIM=1
 # 
@@ -53,18 +53,18 @@
 # suitable for inclusion in your top-level simulation
 # script by running the following command line:
 # 
-# ip-setup-simulation --quartus-project=<quartus project>
+# ip-setup-simulation <quartus project>
 # 
 # ip-setup-simulation will discover the Altera IP
 # within the Quartus project, and generate a unified
 # script which supports all the Altera IP within the design.
 # ----------------------------------------
-# ACDS 15.1 192 linux 2016.02.23.17:49:22
+# ACDS 16.0.1 218 linux 2016.06.30.22:05:11
 # ----------------------------------------
 # initialize variables
 TOP_LEVEL_NAME="req_C1TxRAM2PORT"
 QSYS_SIMDIR="./../"
-QUARTUS_INSTALL_DIR="/p/atp/tools/altera/quartus/Pro_15.1.2.192/quartus/"
+QUARTUS_INSTALL_DIR="/nfs/pdx/disks/atp.08/tools/altera/16.0.1.218-Pro_Patch-109/quartus/"
 SKIP_FILE_COPY=0
 SKIP_DEV_COM=0
 SKIP_COM=0
@@ -99,7 +99,7 @@ fi
 # ----------------------------------------
 # create compilation libraries
 mkdir -p ./libraries/work/
-mkdir -p ./libraries/ram_2port_151/
+mkdir -p ./libraries/ram_2port_160/
 mkdir -p ./libraries/altera_ver/
 mkdir -p ./libraries/lpm_ver/
 mkdir -p ./libraries/sgate_ver/
@@ -131,7 +131,7 @@ fi
 # ----------------------------------------
 # compile design files in correct order
 if [ $SKIP_COM -eq 0 ]; then
-  ncvlog $USER_DEFINED_COMPILE_OPTIONS           "$QSYS_SIMDIR/../ram_2port_151/sim/req_C1TxRAM2PORT_ram_2port_151_t3axzby.v" -work ram_2port_151 -cdslib ./cds_libs/ram_2port_151.cds.lib
+  ncvlog $USER_DEFINED_COMPILE_OPTIONS           "$QSYS_SIMDIR/../ram_2port_160/sim/req_C1TxRAM2PORT_ram_2port_160_nfprwsy.v" -work ram_2port_160 -cdslib ./cds_libs/ram_2port_160.cds.lib
   ncvlog -compcnfg $USER_DEFINED_COMPILE_OPTIONS "$QSYS_SIMDIR/req_C1TxRAM2PORT.v"                                                                                                        
 fi
 

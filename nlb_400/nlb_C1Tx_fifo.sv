@@ -67,7 +67,7 @@
 
 `include "vendor_defines.vh"
 module nlb_C1Tx_fifo #(parameter DATA_WIDTH      =51,
-                        CTL_WIDTH       =0,           // control data width
+                        CTL_WIDTH       =1,           // control data width
                         DEPTH_BASE2     =3, 
                         GRAM_STYLE      =`GRAM_AUTO,
                         GRAM_MODE       =3,        // Uses registered RAM outputs. Write to Read Data out Lantecy = 2clks

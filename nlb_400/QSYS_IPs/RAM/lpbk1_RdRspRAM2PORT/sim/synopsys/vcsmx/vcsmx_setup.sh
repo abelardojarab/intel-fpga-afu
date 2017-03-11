@@ -12,7 +12,7 @@
 # or its authorized distributors. Please refer to the applicable 
 # agreement for further details.
 
-# ACDS 15.1 192 linux 2016.02.22.21:49:23
+# ACDS 16.0.1 218 linux 2016.06.30.22:04:52
 
 # ----------------------------------------
 # vcsmx - auto-generated simulation script
@@ -40,11 +40,11 @@
 # # Override the top-level name
 # # Override the user-defined sim options, so the simulation runs 
 # # forever (until $finish()).
-# source vcsmx_setup.sh \
+# source vcsmx_setup.sh 
 # SKIP_FILE_COPY=1 \
 # SKIP_DEV_COM=1 \
 # SKIP_COM=1 \
-# TOP_LEVEL_NAME="'-top top'" \
+# TOP_LEVEL_NAME="-top top" \
 # USER_DEFINED_SIM_OPTIONS=""
 # # End of template
 # ----------------------------------------
@@ -53,18 +53,18 @@
 # suitable for inclusion in your top-level simulation
 # script by running the following command line:
 # 
-# ip-setup-simulation --quartus-project=<quartus project>
+# ip-setup-simulation <quartus project>
 # 
 # ip-setup-simulation will discover the Altera IP
 # within the Quartus project, and generate a unified
 # script which supports all the Altera IP within the design.
 # ----------------------------------------
-# ACDS 15.1 192 linux 2016.02.22.21:49:23
+# ACDS 16.0.1 218 linux 2016.06.30.22:04:52
 # ----------------------------------------
 # initialize variables
 TOP_LEVEL_NAME="lpbk1_RdRspRAM2PORT"
 QSYS_SIMDIR="./../../"
-QUARTUS_INSTALL_DIR="/p/atp/tools/altera/quartus/Pro_15.1.2.192/quartus/"
+QUARTUS_INSTALL_DIR="/nfs/pdx/disks/atp.08/tools/altera/16.0.1.218-Pro_Patch-109/quartus/"
 SKIP_FILE_COPY=0
 SKIP_DEV_COM=0
 SKIP_COM=0
@@ -99,7 +99,7 @@ fi
 # ----------------------------------------
 # create compilation libraries
 mkdir -p ./libraries/work/
-mkdir -p ./libraries/ram_2port_151/
+mkdir -p ./libraries/ram_2port_160/
 mkdir -p ./libraries/altera_ver/
 mkdir -p ./libraries/lpm_ver/
 mkdir -p ./libraries/sgate_ver/
@@ -131,7 +131,7 @@ fi
 # ----------------------------------------
 # compile design files in correct order
 if [ $SKIP_COM -eq 0 ]; then
-  vlogan +v2k $USER_DEFINED_COMPILE_OPTIONS "$QSYS_SIMDIR/../ram_2port_151/sim/lpbk1_RdRspRAM2PORT_ram_2port_151_davj2sq.v" -work ram_2port_151
+  vlogan +v2k $USER_DEFINED_COMPILE_OPTIONS "$QSYS_SIMDIR/../ram_2port_160/sim/lpbk1_RdRspRAM2PORT_ram_2port_160_5m77a5a.v" -work ram_2port_160
   vlogan +v2k $USER_DEFINED_COMPILE_OPTIONS "$QSYS_SIMDIR/lpbk1_RdRspRAM2PORT.v"                                                               
 fi
 

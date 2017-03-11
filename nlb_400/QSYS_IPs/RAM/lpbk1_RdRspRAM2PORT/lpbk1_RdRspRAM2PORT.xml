@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <deploy
- date="2016.02.22.21:49:24"
- outputDirectory="/nfs/pdx/disks/atp.08/users/nravicha/dev_narayanan/cpt_bdx_shell-bdx_fpga_piu/design/afu/nlb_400/QSYS_IPs/RAM/lpbk1_RdRspRAM2PORT/">
+ date="2016.06.30.22:20:47"
+ outputDirectory="/nfs/pdx/disks/atp.01/work/sschang/fpga/proj/skxp-a0/rtl/afu/nlb_400/QSYS_IPs/RAM/lpbk1_RdRspRAM2PORT/">
  <perimeter>
   <parameter
      name="AUTO_GENERATION_ID"
@@ -24,7 +24,7 @@
   <parameter
      name="AUTO_DEVICE"
      type="String"
-     defaultValue="10AX115U3F45E2SGE3"
+     defaultValue="10AX115U3F45E2SG"
      onHdl="0"
      affectsHdl="1" />
   <parameter
@@ -49,38 +49,38 @@
   </interface>
  </perimeter>
  <entity kind="lpbk1_RdRspRAM2PORT" version="1.0" name="lpbk1_RdRspRAM2PORT">
-  <parameter name="AUTO_GENERATION_ID" value="1456206564" />
-  <parameter name="AUTO_DEVICE" value="10AX115U3F45E2SGE3" />
+  <parameter name="AUTO_GENERATION_ID" value="1467350446" />
+  <parameter name="AUTO_DEVICE" value="10AX115U3F45E2SG" />
   <parameter name="AUTO_DEVICE_FAMILY" value="Arria 10" />
   <parameter name="AUTO_UNIQUE_ID" value="" />
   <parameter name="AUTO_DEVICE_SPEEDGRADE" value="2" />
   <generatedFiles>
    <file
-       path="/nfs/pdx/disks/atp.08/users/nravicha/dev_narayanan/cpt_bdx_shell-bdx_fpga_piu/design/afu/nlb_400/QSYS_IPs/RAM/lpbk1_RdRspRAM2PORT/synth/lpbk1_RdRspRAM2PORT.v"
+       path="/nfs/pdx/disks/atp.01/work/sschang/fpga/proj/skxp-a0/rtl/afu/nlb_400/QSYS_IPs/RAM/lpbk1_RdRspRAM2PORT/synth/lpbk1_RdRspRAM2PORT.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="/nfs/pdx/disks/atp.08/users/nravicha/dev_narayanan/cpt_bdx_shell-bdx_fpga_piu/design/afu/nlb_400/QSYS_IPs/RAM/lpbk1_RdRspRAM2PORT/synth/lpbk1_RdRspRAM2PORT.v"
+       path="/nfs/pdx/disks/atp.01/work/sschang/fpga/proj/skxp-a0/rtl/afu/nlb_400/QSYS_IPs/RAM/lpbk1_RdRspRAM2PORT/synth/lpbk1_RdRspRAM2PORT.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </childGeneratedFiles>
   <sourceFiles>
    <file
-       path="/nfs/pdx/disks/atp.08/users/nravicha/dev_narayanan/cpt_bdx_shell-bdx_fpga_piu/design/afu/nlb_400/QSYS_IPs/RAM/lpbk1_RdRspRAM2PORT.qsys" />
+       path="/nfs/pdx/disks/atp.01/work/sschang/fpga/proj/skxp-a0/rtl/afu/nlb_400/QSYS_IPs/RAM/lpbk1_RdRspRAM2PORT.qsys" />
   </sourceFiles>
   <childSourceFiles>
    <file
-       path="/p/atp/tools/altera/quartus/Pro_15.1.2.192/ip/altera/megafunctions/ram_2port/ram_2_port_hw.tcl" />
+       path="/nfs/pdx/disks/atp.08/tools/altera/16.0.1.218-Pro_Patch-109/ip/altera/megafunctions/ram_2port/ram_2_port_hw.tcl" />
   </childSourceFiles>
   <messages>
    <message level="Info" culprit="lpbk1_RdRspRAM2PORT">"Generating: lpbk1_RdRspRAM2PORT"</message>
-   <message level="Info" culprit="lpbk1_RdRspRAM2PORT">"Generating: lpbk1_RdRspRAM2PORT_ram_2port_151_davj2sq"</message>
+   <message level="Info" culprit="lpbk1_RdRspRAM2PORT">"Generating: lpbk1_RdRspRAM2PORT_ram_2port_160_5m77a5a"</message>
   </messages>
  </entity>
  <entity
    kind="ram_2port"
-   version="15.1"
-   name="lpbk1_RdRspRAM2PORT_ram_2port_151_davj2sq">
+   version="16.0"
+   name="lpbk1_RdRspRAM2PORT_ram_2port_160_5m77a5a">
   <parameter name="GUI_CLKEN_ADDRESS_STALL_A" value="false" />
   <parameter name="GUI_RDEN_DOUBLE" value="false" />
   <parameter name="GUI_NBE_A" value="true" />
@@ -116,6 +116,7 @@
   <parameter name="GUI_DIFFERENT_CLKENS" value="false" />
   <parameter name="GUI_QB_WIDTH" value="534" />
   <parameter name="GUI_FILE_REFERENCE" value="0" />
+  <parameter name="GUI_TBENCH" value="false" />
   <parameter name="GUI_Q_PORT_MODE" value="2" />
   <parameter name="GUI_DATA_WIDTH" value="534" />
   <parameter name="GUI_CLKEN_INPUT_REG_A" value="false" />
@@ -148,22 +149,22 @@
   <parameter name="GUI_WIDTH_ECCENCPARITY" value="8" />
   <generatedFiles>
    <file
-       path="/nfs/pdx/disks/atp.08/users/nravicha/dev_narayanan/cpt_bdx_shell-bdx_fpga_piu/design/afu/nlb_400/QSYS_IPs/RAM/lpbk1_RdRspRAM2PORT/ram_2port_151/synth/lpbk1_RdRspRAM2PORT_ram_2port_151_davj2sq.v"
+       path="/nfs/pdx/disks/atp.01/work/sschang/fpga/proj/skxp-a0/rtl/afu/nlb_400/QSYS_IPs/RAM/lpbk1_RdRspRAM2PORT/ram_2port_160/synth/lpbk1_RdRspRAM2PORT_ram_2port_160_5m77a5a.v"
        attributes="" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="/nfs/pdx/disks/atp.08/users/nravicha/dev_narayanan/cpt_bdx_shell-bdx_fpga_piu/design/afu/nlb_400/QSYS_IPs/RAM/lpbk1_RdRspRAM2PORT/ram_2port_151/synth/lpbk1_RdRspRAM2PORT_ram_2port_151_davj2sq.v"
+       path="/nfs/pdx/disks/atp.01/work/sschang/fpga/proj/skxp-a0/rtl/afu/nlb_400/QSYS_IPs/RAM/lpbk1_RdRspRAM2PORT/ram_2port_160/synth/lpbk1_RdRspRAM2PORT_ram_2port_160_5m77a5a.v"
        attributes="" />
   </childGeneratedFiles>
   <sourceFiles>
    <file
-       path="/p/atp/tools/altera/quartus/Pro_15.1.2.192/ip/altera/megafunctions/ram_2port/ram_2_port_hw.tcl" />
+       path="/nfs/pdx/disks/atp.08/tools/altera/16.0.1.218-Pro_Patch-109/ip/altera/megafunctions/ram_2port/ram_2_port_hw.tcl" />
   </sourceFiles>
   <childSourceFiles/>
   <instantiator instantiator="lpbk1_RdRspRAM2PORT" as="ram_2port_0" />
   <messages>
-   <message level="Info" culprit="lpbk1_RdRspRAM2PORT">"Generating: lpbk1_RdRspRAM2PORT_ram_2port_151_davj2sq"</message>
+   <message level="Info" culprit="lpbk1_RdRspRAM2PORT">"Generating: lpbk1_RdRspRAM2PORT_ram_2port_160_5m77a5a"</message>
   </messages>
  </entity>
 </deploy>

@@ -4,12 +4,12 @@
  kind="lpbk1_RdRspRAM2PORT"
  version="1.0"
  fabric="QSYS">
- <!-- Format version 15.1 192 (Future versions may contain additional information.) -->
- <!-- 2016.02.22.21:49:24 -->
+ <!-- Format version 16.0.1 218 (Future versions may contain additional information.) -->
+ <!-- 2016.06.30.22:20:46 -->
  <!-- A collection of modules and connections -->
  <parameter name="AUTO_GENERATION_ID">
   <type>java.lang.Integer</type>
-  <value>1456206564</value>
+  <value>1467350446</value>
   <derived>false</derived>
   <enabled>true</enabled>
   <visible>false</visible>
@@ -36,7 +36,7 @@
  </parameter>
  <parameter name="AUTO_DEVICE">
   <type>java.lang.String</type>
-  <value>10AX115U3F45E2SGE3</value>
+  <value>10AX115U3F45E2SG</value>
   <derived>false</derived>
   <enabled>true</enabled>
   <visible>false</visible>
@@ -69,7 +69,7 @@
   <visible>true</visible>
   <valid>true</valid>
  </parameter>
- <module name="ram_2port_0" kind="ram_2port" version="15.1" path="ram_2port_0">
+ <module name="ram_2port_0" kind="ram_2port" version="16.0" path="ram_2port_0">
   <!-- Describes a single module. Module parameters are
 the requested settings for a module instance. -->
   <parameter name="DEVICE_FAMILY">
@@ -148,6 +148,14 @@ the requested settings for a module instance. -->
   <parameter name="GUI_WIDTH_ECCENCPARITY">
    <type>int</type>
    <value>8</value>
+   <derived>false</derived>
+   <enabled>true</enabled>
+   <visible>false</visible>
+   <valid>true</valid>
+  </parameter>
+  <parameter name="GUI_TBENCH">
+   <type>boolean</type>
+   <value>false</value>
    <derived>false</derived>
    <enabled>true</enabled>
    <visible>false</visible>
@@ -609,7 +617,7 @@ the requested settings for a module instance. -->
    <visible>true</visible>
    <valid>true</valid>
   </parameter>
-  <interface name="ram_input" kind="conduit_end" version="15.1">
+  <interface name="ram_input" kind="conduit_end" version="16.0">
    <!-- The connection points exposed by a module instance for the
 particular module parameters. Connection points and their
 parameters are a RESULT of the module parameters. -->
@@ -682,7 +690,7 @@ parameters are a RESULT of the module parameters. -->
     <role>clock</role>
    </port>
   </interface>
-  <interface name="ram_output" kind="conduit_end" version="15.1">
+  <interface name="ram_output" kind="conduit_end" version="16.0">
    <!-- The connection points exposed by a module instance for the
 particular module parameters. Connection points and their
 parameters are a RESULT of the module parameters. -->
@@ -738,7 +746,7 @@ parameters are a RESULT of the module parameters. -->
   <type>com.altera.entityinterfaces.IElementClass</type>
   <subtype>com.altera.entityinterfaces.IModule</subtype>
   <displayName>RAM: 2-PORT</displayName>
-  <version>15.1</version>
+  <version>16.0</version>
  </plugin>
  <plugin>
   <instanceCount>2</instanceCount>
@@ -746,8 +754,8 @@ parameters are a RESULT of the module parameters. -->
   <type>com.altera.entityinterfaces.IElementClass</type>
   <subtype>com.altera.entityinterfaces.IMutableConnectionPoint</subtype>
   <displayName>Conduit</displayName>
-  <version>15.1</version>
+  <version>16.0</version>
  </plugin>
- <reportVersion>15.1 192</reportVersion>
+ <reportVersion>16.0.1 218</reportVersion>
  <uniqueIdentifier></uniqueIdentifier>
 </EnsembleReport>

@@ -48,13 +48,13 @@
 # suitable for inclusion in your top-level simulation
 # script by running the following command line:
 # 
-# ip-setup-simulation --quartus-project=<quartus project>
+# ip-setup-simulation <quartus project>
 # 
 # ip-setup-simulation will discover the Altera IP
 # within the Quartus project, and generate a unified
 # script which supports all the Altera IP within the design.
 # ----------------------------------------
-# ACDS 15.1 192 linux 2016.02.22.21:49:23
+# ACDS 16.0.1 218 linux 2016.06.30.22:04:52
 
 # ----------------------------------------
 # Initialize variables
@@ -73,7 +73,7 @@ if ![info exists QSYS_SIMDIR] {
 }
 
 if ![info exists QUARTUS_INSTALL_DIR] { 
-  set QUARTUS_INSTALL_DIR "/p/atp/tools/altera/quartus/Pro_15.1.2.192/quartus/"
+  set QUARTUS_INSTALL_DIR "/nfs/pdx/disks/atp.08/tools/altera/16.0.1.218-Pro_Patch-109/quartus/"
 }
 
 if ![info exists USER_DEFINED_COMPILE_OPTIONS] { 
@@ -122,8 +122,8 @@ if ![ string match "*ModelSim ALTERA*" [ vsim -version ] ] {
   ensure_lib                   ./libraries/twentynm_hip_ver/ 
   vmap       twentynm_hip_ver  ./libraries/twentynm_hip_ver/ 
 }
-ensure_lib               ./libraries/ram_2port_151/
-vmap       ram_2port_151 ./libraries/ram_2port_151/
+ensure_lib               ./libraries/ram_2port_160/
+vmap       ram_2port_160 ./libraries/ram_2port_160/
 
 # ----------------------------------------
 # Compile device library files
@@ -148,7 +148,7 @@ alias dev_com {
 # Compile the design files in correct order
 alias com {
   echo "\[exec\] com"
-  eval  vlog $USER_DEFINED_COMPILE_OPTIONS "$QSYS_SIMDIR/../ram_2port_151/sim/lpbk1_RdRspRAM2PORT_ram_2port_151_davj2sq.v" -work ram_2port_151
+  eval  vlog $USER_DEFINED_COMPILE_OPTIONS "$QSYS_SIMDIR/../ram_2port_160/sim/lpbk1_RdRspRAM2PORT_ram_2port_160_5m77a5a.v" -work ram_2port_160
   eval  vlog $USER_DEFINED_COMPILE_OPTIONS "$QSYS_SIMDIR/lpbk1_RdRspRAM2PORT.v"                                                               
 }
 
@@ -156,14 +156,14 @@ alias com {
 # Elaborate top level design
 alias elab {
   echo "\[exec\] elab"
-  eval vsim -t ps $ELAB_OPTIONS $USER_DEFINED_ELAB_OPTIONS -L work -L work_lib -L ram_2port_151 -L altera_ver -L lpm_ver -L sgate_ver -L altera_mf_ver -L altera_lnsim_ver -L twentynm_ver -L twentynm_hssi_ver -L twentynm_hip_ver $TOP_LEVEL_NAME
+  eval vsim -t ps $ELAB_OPTIONS $USER_DEFINED_ELAB_OPTIONS -L work -L work_lib -L ram_2port_160 -L altera_ver -L lpm_ver -L sgate_ver -L altera_mf_ver -L altera_lnsim_ver -L twentynm_ver -L twentynm_hssi_ver -L twentynm_hip_ver $TOP_LEVEL_NAME
 }
 
 # ----------------------------------------
 # Elaborate the top level design with novopt option
 alias elab_debug {
   echo "\[exec\] elab_debug"
-  eval vsim -novopt -t ps $ELAB_OPTIONS $USER_DEFINED_ELAB_OPTIONS -L work -L work_lib -L ram_2port_151 -L altera_ver -L lpm_ver -L sgate_ver -L altera_mf_ver -L altera_lnsim_ver -L twentynm_ver -L twentynm_hssi_ver -L twentynm_hip_ver $TOP_LEVEL_NAME
+  eval vsim -novopt -t ps $ELAB_OPTIONS $USER_DEFINED_ELAB_OPTIONS -L work -L work_lib -L ram_2port_160 -L altera_ver -L lpm_ver -L sgate_ver -L altera_mf_ver -L altera_lnsim_ver -L twentynm_ver -L twentynm_hssi_ver -L twentynm_hip_ver $TOP_LEVEL_NAME
 }
 
 # ----------------------------------------

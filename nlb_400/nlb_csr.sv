@@ -31,6 +31,7 @@
 //                  capable of doing 32 and 64 bit rd/wr the register file.
 //
 // ***************************************************************************
+`default_nettype none
 `include "vendor_defines.vh"
 import ccip_if_pkg::*;
 module nlb_csr #(parameter CCIP_VERSION_NUMBER=0)
@@ -38,6 +39,27 @@ module nlb_csr #(parameter CCIP_VERSION_NUMBER=0)
     Clk_400,                       //                              clk_pll:    16UI clock
     SoftReset,                      //                              rst:        ACTIVE HIGH soft reset
     re2cr_wrlock_n,
+`ifdef INCLUDE_DDR4  
+	DDR4_USERCLK,
+	DDR4a_waitrequest,
+	DDR4a_readdata,
+	DDR4a_readdatavalid,
+	DDR4a_burstcount,
+	DDR4a_writedata,
+	DDR4a_address,
+	DDR4a_write,
+	DDR4a_read,
+	DDR4a_byteenable,
+	DDR4b_waitrequest,
+	DDR4b_readdata,
+	DDR4b_readdatavalid,
+	DDR4b_burstcount,
+	DDR4b_writedata,
+	DDR4b_address,
+	DDR4b_byteenable,
+	DDR4b_write,
+	DDR4b_read,
+`endif
     // MMIO Requests from CCI-P
     cp2cr_MmioHdr,                // [31:0]                       CSR Request Hdr 
     cp2cr_MmioDin,                   // [63:0]                       CSR read data
@@ -55,6 +77,7 @@ module nlb_csr #(parameter CCIP_VERSION_NUMBER=0)
     cr2re_interrupt0,
     cr2re_cfg,
     cr2re_ctl,
+    cr2re_stride,
     cr2re_dsm_base,
     cr2re_dsm_base_valid,
     cr2s1_csr_write,
@@ -68,6 +91,27 @@ module nlb_csr #(parameter CCIP_VERSION_NUMBER=0)
 input  wire          Clk_400;               // 400MHz clock
 input  wire          SoftReset;
 input  wire          re2cr_wrlock_n;
+`ifdef INCLUDE_DDR4
+input  wire                      DDR4_USERCLK;
+input  wire                      DDR4a_waitrequest;
+input  wire [511:0]              DDR4a_readdata;
+input  wire                      DDR4a_readdatavalid;
+output wire [6:0]                DDR4a_burstcount;
+output reg  [511:0]              DDR4a_writedata;
+output reg  [25:0]               DDR4a_address;
+output reg                       DDR4a_write;
+output reg                       DDR4a_read;
+output wire [63:0]               DDR4a_byteenable;
+input  wire                      DDR4b_waitrequest;
+input  wire [511:0]              DDR4b_readdata;
+input  wire                      DDR4b_readdatavalid;
+output wire [6:0]                DDR4b_burstcount;
+output reg  [511:0]              DDR4b_writedata;
+output reg  [25:0]               DDR4b_address;
+output reg                       DDR4b_write;
+output reg                       DDR4b_read;
+output wire [63:0]               DDR4b_byteenable;
+`endif
 // MMIO Requests                           
 input  t_ccip_c0_ReqMmioHdr  cp2cr_MmioHdr;        //   CSR Request Hdr
 input  t_ccip_mmioData       cp2cr_MmioDin;           //   CSR read data
@@ -85,6 +129,7 @@ output logic                 cr2cp_MmioDout_v;        //   CSR read data valid
 (* `KEEP_WIRE *) output wire  [31:0]  cr2re_interrupt0;
 (* `KEEP_WIRE *) output wire  [63:0]  cr2re_cfg;
 (* `KEEP_WIRE *) output wire  [31:0]  cr2re_ctl;
+(* `KEEP_WIRE *) output wire  [31:0]  cr2re_stride;
 (* `KEEP_WIRE *) output wire  [63:0]  cr2re_dsm_base;
 (* `KEEP_WIRE *) output reg           cr2re_dsm_base_valid;
 (* `KEEP_WIRE *) output reg           cr2s1_csr_write;
@@ -136,7 +181,18 @@ localparam      CSR_SWTEST_MSG       = 16'h158;    // 32b             // RW   Wr
 localparam      CSR_STATUS0          = 16'h160;    // 32b                RO   num_read, num_writes
 localparam      CSR_STATUS1          = 16'h168;    // 32b                RO   num_Rdpend, num_Wrpend 
 localparam      CSR_ERROR            = 16'h170;    // 32b                RO   error
- 
+localparam      CSR_STRIDE           = 16'h178;    // 32b           //  stride value  
+
+`ifdef INCLUDE_DDR4
+localparam      CSR_DDR4_WD          = 16'h180;
+localparam      CSR_DDR4_RD          = 16'h188;
+localparam      CSR_DDR4_ADDR        = 16'h190;
+localparam      CSR_DDR4_CTRL        = 16'h198;
+
+
+reg [63:0] DDR4_readdata;
+`endif
+  
 //---------------------------------------------------------
 localparam      NO_STAGED_CSR  = 16'hXXX;       // used for NON late action CSRs
 localparam      CFG_SEG_SIZE   = 16'h180>>3;    // Range specified in number of 8B CSRs
@@ -157,17 +213,18 @@ localparam      FEATURE_0_BEG  = 18'h0000;
 // At compile time, user can decide which test mode is synthesized.
 `ifndef SIM_MODE // PAR_MODE
     `ifdef NLB400_MODE_0
-    localparam       NLB_AFU_ID_H    = 64'hC000_C966_0D82_4272;
-    localparam       NLB_AFU_ID_L    = 64'h9AEF_FE5F_8457_0612;
+    localparam       NLB_AFU_ID_H    = 64'hD842_4DC4_A4A3_C413;
+    localparam       NLB_AFU_ID_L    = 64'hF89E_4336_83F9_040B;
+            
     `elsif NLB400_MODE_3
-    localparam       NLB_AFU_ID_H    = 64'h751E_795F_7DA4_4CC6;
-    localparam       NLB_AFU_ID_L    = 64'h8309_9351_32BC_A9B6;
+    localparam       NLB_AFU_ID_H    = 64'hF7DF_405C_BD7A_CF72;
+    localparam       NLB_AFU_ID_L    = 64'h22F1_44B0_B93A_CD18;
     `elsif NLB400_MODE_7
-    localparam       NLB_AFU_ID_H    = 64'hA944_F6E7_15D3_4D95;
-    localparam       NLB_AFU_ID_L    = 64'h9452_15DB_D47C_76BD;
+    localparam       NLB_AFU_ID_H    = 64'h7BAF_4DEA_A57C_E91E;
+    localparam       NLB_AFU_ID_L    = 64'h168A_455D_9BDA_88A3;
     `elsif NLB400_MODE_5
-    localparam       NLB_AFU_ID_H    = 64'h41BA_FB9D_D97E_43CF;
-    localparam       NLB_AFU_ID_L    = 64'h967D_22E8_37CD_2182;
+    localparam       NLB_AFU_ID_H    = 64'hA0B8_4916_A8A2_12A1;
+    localparam       NLB_AFU_ID_L    = 64'hA2EC_457C_84E7_47BC;
     `else
         ** Select a valid NLB Test Mode
     `endif	
@@ -205,6 +262,7 @@ initial begin
 end
 
 assign     cr2re_ctl             = func_csr_connect_4B(CSR_CTL,csr_reg[CSR_CTL>>3]);
+assign     cr2re_stride          = func_csr_connect_4B(CSR_STRIDE,csr_reg[CSR_STRIDE>>3]);
 assign     cr2re_dsm_base[31:0]  = func_csr_connect_4B(CSR_AFU_DSM_BASEL,csr_reg[CSR_AFU_DSM_BASEL>>3]);
 assign     cr2re_dsm_base[63:32] = func_csr_connect_4B(CSR_AFU_DSM_BASEH,csr_reg[CSR_AFU_DSM_BASEH>>3]);
 assign     cr2re_src_address     = csr_reg[CSR_SRC_ADDR>>3];
@@ -415,6 +473,15 @@ begin
                   },
                   64'h0
                  );
+          
+                set_attr(CSR_STRIDE,
+                   NO_STAGED_CSR,
+                   1'b1,
+                  {{58{RsvdP}},
+                   {6{RW}}
+                  },
+                  64'h0
+                 );
 
           set_attr(CSR_CFG,
                   NO_STAGED_CSR,
@@ -458,7 +525,35 @@ begin
                   {64{RO}},
                   {32'h0, re2cr_error}
                  );
+`ifdef INCLUDE_DDR4
+         set_attr(CSR_DDR4_WD,
+                  NO_STAGED_CSR,
+                  1'b1,
+                  {64{RW}},
+                  64'b0
+                 );
+         set_attr(CSR_DDR4_RD,
+                  NO_STAGED_CSR,
+                  1'b1,
+                  {64{RO}},
+                  DDR4_readdata
+                 );
+         set_attr(CSR_DDR4_ADDR,
+                  NO_STAGED_CSR,
+                  1'b1,
+                  {64{RW}},
+                  64'b0
+                 );
+         set_attr(CSR_DDR4_CTRL,
+                  NO_STAGED_CSR,
+                  1'b1,
+                  {64{RW}},
+                  64'b0
+                 );
+`endif
 
+				 
+				 
          if(SoftReset)
             cr2s1_csr_write <= 0;
         else
@@ -471,6 +566,107 @@ begin
                 cr2s1_csr_write <= 1'b0;
         end
 end
+
+`ifdef INCLUDE_DDR4
+
+reg DDR4a_write_m;
+reg DDR4a_write_r;
+reg DDR4a_write_rr;
+reg DDR4a_read_m;
+reg DDR4a_read_r;
+reg DDR4a_read_rr;
+reg DDR4b_write_m;
+reg DDR4b_write_r;
+reg DDR4b_write_rr;
+reg DDR4b_read_m;
+reg DDR4b_read_r;
+reg DDR4b_read_rr;
+
+reg        DDR4_readdatavalid_m_a, DDR4_readdatavalid_mm_a;
+reg        DDR4_readdatavalid_m_b, DDR4_readdatavalid_mm_b;
+reg [63:0] DDR4_readdata_m_a, DDR4_readdata_mm_a;
+reg [63:0] DDR4_readdata_m_b, DDR4_readdata_mm_b;
+reg [63:0] DDR4_writedata_m, DDR4_writedata_mm;
+reg [25:0] DDR4_address_m, DDR4_address_mm;
+
+always @(posedge DDR4_USERCLK)
+begin
+	DDR4b_read_m <= csr_reg[CSR_DDR4_CTRL>>3][3];   // Metastability flops and edge detection
+	DDR4b_write_m <= csr_reg[CSR_DDR4_CTRL>>3][2];
+	DDR4a_read_m <= csr_reg[CSR_DDR4_CTRL>>3][1];
+	DDR4a_write_m <= csr_reg[CSR_DDR4_CTRL>>3][0];
+	DDR4b_read_r <= DDR4b_read_m;
+	DDR4b_write_r <= DDR4b_write_m;
+	DDR4a_read_r <= DDR4a_read_m;
+	DDR4a_write_r <= DDR4a_write_m;
+	DDR4b_read_rr <= DDR4b_read_r;
+	DDR4b_write_rr <= DDR4b_write_r;
+	DDR4a_read_rr <= DDR4a_read_r;
+	DDR4a_write_rr <= DDR4a_write_r;
+	
+	if (~DDR4b_read_rr && DDR4b_read_r) DDR4b_read <= 1'b1; // edge detection
+	else DDR4b_read <= 1'b0;
+	if (~DDR4a_read_rr && DDR4a_read_r) DDR4a_read <= 1'b1;
+	else DDR4a_read <= 1'b0;
+	if (~DDR4b_write_rr && DDR4b_write_r) DDR4b_write <= 1'b1;
+	else DDR4b_write <= 1'b0;
+	if (~DDR4a_write_rr && DDR4a_write_r) DDR4a_write <= 1'b1;
+	else DDR4a_write <= 1'b0;
+						
+	
+	DDR4_readdata_m_a                          <= DDR4a_readdata[511:448];
+	DDR4_readdata_m_b                          <= DDR4b_readdata[511:448];
+	DDR4_readdatavalid_m_a                     <= DDR4a_readdatavalid;
+	DDR4_readdatavalid_m_b                     <= DDR4b_readdatavalid;
+	DDR4_readdata_mm_a                         <= DDR4_readdata_m_a;
+	DDR4_readdata_mm_b                         <= DDR4_readdata_m_b;
+	DDR4_readdatavalid_mm_a                    <= DDR4_readdatavalid_m_a;
+	DDR4_readdatavalid_mm_b                    <= DDR4_readdatavalid_m_b;
+	if (DDR4_readdatavalid_mm_a) DDR4_readdata <= DDR4_readdata_mm_a;
+	if (DDR4_readdatavalid_mm_b) DDR4_readdata <= DDR4_readdata_mm_b;
+
+	
+	DDR4_writedata_m  <= csr_reg[CSR_DDR4_WD>>3];
+	DDR4_writedata_mm <= DDR4_writedata_m;
+	
+	DDR4a_writedata  <= {8{DDR4_writedata_mm}};
+	DDR4b_writedata  <= {8{DDR4_writedata_mm}};
+	
+	DDR4_address_m <= csr_reg[CSR_DDR4_ADDR>>3][25:0];
+	DDR4_address_mm <= DDR4_address_m;
+	
+	DDR4a_address    <= DDR4_address_mm;
+	DDR4b_address    <= DDR4_address_mm;
+	
+	if (SoftReset) begin
+		DDR4_readdatavalid_m_a <= 0;
+		DDR4_readdatavalid_m_b <= 0;
+		DDR4_readdatavalid_mm_a <= 0;
+		DDR4_readdatavalid_mm_b <= 0;
+        DDR4a_write_m <= 0;
+        DDR4a_write_r <= 0;
+		DDR4a_write_rr <= 0;
+        DDR4a_read_m <= 0;
+        DDR4a_read_r <= 0;
+		DDR4a_read_rr <= 0;
+        DDR4b_write_m <= 0;
+        DDR4b_write_r <= 0;
+		DDR4b_write_rr <= 0;
+        DDR4b_read_m <= 0;
+        DDR4b_read_r <= 0;
+		DDR4b_read_rr <= 0;
+		DDR4a_write <= 0;
+		DDR4a_read  <= 0;
+	    DDR4b_write <= 0;
+	    DDR4b_read  <= 0;
+	end
+end
+
+assign DDR4a_burstcount = 7'b1;
+assign DDR4a_byteenable = 64'hFFFF_FFFF_FFFF_FFFF;
+assign DDR4b_burstcount = 7'b1;
+assign DDR4b_byteenable = 64'hFFFF_FFFF_FFFF_FFFF;
+`endif
 
 
 //----------------------------------------------------------------------------------------------------------------------------------------------

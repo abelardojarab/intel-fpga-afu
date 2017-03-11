@@ -37,6 +37,7 @@
 //
 // This module instantiates different test AFUs, and connect them up to the arbiter.
 
+`default_nettype none
 module arbiter #(parameter PEND_THRESH=1, ADDR_LMT=20, MDATA=14)
 (
 
@@ -69,8 +70,10 @@ module arbiter #(parameter PEND_THRESH=1, ADDR_LMT=20, MDATA=14)
        re2xy_src_addr,                 // [31:0]                requestor:         src address
        re2xy_dst_addr,                 // [31:0]                requestor:         destination address
        re2xy_NumLines,                 // [31:0]                requestor:         number of cache lines
+       re2xy_stride,                   // [31:0]              requestor:      stride value
        re2xy_Cont,                     //                       requestor:         continuous mode
-       re2xy_test_cfg,                 // [7:0]                 requestor:         8-bit test cfg register.
+       re2xy_wrdin_msb,                //                     requestor:    modifies msb(1) of wrdata to differntiate b/n different multiple afu write patterns
+        re2xy_test_cfg,                 // [7:0]                 requestor:         8-bit test cfg register.
        re2ab_Mode,                     // [2:0]                 requestor:         test mode
        ab2re_TestCmp,                  //                       arbiter:           Test completion flag
        ab2re_ErrorInfo,                // [255:0]               arbiter:           error information
@@ -90,56 +93,58 @@ module arbiter #(parameter PEND_THRESH=1, ADDR_LMT=20, MDATA=14)
        re2xy_multiCL_len                          // Default is 0 which implies single CL  
 );
    
-   input                   Clk_400;               //                      ccip_intf:            Clk_400
+   input  logic                   Clk_400;               //                      ccip_intf:            Clk_400
    
-   output [ADDR_LMT-1:0]   ab2re_WrAddr;           // [ADDR_LMT-1:0]        app_cnt:           Writes are guaranteed to be accepted
-   output [15:0]           ab2re_WrTID;            // [15:0]                app_cnt:           meta data
-   output [511:0]          ab2re_WrDin;            // [511:0]               app_cnt:           Cache line data
-   output                  ab2re_WrFence;          //                       app_cnt:           write fence.
-   output                  ab2re_WrEn;             //                       app_cnt:           write enable
-   input                   re2ab_WrSent;           //                       app_cnt:           write issued
-   input                   re2ab_WrAlmFull;        //                       app_cnt:           write fifo almost full
+   output logic  [ADDR_LMT-1:0]   ab2re_WrAddr;           // [ADDR_LMT-1:0]        app_cnt:           Writes are guaranteed to be accepted
+   output logic  [15:0]           ab2re_WrTID;            // [15:0]                app_cnt:           meta data
+   output logic  [511:0]          ab2re_WrDin;            // [511:0]               app_cnt:           Cache line data
+   output logic                   ab2re_WrFence;          //                       app_cnt:           write fence.
+   output logic                   ab2re_WrEn;             //                       app_cnt:           write enable
+   input  logic                   re2ab_WrSent;           //                       app_cnt:           write issued
+   input  logic                   re2ab_WrAlmFull;        //                       app_cnt:           write fifo almost full
    
-   output [ADDR_LMT-1:0]   ab2re_RdAddr;           // [ADDR_LMT-1:0]        app_cnt:           Reads may yield to writes
-   output [15:0]           ab2re_RdTID;            // [15:0]                app_cnt:           meta data
-   output                  ab2re_RdEn;             //                       app_cnt:           read enable
-   input                   re2ab_RdSent;           //                       app_cnt:           read issued
+   output logic  [ADDR_LMT-1:0]   ab2re_RdAddr;           // [ADDR_LMT-1:0]        app_cnt:           Reads may yield to writes
+   output logic  [15:0]           ab2re_RdTID;            // [15:0]                app_cnt:           meta data
+   output logic                   ab2re_RdEn;             //                       app_cnt:           read enable
+   input  logic                   re2ab_RdSent;           //                       app_cnt:           read issued
    
-   input                   re2ab_RdRspValid;       //                       app_cnt:           read response valid
-   input                   re2ab_UMsgValid;        //                       arbiter:           UMsg valid
-   input                   re2ab_CfgValid;         //                       arbiter:           Cfg valid
-   input [15:0]            re2ab_RdRsp;            // [15:0]                app_cnt:           read response header
-   input [511:0]           re2ab_RdData;           // [511:0]               app_cnt:           read data
-   input                   re2ab_stallRd;          //                       app_cnt:           stall read requests FOR LPBK1
+   input  logic                   re2ab_RdRspValid;       //                       app_cnt:           read response valid
+   input  logic                   re2ab_UMsgValid;        //                       arbiter:           UMsg valid
+   input  logic                   re2ab_CfgValid;         //                       arbiter:           Cfg valid
+   input  logic [15:0]            re2ab_RdRsp;            // [15:0]                app_cnt:           read response header
+   input  logic [511:0]           re2ab_RdData;           // [511:0]               app_cnt:           read data
+   input  logic                   re2ab_stallRd;          //                       app_cnt:           stall read requests FOR LPBK1
    
-   input                   re2ab_WrRspValid;       //                       app_cnt:           write response valid
-   input [15:0]            re2ab_WrRsp;            // [15:0]                app_cnt:           write response header
+   input  logic                   re2ab_WrRspValid;       //                       app_cnt:           write response valid
+   input  logic [15:0]            re2ab_WrRsp;            // [15:0]                app_cnt:           write response header
    
-   input                   re2xy_go;               //                       requestor:         start of frame recvd
-   input [31:0]            re2xy_src_addr;         // [31:0]                requestor:         src address
-   input [31:0]            re2xy_dst_addr;         // [31:0]                requestor:         destination address
-   input [31:0]            re2xy_NumLines;         // [31:0]                requestor:         number of cache lines
-   input                   re2xy_Cont;             //                       requestor:         continuous mode
-   input [7:0]             re2xy_test_cfg;         // [7:0]                 requestor:         8-bit test cfg register.
-   input [2:0]             re2ab_Mode;             // [2:0]                 requestor:         test mode
+   input  logic                   re2xy_go;               //                       requestor:         start of frame recvd
+   input  logic [31:0]            re2xy_src_addr;         // [31:0]                requestor:         src address
+   input  logic [31:0]            re2xy_dst_addr;         // [31:0]                requestor:         destination address
+   input  logic [31:0]            re2xy_NumLines;         // [31:0]                requestor:         number of cache lines
+   input  logic [31:0]             re2xy_stride;          // [31:0]              requestor:      stride value
+   input  logic                   re2xy_Cont;             //                       requestor:         continuous mode
+   input  logic [7:0]             re2xy_test_cfg;         // [7:0]                 requestor:         8-bit test cfg register.
+   input  logic [2:0]             re2ab_Mode;             // [2:0]                 requestor:         test mode
+   input  logic                re2xy_wrdin_msb;        //                       requestor:    modifies msb(1) of wrdata to differntiate b/n different multiple afu write patterns
    
-   output                  ab2re_TestCmp;          //                       arbiter:           Test completion flag
-   output [255:0]          ab2re_ErrorInfo;        // [255:0]               arbiter:           error information
-   output                  ab2re_ErrorValid;       //                       arbiter:           test has detected an error
+   output logic                   ab2re_TestCmp;          //                       arbiter:           Test completion flag
+   output logic  [255:0]          ab2re_ErrorInfo;        // [255:0]               arbiter:           error information
+   output logic                   ab2re_ErrorValid;       //                       arbiter:           test has detected an error
    
-   input                   cr2s1_csr_write;
-   input                   test_Resetb;
+   input  logic                   cr2s1_csr_write;
+   input  logic                   test_Resetb;
    
-   output [1:0]            ab2re_RdLen;
-   output                  ab2re_RdSop;
-   output [1:0]            ab2re_WrLen;
-   output                  ab2re_WrSop;
+   output logic  [1:0]            ab2re_RdLen;
+   output logic                   ab2re_RdSop;
+   output logic  [1:0]            ab2re_WrLen;
+   output logic                   ab2re_WrSop;
         
-   input                   re2ab_RdRspFormat; // TODO: This is not applicable. Even Multi CL Rds return individual unpacked response always
-   input [1:0]             re2ab_RdRspCLnum;  // For unpacked rd rsp, OoO
-   input                   re2ab_WrRspFormat; // Packed or unpacked response for multi CL Writes.
-   input [1:0]             re2ab_WrRspCLnum;  // for unpacked wr rsp, could be OoO
-   input [1:0]             re2xy_multiCL_len; 
+   input  logic                   re2ab_RdRspFormat; // TODO: This is not applicable. Even Multi CL Rds return individual unpacked response always
+   input  logic [1:0]             re2ab_RdRspCLnum;  // For unpacked rd rsp, OoO
+   input  logic                   re2ab_WrRspFormat; // Packed or unpacked response for multi CL Writes.
+   input  logic [1:0]             re2ab_WrRspCLnum;  // for unpacked wr rsp, could be OoO
+   input  logic [1:0]             re2xy_multiCL_len; 
    
    //------------------------------------------------------------------------------------------------------------------------
    
@@ -152,54 +157,7 @@ module arbiter #(parameter PEND_THRESH=1, ADDR_LMT=20, MDATA=14)
    localparam              M_SW1           = 3'b111;
    //--------------------------------------------------------
 
-   wire                    Clk_400;               //                      ccip_intf:            Clk_400
-   
-   reg [ADDR_LMT-1:0]      ab2re_WrAddr;           // [ADDR_LMT-1:0]        app_cnt:           Writes are guaranteed to be accepted
-   reg [15:0]              ab2re_WrTID;            // [15:0]                app_cnt:           meta data
-   reg [511:0]             ab2re_WrDin;            // [511:0]               app_cnt:           Cache line data
-   reg                     ab2re_WrEn;             //                       app_cnt:           write enable
-   reg                     ab2re_WrFence;          //
-   wire                    re2ab_WrSent;           //                       app_cnt:           write issued
-   wire                    re2ab_WrAlmFull;        //                       app_cnt:           write fifo almost full
-   
-   reg [ADDR_LMT-1:0]      ab2re_RdAddr;           // [ADDR_LMT-1:0]        app_cnt:           Reads may yield to writes
-   reg [15:0]              ab2re_RdTID;            // [15:0]                app_cnt:           meta data
-   reg                     ab2re_RdEn;             //                       app_cnt:           read enable
-   wire                    re2ab_RdSent;           //                       app_cnt:           read issued
-   
-   wire                    re2ab_RdRspValid;       //                       app_cnt:           read response valid
-   wire                    re2ab_UMsgValid;        //                       app_cnt:           UMsg valid
-   wire                    re2ab_CfgValid;         //                       app_cnt:           Cfg valid
-   wire [15:0]             re2ab_RdRsp;            // [15:0]                app_cnt:           read response header
-   wire [511:0]            re2ab_RdData;           // [511:0]               app_cnt:           read data
-   wire                    re2ab_stallRd;          //                       app_cnt:           stall read requests FOR LPBK1
-   
-   wire                    re2ab_WrRspValid;       //                       app_cnt:           write response valid
-   wire [15:0]             re2ab_WrRsp;            // [15:0]                app_cnt:           write response header
-   
-   wire                    re2xy_go;               //                       requestor:         start of frame recvd
-   wire [31:0]             re2xy_NumLines;         // [31:0]                requestor:         number of cache lines
-   wire                    re2xy_Cont;             //                       requestor:         continuous mode
-   wire [2:0]              re2ab_Mode;             // [3:0]                 requestor:         test mode
-   
-   reg                     ab2re_TestCmp;          //                       arbiter:           Test completion flag
-   reg [255:0]             ab2re_ErrorInfo;        // [255:0]               arbiter:           error information
-   reg                     ab2re_ErrorValid;       //                       arbiter:           test has detected an error
-   
-   wire                    test_Resetb;
-   
-   logic                   ab2re_RdSop;
-   logic [1:0]             ab2re_WrLen;
-   logic [1:0]             ab2re_RdLen;
-   logic                   ab2re_WrSop;
-                       
-   logic                   re2ab_RdRspFormat;
-   logic [1:0]             re2ab_RdRspCLnum;
-   logic                   re2ab_WrRspFormat;
-   logic [1:0]             re2ab_WrRspCLnum;
-   
-   logic [1:0]             re2xy_multiCL_len;
-   
+  
    //------------------------------------------------------------------------------------------------------------------------
    //      test_lpbk1 signal declarations
    //------------------------------------------------------------------------------------------------------------------------
@@ -780,6 +738,7 @@ module arbiter #(parameter PEND_THRESH=1, ADDR_LMT=20, MDATA=14)
            rw2ab_WrEn,                     //                       arb:               write enable
            ab2rw_WrSent,                   //                       arb:               write issued
            ab2rw_WrAlmFull,                //                       arb:               write fifo almost full
+           re2xy_wrdin_msb,               //                       requestor:    modifies msb(1) of wrdata to differntiate b/n different multiple afu write patterns
            
            rw2ab_RdAddr,                   // [ADDR_LMT-1:0]        arb:               Reads may yield to writes
            rw2ab_RdTID,                    // [15:0]                arb:               meta data
@@ -797,6 +756,8 @@ module arbiter #(parameter PEND_THRESH=1, ADDR_LMT=20, MDATA=14)
            re2xy_go,                       //                       requestor:         start the test
            re2xy_NumLines,                 // [31:0]                requestor:         number of cache lines
            re2xy_Cont,                     //                       requestor:         continuous mode
+           re2xy_stride,                  // [31:0]                 requestor:         stride value
+           
     
            rw2ab_TestCmp,                  //                       arb:               Test completion flag
            rw2ab_ErrorInfo,                // [255:0]               arb:               error information

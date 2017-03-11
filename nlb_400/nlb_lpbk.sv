@@ -234,6 +234,8 @@
 // 7. Read N cache lines. Wait for all read completions.
 // 6. Stop timer Send test completion.
 //
+
+`default_nettype none
 `include "vendor_defines.vh"
 import ccip_if_pkg::*;
 module nlb_lpbk #(parameter TXHDR_WIDTH=61, RXHDR_WIDTH=18, DATA_WIDTH =512)
@@ -243,6 +245,27 @@ module nlb_lpbk #(parameter TXHDR_WIDTH=61, RXHDR_WIDTH=18, DATA_WIDTH =512)
        Clk_400,                         //              in    std_logic;           Core clock. CCI interface is synchronous to this clock.
        SoftReset,                        //              in    std_logic;           CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH
        // ---------------------------IF signals between CCI and AFU  --------------------------------
+`ifdef INCLUDE_DDR4
+       DDR4_USERCLK,
+       DDR4a_waitrequest,
+       DDR4a_readdata,
+       DDR4a_readdatavalid,
+       DDR4a_burstcount,
+       DDR4a_writedata,
+       DDR4a_address,
+       DDR4a_write,
+       DDR4a_read,
+       DDR4a_byteenable,
+       DDR4b_waitrequest,
+       DDR4b_readdata,
+       DDR4b_readdatavalid,
+       DDR4b_burstcount,
+       DDR4b_writedata,
+       DDR4b_address,
+       DDR4b_write,
+       DDR4b_read,
+       DDR4b_byteenable,
+`endif
        cp2af_sRxPort,
        af2cp_sTxPort
 );
@@ -250,7 +273,27 @@ module nlb_lpbk #(parameter TXHDR_WIDTH=61, RXHDR_WIDTH=18, DATA_WIDTH =512)
 
    input                        Clk_400;             //              in    std_logic;           Core clock. CCI interface is synchronous to this clock.
    input                        SoftReset;            //              in    std_logic;           CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH
-
+`ifdef INCLUDE_DDR4
+   input  wire                      DDR4_USERCLK;
+   input  wire                      DDR4a_waitrequest;
+   input  wire [511:0]              DDR4a_readdata;
+   input  wire                      DDR4a_readdatavalid;
+   output wire [6:0]                DDR4a_burstcount;
+   output wire [511:0]              DDR4a_writedata;
+   output wire [25:0]               DDR4a_address;
+   output wire                      DDR4a_write;
+   output wire                      DDR4a_read;
+   output wire [63:0]               DDR4a_byteenable;
+   input  wire                      DDR4b_waitrequest;
+   input  wire [511:0]              DDR4b_readdata;
+   input  wire                      DDR4b_readdatavalid;
+   output wire [6:0]                DDR4b_burstcount;
+   output wire [511:0]              DDR4b_writedata;
+   output wire [25:0]               DDR4b_address;
+   output wire                      DDR4b_write;
+   output wire                      DDR4b_read;
+   output wire [63:0]               DDR4b_byteenable;
+`endif
    input  t_if_ccip_Rx          cp2af_sRxPort;
    output t_if_ccip_Tx          af2cp_sTxPort;
 
@@ -295,7 +338,8 @@ module nlb_lpbk #(parameter TXHDR_WIDTH=61, RXHDR_WIDTH=18, DATA_WIDTH =512)
    wire [31:0]                  re2xy_src_addr;
    wire [31:0]                  re2xy_dst_addr;
    wire [31:0]                  re2xy_NumLines;
-   wire                         re2xy_Cont;
+   wire [31:0]                  re2xy_stride;
+   wire                         re2xy_Cont,re2xy_wrdin_msb;
    wire [7:0]                   re2xy_test_cfg;
    wire [2:0]                   re2ab_Mode;
    wire                         ab2re_TestCmp;
@@ -310,6 +354,7 @@ module nlb_lpbk #(parameter TXHDR_WIDTH=61, RXHDR_WIDTH=18, DATA_WIDTH =512)
    wire  [31:0]                 cr2re_interrupt0;
    wire  [63:0]                 cr2re_cfg;
    wire  [31:0]                 cr2re_ctl;
+   wire  [31:0]                 cr2re_stride;
    wire  [63:0]                 cr2re_dsm_base;
    wire                         cr2re_dsm_base_valid;
    wire                         re2cr_wrlock_n;
@@ -362,6 +407,7 @@ inst_requestor(
        cr2re_interrupt0,
        cr2re_cfg,
        cr2re_ctl,
+       cr2re_stride,
        cr2re_dsm_base,
        cr2re_dsm_base_valid,
 
@@ -389,7 +435,9 @@ inst_requestor(
        re2ab_WrRsp,                    // [ADDR_LMT-1:0]        arbiter:        write response header
        re2xy_go,                       //                       requestor:      start the test
        re2xy_NumLines,                 // [31:0]                requestor:      number of cache lines
+       re2xy_stride,             // [31:0]              requestor:      stride value
        re2xy_Cont,                     //                       requestor:      continuous mode
+       re2xy_wrdin_msb,         //                     requestor:    modifies msb(1) of wrdata to differntiate b/n different multiple afu write patterns
        re2xy_src_addr,                 // [31:0]                requestor:      src address
        re2xy_dst_addr,                 // [31:0]                requestor:      destination address
        re2xy_test_cfg,                 // [7:0]                 requestor:      8-bit test cfg register.
@@ -454,7 +502,9 @@ inst_arbiter (
        re2xy_src_addr,                 // [31:0]                requestor:         src address
        re2xy_dst_addr,                 // [31:0]                requestor:         destination address
        re2xy_NumLines,                 // [31:0]                requestor:         number of cache lines
+       re2xy_stride,                   // [31:0]              requestor:      stride value
        re2xy_Cont,                     //                       requestor:         continuous mode
+       re2xy_wrdin_msb,         //                     requestor:    modifies msb(1) of wrdata to differntiate b/n different multiple afu write patterns
        re2xy_test_cfg,                 // [7:0]                 requestor:         8-bit test cfg register.
        re2ab_Mode,                     // [2:0]                 requestor:         test mode
        ab2re_TestCmp,                  //                       arbiter:           Test completion flag
@@ -502,6 +552,28 @@ inst_nlb_csr (
     Clk_400,                       
     SoftReset_q,                   //  ACTIVE HIGH soft reset
     re2cr_wrlock_n,
+	
+`ifdef INCLUDE_DDR4  
+	DDR4_USERCLK,
+	DDR4a_waitrequest,
+	DDR4a_readdata,
+	DDR4a_readdatavalid,
+	DDR4a_burstcount,
+	DDR4a_writedata,
+	DDR4a_address,
+	DDR4a_write,
+	DDR4a_read,
+	DDR4a_byteenable,
+	DDR4b_waitrequest,
+	DDR4b_readdata,
+	DDR4b_readdatavalid,
+	DDR4b_burstcount,
+	DDR4b_writedata,
+	DDR4b_address,
+	DDR4b_byteenable,
+	DDR4b_write,
+	DDR4b_read,
+`endif
 
     // MMIO Requests
     cp2cr_MmioHdr,
@@ -521,6 +593,7 @@ inst_nlb_csr (
     cr2re_interrupt0,
     cr2re_cfg,
     cr2re_ctl,
+    cr2re_stride,
     cr2re_dsm_base,
     cr2re_dsm_base_valid,
     cr2s1_csr_write,

@@ -12,7 +12,7 @@
 # or its authorized distributors. Please refer to the applicable 
 # agreement for further details.
 
-# ACDS 15.1 192 linux 2016.02.23.17:49:22
+# ACDS 16.0.1 218 linux 2016.06.30.22:05:11
 
 # ----------------------------------------
 # vcs - auto-generated simulation script
@@ -35,7 +35,7 @@
 # # runs forever (until $finish()).
 # source vcs_setup.sh \
 # TOP_LEVEL_NAME=top \
-# USER_DEFINED_ELAB_OPTIONS="'-f ../../../synopsys_vcs.f'" \
+# USER_DEFINED_ELAB_OPTIONS="-f ../../../synopsys_vcs.f" 
 # USER_DEFINED_SIM_OPTIONS=""
 # 
 # # helper file: synopsys_vcs.f
@@ -48,18 +48,18 @@
 # suitable for inclusion in your top-level simulation
 # script by running the following command line:
 # 
-# ip-setup-simulation --quartus-project=<quartus project>
+# ip-setup-simulation <quartus project>
 # 
 # ip-setup-simulation will discover the Altera IP
 # within the Quartus project, and generate a unified
 # script which supports all the Altera IP within the design.
 # ----------------------------------------
-# ACDS 15.1 192 linux 2016.02.23.17:49:22
+# ACDS 16.0.1 218 linux 2016.06.30.22:05:11
 # ----------------------------------------
 # initialize variables
 TOP_LEVEL_NAME="req_C1TxRAM2PORT"
 QSYS_SIMDIR="./../../"
-QUARTUS_INSTALL_DIR="/p/atp/tools/altera/quartus/Pro_15.1.2.192/quartus/"
+QUARTUS_INSTALL_DIR="/nfs/pdx/disks/atp.08/tools/altera/16.0.1.218-Pro_Patch-109/quartus/"
 SKIP_FILE_COPY=0
 SKIP_ELAB=0
 SKIP_SIM=0
@@ -103,7 +103,7 @@ vcs -lca -timescale=1ps/1ps -sverilog +verilog2001ext+.v -ntb_opts dtm $ELAB_OPT
   -v $QUARTUS_INSTALL_DIR/eda/sim_lib/twentynm_hssi_atoms.v \
   -v $QUARTUS_INSTALL_DIR/eda/sim_lib/synopsys/twentynm_hip_atoms_ncrypt.v \
   -v $QUARTUS_INSTALL_DIR/eda/sim_lib/twentynm_hip_atoms.v \
-  $QSYS_SIMDIR/../ram_2port_151/sim/req_C1TxRAM2PORT_ram_2port_151_t3axzby.v \
+  $QSYS_SIMDIR/../ram_2port_160/sim/req_C1TxRAM2PORT_ram_2port_160_nfprwsy.v \
   $QSYS_SIMDIR/req_C1TxRAM2PORT.v \
   -top $TOP_LEVEL_NAME
 # ----------------------------------------

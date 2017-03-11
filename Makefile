@@ -1,17 +1,15 @@
-ACCEL_SRC_DIRS := nlb_400
+SUBDIRS := nlb_400 hello_afu
+CLEAN_SUBDIRS := $(addprefix clean-,$(SUBDIRS))
 
-ACCEL_DEST := $(ADAPT_DEST_ROOT)/afu
-ACCEL_DEST_DIRS := $(foreach d,$(ACCEL_SRC_DIRS),$(addprefix $(ACCEL_DEST)/,$d))
+.PHONY: all $(SUBDIRS)
+all: $(SUBDIRS)
 
-.PHONY: all clean
-all: $(ACCEL_DEST_DIRS)
-clean:
-	rm -rf $(ACCEL_DEST)
+$(SUBDIRS):
+	$(MAKE) -C $@
 
-# TODO: avoid rsync in "build"
-.PHONY: _force
-$(ACCEL_DEST)/%: % _force | $(ACCEL_DEST)/
-	rsync -r $< $(@D)/
+.PHONY: clean $(CLEAN_SUBDIRS)
+clean: $(CLEAN_SUBDIRS)
 
-$(ACCEL_DEST)/:
-	mkdir -p $@
+$(CLEAN_SUBDIRS):
+	$(MAKE) -C $(subst clean-,,$@) clean
+

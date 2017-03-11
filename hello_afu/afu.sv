@@ -33,32 +33,36 @@
 //
 // Scratch_Reg[63:0] @ Byte Address 0x0080 is provided to test MMIO Reads and Writes to the AFU.
 //
-// Please see the Avalon MM specification with respect to the Quartus 16.0 Release for more information.
-// Avalon MM Interface for dcp_0.5:
-// - operates with respect to 400 MHz clock
-// - only single bursts are currently supported
-// - No response status is supported
-// - No support for posted writes
-// - Recommended to use lower [63:0] of data bus
 import ccip_if_pkg::*;
 
 module afu (
-	// ---------------------------global signals-------------------------------------------------
+        // ---------------------------global signals-------------------------------------------------
         input	Clk_400,	  //              in    std_logic;           Core clock. CCI interface is synchronous to this clock.
         input	SoftReset,	  //              in    std_logic;           CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH
-	// ---------------------------IF signals between CCI and AFU  --------------------------------
-	input	t_if_ccip_Rx    cp2af_sRxPort,
-	output	t_if_ccip_Tx	af2cp_sTxPort,
-
-        // --------------------------- AMM signals
-	output	logic [63:0]    avs_writedata,     	//          .writedata
-	input	logic [63:0]    avs_readdata,     	//          .readdata
-	output	logic [31:0]    avs_address,       	//          .address
-	input	logic	        avs_waitrequest,   	//          .waitrequest
-	output	logic           avs_write,        	//          .write
-	output	logic           avs_read,         	//          .read
-	output	logic [7:0]     avs_byteenable,   	//          .byteenable
-	input	wire		avs_readdatavalid     	//          .readdatavalid
+        // ---------------------------IF signals between CCI and AFU  --------------------------------
+`ifdef INCLUDE_DDR4
+        input	wire                      DDR4_USERCLK,
+        input	wire                      DDR4a_waitrequest,
+        input	wire [511:0]              DDR4a_readdata,
+        input	wire                      DDR4a_readdatavalid,
+        output	wire [6:0]                DDR4a_burstcount,
+        output	wire [511:0]              DDR4a_writedata,
+        output	wire [25:0]               DDR4a_address,
+        output	wire                      DDR4a_write,
+        output	wire                      DDR4a_read,
+        output	wire [63:0]               DDR4a_byteenable,
+        input	wire                      DDR4b_waitrequest,
+        input	wire [511:0]              DDR4b_readdata,
+        input	wire                      DDR4b_readdatavalid,
+        output	wire [6:0]                DDR4b_burstcount,
+        output	wire [511:0]              DDR4b_writedata,
+        output	wire [25:0]               DDR4b_address,
+        output	wire                      DDR4b_write,
+        output	wire                      DDR4b_read,
+        output	wire [63:0]               DDR4b_byteenable,
+`endif
+        input	t_if_ccip_Rx	cp2af_sRxPort,
+        output	t_if_ccip_Tx	af2cp_sTxPort
 );
 
         //Hello_AFU ID
@@ -81,11 +85,6 @@ module afu (
                 af2cp_sTxPort.c2.hdr        <= '0;
                 af2cp_sTxPort.c2.data       <= '0;
                 af2cp_sTxPort.c2.mmioRdValid <= '0;
-                avs_writedata  <= 64'b0;
-                avs_address    <= 32'b0;
-                avs_write      <= 1'b0;
-                avs_read       <= 1'b0;
-                avs_byteenable <= 8'b0;
                 scratch_reg    <= '0;
             end
             else begin
@@ -122,4 +121,18 @@ module afu (
               end
           end
       end
+`ifdef INCLUDE_DDR4
+        always @(posedge DDR4_USERCLK) begin
+            if(SoftReset) begin
+                DDR4a_burstcount <= 7'b1;
+                DDR4a_write <= 0;
+                DDR4a_read  <= 0;
+                DDR4a_byteenable <= 64h'FFFF_FFFF_FFFF_FFFF;
+                DDR4b_burstcount <= 7'b1;
+                DDR4b_write <= 0;
+                DDR4b_read  <= 0;
+                DDR4b_byteenable <= 64h'FFFF_FFFF_FFFF_FFFF;
+            end
+        end
+`endif
 endmodule

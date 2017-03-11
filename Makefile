@@ -1,4 +1,4 @@
-ACCEL_SRC_DIRS := nlb_400 nlb_mpf_async_fifo sgemm
+ACCEL_SRC_DIRS := nlb_400
 
 ACCEL_DEST := $(ADAPT_DEST_ROOT)/afu
 ACCEL_DEST_DIRS := $(foreach d,$(ACCEL_SRC_DIRS),$(addprefix $(ACCEL_DEST)/,$d))

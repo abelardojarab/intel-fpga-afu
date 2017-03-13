@@ -43,7 +43,7 @@ def add_filelist_commands(filelist):
         for filename in files:
             filename = filename.rstrip('\n')
             commands += 'set_global_assignment -name {0} "{1}"\n'.format(quartus_assignment_name(filename),
-                                                                         os.path.join('afu', filename))
+                                                                         os.path.join('..', 'afu', filename))
     return commands
 
 def extra_tcl_commands(extra_tcl):

@@ -1,4 +1,4 @@
-SUBDIRS := nlb_400 hello_afu user_clock_test
+SUBDIRS := nlb_400 hello_afu user_clock_test opencl/blank opencl/hello_world opencl/mem_bandwidth opencl/vector_add
 CLEAN_SUBDIRS := $(addprefix clean-,$(SUBDIRS))
 
 .PHONY: all $(SUBDIRS)

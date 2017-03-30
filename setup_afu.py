@@ -26,6 +26,7 @@ def quartus_assignment_name(filename):
         '.sdc':  'SDC_FILE',
         '.qsys': 'QSYS_FILE',
         '.json': 'MISC_FILE',
+        '.stp' : 'SIGNALTAP_FILE',
     }
     _basename, ext = os.path.splitext(filename)
 
@@ -58,7 +59,7 @@ def main(args=None):
     parser.add_argument('filelist', help='List of files to add to afu_synth/afu_fit revisions')
     parser.add_argument('extra_tcl', nargs='?', help='Additional quartus_sh commands to run (optional)')
     opts = parser.parse_args(args)
-    
+
     command_buffer = '\n'.join([QUARTUS_ENABLE_TRACE,
                                 'project_open "{0}"'.format(opts.qpf),
                                 'set_current_revision afu_synth',

@@ -25,7 +25,9 @@ def quartus_assignment_name(filename):
         '.vhd':  'VHDL_FILE',
         '.sdc':  'SDC_FILE',
         '.qsys': 'QSYS_FILE',
+        '.ip':   'IP_FILE',
         '.json': 'MISC_FILE',
+        '.tcl':  'MISC_FILE',
         '.stp' : 'SIGNALTAP_FILE',
     }
     _basename, ext = os.path.splitext(filename)

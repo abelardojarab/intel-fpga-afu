@@ -1,0 +1,31 @@
+LDFLAGS ?=
+CFLAGS = -g -O2 
+
+CFLAGS += -I$(prefix)/common/include 
+LDFLAGS += -L$(prefix)/my_build/lib -luuid 
+
+ifeq ($(USE_ASE),1)
+	LDFLAGS += -lfpga-ASE
+	CFLAGS += -DUSE_ASE
+else
+	LDFLAGS += -lpthread
+	LDFLAGS += -ljson-c
+	LDFLAGS += -lfpga
+endif
+
+all: user_clock_test
+
+user_clock_test: user_clock_test.o
+	g++ $(CFLAGS) -o user_clock_test user_clock_test.o $(LDFLAGS)
+
+user_clock_test.o: user_clock_test.c  Makefile
+	g++ $(CFLAGS) -c -o user_clock_test.o user_clock_test.c
+
+clean:
+	$(RM) user_clock_test user_clock_test.o
+
+
+run: all
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(prefix)/my_build/lib ./user_clock_test
+
+.PHONY:all clean

@@ -28,12 +28,12 @@
         <spirit:parameter>
           <spirit:name>clockRate</spirit:name>
           <spirit:displayName>Clock rate</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="clockRate">0</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="clockRate">100000000</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>clockRateKnown</spirit:name>
           <spirit:displayName>Clock rate known</spirit:displayName>
-          <spirit:value spirit:format="bool" spirit:id="clockRateKnown">false</spirit:value>
+          <spirit:value spirit:format="bool" spirit:id="clockRateKnown">true</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>externallyDriven</spirit:name>
@@ -65,7 +65,7 @@
         <spirit:parameter>
           <spirit:name>clockRate</spirit:name>
           <spirit:displayName>Clock rate</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="clockRate">0</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="clockRate">100000000</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>externallyDriven</spirit:name>
@@ -248,7 +248,7 @@
         <spirit:parameter>
           <spirit:name>inputClockFrequency</spirit:name>
           <spirit:displayName>inputClockFrequency</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="inputClockFrequency">0</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="inputClockFrequency">100000000</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>resetSynchronousEdges</spirit:name>
@@ -317,11 +317,11 @@
                     </entry>
                     <entry>
                         <key>clockRate</key>
-                        <value>0</value>
+                        <value>100000000</value>
                     </entry>
                     <entry>
                         <key>clockRateKnown</key>
-                        <value>false</value>
+                        <value>true</value>
                     </entry>
                     <entry>
                         <key>externallyDriven</key>
@@ -359,7 +359,7 @@
                 <parameterValueMap>
                     <entry>
                         <key>clockRate</key>
-                        <value>0</value>
+                        <value>100000000</value>
                     </entry>
                     <entry>
                         <key>externallyDriven</key>
@@ -460,7 +460,7 @@
                 <consumedSystemInfos>
                     <entry>
                         <key>CLOCK_RATE</key>
-                        <value>0</value>
+                        <value>100000000</value>
                     </entry>
                 </consumedSystemInfos>
             </value>
@@ -472,7 +472,7 @@
                 <suppliedSystemInfos>
                     <entry>
                         <key>CLOCK_RATE</key>
-                        <value>0</value>
+                        <value>100000000</value>
                     </entry>
                 </suppliedSystemInfos>
                 <consumedSystemInfos/>
@@ -497,7 +497,7 @@
         <altera:port_mapping altera:name="reset_n_out" altera:internal="reset_n_out"></altera:port_mapping>
       </altera:interface_mapping>
     </altera:altera_interface_boundary>
-    <altera:altera_has_warnings>true</altera:altera_has_warnings>
+    <altera:altera_has_warnings>false</altera:altera_has_warnings>
     <altera:altera_has_errors>false</altera:altera_has_errors>
   </spirit:vendorExtensions>
 </spirit:component>

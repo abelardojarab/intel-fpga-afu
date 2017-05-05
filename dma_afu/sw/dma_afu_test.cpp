@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <uuid/uuid.h>
 #include <fpga/enum.h>
 #include <fpga/access.h>
 #include <fpga/common.h>
+#include <assert.h>
 
 #include "RC4memtest.h"
 
@@ -16,11 +18,21 @@ int usleep(unsigned);
 #define SCRATCH_RESET            0
 #define BYTE_OFFSET              8
 
+#define DMA_BUFFER_SIZE (1024*1024)
+
 #define AFU_DFH_REG              0x0
 #define AFU_ID_LO                0x8 
 #define AFU_ID_HI                0x10
 #define AFU_NEXT                 0x18
 #define AFU_RESERVED             0x20
+
+#define DMA_TEST_SYSTEM_AFU_ID_AVMM_SLAVE_0_BASE 0x0
+#define DMA_TEST_SYSTEM_SYSID_QSYS_0_BASE 0x500
+#define SYSID2_BASE 0x1000
+#define ACL_DMA_INST_DMA_MODULAR_SGDMA_DISPATCHER_0_CSR_BASE 0x20000
+#define ACL_DMA_INST_DMA_MODULAR_SGDMA_DISPATCHER_0_DESCRIPTOR_SLAVE_BASE 0x20020
+#define ACL_DMA_INST_ADDRESS_SPAN_EXTENDER_0_CNTL_BASE 0x20070
+#define ACL_DMA_INST_ADDRESS_SPAN_EXTENDER_0_WINDOWED_SLAVE_BASE 0x30000
 
 static int s_error_count = 0;
 
@@ -66,13 +78,417 @@ void mmio_read64(fpga_handle afc_handle, uint64_t addr, uint64_t *data, const ch
 	printf("Reading %s (Byte Offset=%08lx) = %08lx\n", reg_name, addr, *data);
 }
 
+void mmio_read64_silent(fpga_handle afc_handle, uint64_t addr, uint64_t *data)
+{
+	fpgaReadMMIO64(afc_handle, 0, addr, data);
+}
+
 void mmio_write64(fpga_handle afc_handle, uint64_t addr, uint64_t data, const char *reg_name)
 {
 	fpgaWriteMMIO64(afc_handle, 0, addr, data);
 	printf("MMIO Write to %s (Byte Offset=%08lx) = %08lx\n", reg_name, addr, data);
 }
 
-int run_dma_afu_test(fpga_handle afc_handle)
+#define MEM_WINDOW_CRTL ACL_DMA_INST_ADDRESS_SPAN_EXTENDER_0_CNTL_BASE
+#define MEM_WINDOW_MEM ACL_DMA_INST_ADDRESS_SPAN_EXTENDER_0_WINDOWED_SLAVE_BASE
+#define MEM_WINDOW_SPAN (64*1024)
+#define MEM_WINDOW_SPAN_MASK ((uint64_t)(MEM_WINDOW_SPAN-1))
+
+void copy_to_mmio(fpga_handle afc_handle, uint64_t mmio_dst, uint64_t *host_src, int len)
+{
+	//mmio requires 8 byte alignment
+	assert(len % 8 == 0);
+	assert(mmio_dst % 8 == 0);
+	
+	uint64_t dev_addr = mmio_dst;
+	uint64_t *host_addr = host_src;
+	
+	for(int i = 0; i < len/8; i++)
+	{
+		fpgaWriteMMIO64(afc_handle, 0, dev_addr, *host_addr);
+		
+		host_addr += 1;
+		dev_addr += 8;
+	}
+}
+
+void copy_to_dev_with_mmio(fpga_handle afc_handle, uint64_t *host_src, uint64_t dev_dest, int len)
+{
+	//mmio requires 8 byte alignment
+	assert(len % 8 == 0);
+	assert(dev_dest % 8 == 0);
+	
+	uint64_t dev_addr = dev_dest;
+	uint64_t *host_addr = host_src;
+	
+	uint64_t cur_mem_page = dev_addr & ~MEM_WINDOW_SPAN_MASK;
+	fpgaWriteMMIO64(afc_handle, 0, MEM_WINDOW_CRTL, cur_mem_page);
+	
+	for(int i = 0; i < len/8; i++)
+	{
+		uint64_t mem_page = dev_addr & ~MEM_WINDOW_SPAN_MASK;
+		if(mem_page != cur_mem_page)
+		{
+			cur_mem_page = mem_page;
+			fpgaWriteMMIO64(afc_handle, 0, MEM_WINDOW_CRTL, cur_mem_page);
+		}
+		fpgaWriteMMIO64(afc_handle, 0, MEM_WINDOW_MEM+(dev_addr&MEM_WINDOW_SPAN_MASK), *host_addr);
+		
+		host_addr += 1;
+		dev_addr += 8;
+	}
+}
+
+void copy_from_dev_with_mmio(fpga_handle afc_handle, uint64_t *host_dst, uint64_t dev_src, int len)
+{
+	//mmio requires 8 byte alignment
+	assert(len % 8 == 0);
+	assert(dev_src % 8 == 0);
+	
+	uint64_t dev_addr = dev_src;
+	uint64_t *host_addr = host_dst;
+	
+	uint64_t cur_mem_page = dev_addr & ~MEM_WINDOW_SPAN_MASK;
+	fpgaWriteMMIO64(afc_handle, 0, MEM_WINDOW_CRTL, cur_mem_page);
+	
+	for(int i = 0; i < len/8; i++)
+	{
+		uint64_t mem_page = dev_addr & ~MEM_WINDOW_SPAN_MASK;
+		if(mem_page != cur_mem_page)
+		{
+			cur_mem_page = mem_page;
+			fpgaWriteMMIO64(afc_handle, 0, MEM_WINDOW_CRTL, cur_mem_page);
+		}
+		fpgaReadMMIO64(afc_handle, 0, MEM_WINDOW_MEM+(dev_addr&MEM_WINDOW_SPAN_MASK), host_addr);
+		
+		host_addr += 1;
+		dev_addr += 8;
+	}
+}
+
+int compare_dev_and_host(fpga_handle afc_handle, uint64_t *host_dst, uint64_t dev_src, int len)
+{
+	//mmio requires 8 byte alignment
+	assert(len % 8 == 0);
+	assert(dev_src % 8 == 0);
+	
+	uint64_t dev_addr = dev_src;
+	uint64_t *host_addr = host_dst;
+	
+	uint64_t cur_mem_page = dev_addr & ~MEM_WINDOW_SPAN_MASK;
+	fpgaWriteMMIO64(afc_handle, 0, MEM_WINDOW_CRTL, cur_mem_page);
+	
+	int num_errors = 0;
+	uint64_t cmp_data;
+	for(int i = 0; i < len/8; i++)
+	{
+		uint64_t mem_page = dev_addr & ~MEM_WINDOW_SPAN_MASK;
+		if(mem_page != cur_mem_page)
+		{
+			cur_mem_page = mem_page;
+			fpgaWriteMMIO64(afc_handle, 0, MEM_WINDOW_CRTL, cur_mem_page);
+		}
+		fpgaReadMMIO64(afc_handle, 0, MEM_WINDOW_MEM+(dev_addr&MEM_WINDOW_SPAN_MASK), &cmp_data);
+		if(*host_addr != cmp_data)
+			num_errors++;
+		
+		host_addr += 1;
+		dev_addr += 8;
+	}
+	
+	return num_errors;
+}
+
+
+int compare_dev_and_host_and_dump(fpga_handle afc_handle, uint64_t *host_dst, uint64_t dev_src, int len)
+{
+	//mmio requires 8 byte alignment
+	assert(len % 8 == 0);
+	assert(dev_src % 8 == 0);
+	
+	uint64_t dev_addr = dev_src;
+	uint64_t *host_addr = host_dst;
+	
+	uint64_t cur_mem_page = dev_addr & ~MEM_WINDOW_SPAN_MASK;
+	fpgaWriteMMIO64(afc_handle, 0, MEM_WINDOW_CRTL, cur_mem_page);
+	
+	int num_errors = 0;
+	uint64_t cmp_data;
+	for(int i = 0; i < len/8; i++)
+	{
+		uint64_t mem_page = dev_addr & ~MEM_WINDOW_SPAN_MASK;
+		if(mem_page != cur_mem_page)
+		{
+			cur_mem_page = mem_page;
+			fpgaWriteMMIO64(afc_handle, 0, MEM_WINDOW_CRTL, cur_mem_page);
+		}
+		fpgaReadMMIO64(afc_handle, 0, MEM_WINDOW_MEM+(dev_addr&MEM_WINDOW_SPAN_MASK), &cmp_data);
+		if(*host_addr != cmp_data)
+			num_errors++;
+		
+		host_addr += 1;
+		dev_addr += 8;
+		
+		printf("%ld ", cmp_data);
+	}
+	
+	return num_errors;
+}
+
+typedef struct __attribute__((__packed__)) 
+{
+	//0x0
+	uint32_t rd_address;
+	//0x4
+	uint32_t wr_address;
+	//0x8
+	uint32_t len;
+	//0xC
+	uint8_t wr_burst_count;
+	uint8_t rd_burst_count;
+	uint16_t seq_num;
+	//0x10
+	uint16_t wr_stride;
+	uint16_t rd_stride;
+	//0x14
+	uint32_t rd_address_ext;
+	//0x18
+	uint32_t wr_address_ext;
+	//0x1c
+	uint32_t control;
+} msgdma_ext_descriptor_t;
+
+void copy_dev_to_dev_with_mmio(fpga_handle afc_handle, uint64_t dev_src, uint64_t dev_dest, int len)
+{
+	//dma requires 64 byte alignment
+	assert(len % 64 == 0);
+	assert(dev_src % 64 == 0);
+	assert(dev_dest % 64 == 0);
+	
+	uint64_t *tmp = (uint64_t *)malloc(len);
+	assert(tmp);
+	
+	copy_from_dev_with_mmio(afc_handle, tmp, dev_src, len);
+	copy_to_dev_with_mmio(afc_handle, tmp, dev_dest, len);
+	
+	free(tmp);
+}
+
+void copy_dev_to_dev_with_dma(fpga_handle afc_handle, uint64_t dev_src, uint64_t dev_dest, int len)
+{
+	//dma requires 64 byte alignment
+	assert(len % 64 == 0);
+	assert(dev_src % 64 == 0);
+	assert(dev_dest % 64 == 0);
+	
+	//only 32bit for now
+	const uint64_t MASK_FOR_32BIT_ADDR = 0xFFFFFFFF;
+	
+	msgdma_ext_descriptor_t d;
+	
+	d.rd_address = dev_src & MASK_FOR_32BIT_ADDR;
+	d.wr_address = dev_dest & MASK_FOR_32BIT_ADDR;
+	d.len = len;
+	d.wr_burst_count = 1;
+	d.rd_burst_count = 1;
+	d.seq_num = 0;
+	d.wr_stride = 1;
+	d.rd_stride = 1;
+	d.rd_address_ext = (dev_src >> 32) & MASK_FOR_32BIT_ADDR;
+	d.wr_address_ext = (dev_dest >> 32)& MASK_FOR_32BIT_ADDR;  
+	d.control = 0x80000000;
+	
+	const uint64_t SGDMA_CSR_BASE = ACL_DMA_INST_DMA_MODULAR_SGDMA_DISPATCHER_0_CSR_BASE;
+	const uint64_t SGDMA_DESC_BASE = ACL_DMA_INST_DMA_MODULAR_SGDMA_DISPATCHER_0_DESCRIPTOR_SLAVE_BASE;
+	uint64_t mmio_data;
+	
+	copy_to_mmio(afc_handle, SGDMA_DESC_BASE, (uint64_t *)&d, sizeof(d));
+	mmio_read64_silent(afc_handle, SGDMA_CSR_BASE, &mmio_data);
+	while(mmio_data !=0x2)
+	{
+#ifdef USE_ASE
+		sleep(1);
+		mmio_read64(afc_handle, SGDMA_CSR_BASE, &mmio_data, "sgdma_csr_base");
+#else
+		mmio_read64_silent(afc_handle, SGDMA_CSR_BASE, &mmio_data);
+#endif
+	}
+}
+
+int run_basic_ddr_dma_test(fpga_handle afc_handle)
+{
+	volatile uint64_t *dma_buf_ptr  = NULL;
+	uint64_t        dma_buf_wsid;
+	uint64_t dma_buf_iova;
+	
+	uint64_t data = 0;
+	fpga_result     res = FPGA_OK;
+
+#ifdef USE_ASE
+	const int TEST_BUFFER_SIZE = 256;
+	//const int TEST_BUFFER_SIZE = 256*128;
+#else
+	const int TEST_BUFFER_SIZE = 1024*1024-64;
+#endif
+
+	const int TEST_BUFFER_WORD_SIZE = TEST_BUFFER_SIZE/8;
+	char test_buffer[TEST_BUFFER_SIZE];
+	uint64_t *test_buffer_word_ptr = (uint64_t *)test_buffer;
+	char test_buffer_zero[TEST_BUFFER_SIZE];
+	int num_errors = 0;
+	const uint64_t DEST_PTR = 1024*1024;
+
+
+	res = fpgaPrepareBuffer(afc_handle, DMA_BUFFER_SIZE,
+		(void **)&dma_buf_ptr, &dma_buf_wsid, 0);
+	ON_ERR_GOTO(res, release_buf, "allocating dma buffer");
+	memset((void *)dma_buf_ptr,  0x0, DMA_BUFFER_SIZE);
+	
+	res = fpgaGetIOVA(afc_handle, dma_buf_wsid, &dma_buf_iova);
+	ON_ERR_GOTO(res, release_buf, "getting dma DMA_BUF_IOVA");
+	
+	//sleep(1);
+	mmio_read64(afc_handle, 0x500, &data, "qsys_sys_id");
+	//sleep(1);
+	mmio_read64(afc_handle, 0x500, &data, "qsys_sys_id");
+	mmio_read64(afc_handle, 0x1000, &data, "qsys_sys_id2");
+	
+	printf("TEST_BUFFER_SIZE = %d\n", TEST_BUFFER_SIZE);
+	printf("DMA_BUFFER_SIZE = %d\n", DMA_BUFFER_SIZE);
+	
+	memset(test_buffer_zero, 0, TEST_BUFFER_SIZE);
+	
+	
+	for(int i = 0; i < TEST_BUFFER_WORD_SIZE; i++)
+		test_buffer_word_ptr[i] = i;
+	
+	copy_to_dev_with_mmio(afc_handle, test_buffer_word_ptr, 0, TEST_BUFFER_SIZE);
+	copy_to_dev_with_mmio(afc_handle, (uint64_t *)test_buffer_zero, DEST_PTR, TEST_BUFFER_SIZE);
+	
+	//test ddr to ddr transfers
+	copy_dev_to_dev_with_dma(afc_handle, 0, DEST_PTR, TEST_BUFFER_SIZE);
+	num_errors += compare_dev_and_host(afc_handle, test_buffer_word_ptr, DEST_PTR, TEST_BUFFER_SIZE);
+	
+	//test ddr to host transfers
+	//basic host ddr test
+	copy_to_dev_with_mmio(afc_handle, test_buffer_word_ptr, 0, TEST_BUFFER_SIZE);
+	copy_dev_to_dev_with_dma(afc_handle, 0, dma_buf_iova | 0x1000000000000, TEST_BUFFER_SIZE);
+	/*for(int i = 0; i < TEST_BUFFER_WORD_SIZE; i++)
+		printf("%ld ", ((uint64_t *)dma_buf_ptr)[i]);
+	printf("\n");*/
+	if(memcmp((void *)dma_buf_ptr, (void *)test_buffer_word_ptr, TEST_BUFFER_SIZE) != 0)
+	{
+		printf("ERROR: memcmp failed!\n");
+		num_errors++;
+	}
+	num_errors += compare_dev_and_host(afc_handle, (uint64_t *)dma_buf_ptr, DEST_PTR, TEST_BUFFER_SIZE);
+	
+	//TODO: currently broken due to read response out of order
+#ifndef USE_ASE
+	//test host to ddr transfers
+	copy_to_dev_with_mmio(afc_handle, (uint64_t *)test_buffer_zero, DEST_PTR, TEST_BUFFER_SIZE);
+	copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | 0x1000000000000, DEST_PTR, TEST_BUFFER_SIZE);
+	num_errors += compare_dev_and_host(afc_handle, test_buffer_word_ptr, DEST_PTR, TEST_BUFFER_SIZE);
+#endif
+	
+	printf("num_errors = %d\n", num_errors);
+	s_error_count += num_errors;
+	
+release_buf:
+	res = fpgaReleaseBuffer(afc_handle, dma_buf_wsid);
+}
+
+int dma_memory_checker(
+	fpga_handle afc_handle,
+	uint64_t dma_buf_iova,
+	volatile uint64_t *dma_buf_ptr
+)
+{
+	int num_errors = 0;
+	
+#ifdef USE_ASE
+	const long DMA_TEST_MEM_SIZE	 = 1024;
+	const long DMA_BUF_SIZE = 256;
+#else
+	const long DMA_TEST_MEM_SIZE	 = 8l*1024l*1024l*1024l;
+	const long DMA_BUF_SIZE = 512*1024;
+#endif
+
+	RC4Memtest rc4_obj;
+	long byte_errors = 0;
+	long page_errors = 0;
+	const char *RC4_KEY = "mytestkey";
+	
+	rc4_obj.setup_key(RC4_KEY);
+	
+	assert(DMA_TEST_MEM_SIZE % DMA_BUF_SIZE == 0);
+	
+	const long NUM_DMA_TRANSFERS = DMA_TEST_MEM_SIZE/DMA_BUF_SIZE;
+	
+	for(long i = 0; i < NUM_DMA_TRANSFERS; i++)
+	{
+		rc4_obj.write_bytes((char *)dma_buf_ptr, (int)DMA_BUF_SIZE);
+		uint64_t dev_addr = i*DMA_BUF_SIZE;
+		
+		//TODO: currently broken due to read response out of order
+		#ifdef USE_ASE
+		copy_to_dev_with_mmio(afc_handle, (uint64_t*)dma_buf_ptr, dev_addr, DMA_BUF_SIZE);
+		#else
+		copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | 0x1000000000000, dev_addr, DMA_BUF_SIZE);
+		#endif
+	}
+	
+	//reload rc4 state to begining
+	rc4_obj.setup_key(RC4_KEY);
+	
+	for(long i = 0; i < NUM_DMA_TRANSFERS; i++)
+	{
+		uint64_t dev_addr = i*DMA_BUF_SIZE;
+		copy_dev_to_dev_with_dma(afc_handle, dev_addr, dma_buf_iova | 0x1000000000000, DMA_BUF_SIZE);
+		long errors = rc4_obj.check_bytes((char *)dma_buf_ptr, (int)DMA_BUF_SIZE);
+		if(errors)
+			page_errors++;
+		byte_errors += errors;
+	}
+	
+	printf("mem_size=%ld dma_buf_size=%ld num_dma_buf=%ld\n", DMA_TEST_MEM_SIZE, DMA_BUF_SIZE, NUM_DMA_TRANSFERS);
+	printf("byte_errors=%ld, page_errors=%ld\n", byte_errors, page_errors);
+	if(byte_errors)
+	{
+		printf("ERROR: memtest FAILED!\n");
+		s_error_count += 1;
+		return 0;
+	}
+
+	printf("num_errors = %d\n", num_errors);
+	s_error_count += num_errors;
+}
+
+int dma_memory_checker(fpga_handle afc_handle)
+{
+	volatile uint64_t *dma_buf_ptr  = NULL;
+	uint64_t        dma_buf_wsid;
+	uint64_t dma_buf_iova;
+	
+	fpga_result     res = FPGA_OK;
+
+	res = fpgaPrepareBuffer(afc_handle, DMA_BUFFER_SIZE,
+		(void **)&dma_buf_ptr, &dma_buf_wsid, 0);
+	ON_ERR_GOTO(res, release_buf, "allocating dma buffer");
+	memset((void *)dma_buf_ptr,  0x0, DMA_BUFFER_SIZE);
+	
+	res = fpgaGetIOVA(afc_handle, dma_buf_wsid, &dma_buf_iova);
+	ON_ERR_GOTO(res, release_buf, "getting dma DMA_BUF_IOVA");
+	
+	printf("DMA_BUFFER_SIZE = %d\n", DMA_BUFFER_SIZE);
+	
+	dma_memory_checker(afc_handle, dma_buf_iova, dma_buf_ptr);
+
+release_buf:
+	res = fpgaReleaseBuffer(afc_handle, dma_buf_wsid);
+}
+
+int run_basic_tests_with_mmio(fpga_handle afc_handle)
 {
 	uint64_t data = 0;
 	
@@ -108,8 +524,6 @@ int run_dma_afu_test(fpga_handle afc_handle)
 	
 	mmio_read64(afc_handle, MEM_START, &data, "memaddr0");
 	mmio_read64(afc_handle, MEM_START+8, &data, "memaddr1");
-	
-	
 	
 	for(int i = 0; i < 10; i++)
 	{
@@ -159,10 +573,9 @@ int run_dma_afu_test(fpga_handle afc_handle)
 	{
 		for(long p = 0; p < NUM_PAGES; p++)
 		{
-			fpgaWriteMMIO64(afc_handle, 0, ADDR_SPAN_START, m*NEXT_MEMORY_OFFSET+ASE_MEM_PAGE_SIZE*p);
 			rc4_obj.write_bytes(test_buffer, PAGE_SIZE);
-			for(long i = 0; i < PAGE_SIZE/8; i++)
-				fpgaWriteMMIO64(afc_handle, 0, MEM_START+i*8, *(((uint64_t*)test_buffer)+i));
+			uint64_t dev_addr = m*NEXT_MEMORY_OFFSET+ASE_MEM_PAGE_SIZE*p;
+			copy_to_dev_with_mmio(afc_handle, (uint64_t*)test_buffer, dev_addr, PAGE_SIZE);
 		}
 	}
 	
@@ -173,9 +586,8 @@ int run_dma_afu_test(fpga_handle afc_handle)
 	{
 		for(long p = 0; p < NUM_PAGES; p++)
 		{
-			fpgaWriteMMIO64(afc_handle, 0, ADDR_SPAN_START, m*NEXT_MEMORY_OFFSET+ASE_MEM_PAGE_SIZE*p);
-			for(long i = 0; i < PAGE_SIZE/8; i++)
-			  fpgaReadMMIO64(afc_handle, 0, MEM_START+i*8, (((uint64_t*)test_buffer)+i));
+			uint64_t dev_addr = m*NEXT_MEMORY_OFFSET+ASE_MEM_PAGE_SIZE*p;
+			copy_from_dev_with_mmio(afc_handle, (uint64_t*)test_buffer, dev_addr, PAGE_SIZE);
 			long errors = rc4_obj.check_bytes(test_buffer, PAGE_SIZE);
 			if(errors)
 				page_errors++;
@@ -188,6 +600,7 @@ int run_dma_afu_test(fpga_handle afc_handle)
 	if(byte_errors)
 	{
 		printf("ERROR: memtest FAILED!\n");
+		s_error_count += 1;
 		return 0;
 	}
 	
@@ -265,32 +678,10 @@ int main(int argc, char *argv[])
 	res = fpgaReadMMIO64(afc_handle, 0, AFU_RESERVED, &data);
 	ON_ERR_GOTO(res, out_close, "reading from MMIO");
 	printf("AFU RESERVED = %08lx\n", data);
-/*
-	// Access AFU user scratch-pad register
-	res = fpgaReadMMIO64(afc_handle, 0, SCRATCH_REG, &data);
-	ON_ERR_GOTO(res, out_close, "reading from MMIO");
-	printf("Reading Scratch Register (Byte Offset=%08lx) = %08lx\n", SCRATCH_REG, data);
 	
-	printf("MMIO Write to Scratch Register (Byte Offset=%08x) = %08lx\n", SCRATCH_REG, SCRATCH_VALUE);
-	res = fpgaWriteMMIO64(afc_handle, 0, SCRATCH_REG, SCRATCH_VALUE);
-	ON_ERR_GOTO(res, out_close, "writing to MMIO");
-	
-	res = fpgaReadMMIO64(afc_handle, 0, SCRATCH_REG, &data);
-	ON_ERR_GOTO(res, out_close, "reading from MMIO");
-	printf("Reading Scratch Register (Byte Offset=%08x) = %08lx\n", SCRATCH_REG, data);
-	ASSERT_GOTO(data == SCRATCH_VALUE, out_close, "MMIO mismatched expected result");
-	
-	// Set Scratch Register to 0
-	printf("Setting Scratch Register (Byte Offset=%08x) = %08lx\n", SCRATCH_REG, SCRATCH_RESET);
-	res = fpgaWriteMMIO64(afc_handle, 0, SCRATCH_REG, SCRATCH_RESET);
-	ON_ERR_GOTO(res, out_close, "writing to MMIO");
-	res = fpgaReadMMIO64(afc_handle, 0, SCRATCH_REG, &data);
-	ON_ERR_GOTO(res, out_close, "reading from MMIO");
-	printf("Reading Scratch Register (Byte Offset=%08x) = %08lx\n", SCRATCH_REG, data);
-	ASSERT_GOTO(data == SCRATCH_RESET, out_close, "MMIO mismatched expected result");
-*/
-	
-	run_dma_afu_test(afc_handle);
+	//run_basic_tests_with_mmio(afc_handle);
+	run_basic_ddr_dma_test(afc_handle);
+	dma_memory_checker(afc_handle);
 
 	printf("Done Running Test\n");
 
@@ -306,10 +697,8 @@ out_close:
 
 	/* Destroy token */
 out_destroy_tok:
-#ifndef USE_ASE
 	res = fpgaDestroyToken(&afc_token);
 	ON_ERR_GOTO(res, out_destroy_prop, "destroying token");
-#endif
 
 	/* Destroy properties object */
 out_destroy_prop:

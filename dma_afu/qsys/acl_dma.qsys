@@ -149,11 +149,11 @@
                 <suppliedSystemInfos>
                     <entry>
                         <key>ADDRESS_MAP</key>
-                        <value>&lt;address-map&gt;&lt;slave name='parent/ddr4a_mm_bridge.s0' start='0x0' end='0x100000000' datawidth='512' /&gt;&lt;slave name='parent/ddr4b_mm_bridge.s0' start='0x100000000' end='0x200000000' datawidth='512' /&gt;&lt;/address-map&gt;</value>
+                        <value>&lt;address-map&gt;&lt;slave name='parent/ddr4a_mm_bridge.s0' start='0x0' end='0x100000000' datawidth='512' /&gt;&lt;slave name='parent/ddr4b_mm_bridge.s0' start='0x100000000' end='0x200000000' datawidth='512' /&gt;&lt;slave name='parent/dma_test_system_avst_to_avmm_master_0.avmm' start='0x1000000000000' end='0x2000000000000' datawidth='512' /&gt;&lt;/address-map&gt;</value>
                     </entry>
                     <entry>
                         <key>ADDRESS_WIDTH</key>
-                        <value>33</value>
+                        <value>49</value>
                     </entry>
                 </suppliedSystemInfos>
                 <consumedSystemInfos/>
@@ -483,7 +483,7 @@
                         <name>avm_m0_address</name>
                         <role>address</role>
                         <direction>Output</direction>
-                        <width>47</width>
+                        <width>49</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -1093,7 +1093,7 @@
         </entry>
         <entry>
             <key>embeddedsw.CMacro.MASTER_ADDRESS_WIDTH</key>
-            <value>47</value>
+            <value>49</value>
         </entry>
         <entry>
             <key>embeddedsw.CMacro.MAX_BURST_BYTES</key>
@@ -2012,10 +2012,10 @@
   <parameter name="AUTO_DMA_CLK_CLOCK_DOMAIN" value="1" />
   <parameter name="AUTO_DMA_CLK_CLOCK_RATE" value="100000000" />
   <parameter name="AUTO_DMA_CLK_RESET_DOMAIN" value="1" />
-  <parameter name="AUTO_DMA_READ_ADDRESS_MAP"><![CDATA[<address-map><slave name='pipe_stage_m.s0' start='0x0' end='0x800000000000' datawidth='512' /></address-map>]]></parameter>
-  <parameter name="AUTO_DMA_READ_ADDRESS_WIDTH" value="47" />
-  <parameter name="AUTO_DMA_WRITE_ADDRESS_MAP"><![CDATA[<address-map><slave name='pipe_stage_m.s0' start='0x0' end='0x800000000000' datawidth='512' /></address-map>]]></parameter>
-  <parameter name="AUTO_DMA_WRITE_ADDRESS_WIDTH" value="47" />
+  <parameter name="AUTO_DMA_READ_ADDRESS_MAP"><![CDATA[<address-map><slave name='pipe_stage_m.s0' start='0x0' end='0x2000000000000' datawidth='512' /></address-map>]]></parameter>
+  <parameter name="AUTO_DMA_READ_ADDRESS_WIDTH" value="49" />
+  <parameter name="AUTO_DMA_WRITE_ADDRESS_MAP"><![CDATA[<address-map><slave name='pipe_stage_m.s0' start='0x0' end='0x2000000000000' datawidth='512' /></address-map>]]></parameter>
+  <parameter name="AUTO_DMA_WRITE_ADDRESS_WIDTH" value="49" />
   <parameter name="AUTO_GENERATION_ID" value="0" />
   <parameter name="AUTO_UNIQUE_ID" value="acl_dma_dma" />
  </module>
@@ -2109,7 +2109,7 @@
                         <name>m0_address</name>
                         <role>address</role>
                         <direction>Output</direction>
-                        <width>47</width>
+                        <width>49</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -2368,7 +2368,7 @@
                         <name>s0_address</name>
                         <role>address</role>
                         <direction>Input</direction>
-                        <width>47</width>
+                        <width>49</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -2437,7 +2437,7 @@
                         </entry>
                         <entry>
                             <key>addressSpan</key>
-                            <value>140737488355328</value>
+                            <value>562949953421312</value>
                         </entry>
                         <entry>
                             <key>addressUnits</key>
@@ -2622,7 +2622,7 @@
                     <consumedSystemInfos>
                         <entry>
                             <key>ADDRESS_WIDTH</key>
-                            <value>47</value>
+                            <value>49</value>
                         </entry>
                     </consumedSystemInfos>
                 </value>
@@ -2767,7 +2767,7 @@
                         <name>m0_address</name>
                         <role>address</role>
                         <direction>Output</direction>
-                        <width>47</width>
+                        <width>49</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -3026,7 +3026,7 @@
                         <name>s0_address</name>
                         <role>address</role>
                         <direction>Input</direction>
-                        <width>47</width>
+                        <width>49</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -3095,7 +3095,7 @@
                         </entry>
                         <entry>
                             <key>addressSpan</key>
-                            <value>140737488355328</value>
+                            <value>562949953421312</value>
                         </entry>
                         <entry>
                             <key>addressUnits</key>
@@ -3280,7 +3280,7 @@
                     <consumedSystemInfos>
                         <entry>
                             <key>ADDRESS_WIDTH</key>
-                            <value>33</value>
+                            <value>49</value>
                         </entry>
                     </consumedSystemInfos>
                 </value>

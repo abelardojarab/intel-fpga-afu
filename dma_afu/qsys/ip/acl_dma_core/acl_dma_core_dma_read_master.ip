@@ -636,7 +636,7 @@
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
             <spirit:left>0</spirit:left>
-            <spirit:right>47</spirit:right>
+            <spirit:right>48</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
@@ -879,12 +879,12 @@
         <spirit:parameter>
           <spirit:name>USE_FIX_ADDRESS_WIDTH</spirit:name>
           <spirit:displayName>Use pre-determined master address width</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="USE_FIX_ADDRESS_WIDTH">0</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="USE_FIX_ADDRESS_WIDTH">1</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>FIX_ADDRESS_WIDTH</spirit:name>
           <spirit:displayName>Pre-determined master address width:</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="FIX_ADDRESS_WIDTH">32</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="FIX_ADDRESS_WIDTH">49</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>STRIDE_ENABLE</spirit:name>
@@ -959,12 +959,12 @@
         <spirit:parameter>
           <spirit:name>AUTO_ADDRESS_WIDTH</spirit:name>
           <spirit:displayName>AUTO_ADDRESS_WIDTH</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="AUTO_ADDRESS_WIDTH">48</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="AUTO_ADDRESS_WIDTH">49</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>ADDRESS_WIDTH</spirit:name>
           <spirit:displayName>ADDRESS_WIDTH</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="ADDRESS_WIDTH">48</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="ADDRESS_WIDTH">49</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>FIFO_DEPTH_LOG2</spirit:name>
@@ -1224,7 +1224,7 @@
                     <name>master_address</name>
                     <role>address</role>
                     <direction>Output</direction>
-                    <width>48</width>
+                    <width>49</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
@@ -1613,7 +1613,7 @@
                 <suppliedSystemInfos>
                     <entry>
                         <key>ADDRESS_WIDTH</key>
-                        <value>48</value>
+                        <value>49</value>
                     </entry>
                 </suppliedSystemInfos>
                 <consumedSystemInfos/>

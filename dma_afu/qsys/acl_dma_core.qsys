@@ -107,7 +107,7 @@
                 <suppliedSystemInfos>
                     <entry>
                         <key>CLOCK_DOMAIN</key>
-                        <value>1</value>
+                        <value>3</value>
                     </entry>
                     <entry>
                         <key>CLOCK_RATE</key>
@@ -115,7 +115,7 @@
                     </entry>
                     <entry>
                         <key>RESET_DOMAIN</key>
-                        <value>1</value>
+                        <value>3</value>
                     </entry>
                 </suppliedSystemInfos>
                 <consumedSystemInfos/>
@@ -170,11 +170,11 @@
                 <suppliedSystemInfos>
                     <entry>
                         <key>ADDRESS_MAP</key>
-                        <value>&lt;address-map&gt;&lt;slave name='parent/pipe_stage_m.s0' start='0x0' end='0x800000000000' datawidth='512' /&gt;&lt;/address-map&gt;</value>
+                        <value>&lt;address-map&gt;&lt;slave name='parent/parent/ddr4a_mm_bridge.s0' start='0x0' end='0x100000000' datawidth='512' /&gt;&lt;slave name='parent/parent/ddr4b_mm_bridge.s0' start='0x100000000' end='0x200000000' datawidth='512' /&gt;&lt;slave name='parent/parent/ccip_host_bridge.s0' start='0x1000000000000' end='0x2000000000000' datawidth='512' /&gt;&lt;/address-map&gt;</value>
                     </entry>
                     <entry>
                         <key>ADDRESS_WIDTH</key>
-                        <value>47</value>
+                        <value>49</value>
                     </entry>
                 </suppliedSystemInfos>
                 <consumedSystemInfos/>
@@ -253,11 +253,11 @@
                         </entry>
                         <entry>
                             <key>clockRate</key>
-                            <value>0</value>
+                            <value>100000000</value>
                         </entry>
                         <entry>
                             <key>clockRateKnown</key>
-                            <value>false</value>
+                            <value>true</value>
                         </entry>
                         <entry>
                             <key>externallyDriven</key>
@@ -295,7 +295,7 @@
                     <parameterValueMap>
                         <entry>
                             <key>clockRate</key>
-                            <value>0</value>
+                            <value>100000000</value>
                         </entry>
                         <entry>
                             <key>externallyDriven</key>
@@ -384,7 +384,6 @@
     </boundary>
     <originalModuleInfo>
         <className>clock_source</className>
-        <version>0</version>
         <displayName>Clock Source</displayName>
     </originalModuleInfo>
     <systemInfoParameterDescriptors>
@@ -407,7 +406,7 @@
                     <suppliedSystemInfos>
                         <entry>
                             <key>CLOCK_RATE</key>
-                            <value>0</value>
+                            <value>100000000</value>
                         </entry>
                     </suppliedSystemInfos>
                     <consumedSystemInfos/>
@@ -421,7 +420,7 @@
                     <consumedSystemInfos>
                         <entry>
                             <key>CLOCK_RATE</key>
-                            <value>0</value>
+                            <value>100000000</value>
                         </entry>
                     </consumedSystemInfos>
                 </value>
@@ -627,7 +626,7 @@
                         <name>master_address</name>
                         <role>address</role>
                         <direction>Output</direction>
-                        <width>48</width>
+                        <width>49</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -1029,7 +1028,7 @@
                     <consumedSystemInfos>
                         <entry>
                             <key>ADDRESS_WIDTH</key>
-                            <value>48</value>
+                            <value>49</value>
                         </entry>
                     </consumedSystemInfos>
                 </value>
@@ -1324,7 +1323,7 @@
                         <name>master_address</name>
                         <role>address</role>
                         <direction>Output</direction>
-                        <width>48</width>
+                        <width>49</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -1629,7 +1628,7 @@
                     <consumedSystemInfos>
                         <entry>
                             <key>ADDRESS_WIDTH</key>
-                            <value>48</value>
+                            <value>49</value>
                         </entry>
                     </consumedSystemInfos>
                 </value>
@@ -2839,7 +2838,7 @@
                         <name>m0_address</name>
                         <role>address</role>
                         <direction>Output</direction>
-                        <width>48</width>
+                        <width>49</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -3098,7 +3097,7 @@
                         <name>s0_address</name>
                         <role>address</role>
                         <direction>Input</direction>
-                        <width>48</width>
+                        <width>49</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -3167,7 +3166,7 @@
                         </entry>
                         <entry>
                             <key>addressSpan</key>
-                            <value>281474976710656</value>
+                            <value>562949953421312</value>
                         </entry>
                         <entry>
                             <key>addressUnits</key>
@@ -3497,7 +3496,7 @@
                         <name>m0_address</name>
                         <role>address</role>
                         <direction>Output</direction>
-                        <width>48</width>
+                        <width>49</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -3756,7 +3755,7 @@
                         <name>s0_address</name>
                         <role>address</role>
                         <direction>Input</direction>
-                        <width>48</width>
+                        <width>49</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -3825,7 +3824,7 @@
                         </entry>
                         <entry>
                             <key>addressSpan</key>
-                            <value>281474976710656</value>
+                            <value>562949953421312</value>
                         </entry>
                         <entry>
                             <key>addressUnits</key>
@@ -4010,7 +4009,7 @@
                     <consumedSystemInfos>
                         <entry>
                             <key>ADDRESS_WIDTH</key>
-                            <value>10</value>
+                            <value>49</value>
                         </entry>
                     </consumedSystemInfos>
                 </value>

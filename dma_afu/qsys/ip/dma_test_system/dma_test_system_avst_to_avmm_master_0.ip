@@ -388,7 +388,7 @@
         <spirit:parameter>
           <spirit:name>maximumPendingReadTransactions</spirit:name>
           <spirit:displayName>Maximum pending read transactions</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="maximumPendingReadTransactions">1</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="maximumPendingReadTransactions">64</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>maximumPendingWriteTransactions</spirit:name>
@@ -1260,7 +1260,7 @@
                     </entry>
                     <entry>
                         <key>maximumPendingReadTransactions</key>
-                        <value>1</value>
+                        <value>64</value>
                     </entry>
                     <entry>
                         <key>maximumPendingWriteTransactions</key>

@@ -161,7 +161,7 @@ set_interface_property avmm burstcountUnits WORDS
 set_interface_property avmm explicitAddressSpan 0
 set_interface_property avmm holdTime 0
 set_interface_property avmm linewrapBursts false
-set_interface_property avmm maximumPendingReadTransactions 1
+set_interface_property avmm maximumPendingReadTransactions 64
 set_interface_property avmm maximumPendingWriteTransactions 0
 set_interface_property avmm minimumResponseLatency 1
 set_interface_property avmm readLatency 0

@@ -2,7 +2,7 @@ LDFLAGS ?=
 CFLAGS = -g -O2
 
 CFLAGS += -I$(prefix)/common/include 
-LDFLAGS += -L$(prefix)/my_build/lib -luuid 
+LDFLAGS += -L$(prefix)/build/lib -luuid 
 
 ifeq ($(USE_ASE),1)
 	LDFLAGS += -lfpga-ASE
@@ -25,7 +25,7 @@ clean:
 	$(RM) dma_afu_test dma_afu_test.o
 
 run: all
-	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(prefix)/my_build/lib ./dma_afu_test
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(prefix)/build/lib ./dma_afu_test
 
 
 .PHONY:all clean

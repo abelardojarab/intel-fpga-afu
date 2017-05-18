@@ -1,0 +1,14 @@
+include ../../base/sw/base_include_aal.mk
+
+all: test_random_aal
+
+test_random_aal: test_random.o $(BASE_FILE_OBJ)
+	$(CXX) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+.cpp.o: cci_test.h $(BASE_FILE_INC)
+	$(CXX) $(CPPFLAGS) $(CFLAGS) -DUSE_LEGACY_AAL -c -o $@ $<
+
+clean:
+	$(RM) test_random_aal $(BASE_FILE_OBJ) *.o
+
+.PHONY:all clean

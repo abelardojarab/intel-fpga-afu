@@ -156,14 +156,6 @@ module avmm_ccip_host #(
 			if(avst_rd_rsp_valid) begin
 				$display("DCP_DEBUG: rsp_mdata=%x rsp_data=%x\n", c0rx.hdr.mdata, avst_rd_rsp_data);
 			end
-			
-			if(c1TxAlmFull) begin
-				$display("DCP_DEBUG: c1TxAlmFull tx_mdata=%d rx_mdata=%d\n", tx_mdata, rx_mdata);
-			end
-			
-			if(c1TxAlmFull) begin
-				$display("DCP_DEBUG: c1TxAlmFull tx_mdata=%d rx_mdata=%d\n", tx_mdata, rx_mdata);
-			end
 		end
 	end
 	

@@ -170,7 +170,7 @@
                 <suppliedSystemInfos>
                     <entry>
                         <key>ADDRESS_MAP</key>
-                        <value>&lt;address-map&gt;&lt;slave name='parent/parent/ddr4a_mm_bridge.s0' start='0x0' end='0x100000000' datawidth='512' /&gt;&lt;slave name='parent/parent/ddr4b_mm_bridge.s0' start='0x100000000' end='0x200000000' datawidth='512' /&gt;&lt;slave name='parent/parent/ccip_host_bridge.s0' start='0x1000000000000' end='0x2000000000000' datawidth='512' /&gt;&lt;/address-map&gt;</value>
+                        <value>&lt;address-map&gt;&lt;slave name='parent/parent/ddr4a_mm_bridge.s0' start='0x0' end='0x100000000' datawidth='512' /&gt;&lt;slave name='parent/parent/ddr4b_mm_bridge.s0' start='0x100000000' end='0x200000000' datawidth='512' /&gt;&lt;slave name='parent/parent/dma_test_system_avst_to_avmm_master_0.avmm' start='0x1000000000000' end='0x2000000000000' datawidth='512' /&gt;&lt;/address-map&gt;</value>
                     </entry>
                     <entry>
                         <key>ADDRESS_WIDTH</key>

@@ -84,7 +84,7 @@ module afu (
 	localparam AVMM_DATA_WIDTH = 64;
 	localparam AVMM_BYTE_ENABLE_WIDTH=(AVMM_DATA_WIDTH/8);
 
-	wire [AVMM_ADDR_WIDTH+AVMM_DATA_WIDTH+1-1:0] in_data;
+	wire [AVMM_ADDR_WIDTH+AVMM_DATA_WIDTH+2-1:0] in_data;
     wire in_valid;
     wire in_ready;
              
@@ -317,18 +317,7 @@ module afu (
 		.avst_avcmd_data,
 		.avst_avcmd_valid,
 		.avst_avcmd_ready,
-		/*
-        .ccip_host_bridge_m0_waitrequest   (ccip_host_bridge_m0_waitrequest),   // ccip_host_bridge_m0.waitrequest
-        .ccip_host_bridge_m0_readdata      (ccip_host_bridge_m0_readdata),      //                    .readdata
-        .ccip_host_bridge_m0_readdatavalid (ccip_host_bridge_m0_readdatavalid), //                    .readdatavalid
-        .ccip_host_bridge_m0_burstcount    (ccip_host_bridge_m0_burstcount),    //                    .burstcount
-        .ccip_host_bridge_m0_writedata     (ccip_host_bridge_m0_writedata),     //                    .writedata
-        .ccip_host_bridge_m0_address       (ccip_host_bridge_m0_address),       //                    .address
-        .ccip_host_bridge_m0_write         (ccip_host_bridge_m0_write),         //                    .write
-        .ccip_host_bridge_m0_read          (ccip_host_bridge_m0_read),          //                    .read
-        .ccip_host_bridge_m0_byteenable    (ccip_host_bridge_m0_byteenable),    //                    .byteenable
-        .ccip_host_bridge_m0_debugaccess   (),   //                    .debugaccess
-		*/
+		
 		.clk_clk            (pClkDiv4),            //   clk.clk
 		.ddr_clk_clk(DDR4_USERCLK),
 		//.clk_clk            (Clk_400),            //   clk.clk
@@ -366,32 +355,6 @@ module afu (
 		.c0tx(af2cp_sTxPort.c0),
 		.c1tx(af2cp_sTxPort.c1)
 	);
-	
-	/*avst_to_avmm_master #(
-		.AVMM_ADDR_WIDTH(48), 
-		.AVMM_DATA_WIDTH(512))
-	avst_to_avmm_master_inst (
-		.clk            (Clk_400),            //   clk.clk
-		.reset        (SoftReset),         // reset.reset
-		
-		.avmm_waitrequest   (ccip_host_bridge_m0_waitrequest),   // ccip_host_bridge_m0.waitrequest
-        .avmm_readdata      (ccip_host_bridge_m0_readdata),      //                    .readdata
-        .avmm_readdatavalid (ccip_host_bridge_m0_readdatavalid), //                    .readdatavalid
-        .avmm_burstcount    (ccip_host_bridge_m0_burstcount),    //                    .burstcount
-        .avmm_writedata     (ccip_host_bridge_m0_writedata),     //                    .writedata
-        .avmm_address       (ccip_host_bridge_m0_address),       //                    .address
-        .avmm_write         (ccip_host_bridge_m0_write),         //                    .write
-        .avmm_read          (ccip_host_bridge_m0_read),          //                    .read
-        .avmm_byteenable    (ccip_host_bridge_m0_byteenable),    //                    .byteenable
-
-		.avst_rd_rsp_data,
-		.avst_rd_rsp_valid,
-		.avst_rd_rsp_ready,
-		
-		.avst_avcmd_data,
-		.avst_avcmd_valid,
-		.avst_avcmd_ready
-	);*/
 	
 	ccip_avmm_mmio #(AVMM_ADDR_WIDTH, AVMM_DATA_WIDTH)
 	ccip_avmm_mmio_inst (

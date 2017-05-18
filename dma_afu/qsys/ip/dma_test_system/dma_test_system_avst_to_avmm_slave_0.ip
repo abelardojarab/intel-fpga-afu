@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <spirit:component xmlns:altera="http://www.altera.com/XMLSchema/IPXact/extensions" xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
   <spirit:vendor>Altera Corporation</spirit:vendor>
-  <spirit:library>dma_test_system_avst_to_avmm_0</spirit:library>
-  <spirit:name>dma_test_system_avst_to_avmm_0</spirit:name>
+  <spirit:library>dma_test_system_avst_to_avmm_slave_0</spirit:library>
+  <spirit:name>dma_test_system_avst_to_avmm_slave_0</spirit:name>
   <spirit:version>1.0</spirit:version>
   <spirit:busInterfaces>
     <spirit:busInterface>
@@ -517,7 +517,7 @@
       <spirit:view>
         <spirit:name>QUARTUS_SYNTH</spirit:name>
         <spirit:envIdentifier>:quartus.altera.com:</spirit:envIdentifier>
-        <spirit:modelName>avst_to_avmm</spirit:modelName>
+        <spirit:modelName>avst_to_avmm_slave</spirit:modelName>
         <spirit:fileSetRef>
           <spirit:localName>QUARTUS_SYNTH</spirit:localName>
         </spirit:fileSetRef>
@@ -554,7 +554,7 @@
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
             <spirit:left>0</spirit:left>
-            <spirit:right>82</spirit:right>
+            <spirit:right>83</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
@@ -757,8 +757,8 @@
   <spirit:vendorExtensions>
     <altera:entity_info>
       <spirit:vendor>Altera Corporation</spirit:vendor>
-      <spirit:library>dma_test_system_avst_to_avmm_0</spirit:library>
-      <spirit:name>avst_to_avmm</spirit:name>
+      <spirit:library>dma_test_system_avst_to_avmm_slave_0</spirit:library>
+      <spirit:name>avst_to_avmm_slave</spirit:name>
       <spirit:version>1.0</spirit:version>
     </altera:entity_info>
     <altera:altera_module_parameters>
@@ -1040,7 +1040,7 @@
                     <name>in_data</name>
                     <role>data</role>
                     <direction>Input</direction>
-                    <width>83</width>
+                    <width>84</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
@@ -1285,7 +1285,7 @@
       </spirit:parameters>
     </altera:altera_system_parameters>
     <altera:altera_interface_boundary>
-      <altera:interface_mapping altera:name="avalon_master" altera:internal="dma_test_system_avst_to_avmm_0.avalon_master" altera:type="avalon" altera:dir="start">
+      <altera:interface_mapping altera:name="avalon_master" altera:internal="dma_test_system_avst_to_avmm_slave_0.avalon_master" altera:type="avalon" altera:dir="start">
         <altera:port_mapping altera:name="avmm_address" altera:internal="avmm_address"></altera:port_mapping>
         <altera:port_mapping altera:name="avmm_burstcount" altera:internal="avmm_burstcount"></altera:port_mapping>
         <altera:port_mapping altera:name="avmm_byteenable" altera:internal="avmm_byteenable"></altera:port_mapping>
@@ -1296,20 +1296,20 @@
         <altera:port_mapping altera:name="avmm_write" altera:internal="avmm_write"></altera:port_mapping>
         <altera:port_mapping altera:name="avmm_writedata" altera:internal="avmm_writedata"></altera:port_mapping>
       </altera:interface_mapping>
-      <altera:interface_mapping altera:name="avalon_streaming_sink" altera:internal="dma_test_system_avst_to_avmm_0.avalon_streaming_sink" altera:type="avalon_streaming" altera:dir="end">
+      <altera:interface_mapping altera:name="avalon_streaming_sink" altera:internal="dma_test_system_avst_to_avmm_slave_0.avalon_streaming_sink" altera:type="avalon_streaming" altera:dir="end">
         <altera:port_mapping altera:name="in_data" altera:internal="in_data"></altera:port_mapping>
         <altera:port_mapping altera:name="in_ready" altera:internal="in_ready"></altera:port_mapping>
         <altera:port_mapping altera:name="in_valid" altera:internal="in_valid"></altera:port_mapping>
       </altera:interface_mapping>
-      <altera:interface_mapping altera:name="avalon_streaming_source" altera:internal="dma_test_system_avst_to_avmm_0.avalon_streaming_source" altera:type="avalon_streaming" altera:dir="start">
+      <altera:interface_mapping altera:name="avalon_streaming_source" altera:internal="dma_test_system_avst_to_avmm_slave_0.avalon_streaming_source" altera:type="avalon_streaming" altera:dir="start">
         <altera:port_mapping altera:name="out_data" altera:internal="out_data"></altera:port_mapping>
         <altera:port_mapping altera:name="out_ready" altera:internal="out_ready"></altera:port_mapping>
         <altera:port_mapping altera:name="out_valid" altera:internal="out_valid"></altera:port_mapping>
       </altera:interface_mapping>
-      <altera:interface_mapping altera:name="clock" altera:internal="dma_test_system_avst_to_avmm_0.clock" altera:type="clock" altera:dir="end">
+      <altera:interface_mapping altera:name="clock" altera:internal="dma_test_system_avst_to_avmm_slave_0.clock" altera:type="clock" altera:dir="end">
         <altera:port_mapping altera:name="clk" altera:internal="clk"></altera:port_mapping>
       </altera:interface_mapping>
-      <altera:interface_mapping altera:name="reset" altera:internal="dma_test_system_avst_to_avmm_0.reset" altera:type="reset" altera:dir="end">
+      <altera:interface_mapping altera:name="reset" altera:internal="dma_test_system_avst_to_avmm_slave_0.reset" altera:type="reset" altera:dir="end">
         <altera:port_mapping altera:name="reset" altera:internal="reset"></altera:port_mapping>
       </altera:interface_mapping>
     </altera:altera_interface_boundary>

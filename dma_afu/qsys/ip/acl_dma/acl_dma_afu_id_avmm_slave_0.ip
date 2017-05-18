@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <spirit:component xmlns:altera="http://www.altera.com/XMLSchema/IPXact/extensions" xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
   <spirit:vendor>Altera Corporation</spirit:vendor>
-  <spirit:library>dma_test_system_afu_id_avmm_slave_0</spirit:library>
-  <spirit:name>dma_test_system_afu_id_avmm_slave_0</spirit:name>
+  <spirit:library>acl_dma_afu_id_avmm_slave_0</spirit:library>
+  <spirit:name>acl_dma_afu_id_avmm_slave_0</spirit:name>
   <spirit:version>1.0</spirit:version>
   <spirit:busInterfaces>
     <spirit:busInterface>
@@ -454,7 +454,7 @@
   <spirit:vendorExtensions>
     <altera:entity_info>
       <spirit:vendor>Altera Corporation</spirit:vendor>
-      <spirit:library>dma_test_system_afu_id_avmm_slave_0</spirit:library>
+      <spirit:library>acl_dma_afu_id_avmm_slave_0</spirit:library>
       <spirit:name>afu_id_avmm_slave</spirit:name>
       <spirit:version>1.0</spirit:version>
     </altera:entity_info>
@@ -463,17 +463,17 @@
         <spirit:parameter>
           <spirit:name>AFU_ID_H</spirit:name>
           <spirit:displayName>AFU_ID_H</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="AFU_ID_H">3683296936938783210</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="AFU_ID_H">15536303038640245953</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>AFU_ID_L</spirit:name>
           <spirit:displayName>AFU_ID_L</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="AFU_ID_L">10412877091747224746</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="AFU_ID_L">10730808499136109731</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>DFH_FEATURE_TYPE</spirit:name>
           <spirit:displayName>DFH_FEATURE_TYPE</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="DFH_FEATURE_TYPE">1</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="DFH_FEATURE_TYPE">2</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>DFH_AFU_MINOR_REV</spirit:name>
@@ -488,7 +488,7 @@
         <spirit:parameter>
           <spirit:name>DFH_END_OF_LIST</spirit:name>
           <spirit:displayName>DFH_END_OF_LIST</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="DFH_END_OF_LIST">0</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="DFH_END_OF_LIST">1</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>DFH_NEXT_OFFSET</spirit:name>
@@ -508,7 +508,7 @@
         <spirit:parameter>
           <spirit:name>CREATE_SCRATCH_REG</spirit:name>
           <spirit:displayName>CREATE_SCRATCH_REG</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="CREATE_SCRATCH_REG">1</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="CREATE_SCRATCH_REG">0</spirit:value>
         </spirit:parameter>
       </spirit:parameters>
     </altera:altera_module_parameters>
@@ -879,17 +879,17 @@
       </spirit:parameters>
     </altera:altera_system_parameters>
     <altera:altera_interface_boundary>
-      <altera:interface_mapping altera:name="afu_cfg_slave" altera:internal="dma_test_system_afu_id_avmm_slave_0.afu_cfg_slave" altera:type="avalon" altera:dir="end">
+      <altera:interface_mapping altera:name="afu_cfg_slave" altera:internal="acl_dma_afu_id_avmm_slave_0.afu_cfg_slave" altera:type="avalon" altera:dir="end">
         <altera:port_mapping altera:name="avmm_address" altera:internal="avmm_address"></altera:port_mapping>
         <altera:port_mapping altera:name="avmm_read" altera:internal="avmm_read"></altera:port_mapping>
         <altera:port_mapping altera:name="avmm_readdata" altera:internal="avmm_readdata"></altera:port_mapping>
         <altera:port_mapping altera:name="avmm_write" altera:internal="avmm_write"></altera:port_mapping>
         <altera:port_mapping altera:name="avmm_writedata" altera:internal="avmm_writedata"></altera:port_mapping>
       </altera:interface_mapping>
-      <altera:interface_mapping altera:name="clock" altera:internal="dma_test_system_afu_id_avmm_slave_0.clock" altera:type="clock" altera:dir="end">
+      <altera:interface_mapping altera:name="clock" altera:internal="acl_dma_afu_id_avmm_slave_0.clock" altera:type="clock" altera:dir="end">
         <altera:port_mapping altera:name="clk" altera:internal="clk"></altera:port_mapping>
       </altera:interface_mapping>
-      <altera:interface_mapping altera:name="reset" altera:internal="dma_test_system_afu_id_avmm_slave_0.reset" altera:type="reset" altera:dir="end">
+      <altera:interface_mapping altera:name="reset" altera:internal="acl_dma_afu_id_avmm_slave_0.reset" altera:type="reset" altera:dir="end">
         <altera:port_mapping altera:name="reset" altera:internal="reset"></altera:port_mapping>
       </altera:interface_mapping>
     </altera:altera_interface_boundary>

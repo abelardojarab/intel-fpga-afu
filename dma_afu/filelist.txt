@@ -3,7 +3,6 @@
 ./ccip_avmm_mmio.sv
 ./ccip_std_afu.sv
 ./qsys/dma_test_system.qsys
-./qsys/avst_to_avmm/avst_to_avmm.sv
 ./qsys/acl_dma.qsys
 ./qsys/afu_id_avmm_slave/afu_id_avmm_slave.sv
 ./qsys/acl_dma_core.qsys
@@ -18,7 +17,6 @@
 ./qsys/ip/acl_dma/acl_dma_clk.ip
 ./qsys/ip/acl_dma/acl_dma_address_span_extender_0.ip
 ./qsys/ip/acl_dma/acl_dma_pipe_stage_0.ip
-./qsys/ip/dma_test_system/dma_test_system_avst_to_avmm_0.ip
 ./qsys/ip/dma_test_system/dma_test_system_clock_bridge_1.ip
 ./qsys/ip/dma_test_system/dma_test_system_clock_in.ip
 ./qsys/ip/dma_test_system/dma_test_system_reset_in.ip
@@ -31,7 +29,6 @@
 ./qsys/ip/dma_test_system/ddr4a_mm_bridge.ip
 ./qsys/ip/dma_test_system/dma_test_system_dc_fifo_0.ip
 ./qsys/ip/dma_test_system/dma_test_system_afu_id_avmm_slave_0.ip
-./qsys/avst_to_avmm/avst_to_avmm_hw.tcl
 ./qsys/afu_id_avmm_slave/afu_id_avmm_slave_hw.tcl
 ./avmm_ccip_host.sv
 ./qsys/avst_to_avmm_master/avst_to_avmm_master.sv
@@ -42,3 +39,7 @@
 ./qsys/ip/dma_test_system/dma_test_system_mm_bridge_1.ip
 ./qsys/ip/dma_test_system/dma_test_system_mm_bridge_2.ip
 ./qsys/ip/dma_test_system/dma_test_system_mm_bridge_3.ip
+./qsys/avst_to_avmm_slave/avst_to_avmm_slave.sv
+./qsys/avst_to_avmm_slave/avst_to_avmm_slave_hw.tcl
+./qsys/ip/acl_dma/acl_dma_afu_id_avmm_slave_0.ip
+./qsys/ip/dma_test_system/dma_test_system_avst_to_avmm_slave_0.ip

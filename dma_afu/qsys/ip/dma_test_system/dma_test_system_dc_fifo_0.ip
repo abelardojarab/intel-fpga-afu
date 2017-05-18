@@ -99,7 +99,7 @@
         <spirit:parameter>
           <spirit:name>symbolsPerBeat</spirit:name>
           <spirit:displayName>Symbols per beat  </spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="symbolsPerBeat">83</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="symbolsPerBeat">84</spirit:value>
         </spirit:parameter>
       </spirit:parameters>
     </spirit:busInterface>
@@ -256,7 +256,7 @@
         <spirit:parameter>
           <spirit:name>symbolsPerBeat</spirit:name>
           <spirit:displayName>Symbols per beat  </spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="symbolsPerBeat">83</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="symbolsPerBeat">84</spirit:value>
         </spirit:parameter>
       </spirit:parameters>
     </spirit:busInterface>
@@ -386,7 +386,7 @@
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
             <spirit:left>0</spirit:left>
-            <spirit:right>82</spirit:right>
+            <spirit:right>83</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
@@ -426,7 +426,7 @@
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
             <spirit:left>0</spirit:left>
-            <spirit:right>82</spirit:right>
+            <spirit:right>83</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
@@ -474,7 +474,7 @@
         <spirit:parameter>
           <spirit:name>SYMBOLS_PER_BEAT</spirit:name>
           <spirit:displayName>Symbols per beat</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="SYMBOLS_PER_BEAT">83</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="SYMBOLS_PER_BEAT">84</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>BITS_PER_SYMBOL</spirit:name>
@@ -577,7 +577,7 @@
                     <name>in_data</name>
                     <role>data</role>
                     <direction>Input</direction>
-                    <width>83</width>
+                    <width>84</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
@@ -652,7 +652,7 @@
                     </entry>
                     <entry>
                         <key>symbolsPerBeat</key>
-                        <value>83</value>
+                        <value>84</value>
                     </entry>
                 </parameterValueMap>
             </parameters>
@@ -729,7 +729,7 @@
                     <name>out_data</name>
                     <role>data</role>
                     <direction>Output</direction>
-                    <width>83</width>
+                    <width>84</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
@@ -804,7 +804,7 @@
                     </entry>
                     <entry>
                         <key>symbolsPerBeat</key>
-                        <value>83</value>
+                        <value>84</value>
                     </entry>
                 </parameterValueMap>
             </parameters>

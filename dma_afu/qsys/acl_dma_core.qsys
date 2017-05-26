@@ -670,14 +670,6 @@
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC</vhdlType>
                     </port>
-                    <port>
-                        <name>master_burstcount</name>
-                        <role>burstcount</role>
-                        <direction>Output</direction>
-                        <width>5</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC_VECTOR</vhdlType>
-                    </port>
                 </ports>
                 <assignments>
                     <assignmentValueMap/>
@@ -713,7 +705,7 @@
                         </entry>
                         <entry>
                             <key>burstOnBurstBoundariesOnly</key>
-                            <value>true</value>
+                            <value>false</value>
                         </entry>
                         <entry>
                             <key>burstcountUnits</key>
@@ -1359,14 +1351,6 @@
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC</vhdlType>
                     </port>
-                    <port>
-                        <name>master_burstcount</name>
-                        <role>burstcount</role>
-                        <direction>Output</direction>
-                        <width>5</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC_VECTOR</vhdlType>
-                    </port>
                 </ports>
                 <assignments>
                     <assignmentValueMap/>
@@ -1402,7 +1386,7 @@
                         </entry>
                         <entry>
                             <key>burstOnBurstBoundariesOnly</key>
-                            <value>true</value>
+                            <value>false</value>
                         </entry>
                         <entry>
                             <key>burstcountUnits</key>
@@ -2822,7 +2806,7 @@
                         <name>m0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Output</direction>
-                        <width>5</width>
+                        <width>1</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -3081,7 +3065,7 @@
                         <name>s0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Input</direction>
-                        <width>5</width>
+                        <width>1</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -3480,7 +3464,7 @@
                         <name>m0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Output</direction>
-                        <width>5</width>
+                        <width>1</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -3739,7 +3723,7 @@
                         <name>s0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Input</direction>
-                        <width>5</width>
+                        <width>1</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>

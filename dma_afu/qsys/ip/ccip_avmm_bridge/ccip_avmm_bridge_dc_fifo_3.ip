@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <spirit:component xmlns:altera="http://www.altera.com/XMLSchema/IPXact/extensions" xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
   <spirit:vendor>Intel Corporation</spirit:vendor>
-  <spirit:library>dma_test_system_dc_fifo_2</spirit:library>
-  <spirit:name>dma_test_system_dc_fifo_2</spirit:name>
+  <spirit:library>ccip_avmm_bridge_dc_fifo_3</spirit:library>
+  <spirit:name>ccip_avmm_bridge_dc_fifo_3</spirit:name>
   <spirit:version>17.0</spirit:version>
   <spirit:busInterfaces>
     <spirit:busInterface>
@@ -54,7 +54,7 @@
         <spirit:parameter>
           <spirit:name>dataBitsPerSymbol</spirit:name>
           <spirit:displayName>Data bits per symbol</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="dataBitsPerSymbol">561</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="dataBitsPerSymbol">512</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>emptyWithinPacket</spirit:name>
@@ -211,7 +211,7 @@
         <spirit:parameter>
           <spirit:name>dataBitsPerSymbol</spirit:name>
           <spirit:displayName>Data bits per symbol</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="dataBitsPerSymbol">561</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="dataBitsPerSymbol">512</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>emptyWithinPacket</spirit:name>
@@ -386,7 +386,7 @@
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
             <spirit:left>0</spirit:left>
-            <spirit:right>560</spirit:right>
+            <spirit:right>511</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
@@ -426,7 +426,7 @@
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
             <spirit:left>0</spirit:left>
-            <spirit:right>560</spirit:right>
+            <spirit:right>511</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
@@ -465,7 +465,7 @@
   <spirit:vendorExtensions>
     <altera:entity_info>
       <spirit:vendor>Intel Corporation</spirit:vendor>
-      <spirit:library>dma_test_system_dc_fifo_2</spirit:library>
+      <spirit:library>ccip_avmm_bridge_dc_fifo_3</spirit:library>
       <spirit:name>altera_avalon_dc_fifo</spirit:name>
       <spirit:version>17.0</spirit:version>
     </altera:entity_info>
@@ -479,7 +479,7 @@
         <spirit:parameter>
           <spirit:name>BITS_PER_SYMBOL</spirit:name>
           <spirit:displayName>Bits per symbol</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="BITS_PER_SYMBOL">561</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="BITS_PER_SYMBOL">512</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>FIFO_DEPTH</spirit:name>
@@ -555,6 +555,14 @@
           <spirit:displayName>bonusData</spirit:displayName>
           <spirit:value spirit:format="string" spirit:id="bonusData">bonusData 
 {
+   element ccip_avmm_bridge_dc_fifo_3
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
 }
 </spirit:value>
         </spirit:parameter>
@@ -577,7 +585,7 @@
                     <name>in_data</name>
                     <role>data</role>
                     <direction>Input</direction>
-                    <width>561</width>
+                    <width>512</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
@@ -617,7 +625,7 @@
                     </entry>
                     <entry>
                         <key>dataBitsPerSymbol</key>
-                        <value>561</value>
+                        <value>512</value>
                     </entry>
                     <entry>
                         <key>emptyWithinPacket</key>
@@ -729,7 +737,7 @@
                     <name>out_data</name>
                     <role>data</role>
                     <direction>Output</direction>
-                    <width>561</width>
+                    <width>512</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
@@ -769,7 +777,7 @@
                     </entry>
                     <entry>
                         <key>dataBitsPerSymbol</key>
-                        <value>561</value>
+                        <value>512</value>
                     </entry>
                     <entry>
                         <key>emptyWithinPacket</key>
@@ -885,26 +893,26 @@
       </spirit:parameters>
     </altera:altera_system_parameters>
     <altera:altera_interface_boundary>
-      <altera:interface_mapping altera:name="in" altera:internal="dma_test_system_dc_fifo_2.in" altera:type="avalon_streaming" altera:dir="end">
+      <altera:interface_mapping altera:name="in" altera:internal="ccip_avmm_bridge_dc_fifo_3.in" altera:type="avalon_streaming" altera:dir="end">
         <altera:port_mapping altera:name="in_data" altera:internal="in_data"></altera:port_mapping>
         <altera:port_mapping altera:name="in_ready" altera:internal="in_ready"></altera:port_mapping>
         <altera:port_mapping altera:name="in_valid" altera:internal="in_valid"></altera:port_mapping>
       </altera:interface_mapping>
-      <altera:interface_mapping altera:name="in_clk" altera:internal="dma_test_system_dc_fifo_2.in_clk" altera:type="clock" altera:dir="end">
+      <altera:interface_mapping altera:name="in_clk" altera:internal="ccip_avmm_bridge_dc_fifo_3.in_clk" altera:type="clock" altera:dir="end">
         <altera:port_mapping altera:name="in_clk" altera:internal="in_clk"></altera:port_mapping>
       </altera:interface_mapping>
-      <altera:interface_mapping altera:name="in_clk_reset" altera:internal="dma_test_system_dc_fifo_2.in_clk_reset" altera:type="reset" altera:dir="end">
+      <altera:interface_mapping altera:name="in_clk_reset" altera:internal="ccip_avmm_bridge_dc_fifo_3.in_clk_reset" altera:type="reset" altera:dir="end">
         <altera:port_mapping altera:name="in_reset_n" altera:internal="in_reset_n"></altera:port_mapping>
       </altera:interface_mapping>
-      <altera:interface_mapping altera:name="out" altera:internal="dma_test_system_dc_fifo_2.out" altera:type="avalon_streaming" altera:dir="start">
+      <altera:interface_mapping altera:name="out" altera:internal="ccip_avmm_bridge_dc_fifo_3.out" altera:type="avalon_streaming" altera:dir="start">
         <altera:port_mapping altera:name="out_data" altera:internal="out_data"></altera:port_mapping>
         <altera:port_mapping altera:name="out_ready" altera:internal="out_ready"></altera:port_mapping>
         <altera:port_mapping altera:name="out_valid" altera:internal="out_valid"></altera:port_mapping>
       </altera:interface_mapping>
-      <altera:interface_mapping altera:name="out_clk" altera:internal="dma_test_system_dc_fifo_2.out_clk" altera:type="clock" altera:dir="end">
+      <altera:interface_mapping altera:name="out_clk" altera:internal="ccip_avmm_bridge_dc_fifo_3.out_clk" altera:type="clock" altera:dir="end">
         <altera:port_mapping altera:name="out_clk" altera:internal="out_clk"></altera:port_mapping>
       </altera:interface_mapping>
-      <altera:interface_mapping altera:name="out_clk_reset" altera:internal="dma_test_system_dc_fifo_2.out_clk_reset" altera:type="reset" altera:dir="end">
+      <altera:interface_mapping altera:name="out_clk_reset" altera:internal="ccip_avmm_bridge_dc_fifo_3.out_clk_reset" altera:type="reset" altera:dir="end">
         <altera:port_mapping altera:name="out_reset_n" altera:internal="out_reset_n"></altera:port_mapping>
       </altera:interface_mapping>
     </altera:altera_interface_boundary>

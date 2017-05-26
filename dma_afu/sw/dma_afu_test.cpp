@@ -12,7 +12,7 @@
 
 int usleep(unsigned);
 
-#define HELLO_AFU_ID              "331DB30C-9885-41EA-9081-F88B8F655CAA"
+#define DMA_TEST_AFU_ID              "331DB30C-9885-41EA-9081-F88B8F655CAA"
 #define SCRATCH_REG              0X80
 #define SCRATCH_VALUE            0x0123456789ABCDEF
 #define SCRATCH_RESET            0
@@ -553,6 +553,23 @@ release_buf:
 	res = fpgaReleaseBuffer(afc_handle, dma_buf_wsid);
 }
 
+int check_host_read_from_mmio(fpga_handle afc_handle)
+{
+	uint64_t data = 0;
+	
+	//using this address will crash ASE/host until we cut this path on the
+	//address span extender
+	uint64_t address = 0x1000 | 0x1000000000000;
+	
+	mmio_write64(afc_handle, MEM_WINDOW_CRTL(msgdma_bbb_dfh_offset), address, "addr_span");
+	mmio_read64(afc_handle, MEM_WINDOW_CRTL(msgdma_bbb_dfh_offset), &data, "addr_span");
+	
+	for(int i = 0; i < 10; i++)
+	{
+		mmio_read64(afc_handle, MEM_WINDOW_MEM(msgdma_bbb_dfh_offset)+i*8, &data, "memaddr_i");
+	}
+}
+
 int run_basic_tests_with_mmio(fpga_handle afc_handle)
 {
 	uint64_t data = 0;
@@ -948,8 +965,8 @@ int main(int argc, char *argv[])
 
 	fpga_result     res = FPGA_OK;
 
-	if (uuid_parse(HELLO_AFU_ID, guid) < 0) {
-		fprintf(stderr, "Error parsing guid '%s'\n", HELLO_AFU_ID);
+	if (uuid_parse(DMA_TEST_AFU_ID, guid) < 0) {
+		fprintf(stderr, "Error parsing guid '%s'\n", DMA_TEST_AFU_ID);
 		goto out_exit;
 	}
 
@@ -1011,12 +1028,13 @@ int main(int argc, char *argv[])
 	found_dfh = find_dfh_by_guid(afc_handle, MSGDMA_BBB_GUID, &msgdma_bbb_dfh_offset, &dfh_size);
 	assert(found_dfh);
 	assert(dfh_size == MSGDMA_BBB_SIZE);
-	
+
 	run_basic_tests_with_mmio(afc_handle);
 	run_basic_ddr_dma_test(afc_handle);
 	dma_memory_checker(afc_handle);
 	run_basic_32bit_mmio(afc_handle);
 	run_enumeration_test(afc_handle);
+	check_host_read_from_mmio(afc_handle);
 
 	printf("Done Running Test\n");
 

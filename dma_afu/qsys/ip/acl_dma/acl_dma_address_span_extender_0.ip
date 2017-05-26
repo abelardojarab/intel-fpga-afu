@@ -1066,7 +1066,7 @@
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
             <spirit:left>0</spirit:left>
-            <spirit:right>48</spirit:right>
+            <spirit:right>47</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
@@ -1285,12 +1285,12 @@
         <spirit:parameter>
           <spirit:name>MASTER_ADDRESS_WIDTH</spirit:name>
           <spirit:displayName>Expanded Master Byte Address Width</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="MASTER_ADDRESS_WIDTH">49</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="MASTER_ADDRESS_WIDTH">48</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>MASTER_ADDRESS_SPAN</spirit:name>
           <spirit:displayName>Expanded Master Address Span</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="MASTER_ADDRESS_SPAN">512 terabytes</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="MASTER_ADDRESS_SPAN">256 terabytes</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>SLAVE_ADDRESS_WIDTH</spirit:name>
@@ -1374,7 +1374,7 @@
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>embeddedsw.CMacro.MASTER_ADDRESS_WIDTH</spirit:name>
-          <spirit:value spirit:format="string" spirit:id="embeddedsw.CMacro.MASTER_ADDRESS_WIDTH">49</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="embeddedsw.CMacro.MASTER_ADDRESS_WIDTH">48</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>embeddedsw.CMacro.MAX_BURST_BYTES</spirit:name>
@@ -1709,7 +1709,7 @@
                     <name>avm_m0_address</name>
                     <role>address</role>
                     <direction>Output</direction>
-                    <width>49</width>
+                    <width>48</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>

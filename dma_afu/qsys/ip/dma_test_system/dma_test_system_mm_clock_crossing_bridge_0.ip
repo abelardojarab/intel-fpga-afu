@@ -1060,7 +1060,7 @@
         <spirit:parameter>
           <spirit:name>SYSINFO_ADDR_WIDTH</spirit:name>
           <spirit:displayName>SYSINFO_ADDR_WIDTH</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="SYSINFO_ADDR_WIDTH">17</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="SYSINFO_ADDR_WIDTH">13</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>USE_AUTO_ADDRESS_WIDTH</spirit:name>
@@ -1070,7 +1070,7 @@
         <spirit:parameter>
           <spirit:name>AUTO_ADDRESS_WIDTH</spirit:name>
           <spirit:displayName>Automatically-determined address width</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="AUTO_ADDRESS_WIDTH">17</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="AUTO_ADDRESS_WIDTH">13</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>HDL_ADDR_WIDTH</spirit:name>
@@ -1794,7 +1794,7 @@
                 <suppliedSystemInfos>
                     <entry>
                         <key>ADDRESS_WIDTH</key>
-                        <value>17</value>
+                        <value>13</value>
                     </entry>
                 </suppliedSystemInfos>
                 <consumedSystemInfos/>

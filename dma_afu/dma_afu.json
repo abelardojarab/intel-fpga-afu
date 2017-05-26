@@ -8,9 +8,9 @@
       "afc-clusters":
          [
             {
-               "name": "hello_afu",
+               "name": "dma_test_afu",
                "total-contexts": 1,
-               "afc-type-uuid": "bd9ccef3-0b2c-4bb2-901f-6c7486821188"
+               "afc-type-uuid": "331DB30C-9885-41EA-9081-F88B8F655CAA"
             }
          ]
    }

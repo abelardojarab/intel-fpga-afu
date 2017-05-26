@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <spirit:component xmlns:altera="http://www.altera.com/XMLSchema/IPXact/extensions" xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
   <spirit:vendor>Intel Corporation</spirit:vendor>
-  <spirit:library>dma_test_system_clock_bridge_0</spirit:library>
-  <spirit:name>dma_test_system_clock_bridge_0</spirit:name>
+  <spirit:library>ccip_avmm_bridge_clock_bridge_0</spirit:library>
+  <spirit:name>ccip_avmm_bridge_clock_bridge_0</spirit:name>
   <spirit:version>17.0</spirit:version>
   <spirit:busInterfaces>
     <spirit:busInterface>
@@ -121,7 +121,7 @@
   <spirit:vendorExtensions>
     <altera:entity_info>
       <spirit:vendor>Intel Corporation</spirit:vendor>
-      <spirit:library>dma_test_system_clock_bridge_0</spirit:library>
+      <spirit:library>ccip_avmm_bridge_clock_bridge_0</spirit:library>
       <spirit:name>altera_clock_bridge</spirit:name>
       <spirit:version>17.0</spirit:version>
     </altera:entity_info>
@@ -166,6 +166,14 @@
           <spirit:displayName>bonusData</spirit:displayName>
           <spirit:value spirit:format="string" spirit:id="bonusData">bonusData 
 {
+   element ccip_avmm_bridge_clock_bridge_0
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
 }
 </spirit:value>
         </spirit:parameter>
@@ -293,10 +301,10 @@
       </spirit:parameters>
     </altera:altera_system_parameters>
     <altera:altera_interface_boundary>
-      <altera:interface_mapping altera:name="in_clk" altera:internal="dma_test_system_clock_bridge_0.in_clk" altera:type="clock" altera:dir="end">
+      <altera:interface_mapping altera:name="in_clk" altera:internal="ccip_avmm_bridge_clock_bridge_0.in_clk" altera:type="clock" altera:dir="end">
         <altera:port_mapping altera:name="in_clk" altera:internal="in_clk"></altera:port_mapping>
       </altera:interface_mapping>
-      <altera:interface_mapping altera:name="out_clk" altera:internal="dma_test_system_clock_bridge_0.out_clk" altera:type="clock" altera:dir="start">
+      <altera:interface_mapping altera:name="out_clk" altera:internal="ccip_avmm_bridge_clock_bridge_0.out_clk" altera:type="clock" altera:dir="start">
         <altera:port_mapping altera:name="out_clk" altera:internal="out_clk"></altera:port_mapping>
       </altera:interface_mapping>
     </altera:altera_interface_boundary>

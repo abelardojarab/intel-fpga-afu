@@ -518,7 +518,7 @@
         <spirit:parameter>
           <spirit:name>maximumPendingReadTransactions</spirit:name>
           <spirit:displayName>Maximum pending read transactions</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="maximumPendingReadTransactions">8</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="maximumPendingReadTransactions">64</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>maximumPendingWriteTransactions</spirit:name>
@@ -1020,7 +1020,7 @@
         <spirit:parameter>
           <spirit:name>MAX_PENDING_RESPONSES</spirit:name>
           <spirit:displayName>Maximum pending read transactions</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="MAX_PENDING_RESPONSES">8</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="MAX_PENDING_RESPONSES">64</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>LINEWRAPBURSTS</spirit:name>
@@ -1565,7 +1565,7 @@
                     </entry>
                     <entry>
                         <key>maximumPendingReadTransactions</key>
-                        <value>8</value>
+                        <value>64</value>
                     </entry>
                     <entry>
                         <key>maximumPendingWriteTransactions</key>

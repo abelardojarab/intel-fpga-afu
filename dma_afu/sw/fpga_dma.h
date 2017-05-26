@@ -26,7 +26,7 @@
 
 /**
  * \fpga_dma.h
- * \brief FPGA DMA BBB API
+ * \brief FPGA DMA BBB API Header
  */
 
 #ifndef __FPGA_DMA_H__
@@ -35,19 +35,32 @@
 #include <fpga/fpga.h>
 
 /*
+ * macro to check return codes
+ */
+#define ON_ERR_GOTO(res, label, desc)\
+  do {\
+    if ((res) != FPGA_OK) {\
+      print_err((desc), (res));\
+      goto label;\
+    }\
+  } while (0)
+
+/*
 * The DMA driver supports host to FPGA, FPGA to host and FPGA
 * to FPGA transfers. The FPGA interface can be streaming
 * or memory-mapped.
 */
 typedef enum {
-   HOST_TO_FPGA_MM, //Memory mapped FPGA interface
+   HOST_TO_FPGA_MM = 0, //Memory mapped FPGA interface
    HOST_TO_FPGA_ST, //Streaming FPGA interface
    FPGA_TO_HOST_MM, //Memory mapped FPGA interface
    FPGA_TO_HOST_ST, //Streaming FPGA interface
    FPGA_TO_FPGA_MM, //Memory mapped FPGA interface
+   FPGA_MAX_TRANSFER_TYPE,
 }fpga_dma_transfer_t;
 
-typedef void* fpga_dma_handle;
+typedef struct _dma_handle_t *fpga_dma_handle;
+
 
 // Callback for asynchronous DMA transfers
 typedef void (*fpga_dma_transfer_cb)(void *context);
@@ -86,7 +99,7 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle *dma);
 *                                      User must specify a valid dst. src is ignored.
 *                    FPGA_TO_FPGA_MM - Copy data between memory mapped FPGA interfaces
 *                                      User must specify valid src and dst.
-* @return fpgaResult FPGA_OK on success, return code otherwise
+* @return fpga_result FPGA_OK on success, return code otherwise
 *
 */
 fpga_result fpgaDmaTransferSync(fpga_dma_handle dma, uint64_t dst, uint64_t src, size_t count,
@@ -115,10 +128,10 @@ fpga_result fpgaDmaTransferSync(fpga_dma_handle dma, uint64_t dst, uint64_t src,
 *                                      User must specify valid src and dst.
 * @param[in] cb      Callback to invoke when DMA transfer is complete
 * @param[in] context Pointer to define user-defined context
-* @return fpgaResult FPGA_OK on success, return code otherwise
+* @return fpga_result FPGA_OK on success, return code otherwise
 *
 */
-fpgaResult fpgaDmaTransferAsync(fpga_dma_handle dma, uint64_t dst, uint64_t src, size_t count,
+fpga_result fpgaDmaTransferAsync(fpga_dma_handle dma, uint64_t dst, uint64_t src, size_t count,
                                 fpga_dma_transfer_t type, fpga_dma_transfer_cb cb, void *context);
 
 /**

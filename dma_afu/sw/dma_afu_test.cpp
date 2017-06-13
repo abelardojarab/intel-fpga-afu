@@ -3,9 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <uuid/uuid.h>
-#include <fpga/enum.h>
-#include <fpga/access.h>
-#include <fpga/common.h>
+#include <fpga/fpga.h>
 #include <assert.h>
 
 #include "RC4memtest.h"

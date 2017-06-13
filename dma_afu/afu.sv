@@ -95,11 +95,9 @@ module afu (
     wire [31:0]           DDR4a_byte_address;
     wire [31:0]           DDR4b_byte_address;
 `ifndef INCLUDE_DDR4
-	`timescale 1 ps / 1 ps
-	
 	wire          DDR4a_waitrequest;
-	reg [511:0]  DDR4a_readdata = 512'b0;
-	reg          DDR4a_readdatavalid = 0;
+	wire [511:0]  DDR4a_readdata;
+	wire          DDR4a_readdatavalid;
 	wire [6:0]   DDR4a_burstcount;
 	wire [511:0] DDR4a_writedata;
 	wire [25:0]  DDR4a_address;
@@ -107,161 +105,48 @@ module afu (
 	wire         DDR4a_read;
 	wire [63:0]  DDR4a_byteenable;
 	wire          DDR4b_waitrequest;
-	reg [511:0]  DDR4b_readdata = 512'b0;
-	reg          DDR4b_readdatavalid = 0;
+	wire [511:0]  DDR4b_readdata;
+	wire          DDR4b_readdatavalid;
 	wire [6:0]   DDR4b_burstcount;
 	wire [511:0] DDR4b_writedata;
 	wire [25:0]  DDR4b_address;
 	wire [63:0]  DDR4b_byteenable;
 	wire         DDR4b_write;
 	wire         DDR4b_read;
-	reg  [511:0] local_mem_bankA[ reg [25:0] ]; // Fake emif sim model, we model 2 banks of memory using systemverilog associative arrays
-	reg  [511:0] local_mem_bankB[ reg [25:0] ];
 	
+	`timescale 1 ps / 1 ps
 	reg          DDR4_USERCLK = 0;  
 	always begin
 		#1875 DDR4_USERCLK = ~DDR4_USERCLK;
 	end
 	
-	wire [511:0] DDR4a_byteenable_mask;
-	wire [511:0] DDR4b_byteenable_mask;
-	reg [511:0] DDR4a_tmp_read = 0;
-	reg [511:0] DDR4b_tmp_read = 0;
-	reg [6:0] DDR4a_burst_state = 0;
-	reg [6:0] DDR4b_burst_state = 0;
-	reg [25:0]  DDR4a_burst_address = 0;
-	reg [25:0]  DDR4b_burst_address = 0;
-	reg [511:0] DDR4a_burst_byteenable_mask = 0;
-	reg [511:0] DDR4b_burst_byteenable_mask = 0;
-	genvar i;
-	generate
-	for (i = 0; i < 64 ; i = i + 1) 
-	begin: gen_loop1 
-		assign DDR4a_byteenable_mask[(i+1)*8-1:i*8] = {8{DDR4a_byteenable[i]}};
-		assign DDR4b_byteenable_mask[(i+1)*8-1:i*8] = {8{DDR4b_byteenable[i]}};
-	end
-	endgenerate
+	mem_sim_model ddr4a_inst(
+		.clk(DDR4_USERCLK),
+		.reset(SoftReset),
+		.avmm_waitrequest(DDR4a_waitrequest),
+		.avmm_readdata(DDR4a_readdata),
+		.avmm_readdatavalid(DDR4a_readdatavalid),
+		.avmm_burstcount(DDR4a_burstcount),
+		.avmm_writedata(DDR4a_writedata),
+		.avmm_address(DDR4a_address),
+		.avmm_write(DDR4a_write),
+		.avmm_read(DDR4a_read),
+		.avmm_byteenable(DDR4a_byteenable)
+	);
 	
-	reg DDR4a_is_reset;
-	reg DDR4b_is_reset; 
-	initial DDR4a_is_reset = 0;
-	initial DDR4b_is_reset = 0; 
-	initial DDR4a_burst_address = 0;
-	initial DDR4b_burst_address = 0;
-	reg is_ddr4a_read_burst = 0;
-	reg is_ddr4b_read_burst = 0;
-	reg is_ddr4a_write_burst = 0;
-	reg is_ddr4b_write_burst = 0;
-	assign DDR4a_waitrequest = (DDR4a_burst_state != 6'b000000) & is_ddr4a_read_burst;
-	assign DDR4b_waitrequest = (DDR4b_burst_state != 6'b000000) & is_ddr4b_read_burst;
-	
-	always @(posedge DDR4_USERCLK) begin
-		if (SoftReset || ~DDR4a_is_reset) begin // global reset
-			DDR4a_readdata      <= 512'b0;
-			DDR4a_readdatavalid <= 1'b0;
-			DDR4a_burst_state <= 6'b0;
-			DDR4a_burst_address <= 25'b0;
-			DDR4a_burst_byteenable_mask <= 512'b0;
-			is_ddr4a_read_burst <= 1'b0;
-			is_ddr4a_write_burst <= 1'b0;
-			DDR4a_is_reset <= 1'b1;
-		end
-		else begin
-			DDR4a_readdatavalid <= 1'b0;
-			if(!(is_ddr4a_read_burst | is_ddr4a_write_burst)) begin
-				if (DDR4a_read) begin
-					DDR4a_burst_state <= DDR4a_burstcount;
-					DDR4a_burst_address <= DDR4a_address;
-					DDR4a_burst_byteenable_mask <= DDR4a_byteenable_mask;
-					is_ddr4a_read_burst <= DDR4a_read;
-				end
-				else if (DDR4a_write) begin
-					DDR4a_burst_state <= DDR4a_burstcount-1;
-					DDR4a_burst_address <= DDR4a_address+1;
-					DDR4a_burst_byteenable_mask <= DDR4a_byteenable_mask;
-					is_ddr4a_write_burst <= (DDR4a_burstcount != 6'b000001);
-					//need to write first word!
-					if (local_mem_bankA.exists(DDR4a_address)) DDR4a_tmp_read = local_mem_bankA[DDR4a_address];
-					else DDR4a_tmp_read = 512'b0;
-					local_mem_bankA[DDR4a_address] <= (DDR4a_tmp_read & ~DDR4a_byteenable_mask) | (DDR4a_writedata & DDR4a_byteenable_mask);
-				end
-			end
-			else if(is_ddr4a_read_burst) begin
-				DDR4a_burst_state <= DDR4a_burst_state - 1;
-				DDR4a_burst_address <= DDR4a_burst_address + 1;
-				if(is_ddr4a_read_burst) begin
-					if (local_mem_bankA.exists(DDR4a_burst_address)) DDR4a_readdata <= local_mem_bankA[DDR4a_burst_address];
-					else DDR4a_readdata <= 512'b0;
-					DDR4a_readdatavalid <= 1'b1;
-					is_ddr4a_read_burst <= (DDR4a_burst_state != 6'b000001);
-				end
-			end 
-			else if(is_ddr4a_write_burst) begin
-				if (DDR4a_write) begin
-					DDR4a_burst_state <= DDR4a_burst_state - 1;
-					DDR4a_burst_address <= DDR4a_burst_address + 1;
-					if (local_mem_bankA.exists(DDR4a_burst_address)) DDR4a_tmp_read = local_mem_bankA[DDR4a_burst_address];
-					else DDR4a_tmp_read = 512'b0;
-					local_mem_bankA[DDR4a_burst_address] <= (DDR4a_tmp_read & ~DDR4a_burst_byteenable_mask) | (DDR4a_writedata & DDR4a_burst_byteenable_mask);
-					is_ddr4a_write_burst <= (DDR4a_burst_state != 6'b000001);
-				end
-			end
-		end
-	end
-	
-	always @(posedge DDR4_USERCLK) begin
-		if (SoftReset || ~DDR4b_is_reset) begin // global reset
-			DDR4b_readdata      <= 512'b0;
-			DDR4b_readdatavalid <= 1'b0;
-			DDR4b_burst_state <= 6'b0;
-			DDR4b_burst_address <= 25'b0;
-			DDR4b_burst_byteenable_mask <= 512'b0;
-			is_ddr4b_read_burst <= 1'b0;
-			is_ddr4b_write_burst <= 1'b0;
-			DDR4b_is_reset <= 1'b1;
-		end
-		else begin
-			DDR4b_readdatavalid <= 1'b0;
-			if(!(is_ddr4b_read_burst | is_ddr4b_write_burst)) begin
-				if (DDR4b_read) begin
-					DDR4b_burst_state <= DDR4b_burstcount;
-					DDR4b_burst_address <= DDR4b_address;
-					DDR4b_burst_byteenable_mask <= DDR4b_byteenable_mask;
-					is_ddr4b_read_burst <= DDR4b_read;
-				end
-				else if (DDR4b_write) begin
-					DDR4b_burst_state <= DDR4b_burstcount-1;
-					DDR4b_burst_address <= DDR4b_address+1;
-					DDR4b_burst_byteenable_mask <= DDR4b_byteenable_mask;
-					is_ddr4b_write_burst <= (DDR4b_burstcount != 6'b000001);
-					//need to write first word!
-					if (local_mem_bankB.exists(DDR4b_address)) DDR4b_tmp_read = local_mem_bankB[DDR4b_address];
-					else DDR4b_tmp_read = 512'b0;
-					local_mem_bankB[DDR4b_address] <= (DDR4b_tmp_read & ~DDR4b_byteenable_mask) | (DDR4b_writedata & DDR4b_byteenable_mask);
-				end
-			end
-			else if(is_ddr4b_read_burst) begin
-				DDR4b_burst_state <= DDR4b_burst_state - 1;
-				DDR4b_burst_address <= DDR4b_burst_address + 1;
-				if(is_ddr4b_read_burst) begin
-					if (local_mem_bankB.exists(DDR4b_burst_address)) DDR4b_readdata <= local_mem_bankB[DDR4b_burst_address];
-					else DDR4b_readdata <= 512'b0;
-					DDR4b_readdatavalid <= 1'b1;
-					is_ddr4b_read_burst <= (DDR4b_burst_state != 6'b000001);
-				end
-			end 
-			else if(is_ddr4b_write_burst) begin
-				if (DDR4b_write) begin
-					DDR4b_burst_state <= DDR4b_burst_state - 1;
-					DDR4b_burst_address <= DDR4b_burst_address + 1;
-					if (local_mem_bankB.exists(DDR4b_burst_address)) DDR4b_tmp_read = local_mem_bankB[DDR4b_burst_address];
-					else DDR4b_tmp_read = 512'b0;
-					local_mem_bankB[DDR4b_burst_address] <= (DDR4b_tmp_read & ~DDR4b_burst_byteenable_mask) | (DDR4b_writedata & DDR4b_burst_byteenable_mask);
-					is_ddr4b_write_burst <= (DDR4b_burst_state != 6'b000001);
-				end
-			end
-		end
-	end
+	mem_sim_model ddr4b_inst(
+		.clk(DDR4_USERCLK),
+		.reset(SoftReset),
+		.avmm_waitrequest(DDR4b_waitrequest),
+		.avmm_readdata(DDR4b_readdata),
+		.avmm_readdatavalid(DDR4b_readdatavalid),
+		.avmm_burstcount(DDR4b_burstcount),
+		.avmm_writedata(DDR4b_writedata),
+		.avmm_address(DDR4b_address),
+		.avmm_write(DDR4b_write),
+		.avmm_read(DDR4b_read),
+		.avmm_byteenable(DDR4b_byteenable)
+	);
 	
 `endif
 

@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <spirit:component xmlns:altera="http://www.altera.com/XMLSchema/IPXact/extensions" xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
   <spirit:vendor>Altera Corporation</spirit:vendor>
-  <spirit:library>acl_dma_core_dma_clk</spirit:library>
-  <spirit:name>dma_clk</spirit:name>
+  <spirit:library>msgdma_bbb_clk</spirit:library>
+  <spirit:name>clk</spirit:name>
   <spirit:version>17.0</spirit:version>
   <spirit:busInterfaces>
     <spirit:busInterface>
@@ -229,7 +229,7 @@
   <spirit:vendorExtensions>
     <altera:entity_info>
       <spirit:vendor>Altera Corporation</spirit:vendor>
-      <spirit:library>acl_dma_core_dma_clk</spirit:library>
+      <spirit:library>msgdma_bbb_clk</spirit:library>
       <spirit:name>clock_source</spirit:name>
       <spirit:version>17.0</spirit:version>
     </altera:entity_info>
@@ -238,17 +238,17 @@
         <spirit:parameter>
           <spirit:name>clockFrequency</spirit:name>
           <spirit:displayName>Clock frequency</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="clockFrequency">50000000</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="clockFrequency">100000000</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>clockFrequencyKnown</spirit:name>
           <spirit:displayName>Clock frequency is known</spirit:displayName>
-          <spirit:value spirit:format="bool" spirit:id="clockFrequencyKnown">false</spirit:value>
+          <spirit:value spirit:format="bool" spirit:id="clockFrequencyKnown">true</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>inputClockFrequency</spirit:name>
           <spirit:displayName>inputClockFrequency</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="inputClockFrequency">100000000</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="inputClockFrequency">0</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>resetSynchronousEdges</spirit:name>
@@ -272,13 +272,21 @@
         <spirit:parameter>
           <spirit:name>deviceSpeedGrade</spirit:name>
           <spirit:displayName>Device Speed Grade</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="deviceSpeedGrade">2</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="deviceSpeedGrade">5</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>bonusData</spirit:name>
           <spirit:displayName>bonusData</spirit:displayName>
           <spirit:value spirit:format="string" spirit:id="bonusData">bonusData 
 {
+   element clk
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
 }
 </spirit:value>
         </spirit:parameter>
@@ -456,7 +464,11 @@
             <key>clk</key>
             <value>
                 <connectionPointName>clk</connectionPointName>
-                <suppliedSystemInfos/>
+                <suppliedSystemInfos>
+                    <entry>
+                        <key>CLOCK_RATE</key>
+                    </entry>
+                </suppliedSystemInfos>
                 <consumedSystemInfos>
                     <entry>
                         <key>CLOCK_RATE</key>
@@ -472,7 +484,7 @@
                 <suppliedSystemInfos>
                     <entry>
                         <key>CLOCK_RATE</key>
-                        <value>100000000</value>
+                        <value>0</value>
                     </entry>
                 </suppliedSystemInfos>
                 <consumedSystemInfos/>
@@ -484,16 +496,16 @@
       </spirit:parameters>
     </altera:altera_system_parameters>
     <altera:altera_interface_boundary>
-      <altera:interface_mapping altera:name="clk" altera:internal="dma_clk.clk" altera:type="clock" altera:dir="start">
+      <altera:interface_mapping altera:name="clk" altera:internal="clk.clk" altera:type="clock" altera:dir="start">
         <altera:port_mapping altera:name="clk_out" altera:internal="clk_out"></altera:port_mapping>
       </altera:interface_mapping>
-      <altera:interface_mapping altera:name="clk_in" altera:internal="dma_clk.clk_in" altera:type="clock" altera:dir="end">
+      <altera:interface_mapping altera:name="clk_in" altera:internal="clk.clk_in" altera:type="clock" altera:dir="end">
         <altera:port_mapping altera:name="in_clk" altera:internal="in_clk"></altera:port_mapping>
       </altera:interface_mapping>
-      <altera:interface_mapping altera:name="clk_in_reset" altera:internal="dma_clk.clk_in_reset" altera:type="reset" altera:dir="end">
+      <altera:interface_mapping altera:name="clk_in_reset" altera:internal="clk.clk_in_reset" altera:type="reset" altera:dir="end">
         <altera:port_mapping altera:name="reset_n" altera:internal="reset_n"></altera:port_mapping>
       </altera:interface_mapping>
-      <altera:interface_mapping altera:name="clk_reset" altera:internal="dma_clk.clk_reset" altera:type="reset" altera:dir="start">
+      <altera:interface_mapping altera:name="clk_reset" altera:internal="clk.clk_reset" altera:type="reset" altera:dir="start">
         <altera:port_mapping altera:name="reset_n_out" altera:internal="reset_n_out"></altera:port_mapping>
       </altera:interface_mapping>
     </altera:altera_interface_boundary>

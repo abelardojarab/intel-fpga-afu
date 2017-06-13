@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <spirit:component xmlns:altera="http://www.altera.com/XMLSchema/IPXact/extensions" xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
   <spirit:vendor>Intel Corporation</spirit:vendor>
-  <spirit:library>acl_dma_csr</spirit:library>
+  <spirit:library>msgdma_bbb_csr</spirit:library>
   <spirit:name>csr</spirit:name>
   <spirit:version>17.0</spirit:version>
   <spirit:busInterfaces>
@@ -458,7 +458,7 @@
         <spirit:parameter>
           <spirit:name>bridgesToMaster</spirit:name>
           <spirit:displayName>Bridges to master</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="bridgesToMaster">acl_dma_csr.m0</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="bridgesToMaster">msgdma_bbb_csr.m0</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>burstOnBurstBoundariesOnly</spirit:name>
@@ -953,7 +953,7 @@
   <spirit:vendorExtensions>
     <altera:entity_info>
       <spirit:vendor>Intel Corporation</spirit:vendor>
-      <spirit:library>acl_dma_csr</spirit:library>
+      <spirit:library>msgdma_bbb_csr</spirit:library>
       <spirit:name>altera_avalon_mm_bridge</spirit:name>
       <spirit:version>17.0</spirit:version>
     </altera:entity_info>
@@ -1051,13 +1051,21 @@
         <spirit:parameter>
           <spirit:name>deviceSpeedGrade</spirit:name>
           <spirit:displayName>Device Speed Grade</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="deviceSpeedGrade">2</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="deviceSpeedGrade">5</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>bonusData</spirit:name>
           <spirit:displayName>bonusData</spirit:displayName>
           <spirit:value spirit:format="string" spirit:id="bonusData">bonusData 
 {
+   element csr
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
 }
 </spirit:value>
         </spirit:parameter>
@@ -1509,7 +1517,7 @@
                     </entry>
                     <entry>
                         <key>bridgesToMaster</key>
-                        <value>acl_dma_csr.m0</value>
+                        <value>msgdma_bbb_csr.m0</value>
                     </entry>
                     <entry>
                         <key>burstOnBurstBoundariesOnly</key>

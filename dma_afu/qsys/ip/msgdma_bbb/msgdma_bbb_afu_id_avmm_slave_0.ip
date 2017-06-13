@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <spirit:component xmlns:altera="http://www.altera.com/XMLSchema/IPXact/extensions" xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
   <spirit:vendor>Altera Corporation</spirit:vendor>
-  <spirit:library>acl_dma_afu_id_avmm_slave_0</spirit:library>
-  <spirit:name>acl_dma_afu_id_avmm_slave_0</spirit:name>
+  <spirit:library>msgdma_bbb_afu_id_avmm_slave_0</spirit:library>
+  <spirit:name>msgdma_bbb_afu_id_avmm_slave_0</spirit:name>
   <spirit:version>1.0</spirit:version>
   <spirit:busInterfaces>
     <spirit:busInterface>
@@ -454,7 +454,7 @@
   <spirit:vendorExtensions>
     <altera:entity_info>
       <spirit:vendor>Altera Corporation</spirit:vendor>
-      <spirit:library>acl_dma_afu_id_avmm_slave_0</spirit:library>
+      <spirit:library>msgdma_bbb_afu_id_avmm_slave_0</spirit:library>
       <spirit:name>afu_id_avmm_slave</spirit:name>
       <spirit:version>1.0</spirit:version>
     </altera:entity_info>
@@ -527,13 +527,21 @@
         <spirit:parameter>
           <spirit:name>deviceSpeedGrade</spirit:name>
           <spirit:displayName>Device Speed Grade</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="deviceSpeedGrade">2</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="deviceSpeedGrade">5</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>bonusData</spirit:name>
           <spirit:displayName>bonusData</spirit:displayName>
           <spirit:value spirit:format="string" spirit:id="bonusData">bonusData 
 {
+   element msgdma_bbb_afu_id_avmm_slave_0
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
 }
 </spirit:value>
         </spirit:parameter>
@@ -879,17 +887,17 @@
       </spirit:parameters>
     </altera:altera_system_parameters>
     <altera:altera_interface_boundary>
-      <altera:interface_mapping altera:name="afu_cfg_slave" altera:internal="acl_dma_afu_id_avmm_slave_0.afu_cfg_slave" altera:type="avalon" altera:dir="end">
+      <altera:interface_mapping altera:name="afu_cfg_slave" altera:internal="msgdma_bbb_afu_id_avmm_slave_0.afu_cfg_slave" altera:type="avalon" altera:dir="end">
         <altera:port_mapping altera:name="avmm_address" altera:internal="avmm_address"></altera:port_mapping>
         <altera:port_mapping altera:name="avmm_read" altera:internal="avmm_read"></altera:port_mapping>
         <altera:port_mapping altera:name="avmm_readdata" altera:internal="avmm_readdata"></altera:port_mapping>
         <altera:port_mapping altera:name="avmm_write" altera:internal="avmm_write"></altera:port_mapping>
         <altera:port_mapping altera:name="avmm_writedata" altera:internal="avmm_writedata"></altera:port_mapping>
       </altera:interface_mapping>
-      <altera:interface_mapping altera:name="clock" altera:internal="acl_dma_afu_id_avmm_slave_0.clock" altera:type="clock" altera:dir="end">
+      <altera:interface_mapping altera:name="clock" altera:internal="msgdma_bbb_afu_id_avmm_slave_0.clock" altera:type="clock" altera:dir="end">
         <altera:port_mapping altera:name="clk" altera:internal="clk"></altera:port_mapping>
       </altera:interface_mapping>
-      <altera:interface_mapping altera:name="reset" altera:internal="acl_dma_afu_id_avmm_slave_0.reset" altera:type="reset" altera:dir="end">
+      <altera:interface_mapping altera:name="reset" altera:internal="msgdma_bbb_afu_id_avmm_slave_0.reset" altera:type="reset" altera:dir="end">
         <altera:port_mapping altera:name="reset" altera:internal="reset"></altera:port_mapping>
       </altera:interface_mapping>
     </altera:altera_interface_boundary>

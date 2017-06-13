@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <spirit:component xmlns:altera="http://www.altera.com/XMLSchema/IPXact/extensions" xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
   <spirit:vendor>Intel Corporation</spirit:vendor>
-  <spirit:library>acl_dma_core_dma_write_master</spirit:library>
+  <spirit:library>dma_core_dma_write_master</spirit:library>
   <spirit:name>dma_write_master</spirit:name>
   <spirit:version>17.0</spirit:version>
   <spirit:busInterfaces>
@@ -811,7 +811,7 @@
   <spirit:vendorExtensions>
     <altera:entity_info>
       <spirit:vendor>Intel Corporation</spirit:vendor>
-      <spirit:library>acl_dma_core_dma_write_master</spirit:library>
+      <spirit:library>dma_core_dma_write_master</spirit:library>
       <spirit:name>dma_write_master</spirit:name>
       <spirit:version>17.0</spirit:version>
     </altera:entity_info>
@@ -994,13 +994,21 @@
         <spirit:parameter>
           <spirit:name>deviceSpeedGrade</spirit:name>
           <spirit:displayName>Device Speed Grade</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="deviceSpeedGrade">2</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="deviceSpeedGrade">5</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>bonusData</spirit:name>
           <spirit:displayName>bonusData</spirit:displayName>
           <spirit:value spirit:format="string" spirit:id="bonusData">bonusData 
 {
+   element dma_write_master
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
 }
 </spirit:value>
         </spirit:parameter>

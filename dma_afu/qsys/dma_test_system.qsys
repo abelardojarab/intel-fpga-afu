@@ -10,14 +10,6 @@
    tool="QsysPro" />
  <parameter name="bonusData"><![CDATA[bonusData 
 {
-   element acl_dma_inst
-   {
-      datum _sortIndex
-      {
-         value = "6";
-         type = "int";
-      }
-   }
    element acl_dma_inst.s_nondma
    {
       datum baseAddress
@@ -154,6 +146,14 @@
          type = "int";
       }
    }
+   element msgdma_bbb_inst
+   {
+      datum _sortIndex
+      {
+         value = "6";
+         type = "int";
+      }
+   }
    element reset_in
    {
       datum _sortIndex
@@ -267,27 +267,13 @@
    type="clock"
    dir="end" />
  <interface name="reset" internal="reset_in.in_reset" type="reset" dir="end" />
- <module name="acl_dma_inst" kind="acl_dma" version="1.0" enabled="1">
-  <parameter name="AUTO_CLK_CLOCK_DOMAIN" value="2" />
-  <parameter name="AUTO_CLK_CLOCK_RATE" value="0" />
-  <parameter name="AUTO_CLK_RESET_DOMAIN" value="2" />
-  <parameter name="AUTO_DEVICE" value="10AX115N3F40E2SG" />
-  <parameter name="AUTO_DEVICE_FAMILY" value="Arria 10" />
-  <parameter name="AUTO_DEVICE_SPEEDGRADE" value="2" />
-  <parameter name="AUTO_GENERATION_ID" value="0" />
-  <parameter name="AUTO_HOST_ADDRESS_MAP"><![CDATA[<address-map><slave name='ccip_avmm_bridge_inst.avst_to_avmm_master_inst.avmm' start='0x0' end='0x1000000000000' datawidth='512' /></address-map>]]></parameter>
-  <parameter name="AUTO_HOST_ADDRESS_WIDTH" value="48" />
-  <parameter name="AUTO_MEM_ADDRESS_MAP"><![CDATA[<address-map><slave name='ddr4a_mm_bridge.s0' start='0x0' end='0x100000000' datawidth='512' /><slave name='ddr4b_mm_bridge.s0' start='0x100000000' end='0x200000000' datawidth='512' /></address-map>]]></parameter>
-  <parameter name="AUTO_MEM_ADDRESS_WIDTH" value="33" />
-  <parameter name="AUTO_UNIQUE_ID">dma_test_system_acl_dma_inst</parameter>
- </module>
  <module
    name="ccip_avmm_bridge_inst"
    kind="ccip_avmm_bridge"
    version="1.0"
    enabled="1">
   <parameter
-     name="AUTO_CCIP_AVMM_BRIDGE_AVST_TO_AVMM_SLAVE_0_AVALON_MASTER_ADDRESS_MAP"><![CDATA[<address-map><slave name='dma_test_system_afu_id_avmm_slave_0.afu_cfg_slave' start='0x0' end='0x40' datawidth='64' /><slave name='acl_dma_inst.acl_dma_afu_id_avmm_slave_0.afu_cfg_slave' start='0x20000' end='0x20040' datawidth='64' /><slave name='acl_dma_inst.dma.modular_sgdma_dispatcher_0.CSR' start='0x20040' end='0x20060' datawidth='32' /><slave name='acl_dma_inst.dma.modular_sgdma_dispatcher_0.Descriptor_Slave' start='0x20060' end='0x20080' datawidth='256' /><slave name='acl_dma_inst.address_span_extender_0.cntl' start='0x20200' end='0x20208' datawidth='64' /><slave name='acl_dma_inst.address_span_extender_0.windowed_slave' start='0x21000' end='0x22000' datawidth='512' /></address-map>]]></parameter>
+     name="AUTO_CCIP_AVMM_BRIDGE_AVST_TO_AVMM_SLAVE_0_AVALON_MASTER_ADDRESS_MAP"><![CDATA[<address-map><slave name='dma_test_system_afu_id_avmm_slave_0.afu_cfg_slave' start='0x0' end='0x40' datawidth='64' /><slave name='msgdma_bbb_inst.msgdma_bbb_afu_id_avmm_slave_0.afu_cfg_slave' start='0x20000' end='0x20040' datawidth='64' /><slave name='msgdma_bbb_inst.modular_sgdma_dispatcher_0.CSR' start='0x20040' end='0x20060' datawidth='32' /><slave name='msgdma_bbb_inst.modular_sgdma_dispatcher_0.Descriptor_Slave' start='0x20060' end='0x20080' datawidth='256' /><slave name='msgdma_bbb_inst.address_span_extender_0.cntl' start='0x20200' end='0x20208' datawidth='64' /><slave name='msgdma_bbb_inst.address_span_extender_0.windowed_slave' start='0x21000' end='0x22000' datawidth='512' /></address-map>]]></parameter>
   <parameter
      name="AUTO_CCIP_AVMM_BRIDGE_AVST_TO_AVMM_SLAVE_0_AVALON_MASTER_ADDRESS_WIDTH"
      value="18" />
@@ -5007,6 +4993,20 @@
     <assignmentValueMap/>
 </assignmentDefinition>]]></parameter>
  </module>
+ <module name="msgdma_bbb_inst" kind="msgdma_bbb" version="1.0" enabled="1">
+  <parameter name="AUTO_CLK_CLOCK_DOMAIN" value="2" />
+  <parameter name="AUTO_CLK_CLOCK_RATE" value="0" />
+  <parameter name="AUTO_CLK_RESET_DOMAIN" value="2" />
+  <parameter name="AUTO_DEVICE" value="10AX115N3F40E2SG" />
+  <parameter name="AUTO_DEVICE_FAMILY" value="Arria 10" />
+  <parameter name="AUTO_DEVICE_SPEEDGRADE" value="2" />
+  <parameter name="AUTO_GENERATION_ID" value="0" />
+  <parameter name="AUTO_HOST_ADDRESS_MAP"><![CDATA[<address-map><slave name='ccip_avmm_bridge_inst.avst_to_avmm_master_inst.avmm' start='0x0' end='0x1000000000000' datawidth='512' /></address-map>]]></parameter>
+  <parameter name="AUTO_HOST_ADDRESS_WIDTH" value="48" />
+  <parameter name="AUTO_MEM_ADDRESS_MAP"><![CDATA[<address-map><slave name='ddr4a_mm_bridge.s0' start='0x0' end='0x100000000' datawidth='512' /><slave name='ddr4b_mm_bridge.s0' start='0x100000000' end='0x200000000' datawidth='512' /></address-map>]]></parameter>
+  <parameter name="AUTO_MEM_ADDRESS_WIDTH" value="33" />
+  <parameter name="AUTO_UNIQUE_ID">dma_test_system_msgdma_bbb_inst</parameter>
+ </module>
  <module
    name="reset_in"
    kind="altera_generic_component"
@@ -5191,7 +5191,7 @@
  <connection
    kind="avalon"
    version="17.0"
-   start="acl_dma_inst.host"
+   start="msgdma_bbb_inst.host"
    end="ccip_host_bridge.s0">
   <parameter name="baseAddress" value="0x0000" />
  </connection>
@@ -5213,7 +5213,7 @@
    kind="avalon"
    version="17.0"
    start="dma_test_system_mm_clock_crossing_bridge_0.m0"
-   end="acl_dma_inst.csr">
+   end="msgdma_bbb_inst.csr">
   <parameter name="baseAddress" value="0x0000" />
  </connection>
  <connection
@@ -5240,7 +5240,7 @@
  <connection
    kind="avalon"
    version="17.0"
-   start="acl_dma_inst.mem"
+   start="msgdma_bbb_inst.mem"
    end="ddr4_mm_bridge.s0">
   <parameter name="baseAddress" value="0x0000" />
  </connection>
@@ -5254,11 +5254,6 @@
    version="17.0"
    start="clock_in.out_clk"
    end="dma_test_system_mm_bridge_0.clk" />
- <connection
-   kind="clock"
-   version="17.0"
-   start="ddr_clk.out_clk"
-   end="acl_dma_inst.clk" />
  <connection
    kind="clock"
    version="17.0"
@@ -5279,6 +5274,11 @@
    version="17.0"
    start="ddr_clk.out_clk"
    end="ccip_host_bridge.clk" />
+ <connection
+   kind="clock"
+   version="17.0"
+   start="ddr_clk.out_clk"
+   end="msgdma_bbb_inst.clk" />
  <connection
    kind="clock"
    version="17.0"
@@ -5323,11 +5323,6 @@
    kind="reset"
    version="17.0"
    start="reset_in.out_reset"
-   end="acl_dma_inst.reset" />
- <connection
-   kind="reset"
-   version="17.0"
-   start="reset_in.out_reset"
    end="ddr4a_mm_bridge.reset" />
  <connection
    kind="reset"
@@ -5349,6 +5344,11 @@
    version="17.0"
    start="reset_in.out_reset"
    end="ccip_avmm_bridge_inst.reset" />
+ <connection
+   kind="reset"
+   version="17.0"
+   start="reset_in.out_reset"
+   end="msgdma_bbb_inst.reset" />
  <connection
    kind="reset"
    version="17.0"

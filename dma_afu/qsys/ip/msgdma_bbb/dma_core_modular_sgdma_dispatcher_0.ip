@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <spirit:component xmlns:altera="http://www.altera.com/XMLSchema/IPXact/extensions" xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
   <spirit:vendor>Intel Corporation</spirit:vendor>
-  <spirit:library>acl_dma_core_modular_sgdma_dispatcher_0</spirit:library>
+  <spirit:library>dma_core_modular_sgdma_dispatcher_0</spirit:library>
   <spirit:name>modular_sgdma_dispatcher_0</spirit:name>
   <spirit:version>17.0</spirit:version>
   <spirit:busInterfaces>
@@ -1026,7 +1026,7 @@
         <spirit:parameter>
           <spirit:name>associatedAddressablePoint</spirit:name>
           <spirit:displayName>Associated addressable interface</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="associatedAddressablePoint">acl_dma_core_modular_sgdma_dispatcher_0.CSR</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="associatedAddressablePoint">dma_core_modular_sgdma_dispatcher_0.CSR</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>associatedClock</spirit:name>
@@ -1413,7 +1413,7 @@
   <spirit:vendorExtensions>
     <altera:entity_info>
       <spirit:vendor>Intel Corporation</spirit:vendor>
-      <spirit:library>acl_dma_core_modular_sgdma_dispatcher_0</spirit:library>
+      <spirit:library>dma_core_modular_sgdma_dispatcher_0</spirit:library>
       <spirit:name>modular_sgdma_dispatcher</spirit:name>
       <spirit:version>17.0</spirit:version>
     </altera:entity_info>
@@ -1596,13 +1596,21 @@
         <spirit:parameter>
           <spirit:name>deviceSpeedGrade</spirit:name>
           <spirit:displayName>Device Speed Grade</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="deviceSpeedGrade">2</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="deviceSpeedGrade">5</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>bonusData</spirit:name>
           <spirit:displayName>bonusData</spirit:displayName>
           <spirit:value spirit:format="string" spirit:id="bonusData">bonusData 
 {
+   element modular_sgdma_dispatcher_0
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
 }
 </spirit:value>
         </spirit:parameter>
@@ -2524,7 +2532,7 @@
                 <parameterValueMap>
                     <entry>
                         <key>associatedAddressablePoint</key>
-                        <value>acl_dma_core_modular_sgdma_dispatcher_0.CSR</value>
+                        <value>dma_core_modular_sgdma_dispatcher_0.CSR</value>
                     </entry>
                     <entry>
                         <key>associatedClock</key>
@@ -2628,6 +2636,7 @@
         <altera:port_mapping altera:name="snk_read_master_ready" altera:internal="snk_read_master_ready"></altera:port_mapping>
         <altera:port_mapping altera:name="snk_read_master_valid" altera:internal="snk_read_master_valid"></altera:port_mapping>
       </altera:interface_mapping>
+      <altera:interface_mapping altera:name="Response_Slave" altera:internal="modular_sgdma_dispatcher_0.Response_Slave"></altera:interface_mapping>
       <altera:interface_mapping altera:name="Write_Command_Source" altera:internal="modular_sgdma_dispatcher_0.Write_Command_Source" altera:type="avalon_streaming" altera:dir="start">
         <altera:port_mapping altera:name="src_write_master_data" altera:internal="src_write_master_data"></altera:port_mapping>
         <altera:port_mapping altera:name="src_write_master_ready" altera:internal="src_write_master_ready"></altera:port_mapping>

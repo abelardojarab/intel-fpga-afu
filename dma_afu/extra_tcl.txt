@@ -10,7 +10,6 @@ set_global_assignment -name SEARCH_PATH "../afu/mpf/hw/rtl/cci-mpf-shims/cci_mpf
 set_global_assignment -name SEARCH_PATH "../afu/mpf/hw/rtl/cci-mpf-shims/cci_mpf_shim_pwrite"
 set_global_assignment -name SEARCH_PATH "../afu/mpf/hw/rtl/cci-mpf-shims/cci_mpf_shim_vtp"
 set_global_assignment -name SEARCH_PATH "../afu/mpf/hw/rtl/cci-mpf-shims/cci_mpf_shim_wro"
-set_global_assignment -name SEARCH_PATH "../afu/mpf/sw/include/fpga/mpf"
 
 ## Type and interface Packages and header files
 set_global_assignment -name SYSTEMVERILOG_FILE "../afu/mpf/hw/rtl/cci-if/ccis_if_pkg.sv"

@@ -15,22 +15,19 @@ else
 	LDFLAGS += -lfpga
 endif
 
-all: fpga_dma_test
+all: dma_afu_test
 
-# FPGA DMA Driver
-fpga_dma_test: fpga_dma_test.o fpga_dma.so
-	gcc -o $@ $^ $(LDFLAGS)
+dma_afu_test: dma_afu_test.o
+	g++ $(CFLAGS) -o dma_afu_test dma_afu_test.o $(LDFLAGS)
 
-fpga_dma_test.o: fpga_dma_test.c
-	gcc $(CFLAGS) -o $@ -c $^ 
-
-fpga_dma.so: fpga_dma.o
-	gcc $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
-
-fpga_dma.o: fpga_dma.c
-	gcc $(CFLAGS) -c -o $@ $^
+dma_afu_test.o: dma_afu_test.cpp  Makefile
+	g++ $(CFLAGS) -c -o dma_afu_test.o dma_afu_test.cpp
 
 clean:
-	$(RM) fpga_dma fpga_dma_test *.o *.so
+	$(RM) dma_afu_test *.o *.so
+
+run: all
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(prefix)/build/lib ./dma_afu_test
+
 
 .PHONY:all clean

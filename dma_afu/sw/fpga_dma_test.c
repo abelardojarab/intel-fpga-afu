@@ -98,8 +98,8 @@ int main() {
    res = fpgaPropertiesSetObjectType(filter, FPGA_AFC);
    ON_ERR_GOTO(res, out_destroy_prop, "fpgaPropertiesSetObjectType");
 
-   res = fpgaPropertiesSetGuid(filter, guid);
-   ON_ERR_GOTO(res, out_destroy_prop, "fpgaPropertiesSetGuid");
+   res = fpgaPropertiesSetGUID(filter, guid);
+   ON_ERR_GOTO(res, out_destroy_prop, "fpgaPropertiesSetGUID");
 
    res = fpgaEnumerate(&filter, 1, &afc_token, 1, &num_matches);
    ON_ERR_GOTO(res, out_destroy_prop, "fpgaEnumerate");
@@ -126,8 +126,8 @@ int main() {
    res = fpgaPrepareBuffer(afc_h, TEST_BUF_SIZE, (void **)&dma_buf_ptr, &dma_buf_wsid, 0);
    ON_ERR_GOTO(res, out_unmap, "fpgaPrepareBuffer");
 
-   res = fpgaGetIOVA(afc_h, dma_buf_wsid, &dma_buf_iova);
-   ON_ERR_GOTO(res, out_rel_buffer, "fpgaGetIOVA");
+   res = fpgaGetIOAddress(afc_h, dma_buf_wsid, &dma_buf_iova);
+   ON_ERR_GOTO(res, out_rel_buffer, "fpgaGetIOAddress");
 
    fill_buffer((char*)dma_buf_ptr);
 

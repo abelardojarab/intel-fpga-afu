@@ -20,7 +20,7 @@ module mem_fsm (
         // - AMM Master Signals signals 
 	output	logic [63:0]    avs_writedata,
         input	logic [63:0]    avs_readdata,
-        output	logic [31:0]    avs_address,
+        output	logic [25:0]    avs_address,
         input	logic	        avs_waitrequest,
         output	logic           avs_write,
         output	logic           avs_read,
@@ -30,7 +30,7 @@ module mem_fsm (
         input         [1:0]     avs_response, 
         input                   avs_writeresponsevalid,
         // AVL MM CSR Control Signals 
-        input         [31:0]    avm_address,
+        input         [25:0]    avm_address,
         input                   avm_write,
         input                   avm_read,
         input        [63:0]     avm_writedata,

@@ -53,7 +53,7 @@ module avlmm_config_afu (
         // --------------------------- AMM signals 
 	output	logic [511:0]    avs_writedata,     	//          .writedata
 	input	logic [63:0]    avs_readdata,     	//          .readdata
-	output	logic [31:0]    avs_address,       	//          .address
+	output	logic [25:0]    avs_address,       	//          .address
 	input	logic	        avs_waitrequest,   	//          .waitrequest
 	output	logic           avs_write,        	//          .write
 	output	logic           avs_read,         	//          .read
@@ -69,7 +69,7 @@ module avlmm_config_afu (
    wire [63:0] avm_writedata, avm_readdata;
    wire mem_testmode;
    wire  [4:0] addr_test_status;
-   wire [31:0] avm_address;
+   wire [25:0] avm_address;
    wire [11:0] avm_burstcount;
    wire [1:0]  avm_response;
    wire        addr_test_done; 
@@ -78,7 +78,7 @@ module avlmm_config_afu (
    wire        rdwr_reset;
    logic [63:0]    avs_writedata_r;     	//          .writedata
    logic [63:0]    avs_readdata_r;     	//          .readdata
-   logic [31:0]    avs_address_r;       	//          .address
+   logic [25:0]    avs_address_r;       	//          .address
    logic	   avs_waitrequest_r;   	//          .waitrequest
    logic           avs_write_r;        	//          .write
    logic           avs_read_r;         	//          .read

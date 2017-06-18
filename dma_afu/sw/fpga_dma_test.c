@@ -31,12 +31,13 @@
 
 #include <stdlib.h>
 #include <assert.h>
-#include <fpga/fpga.h>
+#include <opae/fpga.h>
 #include "fpga_dma.h"
 
 #define HELLO_AFU_ID              "331DB30C-9885-41EA-9081-F88B8F655CAA"
 // Buffer size must be page aligned for prepareBuffer
-#define TEST_BUF_SIZE (2*1024*1024)
+#define TEST_BUF_SIZE (4*1024)
+//#define TEST_BUF_SIZE (2*1024*1024)
 //#define TEST_BUF_SIZE (2*512*1024+4096*10)
 
 void print_err(const char *s, fpga_result res)
@@ -66,6 +67,7 @@ fpga_result verify_buffer(char *buf) {
       }
       buf++;
    }
+   printf("Buffer Verification Success!\n");
    return FPGA_OK;
 }
 
@@ -73,7 +75,7 @@ void clear_buffer(char *buf) {
    memset(buf, 0, TEST_BUF_SIZE);
 }
 
-int main() {
+int main(int argc, char *argv[]) {
    fpga_result res = FPGA_OK;
    fpga_dma_handle dma_h;
    uint64_t count;
@@ -86,6 +88,14 @@ int main() {
    uint64_t *dma_buf_ptr  = NULL;
    uint64_t dma_buf_wsid, dma_buf_iova;
    uint32_t i=0;
+   uint32_t use_ase;
+
+   if(argc < 2) {
+      printf("Usage: fpga_dma_test <use_ase = 1 (simulation only), 0 (hardware)>");
+      return 1;
+   }
+   use_ase = atoi(argv[1]);
+
 
    // enumerate the afc
    if(uuid_parse(HELLO_AFU_ID, guid) < 0) {
@@ -113,8 +123,10 @@ int main() {
    res = fpgaOpen(afc_token, &afc_h, 0);
    ON_ERR_GOTO(res, out_destroy_tok, "fpgaOpen");
 
-   res = fpgaMapMMIO(afc_h, 0, (uint64_t**)&mmio_ptr);
-   ON_ERR_GOTO(res, out_close, "fpgaMapMMIO");
+   if(!use_ase) {
+      res = fpgaMapMMIO(afc_h, 0, (uint64_t**)&mmio_ptr);
+      ON_ERR_GOTO(res, out_close, "fpgaMapMMIO");
+   }
 
    // reset AFC
    res = fpgaReset(afc_h);
@@ -122,6 +134,7 @@ int main() {
 
    res = fpgaDmaOpen(afc_h, &dma_h);
    ON_ERR_GOTO(res, out_unmap, "fpgaDmaOpen");
+
 
    res = fpgaPrepareBuffer(afc_h, TEST_BUF_SIZE, (void **)&dma_buf_ptr, &dma_buf_wsid, 0);
    ON_ERR_GOTO(res, out_unmap, "fpgaPrepareBuffer");
@@ -141,9 +154,9 @@ int main() {
    // copy from fpga to host
    res = fpgaDmaTransferSync(dma_h, dma_buf_iova /*dst*/, 0x0 /*src*/, count, FPGA_TO_HOST_MM);
    ON_ERR_GOTO(res, out_rel_buffer, "fpgaDmaTransferSync");
-
    res = verify_buffer((char*)dma_buf_ptr);
    ON_ERR_GOTO(res, out_rel_buffer, "verify_buffer");
+
 
    clear_buffer((char*)dma_buf_ptr);
 
@@ -158,6 +171,7 @@ int main() {
    res = verify_buffer((char*)dma_buf_ptr);
    ON_ERR_GOTO(res, out_rel_buffer, "verify_buffer");
 
+
    res = fpgaDmaClose(dma_h);
    ON_ERR_GOTO(res, out_rel_buffer, "fpgaDmaClose");
 
@@ -166,9 +180,10 @@ out_rel_buffer:
    ON_ERR_GOTO(res, out_unmap, "fpgaReleaseBuffer");
 
 out_unmap:
-   res = fpgaUnmapMMIO(afc_h, 0);
-   ON_ERR_GOTO(res, out_close, "fpgaUnmapMMIO");
-
+   if(!use_ase) {
+      res = fpgaUnmapMMIO(afc_h, 0);
+      ON_ERR_GOTO(res, out_close, "fpgaUnmapMMIO");
+	}
 out_close:
    res = fpgaClose(afc_h);
    ON_ERR_GOTO(res, out_destroy_tok, "fpgaClose");

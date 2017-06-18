@@ -32,7 +32,7 @@
 #ifndef __FPGA_DMA_H__
 #define __FPGA_DMA_H__
 
-#include <fpga/fpga.h>
+#include <opae/fpga.h>
 
 /*
  * macro to check return codes

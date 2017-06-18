@@ -29,7 +29,7 @@
  * \brief FPGA DMA User-mode driver
  */
 
-#include <fpga/fpga.h>
+#include <opae/fpga.h>
 #include <stdbool.h>
 #include "fpga_dma.h"
 #include "fpga_dma_internal.h"

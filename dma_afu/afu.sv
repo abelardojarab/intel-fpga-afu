@@ -113,41 +113,6 @@ module afu (
 	wire [63:0]  DDR4b_byteenable;
 	wire         DDR4b_write;
 	wire         DDR4b_read;
-	
-	`timescale 1 ps / 1 ps
-	reg          DDR4_USERCLK = 0;  
-	always begin
-		#1875 DDR4_USERCLK = ~DDR4_USERCLK;
-	end
-	
-	mem_sim_model ddr4a_inst(
-		.clk(DDR4_USERCLK),
-		.reset(SoftReset),
-		.avmm_waitrequest(DDR4a_waitrequest),
-		.avmm_readdata(DDR4a_readdata),
-		.avmm_readdatavalid(DDR4a_readdatavalid),
-		.avmm_burstcount(DDR4a_burstcount),
-		.avmm_writedata(DDR4a_writedata),
-		.avmm_address(DDR4a_address),
-		.avmm_write(DDR4a_write),
-		.avmm_read(DDR4a_read),
-		.avmm_byteenable(DDR4a_byteenable)
-	);
-	
-	mem_sim_model ddr4b_inst(
-		.clk(DDR4_USERCLK),
-		.reset(SoftReset),
-		.avmm_waitrequest(DDR4b_waitrequest),
-		.avmm_readdata(DDR4b_readdata),
-		.avmm_readdatavalid(DDR4b_readdatavalid),
-		.avmm_burstcount(DDR4b_burstcount),
-		.avmm_writedata(DDR4b_writedata),
-		.avmm_address(DDR4b_address),
-		.avmm_write(DDR4b_write),
-		.avmm_read(DDR4b_read),
-		.avmm_byteenable(DDR4b_byteenable)
-	);
-	
 `endif
 
 	assign DDR4a_address = DDR4a_byte_address[31:6];

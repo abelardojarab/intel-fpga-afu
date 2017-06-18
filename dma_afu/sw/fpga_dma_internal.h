@@ -32,7 +32,7 @@
 #ifndef __FPGA_DMA_INT_H__
 #define __FPGA_DMA_INT_H__
 
-#include <fpga/fpga.h>
+#include <opae/fpga.h>
 
 #define FPGA_DMA_UUID_H 0xd79c094c7cf94cc1
 #define FPGA_DMA_UUID_L 0x94eb7d79c7c01ca3

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <uuid/uuid.h>
-#include <fpga/fpga.h>
+#include <opae/fpga.h>
 #include <assert.h>
 
 #include "RC4memtest.h"
@@ -416,7 +416,7 @@ int run_basic_ddr_dma_test(fpga_handle afc_handle)
 	ON_ERR_GOTO(res, release_buf, "allocating dma buffer");
 	memset((void *)dma_buf_ptr,  0x0, DMA_BUFFER_SIZE);
 	
-	res = fpgaGetIOVA(afc_handle, dma_buf_wsid, &dma_buf_iova);
+	res = fpgaGetIOAddress(afc_handle, dma_buf_wsid, &dma_buf_iova);
 	ON_ERR_GOTO(res, release_buf, "getting dma DMA_BUF_IOVA");
 	
 	printf("TEST_BUFFER_SIZE = %d\n", TEST_BUFFER_SIZE);
@@ -540,7 +540,7 @@ int dma_memory_checker(fpga_handle afc_handle)
 	ON_ERR_GOTO(res, release_buf, "allocating dma buffer");
 	memset((void *)dma_buf_ptr,  0x0, DMA_BUFFER_SIZE);
 	
-	res = fpgaGetIOVA(afc_handle, dma_buf_wsid, &dma_buf_iova);
+	res = fpgaGetIOAddress(afc_handle, dma_buf_wsid, &dma_buf_iova);
 	ON_ERR_GOTO(res, release_buf, "getting dma DMA_BUF_IOVA");
 	
 	printf("DMA_BUFFER_SIZE = %d\n", DMA_BUFFER_SIZE);
@@ -975,7 +975,7 @@ int main(int argc, char *argv[])
 	res = fpgaPropertiesSetObjectType(filter, FPGA_AFC);
 	ON_ERR_GOTO(res, out_destroy_prop, "setting object type");
 
-	res = fpgaPropertiesSetGuid(filter, guid);
+	res = fpgaPropertiesSetGUID(filter, guid);
 	ON_ERR_GOTO(res, out_destroy_prop, "setting GUID");
 
 	/* TODO: Add selection via BDF / device ID */

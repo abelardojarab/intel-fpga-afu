@@ -1,5 +1,5 @@
 
-SUBDIRS := hello_world mem_bandwidth vector_add
+SUBDIRS := hello_world mem_bandwidth vector_add boardtest
 CLEAN_SUBDIRS := $(addprefix clean-,$(SUBDIRS))
 
 .PHONY: all $(SUBDIRS)

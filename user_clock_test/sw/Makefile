@@ -5,12 +5,12 @@ CFLAGS += -I$(prefix)/common/include
 LDFLAGS += -L$(prefix)/my_build/lib -luuid 
 
 ifeq ($(USE_ASE),1)
-	LDFLAGS += -lfpga-ASE
+	LDFLAGS += -lopae-c-ASE
 	CFLAGS += -DUSE_ASE
 else
 	LDFLAGS += -lpthread
 	LDFLAGS += -ljson-c
-	LDFLAGS += -lfpga
+	LDFLAGS += -lopae-c
 endif
 
 all: user_clock_test

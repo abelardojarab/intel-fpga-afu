@@ -2,17 +2,17 @@ LDFLAGS ?=
 CFLAGS = -g -O2 -fPIC
 
 CFLAGS += -I$(prefix)/common/include
-CFLAGS += -I$(prefix)/libfpga/src
+CFLAGS += -I$(prefix)/libopae/src
 CFLAGS += -D FPGA_DMA_DEBUG=0
 LDFLAGS += -L$(prefix)/build/lib -luuid 
 
 ifeq ($(USE_ASE),1)
-	LDFLAGS += -lfpga-ASE
+	LDFLAGS += -lopae-c-ASE
 	CFLAGS += -DUSE_ASE
 else
 	LDFLAGS += -lpthread
 	LDFLAGS += -ljson-c
-	LDFLAGS += -lfpga
+	LDFLAGS += -lopae-c
 endif
 
 all: fpga_dma_test

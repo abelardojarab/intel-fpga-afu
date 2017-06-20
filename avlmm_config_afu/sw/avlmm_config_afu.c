@@ -5,7 +5,7 @@
 //#include <fpga/enum.h>
 //#include <fpga/access.h>
 //#include <fpga/common.h>
-#include <fpga/fpga.h>
+#include <opae/fpga.h>
 
 int usleep(unsigned);
 

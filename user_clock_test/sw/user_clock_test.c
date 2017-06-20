@@ -2,9 +2,11 @@
 #include <string.h>
 #include <unistd.h>
 #include <uuid/uuid.h>
-#include <fpga/enum.h>
-#include <fpga/access.h>
-#include <fpga/common.h>
+#include <opae/enum.h>
+#include <opae/mmio.h>
+#include <opae/utils.h>
+#include <opae/properties.h>
+#include <opae/access.h>
 
 int usleep(unsigned);
 
@@ -126,7 +128,7 @@ int main(int argc, char *argv[])
 	res = fpgaPropertiesSetObjectType(filter, FPGA_AFC);
 	ON_ERR_GOTO(res, out_destroy_prop, "setting object type");
 
-	res = fpgaPropertiesSetGuid(filter, guid);
+	res = fpgaPropertiesSetGUID(filter, guid);
 	ON_ERR_GOTO(res, out_destroy_prop, "setting GUID");
 
 	/* TODO: Add selection via BDF / device ID */

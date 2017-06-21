@@ -958,7 +958,6 @@ int main(int argc, char *argv[])
 	fpga_guid          guid;
 	uint32_t           num_matches;
 	uint64_t data = 0;
-	uint64_t *mmio_ptr   = NULL;
 	uint64_t dfh_size = 0;
 	bool found_dfh = 0;
 
@@ -994,7 +993,7 @@ int main(int argc, char *argv[])
 	res = fpgaOpen(afc_token, &afc_handle, 0);
 	ON_ERR_GOTO(res, out_destroy_tok, "opening AFC");
 
-	res = fpgaMapMMIO(afc_handle, 0, &mmio_ptr);
+	res = fpgaMapMMIO(afc_handle, 0, NULL);
 	ON_ERR_GOTO(res, out_close, "mapping MMIO space");
 
 	printf("Running Test\n");

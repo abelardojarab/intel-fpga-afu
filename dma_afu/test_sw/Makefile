@@ -7,7 +7,7 @@ CFLAGS += -D FPGA_DMA_DEBUG=0
 LDFLAGS += -L$(prefix)/build/lib -luuid 
 
 ifeq ($(USE_ASE),1)
-	LDFLAGS += -lfpga-ASE
+	LDFLAGS += -lfpga-ase
 	CFLAGS += -DUSE_ASE
 else
 	LDFLAGS += -lpthread

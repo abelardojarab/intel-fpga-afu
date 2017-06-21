@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <uuid/uuid.h>
 #include <opae/fpga.h>
+#include <opae/properties.h>
 #include <assert.h>
 
 #include "RC4memtest.h"

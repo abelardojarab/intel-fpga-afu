@@ -29,26 +29,28 @@
  * \brief FPGA DMA User-mode driver
  */
 
-#include <opae/fpga.h>
+#include <stdlib.h>
 #include <stdbool.h>
-#include "fpga_dma.h"
+#include <string.h>
+#include <opae/fpga.h>
 #include "fpga_dma_internal.h"
+#include "fpga_dma.h"
 
 // Internal Functions
 // End of feature list
 static bool _fpga_dma_feature_eol(uint64_t dfh) {
-   return ((dfh >> 40) & 1) == 1;
+   return ((dfh >> AFU_DFH_EOL_OFFSET) & 1) == 1;
 }
 
 // Feature type is BBB
 static bool _fpga_dma_feature_is_bbb(uint64_t dfh) {
    // BBB is type 2
-   return ((dfh >> 60) & 0xf) == 2;
+   return ((dfh >> AFU_DFH_TYPE_OFFSET) & 0xf) == FPGA_DMA_BBB;
 }
 
 // Offset to the next feature header
 static uint64_t _fpga_dma_feature_next(uint64_t dfh) {
-   return (dfh >> 16) & 0xffffff;
+   return (dfh >> AFU_DFH_NEXT_OFFSET) & 0xffffff;
 }
 
 // copy bytes to MMIO
@@ -80,6 +82,13 @@ static fpga_result _do_dma(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, in
    uint64_t data;
    fpga_result res;
 
+   // src, dst and count must be 64-byte aligned
+   if(dst%FPGA_DMA_ALIGN_BYTES  !=0 ||
+      src%FPGA_DMA_ALIGN_BYTES  !=0 ||
+      count%FPGA_DMA_ALIGN_BYTES!=0) {      
+      return FPGA_INVALID_PARAM;
+   }
+
    desc.rd_address = src & FPGA_DMA_MASK_32_BIT;
    desc.wr_address = dst & FPGA_DMA_MASK_32_BIT;
    desc.len = count;
@@ -108,9 +117,10 @@ static fpga_result _do_dma(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, in
    res = _copy_to_mmio(dma_h->fpga_h, dma_h->dma_base+FPGA_DMA_DESC, (uint64_t *)&desc, sizeof(desc));
 
    fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_base+FPGA_DMA_CSR, &data);
-   while(data !=0x2) {
-      fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_base+FPGA_DMA_CSR, &data);
-   }
+   // TODO: change to bitmasks
+   while(data != FPGA_DMA_DESC_BUFFER_EMPTY) {
+      fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_base+FPGA_DMA_CSR, &data);      
+   }   
    return FPGA_OK;
 }
 
@@ -189,6 +199,9 @@ fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_h, uint64_t dst, uint64_t sr
 
    fpga_result res = FPGA_OK;
    uint32_t i;
+   uint64_t *dma_buf_ptr  = NULL;
+   uint64_t dma_buf_wsid, dma_buf_iova;
+   fpga_handle afc_h; 
 
    if(!dma_h)
       return FPGA_INVALID_PARAM;
@@ -196,50 +209,79 @@ fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_h, uint64_t dst, uint64_t sr
    if(type >= FPGA_MAX_TRANSFER_TYPE)
       return FPGA_INVALID_PARAM;
 
-   if(type == HOST_TO_FPGA_ST || type == FPGA_TO_HOST_ST)
+   if(!(type == HOST_TO_FPGA_MM || type == FPGA_TO_HOST_MM || type == FPGA_TO_FPGA_MM))
       return FPGA_NOT_SUPPORTED;
 
-   uint32_t dma_chunks = count/FPGA_DMA_BUF_SIZE;
+   afc_h = dma_h->fpga_h;
+   if(!afc_h)
+      return FPGA_INVALID_PARAM;
+
+   // Buffer size must be page aligned for prepareBuffer
+   res = fpgaPrepareBuffer(afc_h, FPGA_DMA_BUF_SIZE, (void **)&dma_buf_ptr, &dma_buf_wsid, 0);
+   ON_ERR_GOTO(res, out, "fpgaPrepareBuffer");
+   
+   res = fpgaGetIOAddress(afc_h, dma_buf_wsid, &dma_buf_iova);
+   ON_ERR_GOTO(res, rel_buf, "fpgaGetIOAddress");
+
+   // Break the transfer into one or more descriptors
+   // User buffer data is copied into a DMA-able buffer 
+   // allocated within the driver. Further performance 
+   // optimizations may be implemented in the future.
+   uint32_t dma_chunks = count/FPGA_DMA_BUF_SIZE;      
    count -= (dma_chunks*FPGA_DMA_BUF_SIZE);
    if(type == HOST_TO_FPGA_MM) {
       for(i=0; i<dma_chunks; i++) {
-         res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), (src+i*FPGA_DMA_BUF_SIZE) | 0x1000000000000, FPGA_DMA_BUF_SIZE);
-         if(res != FPGA_OK)
-            return res;
+         memcpy(dma_buf_ptr, (void*)(src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);         
+         res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), dma_buf_iova | 0x1000000000000, FPGA_DMA_BUF_SIZE);
+         ON_ERR_GOTO(res, rel_buf, "HOST_TO_FPGA_MM Transfer failed\n");
       }
       if(count > 0) {
-         res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), (src+dma_chunks*FPGA_DMA_BUF_SIZE) | 0x1000000000000, count);
-         if(res != FPGA_OK)
-            return res;
+         memcpy(dma_buf_ptr, (void*)(src+dma_chunks*FPGA_DMA_BUF_SIZE), count);
+         res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_buf_iova | 0x1000000000000, count);
+         ON_ERR_GOTO(res, rel_buf, "HOST_TO_FPGA_MM Transfer failed");
       }
    }
    else if(type == FPGA_TO_HOST_MM) {
       for(i=0; i<dma_chunks; i++) {
-         res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE) | 0x1000000000000, (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);
-         if(res != FPGA_OK)
-            return res;
+         res = _do_dma(dma_h, dma_buf_iova | 0x1000000000000, (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);
+         ON_ERR_GOTO(res, rel_buf, "FPGA_TO_HOST_MM Transfer failed");
+
+         // hack: extra read to fence host memory writes
+         res = _do_dma(dma_h, dma_buf_iova | 0x1000000000000, dma_buf_iova | 0x1000000000000, 64);
+         ON_ERR_GOTO(res, rel_buf, "FPGA_TO_HOST_MM Transfer failed");
+
+         memcpy((void*)(dst+i*FPGA_DMA_BUF_SIZE), dma_buf_ptr, FPGA_DMA_BUF_SIZE);
       }
       if(count > 0) {
-         res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE) | 0x1000000000000, (src+dma_chunks*FPGA_DMA_BUF_SIZE), count);
-         if(res != FPGA_OK)
-            return res;
+         res = _do_dma(dma_h, dma_buf_iova | 0x1000000000000, (src+dma_chunks*FPGA_DMA_BUF_SIZE), count);
+         ON_ERR_GOTO(res, rel_buf, "FPGA_TO_HOST_MM Transfer failed");
+
+         // hack: extra read to fence host memory writes
+         res = _do_dma(dma_h, dma_buf_iova | 0x1000000000000, dma_buf_iova | 0x1000000000000, 64);
+         ON_ERR_GOTO(res, rel_buf, "FPGA_TO_HOST_MM Transfer failed");
+
+         memcpy((void*)(dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_buf_ptr, count);
       }
    }
    else if(type == FPGA_TO_FPGA_MM) {
       for(i=0; i<dma_chunks; i++) {
          res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);
-         if(res != FPGA_OK)
-            return res;
+         ON_ERR_GOTO(res, rel_buf, "FPGA_TO_FPGA_MM Transfer failed");
       }
       if(count > 0) {
          res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), (src+dma_chunks*FPGA_DMA_BUF_SIZE), count);
-         if(res != FPGA_OK)
-            return res;
+         ON_ERR_GOTO(res, rel_buf, "FPGA_TO_FPGA_MM Transfer failed");
       }
-   } else {
+   }
+   else {
       return FPGA_NOT_SUPPORTED;
    }
 
+rel_buf:
+   res = fpgaReleaseBuffer(afc_h, dma_buf_wsid);
+   ON_ERR_GOTO(res, out, "fpgaReleaseBuffer");
+
+out:
    return res;
 }
 

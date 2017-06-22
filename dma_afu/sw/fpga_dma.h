@@ -27,6 +27,12 @@
 /**
  * \fpga_dma.h
  * \brief FPGA DMA BBB API Header
+ *
+ * Known Limitations
+ * - Driver does not support Address Span Extender
+ * - Implementation is not optimized for performance. 
+ *   User buffer data is copied into a DMA-able buffer before the transfer
+ * - Supports only synchronous (blocking) transfers
  */
 
 #ifndef __FPGA_DMA_H__
@@ -35,7 +41,7 @@
 #include <opae/fpga.h>
 
 /*
- * macro to check return codes
+ * macro for checking return codes
  */
 #define ON_ERR_GOTO(res, label, desc)\
   do {\
@@ -48,13 +54,12 @@
 /*
 * The DMA driver supports host to FPGA, FPGA to host and FPGA
 * to FPGA transfers. The FPGA interface can be streaming
-* or memory-mapped.
+* or memory-mapped. Streaming interfaces are not currently
+* supported.
 */
 typedef enum {
    HOST_TO_FPGA_MM = 0, //Memory mapped FPGA interface
-   HOST_TO_FPGA_ST, //Streaming FPGA interface
    FPGA_TO_HOST_MM, //Memory mapped FPGA interface
-   FPGA_TO_HOST_ST, //Streaming FPGA interface
    FPGA_TO_FPGA_MM, //Memory mapped FPGA interface
    FPGA_MAX_TRANSFER_TYPE,
 }fpga_dma_transfer_t;
@@ -91,12 +96,8 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle *dma);
 * @param[in] type    Must be one of the following values:
 *                    HOST_TO_FPGA_MM - Copy data from host memory to memory mapped FPGA interface.
 *                                      User must specify valid src and dst.
-*                    HOST_TO_FPGA_ST - Copy data from host memory to streaming FPGA interface
-*                                      User must specify a valid src. dst is ignored.
 *                    FPGA_TO_HOST_MM - Copy data from memory mapped FPGA interface to host memory
 *                                      User must specify valid src and dst.
-*                    FPGA_TO_HOST_ST - Copy data from streaming FPGA interface to host memory
-*                                      User must specify a valid dst. src is ignored.
 *                    FPGA_TO_FPGA_MM - Copy data between memory mapped FPGA interfaces
 *                                      User must specify valid src and dst.
 * @return fpga_result FPGA_OK on success, return code otherwise
@@ -106,7 +107,7 @@ fpga_result fpgaDmaTransferSync(fpga_dma_handle dma, uint64_t dst, uint64_t src,
                                 fpga_dma_transfer_t type);
 
 /**
-* fpgaDmaTransferAsync
+* fpgaDmaTransferAsync (Not supported)
 *
 * @brief             Perform a non-blocking copy of 'count' bytes from memory area pointed
 *                    by src to memory area pointed by dst where fpga_dma_transfer_t specifies the
@@ -118,12 +119,8 @@ fpga_result fpgaDmaTransferSync(fpga_dma_handle dma, uint64_t dst, uint64_t src,
 * @param[in] type    Must be one of the following values:
 *                    HOST_TO_FPGA_MM - Copy data from host memory to memory mapped FPGA interface.
 *                                      User must specify valid src and dst.
-*                    HOST_TO_FPGA_ST - Copy data from host memory to streaming FPGA interface
-*                                      User must specify a valid src. dst is ignored.
 *                    FPGA_TO_HOST_MM - Copy data from memory mapped FPGA interface to host memory
 *                                      User must specify valid src and dst.
-*                    FPGA_TO_HOST_ST - Copy data from streaming FPGA interface to host memory
-*                                      User must specify a valid dst. src is ignored.
 *                    FPGA_TO_FPGA_MM - Copy data between memory mapped FPGA interfaces
 *                                      User must specify valid src and dst.
 * @param[in] cb      Callback to invoke when DMA transfer is complete

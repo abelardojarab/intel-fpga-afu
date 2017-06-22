@@ -38,6 +38,9 @@
 #define FPGA_DMA_UUID_L 0x94eb7d79c7c01ca3
 
 #define AFU_DFH_REG 0x0
+#define AFU_DFH_NEXT_OFFSET 16
+#define AFU_DFH_EOL_OFFSET 40
+#define AFU_DFH_TYPE_OFFSET 60
 
 // BBB Feature ID (refer CCI-P spec)
 #define FPGA_DMA_BBB 0x2
@@ -50,6 +53,10 @@
 #define FPGA_DMA_DESC 0x60
 
 #define FPGA_DMA_MASK_32_BIT 0xFFFFFFFF
+
+#define FPGA_DMA_DESC_BUFFER_EMPTY 0x2
+
+#define FPGA_DMA_ALIGN_BYTES 64
 
 // Granularity of DMA transfer (maximum bytes that can be packed
 // in a single descriptor).This value must match configuration of

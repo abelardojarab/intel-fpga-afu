@@ -98,8 +98,7 @@ int main(int argc, char *argv[])
 	res = fpgaOpen(afc_token, &afc_handle, 0);
 	ON_ERR_GOTO(res, out_destroy_tok, "opening AFC");
 
-	volatile uint64_t *mmio_ptr   = NULL;
-	res = fpgaMapMMIO(afc_handle, 0, &mmio_ptr);
+	res = fpgaMapMMIO(afc_handle, 0, NULL);
 	ON_ERR_GOTO(res, out_close, "mapping MMIO space");
 
 	printf("Running Test\n");

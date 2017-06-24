@@ -74,6 +74,8 @@ static fpga_result _copy_to_mmio(fpga_handle afc_handle, uint64_t mmio_dst, uint
       host_addr += 1;
       dev_addr += 8;
    }
+   
+   return FPGA_OK;
 }
 
 static fpga_result _do_dma(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, int count)
@@ -142,6 +144,7 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle *dma_p) {
       return FPGA_NO_MEMORY;
    }
    dma_h->fpga_h = fpga;
+   dma_h->dma_buf_ptr = NULL;
    dma_h->mmio_num = 0;
    dma_h->mmio_offset = 0;
 
@@ -190,6 +193,19 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle *dma_p) {
       res = FPGA_NOT_FOUND;
    }
 
+   // Buffer size must be page aligned for prepareBuffer
+   res = fpgaPrepareBuffer(dma_h->fpga_h, FPGA_DMA_BUF_SIZE, (void **)&(dma_h->dma_buf_ptr), &dma_h->dma_buf_wsid, 0);
+   ON_ERR_GOTO(res, out, "fpgaPrepareBuffer");
+
+   res = fpgaGetIOAddress(dma_h->fpga_h, dma_h->dma_buf_wsid, &dma_h->dma_buf_iova);
+   ON_ERR_GOTO(res, rel_buf, "fpgaGetIOAddress");
+   
+   return res;
+
+rel_buf:
+   res = fpgaReleaseBuffer(dma_h->fpga_h, dma_h->dma_buf_wsid);
+   ON_ERR_GOTO(res, out, "fpgaReleaseBuffer");
+
 out:
    return res;
 }
@@ -199,9 +215,6 @@ fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_h, uint64_t dst, uint64_t sr
 
    fpga_result res = FPGA_OK;
    uint32_t i;
-   uint64_t *dma_buf_ptr  = NULL;
-   uint64_t dma_buf_wsid, dma_buf_iova;
-   fpga_handle afc_h; 
 
    if(!dma_h)
       return FPGA_INVALID_PARAM;
@@ -212,16 +225,10 @@ fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_h, uint64_t dst, uint64_t sr
    if(!(type == HOST_TO_FPGA_MM || type == FPGA_TO_HOST_MM || type == FPGA_TO_FPGA_MM))
       return FPGA_NOT_SUPPORTED;
 
-   afc_h = dma_h->fpga_h;
-   if(!afc_h)
+   if(!dma_h->fpga_h)
       return FPGA_INVALID_PARAM;
 
    // Buffer size must be page aligned for prepareBuffer
-   res = fpgaPrepareBuffer(afc_h, FPGA_DMA_BUF_SIZE, (void **)&dma_buf_ptr, &dma_buf_wsid, 0);
-   ON_ERR_GOTO(res, out, "fpgaPrepareBuffer");
-   
-   res = fpgaGetIOAddress(afc_h, dma_buf_wsid, &dma_buf_iova);
-   ON_ERR_GOTO(res, rel_buf, "fpgaGetIOAddress");
 
    // Break the transfer into one or more descriptors
    // User buffer data is copied into a DMA-able buffer 
@@ -231,55 +238,51 @@ fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_h, uint64_t dst, uint64_t sr
    count -= (dma_chunks*FPGA_DMA_BUF_SIZE);
    if(type == HOST_TO_FPGA_MM) {
       for(i=0; i<dma_chunks; i++) {
-         memcpy(dma_buf_ptr, (void*)(src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);         
-         res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), dma_buf_iova | 0x1000000000000, FPGA_DMA_BUF_SIZE);
-         ON_ERR_GOTO(res, rel_buf, "HOST_TO_FPGA_MM Transfer failed\n");
+         memcpy(dma_h->dma_buf_ptr, (void*)(src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);         
+         res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova | 0x1000000000000, FPGA_DMA_BUF_SIZE);
+         ON_ERR_GOTO(res, out, "HOST_TO_FPGA_MM Transfer failed\n");
       }
       if(count > 0) {
-         memcpy(dma_buf_ptr, (void*)(src+dma_chunks*FPGA_DMA_BUF_SIZE), count);
-         res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_buf_iova | 0x1000000000000, count);
-         ON_ERR_GOTO(res, rel_buf, "HOST_TO_FPGA_MM Transfer failed");
+         memcpy(dma_h->dma_buf_ptr, (void*)(src+dma_chunks*FPGA_DMA_BUF_SIZE), count);
+         res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova | 0x1000000000000, count);
+         ON_ERR_GOTO(res, out, "HOST_TO_FPGA_MM Transfer failed");
       }
    }
    else if(type == FPGA_TO_HOST_MM) {
       for(i=0; i<dma_chunks; i++) {
-         res = _do_dma(dma_h, dma_buf_iova | 0x1000000000000, (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);
-         ON_ERR_GOTO(res, rel_buf, "FPGA_TO_HOST_MM Transfer failed");
+         res = _do_dma(dma_h, dma_h->dma_buf_iova | 0x1000000000000, (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);
+         ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
 
          // hack: extra read to fence host memory writes
-         res = _do_dma(dma_h, dma_buf_iova | 0x1000000000000, dma_buf_iova | 0x1000000000000, 64);
-         ON_ERR_GOTO(res, rel_buf, "FPGA_TO_HOST_MM Transfer failed");
+         res = _do_dma(dma_h, dma_h->dma_buf_iova | 0x1000000000000, dma_h->dma_buf_iova | 0x1000000000000, 64);
+         ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
 
-         memcpy((void*)(dst+i*FPGA_DMA_BUF_SIZE), dma_buf_ptr, FPGA_DMA_BUF_SIZE);
+         memcpy((void*)(dst+i*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr, FPGA_DMA_BUF_SIZE);
       }
       if(count > 0) {
-         res = _do_dma(dma_h, dma_buf_iova | 0x1000000000000, (src+dma_chunks*FPGA_DMA_BUF_SIZE), count);
-         ON_ERR_GOTO(res, rel_buf, "FPGA_TO_HOST_MM Transfer failed");
+         res = _do_dma(dma_h, dma_h->dma_buf_iova | 0x1000000000000, (src+dma_chunks*FPGA_DMA_BUF_SIZE), count);
+         ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
 
          // hack: extra read to fence host memory writes
-         res = _do_dma(dma_h, dma_buf_iova | 0x1000000000000, dma_buf_iova | 0x1000000000000, 64);
-         ON_ERR_GOTO(res, rel_buf, "FPGA_TO_HOST_MM Transfer failed");
+         res = _do_dma(dma_h, dma_h->dma_buf_iova | 0x1000000000000, dma_h->dma_buf_iova | 0x1000000000000, 64);
+         ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
 
-         memcpy((void*)(dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_buf_ptr, count);
+         memcpy((void*)(dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr, count);
       }
    }
    else if(type == FPGA_TO_FPGA_MM) {
       for(i=0; i<dma_chunks; i++) {
          res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);
-         ON_ERR_GOTO(res, rel_buf, "FPGA_TO_FPGA_MM Transfer failed");
+         ON_ERR_GOTO(res, out, "FPGA_TO_FPGA_MM Transfer failed");
       }
       if(count > 0) {
          res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), (src+dma_chunks*FPGA_DMA_BUF_SIZE), count);
-         ON_ERR_GOTO(res, rel_buf, "FPGA_TO_FPGA_MM Transfer failed");
+         ON_ERR_GOTO(res, out, "FPGA_TO_FPGA_MM Transfer failed");
       }
    }
    else {
       return FPGA_NOT_SUPPORTED;
    }
-
-rel_buf:
-   res = fpgaReleaseBuffer(afc_h, dma_buf_wsid);
-   ON_ERR_GOTO(res, out, "fpgaReleaseBuffer");
 
 out:
    return res;

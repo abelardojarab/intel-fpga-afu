@@ -38,11 +38,6 @@
 #define HELLO_AFU_ID              "331DB30C-9885-41EA-9081-F88B8F655CAA"
 #define TEST_BUF_SIZE (10*1024*1024)
 
-void print_err(const char *s, fpga_result res)
-{
-   fprintf(stderr, "Error %s: %s\n", s, fpgaErrStr(res));
-}
-
 void fill_buffer(char *buf) {
    uint32_t i=0;
    // use a deterministic seed to generate pseudo-random numbers
@@ -113,7 +108,7 @@ int main(int argc, char *argv[]) {
    ON_ERR_GOTO(res, out_destroy_prop, "fpgaEnumerate");
 
    if(num_matches < 1) {
-      print_err("Number of matches < 1",FPGA_INVALID_PARAM);
+      fprintf(stderr, "Error %s: %s\n", "Number of matches < 1",FPGA_INVALID_PARAM);
       ON_ERR_GOTO(FPGA_INVALID_PARAM, out_destroy_prop, "num_matches<1");
    }
 

@@ -46,7 +46,7 @@
 #define ON_ERR_GOTO(res, label, desc)\
   do {\
     if ((res) != FPGA_OK) {\
-      print_err((desc), (res));\
+      fprintf(stderr, "Error %s: %s\n", (desc), fpgaErrStr(res));\
       goto label;\
     }\
   } while (0)

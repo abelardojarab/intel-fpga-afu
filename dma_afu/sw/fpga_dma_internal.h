@@ -116,6 +116,9 @@ struct _dma_handle_t
    uint64_t mmio_offset;
    uint64_t dma_base;
    uint64_t dma_offset;
+   uint64_t *dma_buf_ptr;
+   uint64_t dma_buf_wsid;
+   uint64_t dma_buf_iova;
 };
 
 #endif // __FPGA_DMA_INT_H__

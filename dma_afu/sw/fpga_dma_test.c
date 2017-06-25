@@ -25,6 +25,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include <string.h>
+#include <uuid/uuid.h>
 #include <opae/fpga.h>
 #include "fpga_dma.h"
 /**
@@ -37,23 +38,38 @@
 
 #define HELLO_AFU_ID              "331DB30C-9885-41EA-9081-F88B8F655CAA"
 #define TEST_BUF_SIZE (10*1024*1024)
+#define ASE_TEST_BUF_SIZE (4*1024)
 
-void fill_buffer(char *buf) {
+static int err_cnt = 0;
+/*
+ * macro for checking return codes
+ */
+#define ON_ERR_GOTO(res, label, desc)\
+  do {\
+    if ((res) != FPGA_OK) {\
+      err_cnt++;\
+      fprintf(stderr, "Error %s: %s\n", (desc), fpgaErrStr(res));\
+      goto label;\
+    }\
+  } while (0)
+
+
+void fill_buffer(char *buf, uint32_t size) {
    uint32_t i=0;
    // use a deterministic seed to generate pseudo-random numbers
    srand(99);
 
-   for(i=0; i<TEST_BUF_SIZE; i++) {
+   for(i=0; i<size; i++) {
       *buf = rand()%256;
       buf++;
    }
 }
 
-fpga_result verify_buffer(char *buf) {
+fpga_result verify_buffer(char *buf, uint32_t size) {
    uint32_t i, rnum=0;
    srand(99);
 
-   for(i=0; i<TEST_BUF_SIZE; i++) {
+   for(i=0; i<size; i++) {
       rnum = rand()%256;
       if((*buf&0xFF) != rnum) {
          printf("Invalid data at %d Expected = %x Actual = %x\n",i,rnum,(*buf&0xFF));
@@ -65,8 +81,8 @@ fpga_result verify_buffer(char *buf) {
    return FPGA_OK;
 }
 
-void clear_buffer(char *buf) {
-   memset(buf, 0, TEST_BUF_SIZE);
+void clear_buffer(char *buf, uint32_t size) {
+   memset(buf, 0, size);
 }
 
 int main(int argc, char *argv[]) {
@@ -79,9 +95,7 @@ int main(int argc, char *argv[]) {
    fpga_guid guid;
    uint32_t num_matches;
    volatile uint64_t *mmio_ptr = NULL;
-   uint64_t *dma_buf_ptr  = NULL;
-   uint64_t dma_buf_wsid, dma_buf_iova;
-   uint32_t i=0;
+   uint64_t *dma_buf_ptr  = NULL;   
    uint32_t use_ase;
 
    if(argc < 2) {
@@ -108,7 +122,7 @@ int main(int argc, char *argv[]) {
    ON_ERR_GOTO(res, out_destroy_prop, "fpgaEnumerate");
 
    if(num_matches < 1) {
-      fprintf(stderr, "Error %s: %s\n", "Number of matches < 1",FPGA_INVALID_PARAM);
+      printf("Error: Number of matches < 1");
       ON_ERR_GOTO(FPGA_INVALID_PARAM, out_destroy_prop, "num_matches<1");
    }
 
@@ -128,9 +142,14 @@ int main(int argc, char *argv[]) {
    res = fpgaDmaOpen(afc_h, &dma_h);
    ON_ERR_GOTO(res, out_unmap, "fpgaDmaOpen");
 
-   dma_buf_ptr = (uint64_t*)malloc(TEST_BUF_SIZE);
+   if(use_ase)
+      count = ASE_TEST_BUF_SIZE;
+   else
+      count = TEST_BUF_SIZE;
 
-   fill_buffer((char*)dma_buf_ptr);
+   dma_buf_ptr = (uint64_t*)malloc(count);
+
+   fill_buffer((char*)dma_buf_ptr, count);
 
    // Test procedure
    // - Fill host buffer with pseudo-random data
@@ -139,33 +158,32 @@ int main(int argc, char *argv[]) {
    // - Copy from FPGA buffer to host buffer
    // - Verify host buffer data
    // - Clear host buffer
-   // - Copy FPGA buffer at address 0x0 to FPGA buffer at addr TEST_BUF_SIZE
-   // - Copy data from FPGA buffer at addr TEST_BUF_SIZE to host buffer
+   // - Copy FPGA buffer at address 0x0 to FPGA buffer at addr "count"
+   // - Copy data from FPGA buffer at addr "count" to host buffer
    // - Verify host buffer data
 
    // copy from host to fpga
-   count = TEST_BUF_SIZE;
    res = fpgaDmaTransferSync(dma_h, 0x0 /*dst*/, (uint64_t)dma_buf_ptr /*src*/, count, HOST_TO_FPGA_MM);
    ON_ERR_GOTO(res, out_dma_close, "fpgaDmaTransferSync HOST_TO_FPGA_MM");
-   clear_buffer((char*)dma_buf_ptr);
+   clear_buffer((char*)dma_buf_ptr, count);
 
    // copy from fpga to host
    res = fpgaDmaTransferSync(dma_h, (uint64_t)dma_buf_ptr /*dst*/, 0x0 /*src*/, count, FPGA_TO_HOST_MM);
    ON_ERR_GOTO(res, out_dma_close, "fpgaDmaTransferSync FPGA_TO_HOST_MM");
-   res = verify_buffer((char*)dma_buf_ptr);
+   res = verify_buffer((char*)dma_buf_ptr, count);
    ON_ERR_GOTO(res, out_dma_close, "verify_buffer");
 
-   clear_buffer((char*)dma_buf_ptr);
+   clear_buffer((char*)dma_buf_ptr, count);
 
    // copy from fpga to fpga
-   res = fpgaDmaTransferSync(dma_h, TEST_BUF_SIZE /*dst*/, 0x0 /*src*/, count, FPGA_TO_FPGA_MM);
+   res = fpgaDmaTransferSync(dma_h, count /*dst*/, 0x0 /*src*/, count, FPGA_TO_FPGA_MM);
    ON_ERR_GOTO(res, out_dma_close, "fpgaDmaTransferSync FPGA_TO_FPGA_MM");
 
    // copy from fpga to host
-   res = fpgaDmaTransferSync(dma_h, (uint64_t)dma_buf_ptr /*dst*/, TEST_BUF_SIZE /*src*/, count, FPGA_TO_HOST_MM);
+   res = fpgaDmaTransferSync(dma_h, (uint64_t)dma_buf_ptr /*dst*/, count /*src*/, count, FPGA_TO_HOST_MM);
    ON_ERR_GOTO(res, out_dma_close, "fpgaDmaTransferSync FPGA_TO_HOST_MM");
 
-   res = verify_buffer((char*)dma_buf_ptr);
+   res = verify_buffer((char*)dma_buf_ptr, count);
    ON_ERR_GOTO(res, out_dma_close, "verify_buffer");
 
 out_dma_close:
@@ -191,5 +209,5 @@ out_destroy_prop:
    ON_ERR_GOTO(res, out, "fpgaDestroyProperties");
 
 out:
-   return res;
+   return err_cnt;
 }

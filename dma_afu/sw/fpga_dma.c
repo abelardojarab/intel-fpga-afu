@@ -36,6 +36,21 @@
 #include "fpga_dma_internal.h"
 #include "fpga_dma.h"
 
+static int err_cnt = 0;
+
+/*
+ * macro for checking return codes
+ */
+#define ON_ERR_GOTO(res, label, desc)\
+  do {\
+    if ((res) != FPGA_OK) {\
+      err_cnt++;\
+      fprintf(stderr, "Error %s: %s\n", (desc), fpgaErrStr(res));\
+      goto label;\
+    }\
+  } while (0)
+
+
 // Internal Functions
 // End of feature list
 static bool _fpga_dma_feature_eol(uint64_t dfh) {
@@ -103,16 +118,16 @@ static fpga_result _do_dma(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, in
    desc.wr_address_ext = (dst >> 32) & FPGA_DMA_MASK_32_BIT;
    desc.control = 0x80000000;
 
-   debug_print("desc.rd_address = %lx\n",desc.rd_address);
-   debug_print("desc.wr_address = %lx\n",desc.wr_address);
-   debug_print("desc.len = %lx\n",desc.len);
-   debug_print("desc.wr_burst_count = %lx\n",desc.wr_burst_count);
-   debug_print("desc.rd_burst_count = %lx\n",desc.rd_burst_count);
-   debug_print("desc.wr_stride %lx\n",desc.wr_stride);
-   debug_print("desc.rd_stride %lx\n",desc.rd_stride);
-   debug_print("desc.rd_address_ext %lx\n",desc.rd_address_ext);
-   debug_print("desc.wr_address_ext %lx\n",desc.wr_address_ext);
-   debug_print("desc.control %lx\n",desc.control);
+   debug_print("desc.rd_address = %x\n",desc.rd_address);
+   debug_print("desc.wr_address = %x\n",desc.wr_address);
+   debug_print("desc.len = %x\n",desc.len);
+   debug_print("desc.wr_burst_count = %x\n",desc.wr_burst_count);
+   debug_print("desc.rd_burst_count = %x\n",desc.rd_burst_count);
+   debug_print("desc.wr_stride %x\n",desc.wr_stride);
+   debug_print("desc.rd_stride %x\n",desc.rd_stride);
+   debug_print("desc.rd_address_ext %x\n",desc.rd_address_ext);
+   debug_print("desc.wr_address_ext %x\n",desc.wr_address_ext);
+   debug_print("desc.control %x\n",desc.control);
 
    debug_print("SGDMA_CSR_BASE = %lx SGDMA_DESC_BASE=%lx\n",dma_h->dma_base+FPGA_DMA_CSR, dma_h->dma_base+FPGA_DMA_DESC);
 
@@ -123,7 +138,7 @@ static fpga_result _do_dma(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, in
    while(data != FPGA_DMA_DESC_BUFFER_EMPTY) {
       fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_base+FPGA_DMA_CSR, &data);      
    }   
-   return FPGA_OK;
+   return res;
 }
 
 // Public APIs
@@ -200,14 +215,14 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle *dma_p) {
    res = fpgaGetIOAddress(dma_h->fpga_h, dma_h->dma_buf_wsid, &dma_h->dma_buf_iova);
    ON_ERR_GOTO(res, rel_buf, "fpgaGetIOAddress");
    
-   return res;
+   return FPGA_OK;
 
 rel_buf:
    res = fpgaReleaseBuffer(dma_h->fpga_h, dma_h->dma_buf_wsid);
    ON_ERR_GOTO(res, out, "fpgaReleaseBuffer");
 
 out:
-   return res;
+   return err_cnt;
 }
 
 fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, size_t count,
@@ -285,7 +300,7 @@ fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_h, uint64_t dst, uint64_t sr
    }
 
 out:
-   return res;
+   return err_cnt;
 }
 
 fpga_result fpgaDmaTransferAsync(fpga_dma_handle dma, uint64_t dst, uint64_t src, size_t count,
@@ -294,10 +309,19 @@ fpga_result fpgaDmaTransferAsync(fpga_dma_handle dma, uint64_t dst, uint64_t src
    return FPGA_NOT_SUPPORTED;
 }
 
-fpga_result fpgaDmaClose(fpga_dma_handle dma_h) {
-   if(!dma_h) {
-      free((void*)dma_h);
-   }
-   return FPGA_OK;
+fpga_result fpgaDmaClose(fpga_dma_handle dma_h) {   
+   fpga_result res = FPGA_OK;
+   if(!dma_h)
+      return FPGA_INVALID_PARAM;
+
+   if(!dma_h->fpga_h)
+      return FPGA_INVALID_PARAM;
+
+   res = fpgaReleaseBuffer(dma_h->fpga_h, dma_h->dma_buf_wsid);
+   ON_ERR_GOTO(res, out, "fpgaReleaseBuffer failed");
+
+out:
+   free((void*)dma_h);
+   return err_cnt;
 }
 

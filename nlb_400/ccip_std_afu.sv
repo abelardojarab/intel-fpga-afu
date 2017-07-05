@@ -223,19 +223,4 @@ nlb_lpbk nlb_lpbk(
 
 `endif // SIM_MODE
 
-// =================================================================
-// ccip_debug is a reference debug module for tapping cci-p signals
-// =================================================================
-
-/*
-ccip_debug inst_ccip_debug(
-  .pClk                (pClk),        
-  .pck_cp2af_pwrState  (pck_cp2af_pwrState),
-  .pck_cp2af_error     (pck_cp2af_error),
-
-  .pck_cp2af_sRx       (pck_cp2af_sRx),   
-  .pck_af2cp_sTx       (pck_af2cp_sTx)    
-);
-*/
-
 endmodule

@@ -17,6 +17,7 @@ printf("Errors %d - (2 are expected)\n", errors);
 
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
 #define RC4_SWAP_S(a, b) {rc4_S_type tmp = a; a = b; b = tmp;}
 
@@ -134,4 +135,65 @@ public:
 	
 private:
 	RC4State m_state;
+};
+
+static int prev_rand = 0;
+
+static inline int myrand (void)
+{
+    return(((prev_rand = prev_rand * 214013L + 2531011L) >> 16) & 0x7fff);
+}
+
+class SimpleRandomMemtest
+{
+public:
+	SimpleRandomMemtest() {}
+	virtual ~SimpleRandomMemtest() {}
+	
+	void setup_key(const char *key)
+	{
+		prev_rand = 0;
+	}
+	
+	static inline char get_byte()
+	{
+		char buf;	
+		write_bytes(&buf, 1);
+		return buf;
+	}
+	
+	static inline int check_bytes(char *buf, int length)
+	{
+		int errors = 0;
+		//#define MAX_BUF_LEN (1024*1024*2)
+		//static char tmp_buf[MAX_BUF_LEN];
+		//assert(length < MAX_BUF_LEN);
+		//write_bytes(tmp_buf, length);
+		for(int mem_index = 0; mem_index < length; mem_index++)
+		{
+			if(buf[mem_index] != (char)(myrand() % 256))
+				errors++;
+		}
+		
+		return errors;
+	}
+	
+	static inline void write_bytes(char *buf, int length)
+	{
+		for(int mem_index = 0; mem_index < length; mem_index++)
+		{
+			//buf[mem_index] = mem_index;
+			buf[mem_index] = (char)(myrand() % 256);
+		}
+		
+	}
+	
+	static inline void dump_bytes(int length)
+	{
+		for(int i = 0; i < length; i++)
+		{
+			printf("%02x", get_byte() & 0xff);
+		}
+		printf("\n");
+	}
 };

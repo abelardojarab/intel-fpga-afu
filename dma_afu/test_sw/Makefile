@@ -1,10 +1,9 @@
 LDFLAGS ?=
 CFLAGS = -g -O2 -fPIC
 
-CFLAGS += -I$(prefix)/common/include
-CFLAGS += -I$(prefix)/libfpga/src
+CFLAGS += -I$(prefix)/include
 CFLAGS += -D FPGA_DMA_DEBUG=0
-LDFLAGS += -L$(prefix)/build/lib -luuid 
+LDFLAGS += -L$(prefix)/lib -luuid 
 
 ifeq ($(USE_ASE),1)
 	LDFLAGS += -lopae-c-ase
@@ -15,19 +14,28 @@ else
 	LDFLAGS += -lopae-c
 endif
 
-all: dma_afu_test
+DMA_OBJS ?=
+ifneq ($(wildcard fpga_dma.c),) 
+	DMA_OBJS += fpga_dma.o
+	CFLAGS += -DINCLUDE_DMA_DRIVER
+	CFLAGS += -DINCLUDE_DMA_DRIVER
+endif
 
-dma_afu_test: dma_afu_test.o
-	g++ $(CFLAGS) -o dma_afu_test dma_afu_test.o $(LDFLAGS)
+all: dma_afu_test dma_bbb_speed_test dma_memtest
 
-dma_afu_test.o: dma_afu_test.cpp  Makefile
-	g++ $(CFLAGS) -c -o dma_afu_test.o dma_afu_test.cpp
+dma_memtest: dma_memtest.o dma_test_common.o
+	g++ $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+dma_afu_test: dma_afu_test.o dma_test_common.o
+	g++ $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+dma_bbb_speed_test: dma_bbb_speed_test.o dma_test_common.o $(DMA_OBJS)
+	g++ $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+%.o: %.cpp
+	g++ $(CFLAGS) -c -o $@ $<
 
 clean:
 	$(RM) dma_afu_test *.o *.so
-
-run: all
-	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(prefix)/build/lib ./dma_afu_test
-
 
 .PHONY:all clean

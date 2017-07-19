@@ -229,7 +229,7 @@ fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_h, uint64_t dst, uint64_t sr
                                 fpga_dma_transfer_t type) {
 
    fpga_result res = FPGA_OK;
-   uint32_t i;
+   size_t i;
 
    if(!dma_h)
       return FPGA_INVALID_PARAM;
@@ -249,7 +249,7 @@ fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_h, uint64_t dst, uint64_t sr
    // User buffer data is copied into a DMA-able buffer 
    // allocated within the driver. Further performance 
    // optimizations may be implemented in the future.
-   uint32_t dma_chunks = count/FPGA_DMA_BUF_SIZE;      
+   size_t dma_chunks = (size_t)count/(size_t)FPGA_DMA_BUF_SIZE;      
    count -= (dma_chunks*FPGA_DMA_BUF_SIZE);
    if(type == HOST_TO_FPGA_MM) {
       for(i=0; i<dma_chunks; i++) {

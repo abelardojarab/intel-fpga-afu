@@ -27,6 +27,7 @@
 #include <string.h>
 #include <uuid/uuid.h>
 #include <opae/fpga.h>
+#include <time.h>
 #include "fpga_dma.h"
 /**
  * \fpga_dma_test.c
@@ -39,6 +40,7 @@
 #define HELLO_AFU_ID              "331DB30C-9885-41EA-9081-F88B8F655CAA"
 #define TEST_BUF_SIZE (10*1024*1024)
 #define ASE_TEST_BUF_SIZE (4*1024)
+
 
 static int err_cnt = 0;
 /*
@@ -54,8 +56,8 @@ static int err_cnt = 0;
   } while (0)
 
 
-void fill_buffer(char *buf, uint32_t size) {
-   uint32_t i=0;
+void fill_buffer(char *buf, size_t size) {
+   size_t i=0;
    // use a deterministic seed to generate pseudo-random numbers
    srand(99);
 
@@ -65,14 +67,14 @@ void fill_buffer(char *buf, uint32_t size) {
    }
 }
 
-fpga_result verify_buffer(char *buf, uint32_t size) {
-   uint32_t i, rnum=0;
+fpga_result verify_buffer(char *buf, size_t size) {
+   size_t i, rnum=0;
    srand(99);
 
    for(i=0; i<size; i++) {
       rnum = rand()%256;
       if((*buf&0xFF) != rnum) {
-         printf("Invalid data at %d Expected = %x Actual = %x\n",i,rnum,(*buf&0xFF));
+         printf("Invalid data at %zx Expected = %x Actual = %x\n",i,rnum,(*buf&0xFF));
          return FPGA_INVALID_PARAM;
       }
       buf++;
@@ -81,8 +83,67 @@ fpga_result verify_buffer(char *buf, uint32_t size) {
    return FPGA_OK;
 }
 
-void clear_buffer(char *buf, uint32_t size) {
+void clear_buffer(char *buf, size_t size) {
    memset(buf, 0, size);
+}
+
+void report_bandwidth(size_t size, double seconds) {
+   double throughput = (double)size/((double)seconds*1000*1000);
+   printf("\rMeasured bandwidth = %lf Megabytes/sec\n", throughput);
+}
+
+fpga_result ddr_sweep(fpga_dma_handle dma_h) {
+   int res;
+   
+   ssize_t total_mem_size = (uint64_t)(4*1024)*(uint64_t)(1024*1024);
+   
+   uint64_t *dma_buf_ptr = malloc(total_mem_size);
+   if(dma_buf_ptr == NULL) {
+      printf("Unable to allocate %ld bytes of memory", total_mem_size);
+   }
+   printf("Allocated test buffer\n");
+   printf("Fill test buffer\n");
+   fill_buffer((char*)dma_buf_ptr, total_mem_size);
+
+   uint64_t src = (uint64_t)dma_buf_ptr;
+   uint64_t dst = 0x0;
+   
+   printf("DDR Sweep Host to FPGA\n");   
+   clock_t start, end;
+     
+   start = clock();
+   res = fpgaDmaTransferSync(dma_h, dst, src, total_mem_size, HOST_TO_FPGA_MM);
+   if(res != FPGA_OK) {
+      printf(" fpgaDmaTransferSync Host to FPGA failed with error %s", fpgaErrStr(res));
+      free(dma_buf_ptr);
+      return FPGA_EXCEPTION;
+   }
+   end = clock();
+   double seconds = ((double) (end - start)) / CLOCKS_PER_SEC;
+   report_bandwidth(total_mem_size, seconds);
+
+   printf("\rClear buffer\n");
+   clear_buffer((char*)dma_buf_ptr, total_mem_size);
+
+   src = 0x0;
+   dst = (uint64_t)dma_buf_ptr;
+   start = clock();
+   printf("DDR Sweep FPGA to Host\n");   
+   res = fpgaDmaTransferSync(dma_h, dst, src, total_mem_size, FPGA_TO_HOST_MM);
+   if(res != FPGA_OK) {
+      printf(" fpgaDmaTransferSync FPGA to Host failed with error %s", fpgaErrStr(res));
+      free(dma_buf_ptr);
+      return FPGA_EXCEPTION;
+   }
+   end = clock();
+   seconds = ((double) (end - start)) / CLOCKS_PER_SEC;
+   report_bandwidth(total_mem_size, seconds);
+   
+   printf("Verifying buffer..\n");   
+   verify_buffer((char*)dma_buf_ptr, total_mem_size);
+
+   free(dma_buf_ptr);
+   return FPGA_OK;
 }
 
 int main(int argc, char *argv[]) {
@@ -185,6 +246,9 @@ int main(int argc, char *argv[]) {
 
    res = verify_buffer((char*)dma_buf_ptr, count);
    ON_ERR_GOTO(res, out_dma_close, "verify_buffer");
+
+   res = ddr_sweep(dma_h);
+   ON_ERR_GOTO(res, out_dma_close, "ddr_sweep");
 
 out_dma_close:
    free(dma_buf_ptr);

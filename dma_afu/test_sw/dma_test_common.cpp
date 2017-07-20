@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <uuid/uuid.h>
+#include <unistd.h>
 
 #include "dma_test_common.h"
 

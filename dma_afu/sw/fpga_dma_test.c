@@ -164,6 +164,11 @@ int main(int argc, char *argv[]) {
       return 1;
    }
    use_ase = atoi(argv[1]);
+   if(use_ase) {
+      printf("Running test in ASE mode\n");
+   } else {
+      printf("Running test in HW mode\n");
+   }
 
    // enumerate the afc
    if(uuid_parse(HELLO_AFU_ID, guid) < 0) {
@@ -246,9 +251,12 @@ int main(int argc, char *argv[]) {
 
    res = verify_buffer((char*)dma_buf_ptr, count);
    ON_ERR_GOTO(res, out_dma_close, "verify_buffer");
-
-   res = ddr_sweep(dma_h);
-   ON_ERR_GOTO(res, out_dma_close, "ddr_sweep");
+   
+   if(!use_ase) {
+      printf("Running DDR sweep test\n");
+      res = ddr_sweep(dma_h);
+      ON_ERR_GOTO(res, out_dma_close, "ddr_sweep");
+   }
 
 out_dma_close:
    free(dma_buf_ptr);

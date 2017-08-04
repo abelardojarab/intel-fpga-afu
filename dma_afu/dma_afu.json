@@ -5,12 +5,12 @@
       "magic-no": 488605312,
       "interface-uuid": "01234567-89AB-CDEF-0123-456789ABCDEF",
       "power": 0,
-      "afc-clusters":
+      "accelerator-clusters":
          [
             {
                "name": "dma_test_afu",
                "total-contexts": 1,
-               "afc-type-uuid": "331DB30C-9885-41EA-9081-F88B8F655CAA"
+               "accelerator-type-uuid": "331DB30C-9885-41EA-9081-F88B8F655CAA"
             }
          ]
    }

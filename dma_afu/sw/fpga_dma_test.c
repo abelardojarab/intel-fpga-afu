@@ -178,7 +178,7 @@ int main(int argc, char *argv[]) {
    res = fpgaGetProperties(NULL, &filter);
    ON_ERR_GOTO(res, out, "fpgaGetProperties");
 
-   res = fpgaPropertiesSetObjectType(filter, FPGA_AFC);
+   res = fpgaPropertiesSetObjectType(filter, FPGA_ACCELERATOR);
    ON_ERR_GOTO(res, out_destroy_prop, "fpgaPropertiesSetObjectType");
 
    res = fpgaPropertiesSetGUID(filter, guid);

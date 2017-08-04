@@ -5,12 +5,12 @@
       "magic-no": 488605312,
       "interface-uuid": "01234567-89AB-CDEF-0123-456789ABCDEF",
       "power": 0,
-      "afc-clusters":
+      "accelerator-clusters":
          [
             {
                "name": "hello_afu",
                "total-contexts": 1,
-               "afc-type-uuid": "850adcc2-6ceb-4b22-9722-d43375b61c66"
+               "accelerator-type-uuid": "850adcc2-6ceb-4b22-9722-d43375b61c66"
             }
          ]
    }

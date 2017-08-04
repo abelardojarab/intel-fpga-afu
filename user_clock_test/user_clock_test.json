@@ -5,12 +5,12 @@
       "magic-no": 488605312,
       "interface-uuid": "01234567-89AB-CDEF-0123-456789ABCDEF",
       "power": 0,
-      "afc-clusters":
+      "accelerator-clusters":
          [
             {
                "name": "user_clock",
                "total-contexts": 1,
-               "afc-type-uuid": "bd9ccef3-0b2c-4bb2-901f-6c7486821188"
+               "accelerator-type-uuid": "bd9ccef3-0b2c-4bb2-901f-6c7486821188"
             }
          ]
    }

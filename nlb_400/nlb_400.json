@@ -7,12 +7,12 @@
       "clock-frequency-low": 156,
       "clock-frequency-high": 312,
       "power": 0,
-      "afc-clusters":
+      "accelerator-clusters":
          [
             {
                "name": "nlb_400",
                "total-contexts": 1,
-               "afc-type-uuid": "d8424dc4-a4a3-c413-f89e-433683f9040b"
+               "accelerator-type-uuid": "d8424dc4-a4a3-c413-f89e-433683f9040b"
             }
          ]
    }

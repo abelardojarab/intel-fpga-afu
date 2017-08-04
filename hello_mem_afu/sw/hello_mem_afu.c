@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 	res = fpgaGetProperties(NULL, &filter);
 	ON_ERR_GOTO(res, out_exit, "creating properties object");
 
-	res = fpgaPropertiesSetObjectType(filter, FPGA_AFC);
+	res = fpgaPropertiesSetObjectType(filter, FPGA_ACCELERATOR);
 	ON_ERR_GOTO(res, out_destroy_prop, "setting object type");
 
 	res = fpgaPropertiesSetGUID(filter, guid);

@@ -37,7 +37,7 @@
 // - No support for posted writes
 // - Recommended to use lower [63:0] of data bus
 //
-`default_nettype none
+//`default_nettype none
 import ccip_if_pkg::*;
 module hello_mem_afu (
 	// ---------------------------global signals-------------------------------------------------

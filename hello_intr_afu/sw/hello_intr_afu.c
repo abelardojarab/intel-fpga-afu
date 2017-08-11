@@ -8,8 +8,11 @@
 #include <poll.h>
 #include <errno.h>
 
+#define MAX_USR_INTRS            4
+
 #define HELLO_AFU_ID              "850ADCC2-6CEB-4B22-9722-D43375B61C66"
 #define INTR_REG                 0XA0 //0x28
+#define USR_INTR_ID_REG          0XC0 //0x30
 
 static int s_error_count = 0;
 
@@ -102,26 +105,35 @@ int main(int argc, char *argv[])
    res = fpgaRegisterEvent(afc_handle, FPGA_EVENT_INTERRUPT, ehandle, 0);
    ON_ERR_GOTO(res, out_unmap, "error registering event");
 
-   /* Trigger interrupt by writing to INTR_REG */
-   printf("Setting Interrupt register (Byte Offset=%08x) = %08lx\n", INTR_REG, 1);
-   res = fpgaWriteMMIO64(afc_handle, 0, INTR_REG, 1);
-   ON_ERR_GOTO(res, out_unmap, "writing to INTR_REG MMIO");
+   // Test if we can trigger an interrupt for each user interrupt ID
+   for(uint64_t usr_intr_id = 0; usr_intr_id < MAX_USR_INTRS; usr_intr_id++) {
+      /* Program the user interrupt id register */
+      printf("Setting user interrupt id register (Byte Offset=%08x) = %08lx\n", USR_INTR_ID_REG, usr_intr_id);
+      res = fpgaWriteMMIO64(afc_handle, 0, USR_INTR_ID_REG, usr_intr_id);
+      ON_ERR_GOTO(res, out_unmap, "writing to USR_INTR_ID_REG MMIO");
+
+      /* Trigger interrupt by writing to INTR_REG */
+      printf("Setting Interrupt register (Byte Offset=%08x) = %08lx\n", INTR_REG, 1);
+      res = fpgaWriteMMIO64(afc_handle, 0, INTR_REG, 1);
+      ON_ERR_GOTO(res, out_unmap, "writing to INTR_REG MMIO");
    
-   /* Poll event handle*/
-   pfd.fd = (int)ehandle;
-   pfd.events = POLLIN;
-   res = poll(&pfd, 1, -1);
-   if(res < 0) {
-      fprintf( stderr, "Poll error errno = %s\n",strerror(errno));
-      s_error_count += 1;
-   } 
-   else if(res == 0) {
-      fprintf( stderr, "Poll timeout \n");
-      s_error_count += 1;
-   } else {
-      printf("Poll success. Return = %d\n",res);
+      /* Poll event handle*/
+      pfd.fd = (int)ehandle;
+      pfd.events = POLLIN;            
+      res = poll(&pfd, 1, -1);
+      if(res < 0) {
+         fprintf( stderr, "Poll error errno = %s\n",strerror(errno));
+         s_error_count += 1;
+      } 
+      else if(res == 0) {
+         fprintf( stderr, "Poll timeout \n");
+         s_error_count += 1;
+      } else {
+         printf("Poll success. Return = %d\n",res);
+         uint64_t count;
+         read(pfd.fd, &count, sizeof(count));          
+      }
    }
-   
    /* cleanup */
    res = fpgaUnregisterEvent(afc_handle, FPGA_EVENT_INTERRUPT);   
    ON_ERR_GOTO(res, out_unmap, "error fpgaUnregisterEvent");   

@@ -21,6 +21,26 @@
 // 
 import ccip_if_pkg::*;
 
+// Generate interrupt
+function automatic t_if_ccip_c1_Tx ccip_genInterrupt(
+    input [1:0] usr_intr_id
+);
+    // use c1 to write interrupt ccip packets
+    t_if_ccip_c1_Tx c1;
+    t_ccip_c1_ReqIntrHdr intrHdr;
+
+    intrHdr.rsvd1 = 0;
+    intrHdr.req_type = eREQ_INTR;
+    intrHdr.rsvd0 = 0;
+    intrHdr.id = usr_intr_id;
+
+    c1.hdr = t_ccip_c1_ReqMemHdr'(intrHdr);
+    c1.valid = 1;
+    c1.data = 0;
+
+    return c1;
+endfunction
+
 module afu (
         // ---------------------------global signals-------------------------------------------------
         input	Clk_400,	  //              in    std_logic;           Core clock. CCI interface is synchronous to this clock.
@@ -58,10 +78,13 @@ module afu (
         logic  [63:0] scratch_reg = 0;
         // a write to the intr_reg triggers an interrupt request
         reg           intr_reg;
+        reg [1:0]     usr_intr_id;
 
         // cast c0 header into ReqMmioHdr
         t_ccip_c0_ReqMmioHdr mmioHdr;
+        t_ccip_c1_ReqIntrHdr intrHdr;
         assign mmioHdr = t_ccip_c0_ReqMmioHdr'(cp2af_sRxPort.c0.hdr);
+        assign intrHdr = t_ccip_c1_ReqIntrHdr'(cp2af_sRxPort.c1.hdr);
 
         always@(posedge Clk_400) begin
             if(SoftReset) begin
@@ -82,23 +105,8 @@ module afu (
                 if(cp2af_sRxPort.c0.mmioWrValid == 1) begin
                     case(mmioHdr.address)
                         16'h0020: scratch_reg <= cp2af_sRxPort.c0.data[63:0];
-                        16'h0028: begin
-                          // trigger an interrupt write
-                          // header
-                          af2cp_sTxPort.c1.hdr.rsvd2  <= 0;
-                          af2cp_sTxPort.c1.hdr.vc_sel <= eVC_VA;
-                          af2cp_sTxPort.c1.hdr.sop    <= 1;
-                          af2cp_sTxPort.c1.hdr.rsvd1  <= 0;
-                          af2cp_sTxPort.c1.hdr.cl_len <= eCL_LEN_1;
-                          af2cp_sTxPort.c1.hdr.req_type <= eREQ_INTR;
-                          af2cp_sTxPort.c1.hdr.rsvd0 <= 0;
-                          af2cp_sTxPort.c1.hdr.rsvd0 <= 0;
-                          af2cp_sTxPort.c1.hdr.mdata <= 16'hfffc;
-                          // data
-                          af2cp_sTxPort.c1.data <= 0;
-                          //valid
-                          af2cp_sTxPort.c1.valid <= 1;
-                        end
+                        16'h0028: af2cp_sTxPort.c1 <= ccip_genInterrupt(usr_intr_id);
+                        16'h0030: usr_intr_id <= cp2af_sRxPort.c0.data[1:0];
                     endcase
                 end
                 else begin
@@ -126,6 +134,7 @@ module afu (
                       16'h0006: af2cp_sTxPort.c2.data <= 64'h0; // next AFU
                       16'h0008: af2cp_sTxPort.c2.data <= 64'h0; // reserved
                       16'h0020: af2cp_sTxPort.c2.data <= scratch_reg; // Scratch Register
+                      16'h0028: af2cp_sTxPort.c2.data <= usr_intr_id; // User interrupt id register
                       default:  af2cp_sTxPort.c2.data <= 64'h0;
                   endcase
                   af2cp_sTxPort.c2.mmioRdValid <= 1; // post response

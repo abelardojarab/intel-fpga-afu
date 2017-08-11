@@ -66,6 +66,7 @@ module hello_mem_afu (
 
   wire [63:0] avm_writedata, avm_readdata;
   wire mem_testmode;
+  wire            ready_for_sw_cmd;
 
   wire [4:0]      addr_test_status;
   wire            addr_test_done; 

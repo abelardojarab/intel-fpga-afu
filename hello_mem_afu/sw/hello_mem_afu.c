@@ -18,6 +18,8 @@ int usleep(unsigned);
 #define TESTMODE_STATUS_REG      0x180
 #define AVM_RDWR_STATUS_REG      0x188
 #define MEM_BANK_SELECT          0x190
+#define READY_FOR_SW_CMD         0X198
+
 #define SCRATCH_VALUE            0x0123456789ABCDEF
 #define SCRATCH_RESET            0
 #define BYTE_OFFSET              8
@@ -27,18 +29,6 @@ int usleep(unsigned);
 #define AFU_ID_HI                0x10
 #define AFU_NEXT                 0x18
 #define AFU_RESERVED             0x20
-
-
-//localparam MEM_ADDRESS    = 16'h0040;                // AVMM Master Address
-//localparam MEM_BURSTCOUNT = 16'h0042;                // AVMM Master Burst Count
-//localparam MEM_RDWR       = 16'h0044;                // AVMM Master Read/Write
-//localparam MEM_WRDATA     = 16'h0046;                // AVMM Master Write Data
-//localparam MEM_RDDATA     = 16'h0048;                // AVMM Master Read Data
-//localparam MEM_ADDR_TESTMODE   = 16'h004A;                // Test Control Register        
-//localparam MEM_ADDR_TEST_STATUS  = 16'h0060;                // Test Status Register
-//localparam MEM_RDWR_STATUS       = 16'h0062;
-
-
 
 static int s_error_count = 0;
 
@@ -86,7 +76,9 @@ int main(int argc, char *argv[])
 	fpga_guid          guid;
 	uint32_t           num_matches;
    uint32_t           bank, use_ase;
-
+	// Access mandatory AFU registers
+	uint64_t data = 0;
+   uint32_t data32 = 0;
 	fpga_result     res = FPGA_OK;
 
    
@@ -139,10 +131,11 @@ int main(int argc, char *argv[])
 	res = fpgaReset(afc_handle);
 	ON_ERR_GOTO(res, out_close, "resetting AFC");
 
-   sleep(3);
-	// Access mandatory AFU registers
-	uint64_t data = 0;
-   uint32_t data32 = 0;
+   do {
+   	res = fpgaReadMMIO64(afc_handle, 0, READY_FOR_SW_CMD, &data);
+	   ON_ERR_GOTO(res, out_close, "reading from MMIO");
+   }while(data!=0x1);
+
 
 	res = fpgaReadMMIO64(afc_handle, 0, AFU_DFH_REG, &data);
 	ON_ERR_GOTO(res, out_close, "reading from MMIO");
@@ -187,12 +180,17 @@ int main(int argc, char *argv[])
 	printf("Reading Scratch Register (Byte Offset=%08x) = %08lx\n", SCRATCH_REG, data);
 	ASSERT_GOTO(data == SCRATCH_RESET, out_close, "MMIO mismatched expected result");
 
+   // wait for emif calibration - mentor sim takes longer for calibration
+   // h/w run should check FME emif calibration status before attempting memory access
+   sleep(15);
+
    // Perform memory test for each bank
    printf("Testing memory bank %d\n",bank);
    res = fpgaWriteMMIO64(afc_handle, 0, MEM_BANK_SELECT, bank);
-   ON_ERR_GOTO(res, out_close, "writing to MEM_BANK_SELECT");
+   ON_ERR_GOTO(res, out_close, "writing to MEM_BANK_SELECT");   
    
    /******************** Memory Test Starts Here *****************************/
+#if 1
    // Configuring AVM Interface
    printf("Running Test1 - Busrt 1 Write and Read from DDR");
    
@@ -206,21 +204,23 @@ int main(int argc, char *argv[])
    
    res = fpgaWriteMMIO32(afc_handle, 0, AVM_RDWR_REG, 1);
    ON_ERR_GOTO(res, out_close, "error writing to AVM_RDWR_REG");
-      
+
+   do {
+   	res = fpgaReadMMIO64(afc_handle, 0, READY_FOR_SW_CMD, &data);
+	   ON_ERR_GOTO(res, out_close, "reading from MMIO");
+      sleep(1);
+   }while(data!=0x1);
+    
    //Setting up AVMM Master Read
    res = fpgaWriteMMIO32(afc_handle, 0, AVM_RDWR_REG, 3);
    ON_ERR_GOTO(res, out_close, "error writing to AVM_RDWR_REG");
-      
-   res = fpgaReadMMIO32(afc_handle, 0, AVM_RDWR_STATUS_REG, &data32);
-   ON_ERR_GOTO(res, out_close, "error reading from AVM_RDWR_STATUS_REG");
-      
-   sleep(3);
-   while(  0x40 != data32&0x40) {
+
+   do {   
       res = fpgaReadMMIO32(afc_handle, 0, AVM_RDWR_STATUS_REG, &data32);
       ON_ERR_GOTO(res, out_close, "error reading from AVM_RDWR_STATUS_REG");
       sleep(1);
-   }
-   
+   } while(  0x40 != data32&0x40);
+
    res = fpgaReadMMIO64(afc_handle, 0, AVM_READDATA_REG, &data);
    ON_ERR_GOTO(res, out_close, "error writing to AVM_READDATA_REG");
    
@@ -229,11 +229,25 @@ int main(int argc, char *argv[])
    } else {
       printf("Write Data MATCHES READ_DATA %lx", data );
    }
-   
+#endif   
+
+#if 1
+   do {
+   	res = fpgaReadMMIO64(afc_handle, 0, READY_FOR_SW_CMD, &data);
+	   ON_ERR_GOTO(res, out_close, "reading from MMIO");
+      sleep(1);
+   }while(data!=0x1);
+
    // Testmode Sweep
    printf("Running Test2 - DDR Memory Test Sweep!");   
    fpgaWriteMMIO64(afc_handle, 0, TESTMODE_CONTROL_REG, 1);
-   sleep(1);
+
+   do {
+   	res = fpgaReadMMIO64(afc_handle, 0, READY_FOR_SW_CMD, &data);
+	   ON_ERR_GOTO(res, out_close, "reading from MMIO");
+      sleep(1);
+   }while(data!=0x1);
+
    do {
       res = fpgaReadMMIO64(afc_handle, 0, TESTMODE_STATUS_REG, &data);
       ON_ERR_GOTO(res, out_close, "error reading from TESTMODE_STATUS_REG");
@@ -241,7 +255,9 @@ int main(int argc, char *argv[])
    } while(0x100 != (data&0x100));
 
    printf("Done DDR Test Sweep");
-   
+#endif   
+
+#if 1
    printf("Running Test3 - Burst of 32 Write and Read from DDR");
    
    // Setup for 32 burst AVL Write 
@@ -249,13 +265,24 @@ int main(int argc, char *argv[])
    fpgaWriteMMIO64(afc_handle, 0, AVM_BURSTCOUNT_REG, 32);
    fpgaWriteMMIO64(afc_handle, 0, AVM_RDWR_REG, 1);
    // need to sleep for ASE to catcup
-   sleep(1);
+
+   do {
+   	res = fpgaReadMMIO64(afc_handle, 0, READY_FOR_SW_CMD, &data);
+	   ON_ERR_GOTO(res, out_close, "reading from MMIO");
+      sleep(1);
+   }while(data!=0x1);
    
    // Setup for 32 burst AVL READ 
    fpgaWriteMMIO64(afc_handle, 0, AVM_RDWR_REG, 3);
    fpgaReadMMIO64(afc_handle, 0, AVM_RDWR_STATUS_REG, &data);
    // need to sleep for ASE to catchup
-   sleep(1);
+   
+   do {
+   	res = fpgaReadMMIO64(afc_handle, 0, READY_FOR_SW_CMD, &data);
+	   ON_ERR_GOTO(res, out_close, "reading from MMIO");
+      sleep(1);
+   }while(data!=0x1);
+
    printf("READDATA for test register: %lx\n",data);
    
    //SleepMicro(1000);   
@@ -270,8 +297,7 @@ int main(int argc, char *argv[])
    } else {
       printf("Write Data MATCHES READ_DATA %lx\n",data);
    }
-   sleep(3);
-   
+#endif
 	printf("Done Running Test\n");
 
 	/* Unmap MMIO space */

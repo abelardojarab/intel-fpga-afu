@@ -40,8 +40,8 @@ module mem_csr (
   input [1:0]            rdwr_done,  
   input [4:0]            rdwr_status, 
   output reg             rdwr_reset,
-  output reg             mem_bank_select
-
+  output reg             mem_bank_select,
+  input wire             ready_for_sw_cmd
 );
 
 localparam HELLO_AFU_ID_H        = 64'h35F9_452B_25C2_434C; // HELLO_AFU_ID Upper 
@@ -58,6 +58,7 @@ localparam MEM_ADDR_TESTMODE     = 16'h004A;                // Test Control Regi
 localparam MEM_ADDR_TEST_STATUS  = 16'h0060;                // Test Status Register
 localparam MEM_RDWR_STATUS       = 16'h0062;
 localparam MEM_BANK_SELECT       = 16'h0064;                // Memory bank selection register
+localparam READY_FOR_SW_CMD      = 16'h0066;                // "Ready for sw cmd" register. S/w must poll this register before issuing a read/write command to fsm
 
 // cast c0 header into ReqMmioHdr
 t_ccip_c0_ReqMmioHdr mmioHdr;
@@ -105,7 +106,7 @@ always@(posedge Clk_400) begin
           MEM_RDWR: mem_RDWR <= cp2af_sRxPort.c0.data[2:0];
           MEM_WRDATA: avm_writedata <= cp2af_sRxPort.c0.data[63:0];
           MEM_ADDR_TESTMODE : mem_testmode <= cp2af_sRxPort.c0.data[0];
-          MEM_BANK_SELECT: mem_bank_select <=  cp2af_sRxPort.c0.data[0];
+          MEM_BANK_SELECT: mem_bank_select <=  cp2af_sRxPort.c0.data[0];          
       endcase
 
       if (addr_test_done == 1) 
@@ -138,6 +139,7 @@ always@(posedge Clk_400) begin
           MEM_RDDATA:           af2cp_sTxPort.c2.data <= avm_readdata; 
           MEM_ADDR_TESTMODE:    af2cp_sTxPort.c2.data <= {63'd0, mem_testmode};
           MEM_ADDR_TEST_STATUS: af2cp_sTxPort.c2.data <= {'d0, addr_test_done,3'd0, addr_test_status}; 
+          READY_FOR_SW_CMD:     af2cp_sTxPort.c2.data <= ready_for_sw_cmd;
           MEM_RDWR_STATUS: begin 
             af2cp_sTxPort.c2.data <= {49'd0, rdwr_done[1],rdwr_status[3:2],1'b0, rdwr_done[0],rdwr_status[1:0]};
             rdwr_reset     <= 1;

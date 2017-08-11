@@ -113,7 +113,8 @@ module hello_mem_afu (
     .rdwr_done              (rdwr_done), 
     .rdwr_status            (rdwr_status), 
     .rdwr_reset             (rdwr_reset),
-    .mem_bank_select        (mem_bank_select)
+    .mem_bank_select        (mem_bank_select),
+    .ready_for_sw_cmd       (ready_for_sw_cmd)
  );
 
   mem_fsm fsm (
@@ -134,6 +135,7 @@ module hello_mem_afu (
     .rdwr_done              (rdwr_done), 
     .rdwr_status            (rdwr_status), 
     .rdwr_reset             (rdwr_reset),
+    .ready_for_sw_cmd       (ready_for_sw_cmd),
 
      //AVL MM Master Interface
     .avs_writedata          ( avs_writedata_r ),      

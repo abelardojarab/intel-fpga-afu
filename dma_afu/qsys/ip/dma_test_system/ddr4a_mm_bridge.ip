@@ -518,7 +518,7 @@
         <spirit:parameter>
           <spirit:name>maximumPendingReadTransactions</spirit:name>
           <spirit:displayName>Maximum pending read transactions</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="maximumPendingReadTransactions">64</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="maximumPendingReadTransactions">32</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>maximumPendingWriteTransactions</spirit:name>
@@ -722,7 +722,7 @@
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
             <spirit:left>0</spirit:left>
-            <spirit:right>6</spirit:right>
+            <spirit:right>2</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
@@ -862,7 +862,7 @@
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
             <spirit:left>0</spirit:left>
-            <spirit:right>6</spirit:right>
+            <spirit:right>2</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
@@ -1010,17 +1010,17 @@
         <spirit:parameter>
           <spirit:name>BURSTCOUNT_WIDTH</spirit:name>
           <spirit:displayName>Burstcount width</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="BURSTCOUNT_WIDTH">7</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="BURSTCOUNT_WIDTH">3</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>MAX_BURST_SIZE</spirit:name>
           <spirit:displayName>Maximum burst size (words)</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="MAX_BURST_SIZE">64</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="MAX_BURST_SIZE">4</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>MAX_PENDING_RESPONSES</spirit:name>
           <spirit:displayName>Maximum pending read transactions</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="MAX_PENDING_RESPONSES">64</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="MAX_PENDING_RESPONSES">32</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>LINEWRAPBURSTS</spirit:name>
@@ -1145,7 +1145,7 @@
                     <name>m0_burstcount</name>
                     <role>burstcount</role>
                     <direction>Output</direction>
-                    <width>7</width>
+                    <width>3</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
@@ -1404,7 +1404,7 @@
                     <name>s0_burstcount</name>
                     <role>burstcount</role>
                     <direction>Input</direction>
-                    <width>7</width>
+                    <width>3</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
@@ -1565,7 +1565,7 @@
                     </entry>
                     <entry>
                         <key>maximumPendingReadTransactions</key>
-                        <value>64</value>
+                        <value>32</value>
                     </entry>
                     <entry>
                         <key>maximumPendingWriteTransactions</key>

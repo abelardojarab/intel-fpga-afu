@@ -54,7 +54,7 @@
         <spirit:parameter>
           <spirit:name>dataBitsPerSymbol</spirit:name>
           <spirit:displayName>Data bits per symbol</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="dataBitsPerSymbol">561</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="dataBitsPerSymbol">564</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>emptyWithinPacket</spirit:name>
@@ -211,7 +211,7 @@
         <spirit:parameter>
           <spirit:name>dataBitsPerSymbol</spirit:name>
           <spirit:displayName>Data bits per symbol</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="dataBitsPerSymbol">561</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="dataBitsPerSymbol">564</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>emptyWithinPacket</spirit:name>
@@ -386,7 +386,7 @@
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
             <spirit:left>0</spirit:left>
-            <spirit:right>560</spirit:right>
+            <spirit:right>563</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
@@ -426,7 +426,7 @@
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
             <spirit:left>0</spirit:left>
-            <spirit:right>560</spirit:right>
+            <spirit:right>563</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
@@ -479,7 +479,7 @@
         <spirit:parameter>
           <spirit:name>BITS_PER_SYMBOL</spirit:name>
           <spirit:displayName>Bits per symbol</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="BITS_PER_SYMBOL">561</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="BITS_PER_SYMBOL">564</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>FIFO_DEPTH</spirit:name>
@@ -585,7 +585,7 @@
                     <name>in_data</name>
                     <role>data</role>
                     <direction>Input</direction>
-                    <width>561</width>
+                    <width>564</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
@@ -625,7 +625,7 @@
                     </entry>
                     <entry>
                         <key>dataBitsPerSymbol</key>
-                        <value>561</value>
+                        <value>564</value>
                     </entry>
                     <entry>
                         <key>emptyWithinPacket</key>
@@ -737,7 +737,7 @@
                     <name>out_data</name>
                     <role>data</role>
                     <direction>Output</direction>
-                    <width>561</width>
+                    <width>564</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
@@ -777,7 +777,7 @@
                     </entry>
                     <entry>
                         <key>dataBitsPerSymbol</key>
-                        <value>561</value>
+                        <value>564</value>
                     </entry>
                     <entry>
                         <key>emptyWithinPacket</key>

@@ -67,6 +67,8 @@ module afu (
 	input	t_if_ccip_Rx    cp2af_sRxPort,
 	output	t_if_ccip_Tx	af2cp_sTxPort
 );
+
+    // MMIO parameters and ports
 	localparam AVMM_ADDR_WIDTH = 18;
 	localparam AVMM_DATA_WIDTH = 64;
 	localparam AVMM_BYTE_ENABLE_WIDTH=(AVMM_DATA_WIDTH/8);
@@ -126,7 +128,7 @@ module afu (
         .ddr4a_master_waitrequest   (DDR4a_waitrequest),   // dma_master.waitrequest
 		.ddr4a_master_readdata      (DDR4a_readdata),      //           .readdata
 		.ddr4a_master_readdatavalid (DDR4a_readdatavalid), //           .readdatavalid
-		.ddr4a_master_burstcount    (DDR4a_burstcount),    //           .burstcount
+		.ddr4a_master_burstcount    (DDR4a_burstcount[2:0]),    //           .burstcount
 		.ddr4a_master_writedata     (DDR4a_writedata),     //           .writedata
 		.ddr4a_master_address       (DDR4a_byte_address),       //           .address
 		.ddr4a_master_write         (DDR4a_write),         //           .write
@@ -137,7 +139,7 @@ module afu (
 		.ddr4b_master_waitrequest   (DDR4b_waitrequest),   // dma_master.waitrequest
 		.ddr4b_master_readdata      (DDR4b_readdata),      //           .readdata
 		.ddr4b_master_readdatavalid (DDR4b_readdatavalid), //           .readdatavalid
-		.ddr4b_master_burstcount    (DDR4b_burstcount),    //           .burstcount
+		.ddr4b_master_burstcount    (DDR4b_burstcount[2:0]),    //           .burstcount
 		.ddr4b_master_writedata     (DDR4b_writedata),     //           .writedata
 		.ddr4b_master_address       (DDR4b_byte_address),       //           .address
 		.ddr4b_master_write         (DDR4b_write),         //           .write
@@ -145,7 +147,6 @@ module afu (
 		.ddr4b_master_byteenable    (DDR4b_byteenable),    //           .byteenable
 		.ddr4b_master_debugaccess   (),   //           .debugaccess
         `endif
-        
         
         .avst_rd_rsp_data,
 		.avst_rd_rsp_valid,
@@ -162,17 +163,22 @@ module afu (
 		.reset_reset        (SoftReset)         // reset.reset
 	);
 	
-	wire [512-1:0] avst_rd_rsp_data;
+    // DMA will send out bursts of 4 (max) to the memory controllers
+    assign DDR4a_burstcount[6:3] = 4'b0000;
+    assign DDR4b_burstcount[6:3] = 4'b0000;
+
+	 wire [512-1:0] avst_rd_rsp_data;
     wire avst_rd_rsp_valid;
     wire avst_rd_rsp_ready;
-             
-    wire [512+48+1-1:0] avst_avcmd_data;
+    
+    wire [512+48+3+1-1:0] avst_avcmd_data;
     wire avst_avcmd_valid;
     wire avst_avcmd_ready;
 	
 	avmm_ccip_host #(
 		.AVMM_ADDR_WIDTH(48), 
-		.AVMM_DATA_WIDTH(512))
+		.AVMM_DATA_WIDTH(512),
+        .AVMM_BURST_WIDTH(3))
 	avmm_ccip_host_inst (
 		.clk            (Clk_400),            //   clk.clk
 		.reset        (SoftReset),         // reset.reset

@@ -208,7 +208,7 @@
                         <name>in_data</name>
                         <role>data</role>
                         <direction>Input</direction>
-                        <width>561</width>
+                        <width>564</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -248,7 +248,7 @@
                         </entry>
                         <entry>
                             <key>dataBitsPerSymbol</key>
-                            <value>561</value>
+                            <value>564</value>
                         </entry>
                         <entry>
                             <key>emptyWithinPacket</key>
@@ -360,7 +360,7 @@
                         <name>out_data</name>
                         <role>data</role>
                         <direction>Output</direction>
-                        <width>561</width>
+                        <width>564</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -400,7 +400,7 @@
                         </entry>
                         <entry>
                             <key>dataBitsPerSymbol</key>
-                            <value>561</value>
+                            <value>564</value>
                         </entry>
                         <entry>
                             <key>emptyWithinPacket</key>
@@ -1714,14 +1714,6 @@
                 <isStart>true</isStart>
                 <ports>
                     <port>
-                        <name>avst_avcmd_data</name>
-                        <role>data</role>
-                        <direction>Output</direction>
-                        <width>561</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC_VECTOR</vhdlType>
-                    </port>
-                    <port>
                         <name>avst_avcmd_ready</name>
                         <role>ready</role>
                         <direction>Input</direction>
@@ -1736,6 +1728,14 @@
                         <width>1</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC</vhdlType>
+                    </port>
+                    <port>
+                        <name>avst_avcmd_data</name>
+                        <role>data</role>
+                        <direction>Output</direction>
+                        <width>564</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
                 </ports>
                 <assignments>
@@ -1757,7 +1757,7 @@
                         </entry>
                         <entry>
                             <key>dataBitsPerSymbol</key>
-                            <value>561</value>
+                            <value>564</value>
                         </entry>
                         <entry>
                             <key>emptyWithinPacket</key>
@@ -1862,7 +1862,7 @@
                         <name>avmm_burstcount</name>
                         <role>burstcount</role>
                         <direction>Input</direction>
-                        <width>1</width>
+                        <width>3</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>

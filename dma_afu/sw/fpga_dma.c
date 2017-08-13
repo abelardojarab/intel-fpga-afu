@@ -93,30 +93,11 @@ static fpga_result _copy_to_mmio(fpga_handle afc_handle, uint64_t mmio_dst, uint
    return FPGA_OK;
 }
 
-static fpga_result _do_dma(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, int count)
+
+static fpga_result _send_descriptor(fpga_dma_handle dma_h, msgdma_ext_descriptor_t desc)
 {
-   msgdma_ext_descriptor_t desc;
-   uint64_t data;
    fpga_result res;
-
-   // src, dst and count must be 64-byte aligned
-   if(dst%FPGA_DMA_ALIGN_BYTES  !=0 ||
-      src%FPGA_DMA_ALIGN_BYTES  !=0 ||
-      count%FPGA_DMA_ALIGN_BYTES!=0) {      
-      return FPGA_INVALID_PARAM;
-   }
-
-   desc.rd_address = src & FPGA_DMA_MASK_32_BIT;
-   desc.wr_address = dst & FPGA_DMA_MASK_32_BIT;
-   desc.len = count;
-   desc.wr_burst_count = 1;
-   desc.rd_burst_count = 1;
-   desc.seq_num = 0;
-   desc.wr_stride = 1;
-   desc.rd_stride = 1;
-   desc.rd_address_ext = (src >> 32) & FPGA_DMA_MASK_32_BIT;
-   desc.wr_address_ext = (dst >> 32) & FPGA_DMA_MASK_32_BIT;
-   desc.control = 0x80000000;
+   uint64_t data;
 
    debug_print("desc.rd_address = %x\n",desc.rd_address);
    debug_print("desc.wr_address = %x\n",desc.wr_address);
@@ -132,12 +113,137 @@ static fpga_result _do_dma(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, in
    debug_print("SGDMA_CSR_BASE = %lx SGDMA_DESC_BASE=%lx\n",dma_h->dma_base+FPGA_DMA_CSR, dma_h->dma_base+FPGA_DMA_DESC);
 
    res = _copy_to_mmio(dma_h->fpga_h, dma_h->dma_base+FPGA_DMA_DESC, (uint64_t *)&desc, sizeof(desc));
+   ON_ERR_GOTO(res, out, "_copy_to_mmio");
 
-   fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_base+FPGA_DMA_CSR, &data);
+   res = fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_base+FPGA_DMA_CSR, &data);
+   ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
    // TODO: change to bitmasks
    while(data != FPGA_DMA_DESC_BUFFER_EMPTY) {
-      fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_base+FPGA_DMA_CSR, &data);      
-   }   
+      res = fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_base+FPGA_DMA_CSR, &data);
+      ON_ERR_GOTO(res, out, "fpgaReadMMIO64");      
+   }
+
+out:  
+   return res;
+
+} 
+
+
+static fpga_result _do_dma(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, int count, fpga_dma_transfer_t type)
+{
+   msgdma_ext_descriptor_t desc;
+   fpga_result res;
+   int alignment_offset;
+   int segment_size;
+
+   // src, dst and count must be 64-byte aligned
+   if(dst%FPGA_DMA_ALIGN_BYTES  !=0 ||
+      src%FPGA_DMA_ALIGN_BYTES  !=0 ||
+      count%FPGA_DMA_ALIGN_BYTES!=0) {      
+      return FPGA_INVALID_PARAM;
+   }
+
+   // these fields are fixed for all DMA transfers
+	desc.seq_num = 0;
+	desc.wr_stride = 1;
+	desc.rd_stride = 1;
+	desc.control = 0x80000000;
+
+   if (type == FPGA_TO_FPGA_MM)  // for FPGA to FPGA transfers this is Avalon only which does not have burst alignment restrictions
+   {
+      desc.rd_address = src & FPGA_DMA_MASK_32_BIT;
+	   desc.wr_address = dst & FPGA_DMA_MASK_32_BIT;
+      desc.len = count;
+	   desc.wr_burst_count = 4;
+	   desc.rd_burst_count = 4;
+	   desc.rd_address_ext = (src >> 32) & FPGA_DMA_MASK_32_BIT;
+	   desc.wr_address_ext = (dst >> 32) & FPGA_DMA_MASK_32_BIT;
+	      
+      res = _send_descriptor(dma_h, desc);
+      ON_ERR_GOTO(res, out, "_send_descriptor");
+   }
+   else  // either FPGA to Host or Host to FPGA transfer so we need to make sure the DMA transaction is aligned to the burst size (CCIP restriction)
+   {
+      // need to determine if the CCIP (host) address is aligned to 4CL (256B).  When 0 the CCIP address is aligned.
+      alignment_offset = (type == HOST_TO_FPGA_MM)? (src % (4 * FPGA_DMA_ALIGN_BYTES)) : (dst % (4 * FPGA_DMA_ALIGN_BYTES));
+
+      if (alignment_offset != 0)  // not aligned to 4CL so performing a short transfer to get aligned
+      {
+	      desc.rd_address = src & FPGA_DMA_MASK_32_BIT;
+	      desc.wr_address = dst & FPGA_DMA_MASK_32_BIT;
+	      desc.wr_burst_count = 1;
+	      desc.rd_burst_count = 1;
+	      desc.rd_address_ext = (src >> 32) & FPGA_DMA_MASK_32_BIT;
+	      desc.wr_address_ext = (dst >> 32) & FPGA_DMA_MASK_32_BIT;
+
+         if (((4 * FPGA_DMA_ALIGN_BYTES) - alignment_offset) >= count)  // count isn't large enough to hit next 4CL boundary
+         {
+            segment_size = count;
+            count = 0;  // only had to transfer count amount of data to reach the end of the provided buffer
+         }
+         else
+         {
+            segment_size = (4 * FPGA_DMA_ALIGN_BYTES) - alignment_offset;
+            src += segment_size;
+            dst += segment_size;
+            count -= segment_size;  // subtract the segment size from count since the transfer below will bring us into 4CL alignment
+         }
+         
+         // will post short transfer to align to a 4CL (256 byte) boundary
+	      desc.len = segment_size;
+
+	      res = _send_descriptor(dma_h, desc);
+         ON_ERR_GOTO(res, out, "_send_descriptor");
+      }
+
+      // at this point we are 4CL (256 byte) aligned
+      if (count >= (4 * FPGA_DMA_ALIGN_BYTES))  // if there is at least 4CL (256 bytes) of data to transfer, post bursts of 4
+      {
+         desc.rd_address = src & FPGA_DMA_MASK_32_BIT;
+	      desc.wr_address = dst & FPGA_DMA_MASK_32_BIT;
+	      desc.wr_burst_count = 4;
+	      desc.rd_burst_count = 4;
+	      desc.rd_address_ext = (src >> 32) & FPGA_DMA_MASK_32_BIT;
+	      desc.wr_address_ext = (dst >> 32) & FPGA_DMA_MASK_32_BIT;
+
+         if ((count % (4 * FPGA_DMA_ALIGN_BYTES)) == 0)  // buffer ends on 4CL boundary
+         {
+            segment_size = count;
+            count = 0;  // transfer below will move the remainder of the buffer
+         }
+         else  // buffers do not end on 4CL boundary so transfer only up to the last 4CL boundary leaving a segment at the end to finish later
+         {
+            segment_size = count - (count % (4 * FPGA_DMA_ALIGN_BYTES));  // round count down to the nearest multiple of 4CL
+            src += segment_size;
+            dst += segment_size;
+            count -= segment_size;
+         }
+
+	      desc.len = segment_size;
+
+	      res = _send_descriptor(dma_h, desc);
+         ON_ERR_GOTO(res, out, "_send_descriptor");
+      }  
+
+      // at this point we have posted all the bursts of length 4 we can but there might be 64, 128, or 192 bytes of data to transfer still
+      if (count > 0)  // if buffer did not end on 4CL (256 byte) boundary post short transfer to handle the remainder
+      {
+	      desc.rd_address = src & FPGA_DMA_MASK_32_BIT;
+	      desc.wr_address = dst & FPGA_DMA_MASK_32_BIT;
+	      desc.len = count;
+	      desc.wr_burst_count = 1;
+	      desc.rd_burst_count = 1;
+	      desc.rd_address_ext = (src >> 32) & FPGA_DMA_MASK_32_BIT;
+	      desc.wr_address_ext = (dst >> 32) & FPGA_DMA_MASK_32_BIT;
+
+         // will post short transfer to move the remainder of the buffer
+	      res = _send_descriptor(dma_h, desc); 
+         ON_ERR_GOTO(res, out, "_send_descriptor");  
+      }
+
+   }  // end of FPGA --> Host or Host --> FPGA transfer
+
+out:
    return res;
 }
 
@@ -254,32 +360,34 @@ fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_h, uint64_t dst, uint64_t sr
    if(type == HOST_TO_FPGA_MM) {
       for(i=0; i<dma_chunks; i++) {
          memcpy(dma_h->dma_buf_ptr, (void*)(src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);         
-         res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova | 0x1000000000000, FPGA_DMA_BUF_SIZE);
+         res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova | 0x1000000000000, FPGA_DMA_BUF_SIZE, type);
          ON_ERR_GOTO(res, out, "HOST_TO_FPGA_MM Transfer failed\n");
       }
       if(count > 0) {
          memcpy(dma_h->dma_buf_ptr, (void*)(src+dma_chunks*FPGA_DMA_BUF_SIZE), count);
-         res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova | 0x1000000000000, count);
+         res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova | 0x1000000000000, count, type);
          ON_ERR_GOTO(res, out, "HOST_TO_FPGA_MM Transfer failed");
       }
    }
    else if(type == FPGA_TO_HOST_MM) {
       for(i=0; i<dma_chunks; i++) {
-         res = _do_dma(dma_h, dma_h->dma_buf_iova | 0x1000000000000, (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);
+         //printf("Chunk %ld\n",i);
+         res = _do_dma(dma_h, dma_h->dma_buf_iova | 0x1000000000000, (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE, type);
          ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
 
          // hack: extra read to fence host memory writes
-         res = _do_dma(dma_h, dma_h->dma_buf_iova | 0x1000000000000, dma_h->dma_buf_iova | 0x1000000000000, 64);
+         res = _do_dma(dma_h, dma_h->dma_buf_iova | 0x1000000000000, dma_h->dma_buf_iova | 0x1000000000000, 64, type);
          ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
 
          memcpy((void*)(dst+i*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr, FPGA_DMA_BUF_SIZE);
       }
       if(count > 0) {
-         res = _do_dma(dma_h, dma_h->dma_buf_iova | 0x1000000000000, (src+dma_chunks*FPGA_DMA_BUF_SIZE), count);
+         //printf("Last Chunk %ld\n");
+         res = _do_dma(dma_h, dma_h->dma_buf_iova | 0x1000000000000, (src+dma_chunks*FPGA_DMA_BUF_SIZE), count, type);
          ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
 
          // hack: extra read to fence host memory writes
-         res = _do_dma(dma_h, dma_h->dma_buf_iova | 0x1000000000000, dma_h->dma_buf_iova | 0x1000000000000, 64);
+         res = _do_dma(dma_h, dma_h->dma_buf_iova | 0x1000000000000, dma_h->dma_buf_iova | 0x1000000000000, 64, type);
          ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
 
          memcpy((void*)(dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr, count);
@@ -287,11 +395,11 @@ fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_h, uint64_t dst, uint64_t sr
    }
    else if(type == FPGA_TO_FPGA_MM) {
       for(i=0; i<dma_chunks; i++) {
-         res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);
+         res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE, type);
          ON_ERR_GOTO(res, out, "FPGA_TO_FPGA_MM Transfer failed");
       }
       if(count > 0) {
-         res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), (src+dma_chunks*FPGA_DMA_BUF_SIZE), count);
+         res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), (src+dma_chunks*FPGA_DMA_BUF_SIZE), count, type);
          ON_ERR_GOTO(res, out, "FPGA_TO_FPGA_MM Transfer failed");
       }
    }

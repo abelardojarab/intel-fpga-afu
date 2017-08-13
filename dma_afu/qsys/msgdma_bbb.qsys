@@ -20,6 +20,11 @@
    }
    element address_span_extender_0.cntl
    {
+      datum _lockedAddress
+      {
+         value = "1";
+         type = "boolean";
+      }
       datum baseAddress
       {
          value = "512";
@@ -28,6 +33,11 @@
    }
    element address_span_extender_0.windowed_slave
    {
+      datum _lockedAddress
+      {
+         value = "1";
+         type = "boolean";
+      }
       datum baseAddress
       {
          value = "4096";
@@ -48,6 +58,14 @@
       {
          value = "2";
          type = "int";
+      }
+   }
+   element csr.s0
+   {
+      datum _lockedAddress
+      {
+         value = "0";
+         type = "boolean";
       }
    }
    element dma.dma_csr
@@ -142,7 +160,7 @@
    {
       datum _lockedAddress
       {
-         value = "0";
+         value = "1";
          type = "boolean";
       }
    }
@@ -150,7 +168,7 @@
    {
       datum _lockedAddress
       {
-         value = "0";
+         value = "1";
          type = "boolean";
       }
    }
@@ -186,12 +204,28 @@
          type = "int";
       }
    }
+   element msgdma_bbb_afu_id_avmm_slave_0.afu_cfg_slave
+   {
+      datum _lockedAddress
+      {
+         value = "1";
+         type = "boolean";
+      }
+   }
    element pipe_stage_ase
    {
       datum _sortIndex
       {
          value = "4";
          type = "int";
+      }
+   }
+   element pipe_stage_ase.s0
+   {
+      datum _lockedAddress
+      {
+         value = "1";
+         type = "boolean";
       }
    }
    element pipe_stage_dma
@@ -202,12 +236,28 @@
          type = "int";
       }
    }
+   element pipe_stage_dma.s0
+   {
+      datum _lockedAddress
+      {
+         value = "1";
+         type = "boolean";
+      }
+   }
    element pipe_stage_dma_read
    {
       datum _sortIndex
       {
          value = "8";
          type = "int";
+      }
+   }
+   element pipe_stage_dma_read.s0
+   {
+      datum _lockedAddress
+      {
+         value = "1";
+         type = "boolean";
       }
    }
    element pipe_stage_dma_write
@@ -234,6 +284,14 @@
          type = "boolean";
       }
    }
+   element pipe_stage_dma_write.s0
+   {
+      datum _lockedAddress
+      {
+         value = "1";
+         type = "boolean";
+      }
+   }
    element pipe_stage_host
    {
       datum _sortIndex
@@ -244,6 +302,11 @@
    }
    element pipe_stage_host.s0
    {
+      datum _lockedAddress
+      {
+         value = "1";
+         type = "boolean";
+      }
       datum baseAddress
       {
          value = "281474976710656";
@@ -256,6 +319,19 @@
       {
          value = "6";
          type = "int";
+      }
+   }
+   element pipe_stage_mem.s0
+   {
+      datum _lockedAddress
+      {
+         value = "1";
+         type = "boolean";
+      }
+      datum baseAddress
+      {
+         value = "0";
+         type = "String";
       }
    }
 }
@@ -2371,6 +2447,14 @@
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC</vhdlType>
                     </port>
+                    <port>
+                        <name>master_burstcount</name>
+                        <role>burstcount</role>
+                        <direction>Output</direction>
+                        <width>3</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC_VECTOR</vhdlType>
+                    </port>
                 </ports>
                 <assignments>
                     <assignmentValueMap/>
@@ -3051,6 +3135,14 @@
                         <width>1</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC</vhdlType>
+                    </port>
+                    <port>
+                        <name>master_burstcount</name>
+                        <role>burstcount</role>
+                        <direction>Output</direction>
+                        <width>3</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
                 </ports>
                 <assignments>
@@ -5535,7 +5627,7 @@
                         <name>m0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Output</direction>
-                        <width>1</width>
+                        <width>3</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -5794,7 +5886,7 @@
                         <name>s0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Input</direction>
-                        <width>1</width>
+                        <width>3</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -6193,7 +6285,7 @@
                         <name>m0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Output</direction>
-                        <width>1</width>
+                        <width>3</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -6452,7 +6544,7 @@
                         <name>s0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Input</direction>
-                        <width>1</width>
+                        <width>3</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -6851,7 +6943,7 @@
                         <name>m0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Output</direction>
-                        <width>1</width>
+                        <width>3</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -7110,7 +7202,7 @@
                         <name>s0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Input</direction>
-                        <width>1</width>
+                        <width>3</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -7509,7 +7601,7 @@
                         <name>m0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Output</direction>
-                        <width>1</width>
+                        <width>3</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -7768,7 +7860,7 @@
                         <name>s0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Input</direction>
-                        <width>1</width>
+                        <width>3</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -8167,7 +8259,7 @@
                         <name>m0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Output</direction>
-                        <width>1</width>
+                        <width>3</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -8426,7 +8518,7 @@
                         <name>s0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Input</direction>
-                        <width>1</width>
+                        <width>3</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>

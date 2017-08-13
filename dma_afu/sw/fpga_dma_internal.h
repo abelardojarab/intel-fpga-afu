@@ -95,12 +95,12 @@ typedef struct __attribute__((__packed__))
   //0x8
   uint32_t len;
   //0xC
-  uint8_t wr_burst_count;
-  uint8_t rd_burst_count;
   uint16_t seq_num;
+  uint8_t rd_burst_count;
+  uint8_t wr_burst_count;
   //0x10
-  uint16_t wr_stride;
   uint16_t rd_stride;
+  uint16_t wr_stride;
   //0x14
   uint32_t rd_address_ext;
   //0x18

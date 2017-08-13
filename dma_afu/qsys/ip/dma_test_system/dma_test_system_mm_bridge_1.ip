@@ -722,7 +722,7 @@
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
             <spirit:left>0</spirit:left>
-            <spirit:right>4</spirit:right>
+            <spirit:right>2</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
@@ -862,7 +862,7 @@
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
             <spirit:left>0</spirit:left>
-            <spirit:right>4</spirit:right>
+            <spirit:right>2</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
@@ -1010,12 +1010,12 @@
         <spirit:parameter>
           <spirit:name>BURSTCOUNT_WIDTH</spirit:name>
           <spirit:displayName>Burstcount width</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="BURSTCOUNT_WIDTH">5</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="BURSTCOUNT_WIDTH">3</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>MAX_BURST_SIZE</spirit:name>
           <spirit:displayName>Maximum burst size (words)</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="MAX_BURST_SIZE">16</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="MAX_BURST_SIZE">4</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>MAX_PENDING_RESPONSES</spirit:name>
@@ -1145,7 +1145,7 @@
                     <name>m0_burstcount</name>
                     <role>burstcount</role>
                     <direction>Output</direction>
-                    <width>5</width>
+                    <width>3</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
@@ -1404,7 +1404,7 @@
                     <name>s0_burstcount</name>
                     <role>burstcount</role>
                     <direction>Input</direction>
-                    <width>5</width>
+                    <width>3</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>

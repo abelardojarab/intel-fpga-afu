@@ -215,6 +215,14 @@
             <spirit:name>master_readdatavalid</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
+        <spirit:portMap>
+          <spirit:logicalPort>
+            <spirit:name>burstcount</spirit:name>
+          </spirit:logicalPort>
+          <spirit:physicalPort>
+            <spirit:name>master_burstcount</spirit:name>
+          </spirit:physicalPort>
+        </spirit:portMap>
       </spirit:portMaps>
       <spirit:parameters>
         <spirit:parameter>
@@ -707,6 +715,22 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
+        <spirit:name>master_burstcount</spirit:name>
+        <spirit:wire>
+          <spirit:direction>out</spirit:direction>
+          <spirit:vector>
+            <spirit:left>0</spirit:left>
+            <spirit:right>2</spirit:right>
+          </spirit:vector>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
+              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
         <spirit:name>src_data</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
@@ -875,22 +899,22 @@
         <spirit:parameter>
           <spirit:name>BURST_ENABLE</spirit:name>
           <spirit:displayName>Burst Enable</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="BURST_ENABLE">0</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="BURST_ENABLE">1</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>GUI_MAX_BURST_COUNT</spirit:name>
           <spirit:displayName>Maximum Burst Count</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="GUI_MAX_BURST_COUNT">16</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="GUI_MAX_BURST_COUNT">4</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>GUI_PROGRAMMABLE_BURST_ENABLE</spirit:name>
           <spirit:displayName>Programmable Burst Enable</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="GUI_PROGRAMMABLE_BURST_ENABLE">0</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="GUI_PROGRAMMABLE_BURST_ENABLE">1</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>GUI_BURST_WRAPPING_SUPPORT</spirit:name>
           <spirit:displayName>Force Burst Alignment Enable</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="GUI_BURST_WRAPPING_SUPPORT">1</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="GUI_BURST_WRAPPING_SUPPORT">0</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>TRANSFER_TYPE</spirit:name>
@@ -965,7 +989,7 @@
         <spirit:parameter>
           <spirit:name>MAX_BURST_COUNT_WIDTH</spirit:name>
           <spirit:displayName>MAX_BURST_COUNT_WIDTH</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="MAX_BURST_COUNT_WIDTH">1</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="MAX_BURST_COUNT_WIDTH">3</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>UNALIGNED_ACCESSES_ENABLE</spirit:name>
@@ -985,12 +1009,12 @@
         <spirit:parameter>
           <spirit:name>PROGRAMMABLE_BURST_ENABLE</spirit:name>
           <spirit:displayName>PROGRAMMABLE_BURST_ENABLE</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="PROGRAMMABLE_BURST_ENABLE">0</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="PROGRAMMABLE_BURST_ENABLE">1</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>MAX_BURST_COUNT</spirit:name>
           <spirit:displayName>MAX_BURST_COUNT</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="MAX_BURST_COUNT">1</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="MAX_BURST_COUNT">4</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>FIFO_SPEED_OPTIMIZATION</spirit:name>
@@ -1251,6 +1275,14 @@
                     <width>1</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC</vhdlType>
+                </port>
+                <port>
+                    <name>master_burstcount</name>
+                    <role>burstcount</role>
+                    <direction>Output</direction>
+                    <width>3</width>
+                    <lowerBound>0</lowerBound>
+                    <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
             </ports>
             <assignments>
@@ -1614,6 +1646,7 @@
       </altera:interface_mapping>
       <altera:interface_mapping altera:name="Data_Read_Master" altera:internal="dma_read_master.Data_Read_Master" altera:type="avalon" altera:dir="start">
         <altera:port_mapping altera:name="master_address" altera:internal="master_address"></altera:port_mapping>
+        <altera:port_mapping altera:name="master_burstcount" altera:internal="master_burstcount"></altera:port_mapping>
         <altera:port_mapping altera:name="master_byteenable" altera:internal="master_byteenable"></altera:port_mapping>
         <altera:port_mapping altera:name="master_read" altera:internal="master_read"></altera:port_mapping>
         <altera:port_mapping altera:name="master_readdata" altera:internal="master_readdata"></altera:port_mapping>

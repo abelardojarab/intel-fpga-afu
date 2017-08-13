@@ -26,11 +26,27 @@
          type = "int";
       }
    }
+   element ccip_avmm_bridge_inst.ccip_avmm_bridge_avst_to_avmm_slave_0_avalon_master
+   {
+      datum color
+      {
+         value = "-16711936";
+         type = "int";
+      }
+   }
    element ccip_host_bridge
    {
       datum _sortIndex
       {
          value = "10";
+         type = "int";
+      }
+   }
+   element ccip_host_bridge.m0
+   {
+      datum color
+      {
+         value = "-65536";
          type = "int";
       }
    }
@@ -55,6 +71,19 @@
       datum _sortIndex
       {
          value = "9";
+         type = "int";
+      }
+      datum sopceditor_expanded
+      {
+         value = "1";
+         type = "boolean";
+      }
+   }
+   element ddr4_mm_bridge.m0
+   {
+      datum color
+      {
+         value = "-16776961";
          type = "int";
       }
    }
@@ -110,7 +139,7 @@
    {
       datum color
       {
-         value = "-10027264";
+         value = "-16711936";
          type = "int";
       }
    }
@@ -151,6 +180,22 @@
       datum _sortIndex
       {
          value = "6";
+         type = "int";
+      }
+   }
+   element msgdma_bbb_inst.host
+   {
+      datum color
+      {
+         value = "-65536";
+         type = "int";
+      }
+   }
+   element msgdma_bbb_inst.mem
+   {
+      datum color
+      {
+         value = "-16776705";
          type = "int";
       }
    }
@@ -266,7 +311,13 @@
    internal="ccip_avmm_bridge_inst.pclk400"
    type="clock"
    dir="end" />
+ <interface
+   name="receive_stream_sink"
+   internal="msgdma_bbb_inst.receive_stream_sink" />
  <interface name="reset" internal="reset_in.in_reset" type="reset" dir="end" />
+ <interface
+   name="transmit_stream_source"
+   internal="msgdma_bbb_inst.transmit_stream_source" />
  <module
    name="ccip_avmm_bridge_inst"
    kind="ccip_avmm_bridge"
@@ -366,7 +417,7 @@
                         <name>m0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Output</direction>
-                        <width>1</width>
+                        <width>3</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -625,7 +676,7 @@
                         <name>s0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Input</direction>
-                        <width>1</width>
+                        <width>3</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -1184,7 +1235,7 @@
                         <name>m0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Output</direction>
-                        <width>5</width>
+                        <width>3</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -1443,7 +1494,7 @@
                         <name>s0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Input</direction>
-                        <width>5</width>
+                        <width>3</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -1842,7 +1893,7 @@
                         <name>m0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Output</direction>
-                        <width>7</width>
+                        <width>3</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -2101,7 +2152,7 @@
                         <name>s0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Input</direction>
-                        <width>7</width>
+                        <width>3</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -2262,7 +2313,7 @@
                         </entry>
                         <entry>
                             <key>maximumPendingReadTransactions</key>
-                            <value>64</value>
+                            <value>32</value>
                         </entry>
                         <entry>
                             <key>maximumPendingWriteTransactions</key>
@@ -2500,7 +2551,7 @@
                         <name>m0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Output</direction>
-                        <width>7</width>
+                        <width>3</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -2759,7 +2810,7 @@
                         <name>s0_burstcount</name>
                         <role>burstcount</role>
                         <direction>Input</direction>
-                        <width>7</width>
+                        <width>3</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -2920,7 +2971,7 @@
                         </entry>
                         <entry>
                             <key>maximumPendingReadTransactions</key>
-                            <value>64</value>
+                            <value>32</value>
                         </entry>
                         <entry>
                             <key>maximumPendingWriteTransactions</key>

@@ -6,11 +6,8 @@ SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
 SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
 
 . $SCRIPT_DIR_PATH/sim_common.sh
-
-set -e
-
-menu_setup_sim "$@"
-setup_sim_dir
-setup_quartus_home
-gen_qsys
-run_sim
+# Run this script from Terminal 2
+menu_regress "$@"
+configure_ase_reg_mode
+sh setup_sim.sh -a $afu -b $opae_base -s $sim &
+sh run_app.sh -a $app -b $opae_base

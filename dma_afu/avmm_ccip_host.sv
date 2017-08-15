@@ -101,6 +101,7 @@ module avmm_ccip_host #(
     wire load_burst_counter;
     wire write_sop;
     reg [1:0] address_counter;
+    wire avmm_write;
 
     /* Timing counter for signalling the write channel SOP.
        The incoming bursts are values of 0, 1, or 3.  The steady
@@ -153,7 +154,7 @@ module avmm_ccip_host #(
 	assign c0tx_next.valid = reset ? 1'b0 : avmm_read;
 	
 	//write request
-	wire avmm_write = ~avmm_request.control[0] & avst_avcmd_valid;
+	assign avmm_write = ~avmm_request.control[0] & avst_avcmd_valid;
 	assign c1tx_next.hdr.rsvd2 = '0;
 	assign c1tx_next.hdr.vc_sel = eVC_VH0;
 	assign c1tx_next.hdr.sop = write_sop;

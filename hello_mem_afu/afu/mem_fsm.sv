@@ -45,7 +45,8 @@ module mem_fsm (
   output logic           addr_test_done,
   output logic [1:0]     rdwr_done, 
   output logic [4:0]     rdwr_status, 
-  input                  rdwr_reset
+  input                  rdwr_reset,
+  output logic           ready_for_sw_cmd
 );
 parameter ADDRESS_MAX_BIT = 6;
 typedef enum logic[2:0] { IDLE,
@@ -82,19 +83,24 @@ always@(posedge pClk) begin
     state          <= IDLE;
     addr_test_done <= '0;
     burstcount     <= 1;
+    ready_for_sw_cmd <= 0;
   end
   else begin 
     case(state)
       IDLE: begin 
+        ready_for_sw_cmd <= 1;
         if (mem_testmode & ~addr_test_done)begin    
           avs_write <= 1;
           state <= TEST_WRITE;
+          ready_for_sw_cmd <= 0;
         end else if (avm_write) begin 
           avs_write <= 1;
           state <= WR_REQ;
+          ready_for_sw_cmd <= 0;
         end else if (avm_read) begin 
           avs_read <= 1;
           state <= RD_REQ;
+          ready_for_sw_cmd <= 0;
         end 
       end
 

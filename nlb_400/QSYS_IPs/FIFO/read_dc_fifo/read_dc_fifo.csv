@@ -1,0 +1,19 @@
+# system info read_dc_fifo on 2017.08.01.14:36:07
+system_info:
+name,value
+DEVICE,10AX115H3F34E2SG
+DEVICE_FAMILY,Arria 10
+GENERATION_ID,1501623367
+#
+#
+# Files generated for read_dc_fifo on 2017.08.01.14:36:07
+files:
+filepath,kind,attributes,module,is_top
+sim/read_dc_fifo.v,VERILOG,CONTAINS_INLINE_CONFIGURATION,read_dc_fifo,true
+fifo_170/sim/read_dc_fifo_fifo_170_4wijrha.v,VERILOG,,read_dc_fifo_fifo_170_4wijrha,false
+fifo_170/sim/read_dc_fifo_fifo_170_4wijrha.sdc,SDC,,read_dc_fifo_fifo_170_4wijrha,false
+#
+# Map from instance-path to kind of module
+instances:
+instancePath,module
+read_dc_fifo.fifo_0,read_dc_fifo_fifo_170_4wijrha

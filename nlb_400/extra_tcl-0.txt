@@ -1,1 +1,3 @@
+set_global_assignment -name VERILOG_MACRO INCLUDE_DDR4
 set_global_assignment -name VERILOG_MACRO NLB400_MODE_0
+set_global_assignment -name SDC_FILE ../afu/nlb_400.sdc

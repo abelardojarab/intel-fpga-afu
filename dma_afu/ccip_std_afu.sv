@@ -45,7 +45,7 @@ module ccip_std_afu(
   pck_cp2af_error,           // CCI-P Protocol Error Detected
 
 `ifdef INCLUDE_DDR4
-  DDR4_USERCLK,
+  DDR4a_USERCLK,
   DDR4a_waitrequest,
   DDR4a_readdata,
   DDR4a_readdatavalid,
@@ -55,6 +55,7 @@ module ccip_std_afu(
   DDR4a_write,
   DDR4a_read,
   DDR4a_byteenable,
+  DDR4b_USERCLK,
   DDR4b_waitrequest,
   DDR4b_readdata,
   DDR4b_readdatavalid,
@@ -79,7 +80,7 @@ module ccip_std_afu(
   input           wire [1:0]       pck_cp2af_pwrState;       // CCI-P AFU Power State
   input           wire             pck_cp2af_error;          // CCI-P Protocol Error Detected
 `ifdef INCLUDE_DDR4
-  input   wire                          DDR4_USERCLK;
+  input   wire                          DDR4a_USERCLK;
   input   wire                          DDR4a_waitrequest;
   input   wire [511:0]                  DDR4a_readdata;
   input   wire                          DDR4a_readdatavalid;
@@ -89,6 +90,7 @@ module ccip_std_afu(
   output  wire                          DDR4a_write;
   output  wire                          DDR4a_read;
   output  wire [63:0]                   DDR4a_byteenable;
+  input   wire                          DDR4b_USERCLK;
   input   wire                          DDR4b_waitrequest;
   input   wire [511:0]                  DDR4b_readdata;
   input   wire                          DDR4b_readdatavalid;
@@ -311,7 +313,7 @@ afu afu_inst(
     .uClk_usrDiv2(uClk_usrDiv2),
     
 `ifdef INCLUDE_DDR4
-    .DDR4_USERCLK(DDR4_USERCLK),
+    .DDR4_USERCLK(DDR4a_USERCLK),
     .DDR4a_waitrequest(DDR4a_waitrequest),
     .DDR4a_readdata(DDR4a_readdata),
     .DDR4a_readdatavalid(DDR4a_readdatavalid),

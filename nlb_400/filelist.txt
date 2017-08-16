@@ -9,8 +9,14 @@ ccip_std_afu.sv
 ccip_debug.sv
 arbiter.sv
 nlb_gram_sdp.v
+local_mem.sv
+mem_if.v
+resync.v
+altera_std_synchronizer_nocut.v
 QSYS_IPs/RAM/req_C1TxRAM2PORT.qsys
 QSYS_IPs/RAM/lpbk1_RdRspRAM2PORT.qsys
+QSYS_IPs/FIFO/write_dc_fifo.ip
+QSYS_IPs/FIFO/read_dc_fifo.ip
 include_files/common
 nlb_400.json
 stp2.stp

@@ -45,7 +45,7 @@ module ccip_std_afu(
   
   // DCP EMIF Interface
   // shared clock
-  DDR4_USERCLK,
+  DDR4a_USERCLK,
 
   // bank A
   DDR4a_waitrequest,
@@ -59,6 +59,7 @@ module ccip_std_afu(
   DDR4a_byteenable,
 
   // bank B
+  DDR4b_USERCLK,
   DDR4b_waitrequest,
   DDR4b_readdata,
   DDR4b_readdatavalid,
@@ -84,7 +85,7 @@ module ccip_std_afu(
   
   // DCP EMIF Interface
   // shared clock
-  input   wire                          DDR4_USERCLK;
+  input   wire                          DDR4a_USERCLK;
 
   // bank A
   input   wire                          DDR4a_waitrequest;
@@ -98,6 +99,7 @@ module ccip_std_afu(
   output  wire [63:0]                   DDR4a_byteenable;
 
   // bank B
+  input   wire                          DDR4b_USERCLK;
   input   wire                          DDR4b_waitrequest;
   input   wire [511:0]                  DDR4b_readdata;
   input   wire                          DDR4b_readdatavalid;
@@ -121,6 +123,7 @@ module ccip_std_afu(
   wire [25:0]                   avs_address;
   wire                          avs_write;
   wire                          avs_read;
+  wire [63:0]                   avs_byteenable;
 
   // bank A
   wire                avs_waitrequest_a; 
@@ -213,7 +216,7 @@ altera_avalon_mm_clock_crossing_bridge #(
   .MASTER_SYNC_DEPTH   (2),
   .SLAVE_SYNC_DEPTH    (2)
 ) clock_crossing_bridge_0 (
-  .m0_clk           (DDR4_USERCLK),                                
+  .m0_clk           (DDR4a_USERCLK),                                
   .m0_reset         (pck_cp2af_softReset_T1),                       
   .s0_clk           (pClk),                             
   .s0_reset         (pck_cp2af_softReset_T1),       
@@ -253,7 +256,7 @@ altera_avalon_mm_clock_crossing_bridge #(
   .MASTER_SYNC_DEPTH   (2),
   .SLAVE_SYNC_DEPTH    (2)
 ) clock_crossing_bridge_1 (
-  .m0_clk           (DDR4_USERCLK),                                
+  .m0_clk           (DDR4a_USERCLK),                                
   .m0_reset         (pck_cp2af_softReset_T1),                       
   .s0_clk           (pClk),                             
   .s0_reset         (pck_cp2af_softReset_T1),       

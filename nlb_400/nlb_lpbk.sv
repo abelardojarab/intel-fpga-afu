@@ -238,7 +238,7 @@
 `default_nettype none
 `include "vendor_defines.vh"
 import ccip_if_pkg::*;
-module nlb_lpbk #(parameter TXHDR_WIDTH=61, RXHDR_WIDTH=18, DATA_WIDTH =512)
+module nlb_lpbk #(parameter TXHDR_WIDTH=61, RXHDR_WIDTH=18, DATA_WIDTH =512, DDR4_ADDR_WIDTH=26)
 (
                 
        // ---------------------------global signals-------------------------------------------------
@@ -246,7 +246,7 @@ module nlb_lpbk #(parameter TXHDR_WIDTH=61, RXHDR_WIDTH=18, DATA_WIDTH =512)
        SoftReset,                        //              in    std_logic;           CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH
        // ---------------------------IF signals between CCI and AFU  --------------------------------
 `ifdef INCLUDE_DDR4
-       DDR4_USERCLK,
+       DDR4a_USERCLK,
        DDR4a_waitrequest,
        DDR4a_readdata,
        DDR4a_readdatavalid,
@@ -256,6 +256,8 @@ module nlb_lpbk #(parameter TXHDR_WIDTH=61, RXHDR_WIDTH=18, DATA_WIDTH =512)
        DDR4a_write,
        DDR4a_read,
        DDR4a_byteenable,
+
+       DDR4b_USERCLK,
        DDR4b_waitrequest,
        DDR4b_readdata,
        DDR4b_readdatavalid,
@@ -274,7 +276,7 @@ module nlb_lpbk #(parameter TXHDR_WIDTH=61, RXHDR_WIDTH=18, DATA_WIDTH =512)
    input                        Clk_400;             //              in    std_logic;           Core clock. CCI interface is synchronous to this clock.
    input                        SoftReset;            //              in    std_logic;           CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH
 `ifdef INCLUDE_DDR4
-   input  wire                      DDR4_USERCLK;
+   input  wire                      DDR4a_USERCLK;
    input  wire                      DDR4a_waitrequest;
    input  wire [511:0]              DDR4a_readdata;
    input  wire                      DDR4a_readdatavalid;
@@ -284,6 +286,8 @@ module nlb_lpbk #(parameter TXHDR_WIDTH=61, RXHDR_WIDTH=18, DATA_WIDTH =512)
    output wire                      DDR4a_write;
    output wire                      DDR4a_read;
    output wire [63:0]               DDR4a_byteenable;
+
+   input  wire                      DDR4b_USERCLK;
    input  wire                      DDR4b_waitrequest;
    input  wire [511:0]              DDR4b_readdata;
    input  wire                      DDR4b_readdatavalid;
@@ -377,6 +381,14 @@ module nlb_lpbk #(parameter TXHDR_WIDTH=61, RXHDR_WIDTH=18, DATA_WIDTH =512)
    logic [31:0]                 re2cr_num_Wrpend;
    logic [31:0]                 re2cr_error;
    
+`ifdef INCLUDE_DDR4
+   logic [63:0]  mem2cr_readdata;
+   logic [63:0]  mem2cr_status;
+   logic [63:0]  cr2mem_ctrl;
+   logic [63:0]  cr2mem_address;
+   logic [63:0]  cr2mem_writedata;
+`endif
+
    reg                          SoftReset_q=1'b1;
    always @(posedge Clk_400)
    begin
@@ -525,6 +537,43 @@ inst_arbiter (
        re2xy_multiCL_len
 );
 
+`ifdef INCLUDE_DDR4
+local_mem #(
+	.DATA_WIDTH(64),
+	.ADDR_WIDTH(DDR4_ADDR_WIDTH),
+	.BYTEEN_WIDTH(8),
+	.BURSTCOUNT_WIDTH(7)
+) inst_local_mem(
+  Clk_400,
+  SoftReset,
+  mem2cr_readdata,
+  mem2cr_status,
+  cr2mem_ctrl,
+  cr2mem_address,
+  cr2mem_writedata,
+  DDR4a_USERCLK,
+  DDR4a_waitrequest,
+  DDR4a_readdata,
+  DDR4a_readdatavalid,
+  DDR4a_burstcount,
+  DDR4a_writedata,
+  DDR4a_address,
+  DDR4a_write,
+  DDR4a_read,
+  DDR4a_byteenable,
+  DDR4b_USERCLK,
+  DDR4b_waitrequest,
+  DDR4b_readdata,
+  DDR4b_readdatavalid,
+  DDR4b_burstcount,
+  DDR4b_writedata,
+  DDR4b_address,
+  DDR4b_write,
+  DDR4b_read,
+  DDR4b_byteenable
+);
+`endif
+
 t_ccip_c0_ReqMmioHdr       cp2cr_MmioHdr;
 logic                       cp2cr_MmioWrEn;
 logic                       cp2cr_MmioRdEn;
@@ -554,25 +603,11 @@ inst_nlb_csr (
     re2cr_wrlock_n,
 	
 `ifdef INCLUDE_DDR4  
-	DDR4_USERCLK,
-	DDR4a_waitrequest,
-	DDR4a_readdata,
-	DDR4a_readdatavalid,
-	DDR4a_burstcount,
-	DDR4a_writedata,
-	DDR4a_address,
-	DDR4a_write,
-	DDR4a_read,
-	DDR4a_byteenable,
-	DDR4b_waitrequest,
-	DDR4b_readdata,
-	DDR4b_readdatavalid,
-	DDR4b_burstcount,
-	DDR4b_writedata,
-	DDR4b_address,
-	DDR4b_byteenable,
-	DDR4b_write,
-	DDR4b_read,
+    mem2cr_readdata,
+    mem2cr_status,
+    cr2mem_ctrl,
+    cr2mem_address,
+    cr2mem_writedata,
 `endif
 
     // MMIO Requests

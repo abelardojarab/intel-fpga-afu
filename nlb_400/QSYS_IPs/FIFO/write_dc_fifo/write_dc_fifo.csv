@@ -1,0 +1,19 @@
+# system info write_dc_fifo on 2017.08.05.22:22:06
+system_info:
+name,value
+DEVICE,10AX115H3F34E2SG
+DEVICE_FAMILY,Arria 10
+GENERATION_ID,1501996925
+#
+#
+# Files generated for write_dc_fifo on 2017.08.05.22:22:06
+files:
+filepath,kind,attributes,module,is_top
+sim/write_dc_fifo.v,VERILOG,CONTAINS_INLINE_CONFIGURATION,write_dc_fifo,true
+fifo_170/sim/write_dc_fifo_fifo_170_bktbtyy.v,VERILOG,,write_dc_fifo_fifo_170_bktbtyy,false
+fifo_170/sim/write_dc_fifo_fifo_170_bktbtyy.sdc,SDC,,write_dc_fifo_fifo_170_bktbtyy,false
+#
+# Map from instance-path to kind of module
+instances:
+instancePath,module
+write_dc_fifo.fifo_0,write_dc_fifo_fifo_170_bktbtyy

@@ -246,9 +246,11 @@ assign     cr2re_num_lines       = func_csr_connect_4B(CSR_NUM_LINES, csr_reg[CS
 assign     cr2re_inact_thresh    = func_csr_connect_4B(CSR_INACT_THRESH,csr_reg[CSR_INACT_THRESH>>3]);
 assign     cr2re_cfg             = csr_reg[CSR_CFG>>3];
 
+`ifdef INCLUDE_DDR4  
 assign     cr2mem_ctrl           = csr_reg[CSR_DDR4_CTRL>>3];
 assign     cr2mem_address        = csr_reg[CSR_DDR4_ADDR>>3];
 assign     cr2mem_writedata      = csr_reg[CSR_DDR4_WD>>3];
+`endif
 
 function automatic [31:0] func_csr_connect_4B;
     input [15:0]    address;

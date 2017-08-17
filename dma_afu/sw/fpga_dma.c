@@ -331,6 +331,507 @@ out:
    return err_cnt;
 }
 
+/**
+* _read_memory_mmio_unaligned
+*
+* @brief                Performs a unaligned read(address not 4/8/64 byte aligned) from FPGA address(device address).
+* @param[in] dma        Handle to the FPGA DMA object
+* @param[in] dev_addr   FPGA address
+* @param[in] host_addr  Host buffer address
+* @param[in] count      Size in bytes, always less than 8bytes.
+* @return fpga_result FPGA_OK on success, return code otherwise
+*
+*/
+static fpga_result _read_memory_mmio_unaligned(fpga_dma_handle dma_h, uint64_t dev_addr,uint64_t host_addr, uint64_t count)
+{
+   fpga_result res = FPGA_OK;
+
+   uint64_t shift = dev_addr % QWORD_BYTES;
+   debug_print("shift = %08lx , count = %08lx \n",shift, count);
+
+   uint64_t dev_aligned_addr = dev_addr - shift;
+   //read data from device memory
+   uint64_t read_tmp;
+   res = fpgaReadMMIO64(dma_h->fpga_h, 0, (dma_h->dma_base)+FPGA_DMA_ADDR_SPAN_EXT_DATA+(dev_aligned_addr&DMA_ADDR_SPAN_EXT_WINDOW_MASK), &read_tmp);
+   if(res != FPGA_OK)
+      return res;
+   //overlay our data
+   memcpy((void *)host_addr, ((char *)(&read_tmp))+shift, count);
+   return res;
+}
+
+
+/**
+* _write_memory_mmio_unaligned
+*
+* @brief                Performs a unaligned write(address not 4/8/64 byte aligned) to FPGA address(device address).
+* @param[in] dma        Handle to the FPGA DMA object
+* @param[in] dev_addr   FPGA address
+* @param[in] host_addr  Host buffer address
+* @param[in] count      Size in bytes, always less than 8bytes.
+* @return fpga_result FPGA_OK on success, return code otherwise
+*
+*/
+static fpga_result _write_memory_mmio_unaligned(fpga_dma_handle dma_h, uint64_t dev_addr,uint64_t host_addr, uint64_t count)
+{
+   fpga_result res = FPGA_OK;
+
+   uint64_t shift = dev_addr % QWORD_BYTES;
+   debug_print("shift = %08lx , count = %08lx \n",shift, count);
+
+   uint64_t dev_aligned_addr = dev_addr - shift;
+   //read data from device memory
+   uint64_t read_tmp;
+   res = fpgaReadMMIO64(dma_h->fpga_h, 0, (dma_h->dma_base)+FPGA_DMA_ADDR_SPAN_EXT_DATA+(dev_aligned_addr&DMA_ADDR_SPAN_EXT_WINDOW_MASK), &read_tmp);
+   if(res != FPGA_OK)
+      return res;
+   //overlay our data
+   memcpy(((char *)(&read_tmp))+shift, (void *)host_addr, count);
+   //write back to device
+   res = fpgaWriteMMIO64(dma_h->fpga_h, 0, (dma_h->dma_base)+FPGA_DMA_ADDR_SPAN_EXT_DATA+(dev_aligned_addr&DMA_ADDR_SPAN_EXT_WINDOW_MASK), read_tmp);
+   if(res != FPGA_OK)
+      return res;
+
+   return res;
+}
+
+/**
+* _write_memory_mmio
+*
+* @brief                   Writes to a DWORD/QWORD aligned memory address(FPGA address).
+* @param[in] dma           Handle to the FPGA DMA object
+* @param[in/out] dst_ptr   FPGA address
+* @param[in/out] src_ptr   Host buffer address
+* @param[in/out] count     Size in bytes
+* @return fpga_result      FPGA_OK on success, return code otherwise
+*
+*/
+static fpga_result _write_memory_mmio(fpga_dma_handle dma_h, uint64_t *dst_ptr,uint64_t *src_ptr, uint64_t* count)
+{
+   fpga_result res = FPGA_OK;
+   uint64_t src = *src_ptr;
+   uint64_t dst = *dst_ptr;
+   uint64_t align_bytes = *count;
+   uint64_t cur_mem_page;
+   uint64_t offset;
+   uint64_t i;
+   uint64_t alignment=0;
+   if(IS_ALIGNED_QWORD(dst))
+      alignment = QWORD_BYTES;
+   else if(IS_ALIGNED_DWORD(dst))
+      alignment = DWORD_BYTES;
+   fpgaReadMMIO64(dma_h->fpga_h, 0, (dma_h->dma_base)+FPGA_DMA_ADDR_SPAN_EXT_CNTL, &cur_mem_page);
+   for(i = 0; i < align_bytes/alignment ; i++){
+      uint64_t mem_page = dst & ~DMA_ADDR_SPAN_EXT_WINDOW_MASK;
+      if(mem_page != cur_mem_page)
+      {
+         cur_mem_page = mem_page;
+         fpgaWriteMMIO64(dma_h->fpga_h, 0, (dma_h->dma_base)+FPGA_DMA_ADDR_SPAN_EXT_CNTL, cur_mem_page);
+      }
+      offset = (dma_h->dma_base)+FPGA_DMA_ADDR_SPAN_EXT_DATA+(dst&DMA_ADDR_SPAN_EXT_WINDOW_MASK);
+      if(alignment == QWORD_BYTES)
+         res = fpgaWriteMMIO64(dma_h->fpga_h, 0, offset, *(uint64_t *)src);
+      else if(alignment == DWORD_BYTES)
+         res = fpgaWriteMMIO32(dma_h->fpga_h, 0, offset, *(uint64_t *)src);
+      if(res != FPGA_OK)
+         return res;
+      src += alignment;
+      dst += alignment;
+   }
+   align_bytes -= (align_bytes/alignment)*alignment;
+
+   *src_ptr = src;
+   *dst_ptr = dst;
+   *count = align_bytes;
+   return res;
+}
+
+/**
+* _ase_host_to_fpga
+*
+* @brief                   Tx "count" bytes from HOST to FPGA using Address span expander(ASE)- will internally make calls to handle unaligned and aligned MMIO writes.
+* @param[in] dma           Handle to the FPGA DMA object
+* @param[in/out] dst_ptr   FPGA address
+* @param[in/out] src_ptr   Host buffer address
+* @param[in] count         Size in bytes
+* @return fpga_result      FPGA_OK on success, return code otherwise
+*
+*/
+static fpga_result _ase_host_to_fpga(fpga_dma_handle dma_h, uint64_t *dst_ptr,uint64_t *src_ptr, uint64_t count)
+{
+   fpga_result res = FPGA_OK;
+   uint64_t dst = *dst_ptr;
+   uint64_t src = *src_ptr;
+   uint64_t count_left = count;
+   uint64_t mmio_shift;
+   uint64_t unaligned_size;
+
+   do{
+      //Set the Address Span expander CTRL port to the required 4K window
+      uint64_t cur_mem_page = dst & ~DMA_ADDR_SPAN_EXT_WINDOW_MASK;
+      res = fpgaWriteMMIO64(dma_h->fpga_h, 0, (dma_h->dma_base)+FPGA_DMA_ADDR_SPAN_EXT_CNTL , cur_mem_page);
+      if(res != FPGA_OK)
+         return res;
+      //Can use for debug if dst span was set to the right 4K
+      //mmio_read64(dma_h->fpga_h, (dma_h->dma_base)+FPGA_DMA_ADDR_SPAN_EXT_CNTL, &data, "addr_span");
+
+      //Aligns address to 8 byte using dst masking method
+      if(!IS_ALIGNED_QWORD(dst) && !IS_ALIGNED_DWORD(dst)){
+         mmio_shift = dst % QWORD_BYTES;
+         unaligned_size = QWORD_BYTES - mmio_shift;
+         if(unaligned_size > count_left)
+            unaligned_size = count_left;
+         res = _write_memory_mmio_unaligned(dma_h,dst,src,unaligned_size);
+           if(res != FPGA_OK)
+            return res;
+         count_left -= unaligned_size;
+         src += unaligned_size;
+         dst += unaligned_size;
+      }
+      if(count_left){
+         //Handles 8/4 byte MMIO transfer
+         if(IS_ALIGNED_QWORD(dst)){
+            res = _write_memory_mmio(dma_h, &dst, &src, &count_left);
+            if(res != FPGA_OK)
+                  return res;
+         }
+         if(IS_ALIGNED_DWORD(dst)){
+            res = _write_memory_mmio(dma_h, &dst, &src, &count_left);
+            if(res != FPGA_OK)
+                  return res;
+         }//Left over unaligned count bytes are transfered using dst masking method
+         if(count_left){
+            mmio_shift = dst % QWORD_BYTES;
+            unaligned_size = QWORD_BYTES - mmio_shift;
+            if(unaligned_size > count_left)
+               unaligned_size = count_left;
+            res = _write_memory_mmio_unaligned(dma_h,dst,src,unaligned_size);
+            if(res != FPGA_OK)
+               return res;
+            count_left -= unaligned_size;
+            src += unaligned_size;
+            dst += unaligned_size;
+         }
+      }
+   }while(count_left!=0 );
+   *dst_ptr = dst;
+   *src_ptr = src;
+   debug_print("dst_ptr = %08lx , count = %08lx, src = %08lx \n", *dst_ptr, count, *src_ptr);
+   if(count_left != 0)
+   {
+      debug_print("%08lx bytes left to transfer, MMIO needs tx len to be 8/4 byte aligned \n", count_left);
+      return FPGA_NOT_SUPPORTED;
+   }
+   return FPGA_OK;
+}
+
+/**
+* _read_memory_mmio
+*
+* @brief                   Reads a DWORD/QWORD aligned memory address(FPGA address).
+* @param[in] dma           Handle to the FPGA DMA object
+* @param[in/out] dst_ptr   Host Buffer Address
+* @param[in/out] src_ptr   FPGA address
+* @param[in/out] count     Size in bytes
+* @return fpga_result      FPGA_OK on success, return code otherwise
+*
+*/
+static fpga_result _read_memory_mmio(fpga_dma_handle dma_h, uint64_t *src_ptr,uint64_t *dst_ptr, uint64_t* count)
+{
+   fpga_result res = FPGA_OK;
+   uint64_t src = *src_ptr;
+   uint64_t dst = *dst_ptr;
+   uint64_t align_bytes = *count;
+   uint64_t cur_mem_page;
+   uint64_t offset;
+   uint64_t i;
+   uint64_t alignment=0;
+   if(IS_ALIGNED_QWORD(src))
+      alignment = QWORD_BYTES;
+   else if(IS_ALIGNED_DWORD(src))
+      alignment = DWORD_BYTES;
+
+   fpgaReadMMIO64(dma_h->fpga_h, 0, (dma_h->dma_base)+FPGA_DMA_ADDR_SPAN_EXT_CNTL, &cur_mem_page);
+   for(i = 0; i < align_bytes/alignment ; i++){
+      uint64_t mem_page = src & ~DMA_ADDR_SPAN_EXT_WINDOW_MASK;
+      if(mem_page != cur_mem_page)
+      {
+         cur_mem_page = mem_page;
+         fpgaWriteMMIO64(dma_h->fpga_h, 0, (dma_h->dma_base)+FPGA_DMA_ADDR_SPAN_EXT_CNTL, cur_mem_page);
+      }
+      offset = (dma_h->dma_base)+FPGA_DMA_ADDR_SPAN_EXT_DATA+(src&DMA_ADDR_SPAN_EXT_WINDOW_MASK);
+      if(alignment == QWORD_BYTES)
+         res = fpgaReadMMIO64(dma_h->fpga_h, 0, offset, (uint64_t *)dst);
+      else if(alignment == DWORD_BYTES)
+         res = fpgaReadMMIO32(dma_h->fpga_h, 0, offset, (uint32_t *)dst);
+      if(res != FPGA_OK)
+         return res;
+      dst += alignment;
+      src += alignment;
+   }
+   align_bytes -= (align_bytes/alignment)*alignment;
+
+   *src_ptr = src;
+   *dst_ptr = dst;
+   *count = align_bytes;
+   return res;
+}
+
+/**
+* _ase_fpga_to_host
+*
+* @brief                   Tx "count" bytes from FPGA to HOST using Address span expander(ASE)- will internally make calls to handle unaligned and aligned MMIO writes.
+* @param[in] dma           Handle to the FPGA DMA object
+* @param[in/out] dst_ptr   Host Buffer Address
+* @param[in/out] src_ptr   FPGA address
+* @param[in/out] count     Size in bytes
+* @return fpga_result      FPGA_OK on success, return code otherwise
+*
+*/
+static fpga_result _ase_fpga_to_host(fpga_dma_handle dma_h, uint64_t *src_ptr,uint64_t *dst_ptr, uint64_t count)
+{
+   fpga_result res = FPGA_OK;
+   uint64_t src = *src_ptr;
+   uint64_t dst = *dst_ptr;
+   uint64_t count_left = count;
+   uint64_t mmio_shift;
+   uint64_t unaligned_size;
+
+   do{
+      //Set the Address Span expander CTRL port to the required 4K window
+      uint64_t cur_mem_page = src & ~DMA_ADDR_SPAN_EXT_WINDOW_MASK;
+      res = fpgaWriteMMIO64(dma_h->fpga_h, 0, (dma_h->dma_base)+FPGA_DMA_ADDR_SPAN_EXT_CNTL , cur_mem_page);
+      if(res != FPGA_OK)
+         return res;
+      //Can use for debug if src span was set to the right 4K
+      //mmio_read64(dma_h->fpga_h, (dma_h->dma_base)+FPGA_DMA_ADDR_SPAN_EXT_CNTL, &data, "addr_span");
+
+      //Aligns address to 8 byte using src masking method
+      if(!IS_ALIGNED_QWORD(src) && !IS_ALIGNED_DWORD(src)){
+         mmio_shift = src % QWORD_BYTES;
+         unaligned_size = QWORD_BYTES - mmio_shift;
+         if(unaligned_size > count_left)
+            unaligned_size = count_left;
+         res = _read_memory_mmio_unaligned(dma_h, src, dst, unaligned_size);
+         if(res != FPGA_OK)
+            return res;
+         count_left -= unaligned_size;
+         src += unaligned_size;
+         dst += unaligned_size;
+      }
+      if(count_left){
+         //Handles 8/4 byte MMIO transfer
+         if(IS_ALIGNED_QWORD(src)){
+            res = _read_memory_mmio(dma_h, &src, &dst, &count_left);
+            if(res != FPGA_OK)
+                  return res;
+         }
+         if(IS_ALIGNED_DWORD(src)){
+            res = _read_memory_mmio(dma_h, &src, &dst, &count_left);
+            if(res != FPGA_OK)
+                  return res;
+         }//Left over unaligned count bytes are transfered using src masking method
+         if(count_left){
+            mmio_shift = src % QWORD_BYTES;
+            unaligned_size = QWORD_BYTES - mmio_shift;
+            if(unaligned_size > count_left)
+               unaligned_size = count_left;
+            res = _read_memory_mmio_unaligned(dma_h, src, dst, unaligned_size);
+            if(res != FPGA_OK)
+               return res;
+            count_left -= unaligned_size;
+            src += unaligned_size;
+            dst += unaligned_size;
+         }
+      }
+   }while(count_left!=0);
+   *src_ptr = src;
+   *dst_ptr = dst;
+   debug_print("src_ptr = %08lx , count_left = %08lx, dst = %08lx \n", *src_ptr, count_left, *dst_ptr);
+   if(count_left != 0)
+   {
+      debug_print("%08lx bytes left to transfer, MMIO needs tx len to be 8/4 byte aligned \n", count_left);
+      return FPGA_NOT_SUPPORTED;
+   }
+   return FPGA_OK;
+}
+
+fpga_result transferHostToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, size_t count,
+                                fpga_dma_transfer_t type) {
+   fpga_result res = FPGA_OK;
+   uint64_t i;
+   uint64_t count_left = count;
+   uint64_t aligned_addr;
+   uint64_t align_bytes;
+   debug_print("Host To Fpga ----------- src = %08lx, dst = %08lx \n", src, dst);
+   if(!IS_DMA_ALIGNED(dst)){
+      if(count_left < FPGA_DMA_ALIGN_BYTES){
+         res = _ase_host_to_fpga(dma_h,&dst,&src,count_left);
+         ON_ERR_GOTO(res, out, "HOST_TO_FPGA_MM Transfer failed\n");
+         return res;
+      }else{
+         aligned_addr = ((dst/FPGA_DMA_ALIGN_BYTES)+1)*FPGA_DMA_ALIGN_BYTES;
+         align_bytes = aligned_addr - dst;
+         res = _ase_host_to_fpga(dma_h,&dst,&src,align_bytes);
+         ON_ERR_GOTO(res, out, "HOST_TO_FPGA_MM Transfer failed\n");
+         count_left = count_left - align_bytes;
+      }
+   }
+   if(count_left){
+      uint32_t dma_chunks = count_left/FPGA_DMA_BUF_SIZE;
+      count_left -= (dma_chunks*FPGA_DMA_BUF_SIZE);
+      debug_print("DMA TX : dma chuncks = %d, count_left = %08lx, dst = %08lx, src = %08lx \n", dma_chunks, count_left, dst, src);
+
+      for(i=0; i<dma_chunks; i++) {
+         memcpy(dma_h->dma_buf_ptr, (void*)(src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);
+         res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova | 0x1000000000000, FPGA_DMA_BUF_SIZE, type);
+         ON_ERR_GOTO(res, out, "HOST_TO_FPGA_MM Transfer failed\n");
+      }
+      if(count_left) {
+         uint64_t dma_tx_bytes = (count_left/FPGA_DMA_ALIGN_BYTES)*FPGA_DMA_ALIGN_BYTES;
+         if(dma_tx_bytes != 0)
+         {
+            debug_print("dma_tx_bytes = %08lx  was transfered using DMA\n", dma_tx_bytes);
+            memcpy(dma_h->dma_buf_ptr, (void*)(src+dma_chunks*FPGA_DMA_BUF_SIZE), dma_tx_bytes);
+            res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova | 0x1000000000000, dma_tx_bytes, type);
+            ON_ERR_GOTO(res, out, "HOST_TO_FPGA_MM Transfer failed\n");
+         }
+         count_left -= dma_tx_bytes;
+         if(count_left)
+         {
+            dst = dst + dma_chunks*FPGA_DMA_BUF_SIZE + dma_tx_bytes;
+            src = src + dma_chunks*FPGA_DMA_BUF_SIZE + dma_tx_bytes;
+            res = _ase_host_to_fpga(dma_h,&dst,&src,count_left);
+            ON_ERR_GOTO(res, out, "HOST_TO_FPGA_MM Transfer failed\n");
+         }
+      }
+   }
+out:
+   return (fpga_result)err_cnt;
+}
+
+fpga_result transferFpgaToHost(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, size_t count,
+                                fpga_dma_transfer_t type) {
+   fpga_result res = FPGA_OK;
+   uint64_t i;
+   uint64_t count_left = count;
+   uint64_t aligned_addr;
+   uint64_t align_bytes;
+   debug_print("FPGA To Host ----------- src = %08lx, dst = %08lx \n", src, dst);
+   if(!IS_DMA_ALIGNED(src)){
+      if(count_left < FPGA_DMA_ALIGN_BYTES){
+         res = _ase_fpga_to_host(dma_h,&src,&dst,count_left);
+         ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
+         return res;
+      }else{
+         aligned_addr = ((src/FPGA_DMA_ALIGN_BYTES)+1)*FPGA_DMA_ALIGN_BYTES;
+         align_bytes = aligned_addr - src;
+         res = _ase_fpga_to_host(dma_h,&src,&dst,align_bytes);
+         ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
+         count_left = count_left - align_bytes;
+      }
+   }
+   if(count_left){
+      // Buffer size must be page aligned for prepareBuffer
+
+      // Break the transfer into one or more descriptors
+      // User buffer data is copied into a DMA-able buffer
+      // allocated within the driver. Further performance
+      // optimizations may be implemented in the future.
+      uint32_t dma_chunks = count_left/FPGA_DMA_BUF_SIZE;
+      count_left -= (dma_chunks*FPGA_DMA_BUF_SIZE);
+      debug_print("DMA TX : dma chunks = %d, count_left = %08lx, dst = %08lx, src = %08lx \n", dma_chunks, count_left, dst, src);
+      for(i=0; i<dma_chunks; i++) {
+         res = _do_dma(dma_h, dma_h->dma_buf_iova | 0x1000000000000, (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE, type);
+         ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
+
+         // hack: extra read to fence host memory writes
+         res = _do_dma(dma_h, dma_h->dma_buf_iova | 0x1000000000000, dma_h->dma_buf_iova | 0x1000000000000, 64, type);
+         ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
+
+         memcpy((void*)(dst+i*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr, FPGA_DMA_BUF_SIZE);
+      }
+      if(count_left > 0) {
+         uint64_t dma_tx_bytes = (count_left/FPGA_DMA_ALIGN_BYTES)*FPGA_DMA_ALIGN_BYTES;
+         if(dma_tx_bytes != 0)
+         {
+            debug_print("dma_tx_bytes = %08lx  was transfered using DMA\n", dma_tx_bytes);
+            res = _do_dma(dma_h, dma_h->dma_buf_iova | 0x1000000000000, (src+dma_chunks*FPGA_DMA_BUF_SIZE), dma_tx_bytes, type);
+            ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
+
+            // hack: extra read to fence host memory writes
+            res = _do_dma(dma_h, dma_h->dma_buf_iova | 0x1000000000000, dma_h->dma_buf_iova | 0x1000000000000, 64, type);
+            ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
+
+            memcpy((void*)(dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr, dma_tx_bytes);
+         }
+         count_left -= dma_tx_bytes;
+         if(count_left){
+            dst = dst + dma_chunks*FPGA_DMA_BUF_SIZE + dma_tx_bytes;
+            src = src + dma_chunks*FPGA_DMA_BUF_SIZE + dma_tx_bytes;
+            res = _ase_fpga_to_host(dma_h,&src,&dst, count_left);
+            ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
+         }
+      }
+   }
+out:
+   return (fpga_result)err_cnt;
+}
+
+fpga_result transferFpgaToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, size_t count,
+                                fpga_dma_transfer_t type) {
+   fpga_result res = FPGA_OK;
+   uint64_t i;
+   uint64_t count_left = count;
+   uint64_t *tmp_buf = NULL;
+   if(IS_DMA_ALIGNED(dst) &&
+      IS_DMA_ALIGNED(src) &&
+      IS_DMA_ALIGNED(count_left)) {
+      uint32_t dma_chunks = count_left/FPGA_DMA_BUF_SIZE;
+      count_left -= (dma_chunks*FPGA_DMA_BUF_SIZE);
+      debug_print("!!!FPGA to FPGA!!! TX :dma chunks = %d, count = %08lx, dst = %08lx, src = %08lx \n", dma_chunks, count_left, dst, src);
+
+      for(i=0; i<dma_chunks; i++) {
+         res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE, type);
+         ON_ERR_GOTO(res, out, "FPGA_TO_FPGA_MM Transfer failed");
+      }
+      if(count_left > 0) {
+         debug_print("Count_left = %08lx  was transfered using DMA\n", count_left);
+         res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), (src+dma_chunks*FPGA_DMA_BUF_SIZE), count_left,type);
+         ON_ERR_GOTO(res, out, "FPGA_TO_FPGA_MM Transfer failed");
+      }
+   }else {
+      if((src < dst) && (src+count_left >= dst)){
+         debug_print("Overlapping addresses, Provide correct dst address\n");
+         return FPGA_NOT_SUPPORTED;
+      }
+      uint32_t tx_chunks = count_left/FPGA_DMA_BUF_ALIGN_SIZE;
+      count_left -= (tx_chunks*FPGA_DMA_BUF_ALIGN_SIZE);
+      debug_print("!!!FPGA to FPGA TX!!! : tx chunks = %d, count = %08lx, dst = %08lx, src = %08lx \n", tx_chunks, count_left, dst, src);
+      for(i=0; i<tx_chunks; i++) {
+         tmp_buf = (uint64_t*)malloc(FPGA_DMA_BUF_ALIGN_SIZE);
+         res = transferFpgaToHost(dma_h, (uint64_t)tmp_buf, (src+i*FPGA_DMA_BUF_ALIGN_SIZE), FPGA_DMA_BUF_ALIGN_SIZE, FPGA_TO_HOST_MM);
+         ON_ERR_GOTO(res, out_spl, "FPGA_TO_FPGA_MM Transfer failed");
+         res = transferHostToFpga(dma_h, (dst+i*FPGA_DMA_BUF_ALIGN_SIZE), (uint64_t)tmp_buf, FPGA_DMA_BUF_ALIGN_SIZE, HOST_TO_FPGA_MM);
+         ON_ERR_GOTO(res, out_spl, "FPGA_TO_FPGA_MM Transfer failed");
+         free(tmp_buf);
+      }
+      if(count_left > 0) {
+         tmp_buf = (uint64_t*)malloc(count_left);
+         res = transferFpgaToHost(dma_h, (uint64_t)tmp_buf, (src+tx_chunks*FPGA_DMA_BUF_ALIGN_SIZE), count_left, FPGA_TO_HOST_MM);
+         ON_ERR_GOTO(res, out_spl, "FPGA_TO_FPGA_MM Transfer failed");
+         res = transferHostToFpga(dma_h, (dst+tx_chunks*FPGA_DMA_BUF_ALIGN_SIZE), (uint64_t)tmp_buf, count_left, HOST_TO_FPGA_MM);
+         ON_ERR_GOTO(res, out_spl, "FPGA_TO_FPGA_MM Transfer failed");
+         free(tmp_buf);
+      }
+   }
+out:
+   return (fpga_result)err_cnt;
+out_spl:
+   free(tmp_buf);
+   return (fpga_result)err_cnt;
+}
+
 fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, size_t count,
                                 fpga_dma_transfer_t type) {
 
@@ -349,66 +850,21 @@ fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_h, uint64_t dst, uint64_t sr
    if(!dma_h->fpga_h)
       return FPGA_INVALID_PARAM;
 
-   // Buffer size must be page aligned for prepareBuffer
 
-   // Break the transfer into one or more descriptors
-   // User buffer data is copied into a DMA-able buffer 
-   // allocated within the driver. Further performance 
-   // optimizations may be implemented in the future.
-   size_t dma_chunks = (size_t)count/(size_t)FPGA_DMA_BUF_SIZE;      
-   count -= (dma_chunks*FPGA_DMA_BUF_SIZE);
    if(type == HOST_TO_FPGA_MM) {
-      for(i=0; i<dma_chunks; i++) {
-         memcpy(dma_h->dma_buf_ptr, (void*)(src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);         
-         res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova | 0x1000000000000, FPGA_DMA_BUF_SIZE, type);
-         ON_ERR_GOTO(res, out, "HOST_TO_FPGA_MM Transfer failed\n");
-      }
-      if(count > 0) {
-         memcpy(dma_h->dma_buf_ptr, (void*)(src+dma_chunks*FPGA_DMA_BUF_SIZE), count);
-         res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova | 0x1000000000000, count, type);
-         ON_ERR_GOTO(res, out, "HOST_TO_FPGA_MM Transfer failed");
-      }
+      res = transferHostToFpga(dma_h, dst, src, count, HOST_TO_FPGA_MM);
    }
    else if(type == FPGA_TO_HOST_MM) {
-      for(i=0; i<dma_chunks; i++) {
-         //printf("Chunk %ld\n",i);
-         res = _do_dma(dma_h, dma_h->dma_buf_iova | 0x1000000000000, (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE, type);
-         ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
-
-         // hack: extra read to fence host memory writes
-         res = _do_dma(dma_h, dma_h->dma_buf_iova | 0x1000000000000, dma_h->dma_buf_iova | 0x1000000000000, 64, type);
-         ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
-
-         memcpy((void*)(dst+i*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr, FPGA_DMA_BUF_SIZE);
-      }
-      if(count > 0) {
-         //printf("Last Chunk %ld\n");
-         res = _do_dma(dma_h, dma_h->dma_buf_iova | 0x1000000000000, (src+dma_chunks*FPGA_DMA_BUF_SIZE), count, type);
-         ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
-
-         // hack: extra read to fence host memory writes
-         res = _do_dma(dma_h, dma_h->dma_buf_iova | 0x1000000000000, dma_h->dma_buf_iova | 0x1000000000000, 64, type);
-         ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
-
-         memcpy((void*)(dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr, count);
-      }
+      res = transferFpgaToHost(dma_h, dst, src, count, FPGA_TO_HOST_MM);
    }
    else if(type == FPGA_TO_FPGA_MM) {
-      for(i=0; i<dma_chunks; i++) {
-         res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE, type);
-         ON_ERR_GOTO(res, out, "FPGA_TO_FPGA_MM Transfer failed");
-      }
-      if(count > 0) {
-         res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), (src+dma_chunks*FPGA_DMA_BUF_SIZE), count, type);
-         ON_ERR_GOTO(res, out, "FPGA_TO_FPGA_MM Transfer failed");
-      }
+      res = transferFpgaToFpga(dma_h, dst, src, count, FPGA_TO_FPGA_MM);
    }
    else {
       return FPGA_NOT_SUPPORTED;
    }
 
-out:
-   return err_cnt;
+return res;
 }
 
 fpga_result fpgaDmaTransferAsync(fpga_dma_handle dma, uint64_t dst, uint64_t src, size_t count,
@@ -430,6 +886,6 @@ fpga_result fpgaDmaClose(fpga_dma_handle dma_h) {
 
 out:
    free((void*)dma_h);
-   return err_cnt;
+   return (fpga_result)err_cnt;
 }
 

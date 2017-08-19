@@ -166,7 +166,7 @@ int run_basic_ddr_dma_test(fpga_handle afc_handle)
 	const int TEST_BUFFER_SIZE = 256;
 	//const int TEST_BUFFER_SIZE = 256*128;
 #else
-	const int TEST_BUFFER_SIZE = 1024*1024-64;
+	const int TEST_BUFFER_SIZE = 1024*1024-256;
 #endif
 
 	const int TEST_BUFFER_WORD_SIZE = TEST_BUFFER_SIZE/8;

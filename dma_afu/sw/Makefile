@@ -3,6 +3,7 @@ CFLAGS = -g -O2 -fPIC -std=gnu++11
 
 CFLAGS += -I$(prefix)/common/include
 CFLAGS += -I$(prefix)/libopae/src
+CFLAGS += -Igoogletest-release-1.8.0/googletest/include/
 CFLAGS += -D FPGA_DMA_DEBUG=0
 CFLAGS += -Wall -Wno-unknown-pragmas
 LDFLAGS += -L$(prefix)/build/lib -luuid
@@ -21,7 +22,7 @@ endif
 all: fpga_dma_test fpga_dma_gtest
 
 fpga_dma_gtest: fpga_dma_gtest.o fpga_dma.so
-	g++ -o $@ $^ $(LDFLAGS) libgtest.a
+	g++ -o $@ $^ $(LDFLAGS) googletest-release-1.8.0/googletest/inst/libgtest.a
 
 fpga_dma_gtest.o: fpga_dma_gtest.cpp
 	g++ $(CFLAGS) -o $@ -c $^  

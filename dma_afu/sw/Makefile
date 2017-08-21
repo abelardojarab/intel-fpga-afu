@@ -21,10 +21,10 @@ endif
 all: fpga_dma_test fpga_dma_gtest
 
 fpga_dma_gtest: fpga_dma_gtest.o fpga_dma.so
-	g++ -o $@ $^ $(LDFLAGS) -lgtest
+	g++ -o $@ $^ $(LDFLAGS) libgtest.a
 
 fpga_dma_gtest.o: fpga_dma_gtest.cpp
-	g++ $(CFLAGS) -o $@ -c $^ -lgtest
+	g++ $(CFLAGS) -o $@ -c $^  
 
 # FPGA DMA Driver
 fpga_dma_test: fpga_dma_test.o fpga_dma.so

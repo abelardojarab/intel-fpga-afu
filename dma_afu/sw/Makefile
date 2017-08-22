@@ -22,7 +22,7 @@ endif
 all: fpga_dma_test fpga_dma_gtest
 
 fpga_dma_gtest: fpga_dma_gtest.o fpga_dma.so
-	g++ -o $@ $^ $(LDFLAGS) googletest-release-1.8.0/googletest/inst/libgtest.a
+	g++ -o $@ $^ $(LDFLAGS) 
 
 fpga_dma_gtest.o: fpga_dma_gtest.cpp
 	g++ $(CFLAGS) -o $@ -c $^  

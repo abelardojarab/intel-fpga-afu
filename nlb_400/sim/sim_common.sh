@@ -170,12 +170,12 @@ run_sim() {
    if [ "$sim" == "vcs" ] ; then
       echo "Using VCS"
       ./scripts/generate_ase_environment.py -t VCS -p dcp $sim_afu_path
-      echo "SNPS_VLOGAN_OPT+= +define+INCLUDE_DDR4 +define+NLB400_MODE_0" >> ase_sources.mk
+      echo "SNPS_VLOGAN_OPT+= +define+INCLUDE_DDR4 +define+NLB400_MODE_0 +define+DDR_ADDR_WIDTH=26" >> ase_sources.mk
    else
       echo "Using QUESTA"
       export MTI_HOME=$MODELSIM_ROOTDIR
       ./scripts/generate_ase_environment.py -t QUESTA -p dcp $sim_afu_path
-      echo "MENT_VLOG_OPT += +define+INCLUDE_DDR4 +define+NLB400_MODE_0" >> ase_sources.mk
+      echo "MENT_VLOG_OPT += +define+INCLUDE_DDR4 +define+NLB400_MODE_0 +define+DDR_ADDR_WIDTH=26" >> ase_sources.mk
    fi
 
    # run ase make

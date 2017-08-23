@@ -123,7 +123,6 @@ module ccip_std_afu(
   wire [25:0]                   avs_address;
   wire                          avs_write;
   wire                          avs_read;
-  wire [63:0]                   avs_byteenable;
 
   // bank A
   wire                avs_waitrequest_a; 

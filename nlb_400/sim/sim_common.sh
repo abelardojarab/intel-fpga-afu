@@ -177,7 +177,8 @@ run_sim() {
       echo "Using QUESTA"
       export MTI_HOME=$MODELSIM_ROOTDIR
       ./scripts/generate_ase_environment.py -t QUESTA -p dcp $sim_afu_path
-      echo "MENT_VLOG_OPT += +define+INCLUDE_DDR4 +define+NLB400_MODE_0 +define+DDR_ADDR_WIDTH=26" >> ase_sources.mk
+      echo "MENT_VLOG_OPT += +define+INCLUDE_DDR4 +define+NLB400_MODE_0 +define+DDR_ADDR_WIDTH=26 -suppress 3485,3584" >> ase_sources.mk
+      echo "MENT_VSIM_OPT += -suppress 3485,3584" >> ase_sources.mk
    fi
 
    # run ase make

@@ -12,7 +12,9 @@
 // express written permission.
 // ***************************************************************************
 // TODO future improvements move sticky registers to HSL module implmentation 
-module mem_fsm (     
+module mem_fsm #(
+  parameter DDR_ADDR_WIDTH=26
+) (     
 	// ---------------------------global signals-------------------------------------------------
   input	pClk,	// Core clock. CCI interface is synchronous to this clock.
   input	pck_cp2af_softReset, // CCI interface reset. ACTIVE HIGH
@@ -20,7 +22,7 @@ module mem_fsm (
   // - AMM Master Signals signals 
 	output logic [63:0]     avs_writedata,
   input	 logic [63:0]     avs_readdata,
-  output logic [25:0]     avs_address,
+  output logic [DDR_ADDR_WIDTH-1:0]     avs_address,
   input	 logic	          avs_waitrequest,
   output logic            avs_write,
   output logic            avs_read,
@@ -32,7 +34,7 @@ module mem_fsm (
   input                   avs_writeresponsevalid,
   
   // AVL MM CSR Control Signals 
-  input [25:0]           avm_address,
+  input [DDR_ADDR_WIDTH-1:0]           avm_address,
   input                  avm_write,
   input                  avm_read,
   input [63:0]           avm_writedata,

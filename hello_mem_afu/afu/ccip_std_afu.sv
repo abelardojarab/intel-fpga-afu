@@ -32,7 +32,9 @@
 // ***************************************************************************
 `default_nettype none
 import ccip_if_pkg::*;
-module ccip_std_afu(
+module ccip_std_afu #(
+  parameter DDR_ADDR_WIDTH = 26
+) (
   // CCI-P Clocks and Resets
   pClk,                      // 400MHz - CCI-P clock domain. Primary interface clock
   pClkDiv2,                  // 200MHz - CCI-P clock domain.
@@ -93,7 +95,7 @@ module ccip_std_afu(
   input   wire                          DDR4a_readdatavalid;
   output  wire [6:0]                    DDR4a_burstcount;
   output  wire [511:0]                  DDR4a_writedata;
-  output  wire [25:0]                   DDR4a_address;
+  output  wire [DDR_ADDR_WIDTH-1:0]     DDR4a_address;
   output  wire                          DDR4a_write;
   output  wire                          DDR4a_read;
   output  wire [63:0]                   DDR4a_byteenable;
@@ -105,7 +107,7 @@ module ccip_std_afu(
   input   wire                          DDR4b_readdatavalid;
   output  wire [6:0]                    DDR4b_burstcount;
   output  wire [511:0]                  DDR4b_writedata;
-  output  wire [25:0]                   DDR4b_address;
+  output  wire [DDR_ADDR_WIDTH-1:0]     DDR4b_address;
   output  wire                          DDR4b_write;
   output  wire                          DDR4b_read;
   output  wire [63:0]                   DDR4b_byteenable;
@@ -120,7 +122,7 @@ module ccip_std_afu(
   wire                          avs_readdatavalid;
   wire [6:0]                    avs_burstcount;
   wire [511:0]                  avs_writedata;
-  wire [25:0]                   avs_address;
+  wire [DDR_ADDR_WIDTH-1:0]     avs_address;
   wire                          avs_write;
   wire                          avs_read;
 
@@ -176,7 +178,9 @@ ccip_interface_reg inst_green_ccip_interface_reg  (
 //===============================================================================================
 
 
-hello_mem_afu hello_mem_afu_inst (
+hello_mem_afu #(
+   .DDR_ADDR_WIDTH     (DDR_ADDR_WIDTH)
+) hello_mem_afu_inst (
   .Clk_400             ( pClk ) ,
   .SoftReset           ( pck_cp2af_softReset_T1 ) ,
 
@@ -208,7 +212,7 @@ assign avs_read_b        = (mem_bank_select)?avs_read:1'b0;
 altera_avalon_mm_clock_crossing_bridge #(
   .DATA_WIDTH          (512),
   .SYMBOL_WIDTH        (8),
-  .HDL_ADDR_WIDTH      (26),
+  .HDL_ADDR_WIDTH      (DDR_ADDR_WIDTH),
   .BURSTCOUNT_WIDTH    (7),
   .COMMAND_FIFO_DEPTH  (128),
   .RESPONSE_FIFO_DEPTH (128),
@@ -248,14 +252,14 @@ altera_avalon_mm_clock_crossing_bridge #(
 altera_avalon_mm_clock_crossing_bridge #(
   .DATA_WIDTH          (512),
   .SYMBOL_WIDTH        (8),
-  .HDL_ADDR_WIDTH      (26),
+  .HDL_ADDR_WIDTH      (DDR_ADDR_WIDTH),
   .BURSTCOUNT_WIDTH    (7),
   .COMMAND_FIFO_DEPTH  (128),
   .RESPONSE_FIFO_DEPTH (128),
   .MASTER_SYNC_DEPTH   (2),
   .SLAVE_SYNC_DEPTH    (2)
 ) clock_crossing_bridge_1 (
-  .m0_clk           (DDR4a_USERCLK),                                
+  .m0_clk           (DDR4b_USERCLK),                                
   .m0_reset         (pck_cp2af_softReset_T1),                       
   .s0_clk           (pClk),                             
   .s0_reset         (pck_cp2af_softReset_T1),       

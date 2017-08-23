@@ -39,7 +39,9 @@
 //
 //`default_nettype none
 import ccip_if_pkg::*;
-module hello_mem_afu (
+module hello_mem_afu #(
+   parameter DDR_ADDR_WIDTH=26
+) (
 	// ---------------------------global signals-------------------------------------------------
   input	Clk_400,	  //Core clock. CCI interface is synchronous to this clock.
   input	SoftReset,	//CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH
@@ -51,7 +53,7 @@ module hello_mem_afu (
   // --------------------------- AMM signals 
 	output	logic [511:0]   avs_writedata,     	
 	input	  logic [63:0]    avs_readdata,     	
-	output	logic [25:0]    avs_address,       	
+	output	logic [DDR_ADDR_WIDTH-1:0]    avs_address,       	
 	input	  logic	          avs_waitrequest,   	
 	output	logic           avs_write,        	
 	output	logic           avs_read,         	
@@ -71,7 +73,7 @@ module hello_mem_afu (
   wire [4:0]      addr_test_status;
   wire            addr_test_done; 
 
-  wire [25:0]     avm_address;
+  wire [DDR_ADDR_WIDTH-1:0]     avm_address;
   wire [11:0]     avm_burstcount;
   wire [1:0]      avm_response;
   wire            avm_read;
@@ -83,7 +85,7 @@ module hello_mem_afu (
 
   logic [63:0]    avs_writedata_r;     
   logic [63:0]    avs_readdata_r;     	
-  logic [25:0]    avs_address_r;       
+  logic [DDR_ADDR_WIDTH-1:0]    avs_address_r;       
   logic	         avs_waitrequest_r;   
   logic           avs_write_r;        	
   logic           avs_read_r;         	
@@ -93,7 +95,9 @@ module hello_mem_afu (
   logic           avs_readdatavalid_r;     	
   logic  [1:0]    avs_response_r; 
   
-  mem_csr csr(
+  mem_csr #(
+    .DDR_ADDR_WIDTH         (DDR_ADDR_WIDTH)
+  ) csr(
     .Clk_400                (Clk_400),
     .SoftReset              (SoftReset ),
 
@@ -118,7 +122,9 @@ module hello_mem_afu (
     .ready_for_sw_cmd       (ready_for_sw_cmd)
  );
 
-  mem_fsm fsm (
+  mem_fsm #(
+    .DDR_ADDR_WIDTH         (DDR_ADDR_WIDTH)
+  ) fsm (
     .pClk                   (Clk_400 ),
     .pck_cp2af_softReset    (SoftReset ),
 

@@ -9,6 +9,7 @@ COMMON_SCRIPT_DIR_PATH="$(dirname $COMMON_SCRIPT_PATH)"
 
 usage() { 
    echo "Usage: $0 [-a <afu>] [-s <vcs|questa>] [-b <opae base dir>]" 1>&2; 
+   exit 1;
 }
 
 menu_setup_sim() {
@@ -152,9 +153,10 @@ setup_quartus_home() {
 
 gen_qsys() {
    # generate qsys systems
-   pushd $COMMON_SCRIPT_DIR_PATH/sim_afu/interfaces
+   pushd $COMMON_SCRIPT_DIR_PATH/sim_afu
 
    find . -name *.qsys -exec qsys-generate {} --simulation=VERILOG \;
+   find . -name *.ip -exec qsys-generate {} --simulation=VERILOG \;
    # remove _inst.v , _bb.v and *.vhd
    find $PWD -name *.vhd -exec rm -rf {} \;
    find $PWD -name '*_inst.v' -exec rm -rf {} \;
@@ -204,12 +206,8 @@ setup_app_env() {
 
 run_app() {
    setup_app_env
-   pushd $app_base
-
-   # Build the software application
-   make prefix=$opae_base USE_ASE=1
-
    wait_for_sim_ready
+   pushd $app_base
    # find the executable and run
    find . -type f -executable -exec {} \;
    popd

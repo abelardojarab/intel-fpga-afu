@@ -97,14 +97,16 @@ int main(int argc, char *argv[])
    struct pollfd pfd;
    
    /* Create event */
-   fpga_event_handle ehandle;
-   res = fpgaCreateEventHandle(&ehandle);
-   ON_ERR_GOTO(res, out_unmap, "error creating event handle`");
+   fpga_event_handle ehandle[MAX_USR_INTRS];
+   for(uint64_t usr_intr_id = 0; usr_intr_id < MAX_USR_INTRS; usr_intr_id++) {
+      res = fpgaCreateEventHandle(&ehandle[usr_intr_id]);
+      ON_ERR_GOTO(res, out_unmap, "error creating event handle`");
 
-   /* Register user interrupt with event handle */
-   res = fpgaRegisterEvent(afc_handle, FPGA_EVENT_INTERRUPT, ehandle, 0);
-   ON_ERR_GOTO(res, out_unmap, "error registering event");
-
+      /* Register user interrupt with event handle */
+      res = fpgaRegisterEvent(afc_handle, FPGA_EVENT_INTERRUPT, ehandle[usr_intr_id], usr_intr_id);
+      ON_ERR_GOTO(res, out_unmap, "error registering event");
+   }
+   
    // Test if we can trigger an interrupt for each user interrupt ID
    for(uint64_t usr_intr_id = 0; usr_intr_id < MAX_USR_INTRS; usr_intr_id++) {
       /* Program the user interrupt id register */
@@ -118,7 +120,7 @@ int main(int argc, char *argv[])
       ON_ERR_GOTO(res, out_unmap, "writing to INTR_REG MMIO");
    
       /* Poll event handle*/
-      pfd.fd = (int)ehandle;
+      pfd.fd = (int)ehandle[usr_intr_id];
       pfd.events = POLLIN;            
       res = poll(&pfd, 1, -1);
       if(res < 0) {
@@ -135,11 +137,13 @@ int main(int argc, char *argv[])
       }
    }
    /* cleanup */
-   res = fpgaUnregisterEvent(afc_handle, FPGA_EVENT_INTERRUPT);   
-   ON_ERR_GOTO(res, out_unmap, "error fpgaUnregisterEvent");   
+   for(uint64_t usr_intr_id = 0; usr_intr_id < MAX_USR_INTRS; usr_intr_id++) {
+      res = fpgaUnregisterEvent(afc_handle, FPGA_EVENT_INTERRUPT, ehandle[usr_intr_id]);   
+      ON_ERR_GOTO(res, out_unmap, "error fpgaUnregisterEvent");   
 
-   res = fpgaDestroyEventHandle(&ehandle);
-   ON_ERR_GOTO(res, out_unmap, "error fpgaDestroyEventHandle");
+      res = fpgaDestroyEventHandle(&ehandle[usr_intr_id]);
+      ON_ERR_GOTO(res, out_unmap, "error fpgaDestroyEventHandle");
+   }
 
    printf("Done Running Test\n");
    

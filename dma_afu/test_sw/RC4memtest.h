@@ -197,3 +197,59 @@ public:
 		printf("\n");
 	}
 };
+
+class IncrMemtest
+{
+public:
+	IncrMemtest() {}
+	virtual ~IncrMemtest() {}
+	
+	void setup_key(const char *key)
+	{
+		prev_rand = 0;
+	}
+	
+	static inline char get_byte()
+	{
+		char buf;	
+		write_bytes(&buf, 1);
+		return buf;
+	}
+	
+	static inline int check_bytes(char *buf, int length)
+	{
+		int errors = 0;
+		//#define MAX_BUF_LEN (1024*1024*2)
+		//static char tmp_buf[MAX_BUF_LEN];
+		//assert(length < MAX_BUF_LEN);
+		//write_bytes(tmp_buf, length);
+		for(int mem_index = 0; mem_index < length; mem_index++)
+		{
+			if(buf[mem_index] != (char)prev_rand)
+				errors++;
+			prev_rand++;
+		}
+		
+		return errors;
+	}
+	
+	static inline void write_bytes(char *buf, int length)
+	{
+		for(int mem_index = 0; mem_index < length; mem_index++)
+		{
+			//buf[mem_index] = mem_index;
+			buf[mem_index] = (char)prev_rand;
+			prev_rand++;
+		}
+		
+	}
+	
+	static inline void dump_bytes(int length)
+	{
+		for(int i = 0; i < length; i++)
+		{
+			printf("%02x", get_byte() & 0xff);
+		}
+		printf("\n");
+	}
+};

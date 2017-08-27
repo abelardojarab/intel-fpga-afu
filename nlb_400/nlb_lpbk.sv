@@ -388,11 +388,12 @@ module nlb_lpbk #(parameter TXHDR_WIDTH=61, RXHDR_WIDTH=18, DATA_WIDTH =512, DDR
    logic [63:0]  cr2mem_address;
    logic [63:0]  cr2mem_writedata;
 `endif
-
-   reg                          SoftReset_q=1'b1;
+   (* dont_merge *) reg         SoftReset_q=1'b1;
+   (* dont_merge *) reg         SoftReset_mem=1'b1;
    always @(posedge Clk_400)
    begin
        SoftReset_q <= SoftReset;
+       SoftReset_mem <= SoftReset;
    end
    
 requestor #(.PEND_THRESH(PEND_THRESH),
@@ -545,7 +546,7 @@ local_mem #(
 	.BURSTCOUNT_WIDTH(7)
 ) inst_local_mem(
   Clk_400,
-  SoftReset,
+  SoftReset_mem,
   mem2cr_readdata,
   mem2cr_status,
   cr2mem_ctrl,

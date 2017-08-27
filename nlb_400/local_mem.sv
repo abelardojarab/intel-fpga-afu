@@ -33,6 +33,10 @@ module local_mem #(
   output reg  [DATA_WIDTH-1:0]   DDR4b_byteenable /* synthesis preserve */
 );
 
+reg [DATA_WIDTH-1:0]    cr2mem_ctrl_d0, cr2mem_ctrl_d1;
+reg [DATA_WIDTH-1:0]    cr2mem_address_d0, cr2mem_address_d1;
+reg [DATA_WIDTH-1:0]    cr2mem_writedata_d0, cr2mem_writedata_d1;
+
 wire DDR4a_cmd_fifo_full;
 reg DDR4a_read_timeout;
 reg DDR4a_write_timeout;
@@ -41,7 +45,7 @@ reg DDR4b_read_timeout;
 reg DDR4b_write_timeout;
 reg DDR_data_valid;
 wire  [DATA_WIDTH-1:0] DDR4_readdata;
-reg data_valid_buf;
+reg [2:0] data_valid_buf;
 reg ddr4b_data_select;
 
 // DDR4a
@@ -81,34 +85,45 @@ assign mem2cr_readdata = DDR4_readdata;
 /****************/
 /* Read csr reg */
 /****************/
+always @(posedge Clk_400) begin
+	cr2mem_ctrl_d0 <= cr2mem_ctrl;
+	cr2mem_address_d0 <= cr2mem_address;
+	cr2mem_writedata_d0 <= cr2mem_writedata;
+	
+	cr2mem_ctrl_d1 <= cr2mem_ctrl_d0;
+	cr2mem_address_d1 <= cr2mem_address_d0;
+	cr2mem_writedata_d1 <= cr2mem_writedata_d0;
+end
+
 // DDR4a
-assign csr_ddr4a_write       = cr2mem_ctrl[0];
-assign csr_ddr4a_read        = cr2mem_ctrl[1];
-assign csr_ddr4a_byteenable  = cr2mem_ctrl[11:4];
-assign csr_ddr4a_word_select = cr2mem_ctrl[18:16];
-assign csr_ddr4a_burstcount  = cr2mem_ctrl[26:20];	
-assign csr_ddr4a_address     = cr2mem_address[25:0];
-assign csr_ddr4a_writedata   = cr2mem_writedata;
+assign csr_ddr4a_write       = cr2mem_ctrl_d1[0];
+assign csr_ddr4a_read        = cr2mem_ctrl_d1[1];
+assign csr_ddr4a_byteenable  = cr2mem_ctrl_d1[11:4];
+assign csr_ddr4a_word_select = cr2mem_ctrl_d1[18:16];
+assign csr_ddr4a_burstcount  = cr2mem_ctrl_d1[26:20];	
+assign csr_ddr4a_address     = cr2mem_address_d1[25:0];
+assign csr_ddr4a_writedata   = cr2mem_writedata_d1;
 assign DDR4a_writedata       = {8{temp_ddr4a_writedata}};	
 assign DDR4a_byteenable      = {8{temp_ddr4a_byteenable}};
 // DDR4b
-assign csr_ddr4b_write       = cr2mem_ctrl[2];
-assign csr_ddr4b_read        = cr2mem_ctrl[3];
-assign csr_ddr4b_byteenable  = cr2mem_ctrl[11:4];
-assign csr_ddr4b_word_select = cr2mem_ctrl[18:16];
-assign csr_ddr4b_burstcount  = cr2mem_ctrl[26:20];
-assign csr_ddr4b_address     = cr2mem_address[25:0];
-assign csr_ddr4b_writedata   = cr2mem_writedata;
+assign csr_ddr4b_write       = cr2mem_ctrl_d1[2];
+assign csr_ddr4b_read        = cr2mem_ctrl_d1[3];
+assign csr_ddr4b_byteenable  = cr2mem_ctrl_d1[11:4];
+assign csr_ddr4b_word_select = cr2mem_ctrl_d1[18:16];
+assign csr_ddr4b_burstcount  = cr2mem_ctrl_d1[26:20];
+assign csr_ddr4b_address     = cr2mem_address_d1[25:0];
+assign csr_ddr4b_writedata   = cr2mem_writedata_d1;
 assign DDR4b_writedata       = {8{temp_ddr4b_writedata}};
 assign DDR4b_byteenable      = {8{temp_ddr4b_byteenable}};
         
 assign DDR4_readdata = ddr4b_data_select ? temp_ddr4b_readdata : temp_ddr4a_readdata;
 
+// Data is available 3 cycles after start_ddr4a_read|start_ddr4b_read is asserted
 always @(posedge Clk_400) begin
         if (SoftReset) begin			
-                data_valid_buf <= 1'b0;  
+                data_valid_buf <= 3'b0;  
         end else begin
-                data_valid_buf <= start_ddr4a_read | start_ddr4b_read;
+                data_valid_buf <= {data_valid_buf[1:0], (start_ddr4a_read | start_ddr4b_read)};
         end
 end
 
@@ -117,7 +132,7 @@ always @(posedge Clk_400) begin
                 DDR_data_valid <= 1'b0;			
         end else if (csr_ddr4a_read | csr_ddr4b_read) begin
                 DDR_data_valid <= 1'b0;
-        end else if (~DDR_data_valid && data_valid_buf) begin
+        end else if (~DDR_data_valid && data_valid_buf[2]) begin
                 DDR_data_valid <= 1'b1;
         end		
 end

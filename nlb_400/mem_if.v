@@ -9,7 +9,7 @@ module mem_if # (
 	input wire Clk_400,
 	input wire DDR_USERCLK,
 	input wire SoftReset,
-
+	
 	input wire write,
 	input wire read,
 	input wire [DATA_WIDTH-1:0] writedata,
@@ -17,17 +17,15 @@ module mem_if # (
 	input wire [BYTEEN_WIDTH-1:0] byteenable,
 	input wire [BURSTCOUNT_WIDTH-1:0] burstcount,
         input wire [2:0] readdata_sel,
-
-	input wire read_ddr_data,
+	
+	input wire read_ddr_data,	
 	output wire ddr_data_ready,
 	output wire [DATA_WIDTH-1:0] readdata,
 	output wire cmd_fifo_full,
 	output wire ddr_write_timeout,
-	output wire ddr_read_timeout,
-	output reg write_timeout,
-	output reg read_timeout,
-
-	input wire DDR_waitrequest,
+	output wire ddr_read_timeout,	
+	
+	input wire DDR_waitrequest,	
 	input wire DDR_readdatavalid,
 	input wire [8*DATA_WIDTH-1:0] DDR_readdata,
 	output reg DDR_read,
@@ -50,7 +48,7 @@ localparam WRITE = 3'd2;
 localparam READ =3'd3;
 localparam READ_DATA_VALID = 3'd4;
 
-reg [8*DATA_WIDTH-1:0] DDR_readdata_d0;
+reg [8*DATA_WIDTH-1:0] DDR_readdata_d0 ;
 reg                    DDR_readdatavalid_d0;
 
 reg [CMD_FIFO_WIDTH-1:0] afu_cmd_din;
@@ -68,12 +66,14 @@ wire [READ_FIFO_WIDTH-1:0] ddr_res_dout;
 reg write_ddr_data;
 wire ddr_res_empty, ddr_res_full;
 
-reg [READ_FIFO_WIDTH-1:0] ddr_res_q;
+reg [READ_FIFO_WIDTH-1:0] ddr_res_q, ddr_res_q2, ddr_res_q3;
 reg [1:0] afu_cmd_ready;
 wire ddr_cmd;
-wire [2:0] ddr_readdata_sel;
+wire [2:0] ddr_readdata_sel; 
 reg count;
 reg [35:0] timeout_counter;
+reg write_timeout;
+reg read_timeout;
 wire ddr_timeout;
 reg [2:0] cs, ns;
 
@@ -87,11 +87,12 @@ assign ddr_readdata_word = (ddr_readdata_sel == 3'h0) ? DDR_readdata_d0[0+:DATA_
 			     : (ddr_readdata_sel == 3'h5) ? DDR_readdata_d0[5*DATA_WIDTH+:DATA_WIDTH]
 			     : (ddr_readdata_sel == 3'h6) ? DDR_readdata_d0[6*DATA_WIDTH+:DATA_WIDTH]
 			     : DDR_readdata_d0[7*DATA_WIDTH+:DATA_WIDTH];
-assign readdata = ddr_res_q;
+assign readdata = ddr_res_q3;
 
 // DDR readdata and readdatavalid pipeline
 always @(posedge DDR_USERCLK) begin
    DDR_readdata_d0 <= DDR_readdata;
+
    DDR_readdatavalid_d0 <= DDR_readdatavalid;
 end
 
@@ -99,23 +100,16 @@ always @(posedge Clk_400) begin
 	if (SoftReset) begin
 		afu_write <= 1'd0;
 	end else begin
-		if (write && ~afu_cmd_full) begin
-			afu_write <= 1'b1;
-			afu_cmd_din <= {WRITE_CMD, address, writedata, byteenable, burstcount, readdata_sel};
-		end else if (read && ~afu_cmd_full) begin
-			afu_write <= 1'b1;
-			afu_cmd_din <= {READ_CMD, address, writedata, byteenable, burstcount, readdata_sel};
-		end else begin
-			afu_write <= 1'b0;
-		end
+		afu_write <= (write | read) & ~afu_cmd_full;
 	end
+	afu_cmd_din <= {write, address, writedata, byteenable, burstcount, readdata_sel}; 
 end
 
 // Reset synchronizer
 resync #(
 	 .SYNC_CHAIN_LENGTH(2),
-	 .WIDTH(1),
-	 .INIT_VALUE(1)
+	 .WIDTH(1),		 
+	 .INIT_VALUE(1)	 
 ) ddr_reset_sync (
 	 .clk(DDR_USERCLK),
 	 .reset(SoftReset),
@@ -127,7 +121,7 @@ assign {ddr_cmd, DDR_address, DDR_writedata, DDR_byteenable, DDR_burstcount, ddr
 
 always @(posedge DDR_USERCLK) begin
 	if (ddr_reset) begin
-		afu_cmd_ready <= 2'h0;
+		afu_cmd_ready <= 2'h0;		
 	end else begin
 		afu_cmd_ready <= {afu_cmd_ready[0], afu_read};
 	end
@@ -135,18 +129,16 @@ end
 
 always @(posedge DDR_USERCLK) begin
 	if (ddr_reset) begin
-		afu_cmd_dout_q <= {CMD_FIFO_WIDTH{1'b0}};
+		afu_cmd_dout_q <= {CMD_FIFO_WIDTH{1'b0}};		
 	end else begin
-		afu_cmd_dout_q <= afu_cmd_dout;
+		afu_cmd_dout_q <= afu_cmd_dout;		
 	end
 end
 
 always @(posedge Clk_400) begin
-	if (SoftReset) begin
-		ddr_res_q <= {READ_FIFO_WIDTH{1'b0}};
-	end else begin
-		ddr_res_q <= ddr_res_dout;
-	end
+	ddr_res_q <= ddr_res_dout;
+	ddr_res_q2 <= ddr_res_q;
+	ddr_res_q3 <= ddr_res_q2;
 end
 
 assign ddr_timeout = timeout_counter[35];
@@ -175,7 +167,7 @@ end
 
 resync #(
 	 .SYNC_CHAIN_LENGTH(2),
-	 .WIDTH(2),
+	 .WIDTH(2),		 
 	 .INIT_VALUE(0),
 	 .NO_CUT(0)
 ) timeout_sync (
@@ -186,10 +178,10 @@ resync #(
 );
 
 always @(posedge DDR_USERCLK) begin
-	if (ddr_reset)
+	if (ddr_reset) 
 		cs <= 3'd0;
-	else
-		cs <= ns;
+	else 
+		cs <= ns;	
 end
 
 always @(*) begin
@@ -198,24 +190,24 @@ always @(*) begin
 	DDR_write = 1'b0;
 	DDR_read = 1'b0;
 	count = 1'b0;
-
+	
 	case (cs)
-		IDLE: begin
+		IDLE: begin	
 			if (~afu_cmd_empty) begin
-				ns = GET_CMD;
+				ns = GET_CMD;		
 				afu_read = 1'b1;
 			end
 		end
 		GET_CMD: begin
 			if (afu_cmd_ready[1]) begin
-				ns = (ddr_cmd == WRITE_CMD) ? WRITE : READ;
+				ns = (ddr_cmd == WRITE_CMD) ? WRITE : READ;				
 			end
 		end
 		WRITE: begin
 			DDR_write = 1'b1;
 			count = 1'b1;
 			if (~DDR_waitrequest || ddr_timeout) begin
-				ns = IDLE;
+				ns = IDLE;			
 			end
 		end
 		READ: begin
@@ -224,13 +216,13 @@ always @(*) begin
 			if ((~DDR_waitrequest && DDR_readdatavalid_d0) || ddr_timeout) begin
 				ns = IDLE;
 			end else if (~DDR_waitrequest && ~DDR_readdatavalid_d0) begin
-				ns = READ_DATA_VALID;
+				ns = READ_DATA_VALID;			
 			end
 		end
 		READ_DATA_VALID : begin
 			count = 1'b1;
 			if (DDR_readdatavalid_d0 || ddr_timeout) begin
-				ns = IDLE;
+				ns = IDLE;			
 			end
 		end
 		default : begin
@@ -241,7 +233,7 @@ end
 
 assign write_ddr_data = DDR_readdatavalid_d0 && ~ddr_res_full;
 assign ddr_res_din = {ddr_readdata_word};
-
+	
 write_dc_fifo afu_cmd_fifo (
 	.data(afu_cmd_din),
 	.wrreq(afu_write),

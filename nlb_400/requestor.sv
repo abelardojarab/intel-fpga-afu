@@ -318,7 +318,9 @@ module requestor #(parameter PEND_THRESH=1, ADDR_LMT=20, TXHDR_WIDTH=61, RXHDR_W
     logic                   rx_c1_resp_valid_q;
     
     (* noprune *) logic [2:0]   num_rd_sent;
+    (* noprune *) logic [2:0]   num_rd_sent_minus_one;
     (* maxfan=1 *) logic [2:0]  num_wr_recvd;
+    (* maxfan=1 *) logic [2:0]  num_wr_recvd_minus_one;
     (* noprune *) logic [11:0]  Num_WrPend;
     (* noprune *) logic [11:0]  Num_RdPend;
         
@@ -627,6 +629,7 @@ module requestor #(parameter PEND_THRESH=1, ADDR_LMT=20, TXHDR_WIDTH=61, RXHDR_W
         rx_wr_resp_cl_num      <= cp2af_sRxPort_T1.c1.hdr.cl_num[1:0];
         
         num_rd_sent            <= tx_rd_req_len + 1'b1;
+	num_rd_sent_minus_one  <= tx_rd_req_len;
         tx_c0_req_valid_q      <= tx_c0_req_valid;
         rx_c0_resp_valid_q     <= rx_c0_resp_valid;
         tx_c1_req_valid_q      <= tx_c1_req_valid;
@@ -637,20 +640,26 @@ module requestor #(parameter PEND_THRESH=1, ADDR_LMT=20, TXHDR_WIDTH=61, RXHDR_W
           2'b00: Num_RdPend    <= Num_RdPend;
           2'b01: Num_RdPend    <= Num_RdPend + num_rd_sent;
           2'b10: Num_RdPend    <= Num_RdPend - 1'h1;
-          2'b11: Num_RdPend    <= Num_RdPend + num_rd_sent - 1'h1;
+          2'b11: Num_RdPend    <= Num_RdPend + num_rd_sent_minus_one;
         endcase 
         
         case (rx_wr_resp_fmt)
-          1'b0:  num_wr_recvd  <= 1'h1;
-          1'b1:  num_wr_recvd  <= rx_wr_resp_cl_num + 1'h1;
-        endcase
+          1'b0:  begin
+ 	       num_wr_recvd  <= 1'h1;
+	       num_wr_recvd_minus_one <= 1'h0;
+	  end
+          1'b1:  begin
+		num_wr_recvd  <= rx_wr_resp_cl_num + 1'h1;
+		num_wr_recvd_minus_one <= rx_wr_resp_cl_num;
+	  end
+        endcase		  
         
         // Track number of pending Writes
         case({rx_c1_resp_valid_q, tx_c1_req_valid_q})
           2'b00: Num_WrPend    <= Num_WrPend;
           2'b01: Num_WrPend    <= Num_WrPend + 1'h1; 
           2'b10: Num_WrPend    <= Num_WrPend - num_wr_recvd;
-          2'b11: Num_WrPend    <= Num_WrPend - num_wr_recvd + 1'h1;         
+          2'b11: Num_WrPend    <= Num_WrPend - num_wr_recvd_minus_one;         
         endcase 
 
         // For LPBK1 (memory copy): stall reads  if Num_RdCredits less than 0. Read credits are limited by the depth of Write fifo

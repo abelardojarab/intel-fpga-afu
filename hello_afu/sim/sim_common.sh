@@ -8,7 +8,7 @@ COMMON_SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
 COMMON_SCRIPT_DIR_PATH="$(dirname $COMMON_SCRIPT_PATH)"
 
 usage() { 
-   echo "Usage: $0 [-a <afu>] [-s <vcs|questa>] [-b <opae base dir>]" 1>&2; 
+   echo "Usage: $0 [-a <afu>] [-s <vcs|modelsim|questa>] [-b <opae base dir>]" 1>&2; 
 }
 
 menu_setup_sim() {
@@ -45,8 +45,8 @@ menu_setup_sim() {
    opae_base=${b}
    test_mode=${m};
 
-   if [[ "$sim" != "vcs" ]] && [[ "$sim" != "questa" ]]; then
-      echo "Supported simulators are VCS or Questa"
+   if [[ "$sim" != "vcs" ]] && [[ "$sim" != "questa" ]] && [[ "$sim" != "modelsim" ]] ; then
+      echo "Supported simulators are VCS, Modelsim and Questa"
       usage;
    fi
 }
@@ -80,7 +80,7 @@ menu_run_app() {
 }
 
 usage_regress() { 
-   echo "Usage: $0 [-f <afu source>] [-a <application source>] [-b <opae base dir>] [-s <vcs|questa>]" 1>&2; 
+   echo "Usage: $0 [-f <afu source>] [-a <application source>] [-b <opae base dir>] [-s <vcs|modelsim|questa>]" 1>&2; 
    exit 1; 
 }
 
@@ -121,14 +121,11 @@ menu_regress() {
       usage_regress;
    fi
 
-   if [[ "$sim" != "vcs" ]] && [[ "$sim" != "questa" ]]; then
-      echo "Supported simulators are VCS or Questa"
+   if [[ "$sim" != "vcs" ]] && [[ "$sim" != "questa" ]] && [[ "$sim" != "modelsim" ]]   ; then
+      echo "Supported simulators are VCS, Modelsim and Questa"
       usage;
    fi
 }
-
-
-
 
 setup_sim_dir() {
    rm -rf $COMMON_SCRIPT_DIR_PATH/sim_afu
@@ -172,8 +169,10 @@ run_sim() {
       ./scripts/generate_ase_environment.py -t VCS -p dcp $sim_afu_path
       echo "SNPS_VLOGAN_OPT+= +define+INCLUDE_DDR4 +define+DDR_ADDR_WIDTH=26" >> ase_sources.mk
    else
-      echo "Using QUESTA"
-      export MTI_HOME=$MODELSIM_ROOTDIR
+      vsim_bin=`which vsim`
+      vsim_bin_dir=`dirname $vsim_bin`
+      export MTI_HOME="$vsim_bin_dir/../"
+      echo "Info: MTI_ROOTDIR set to $MTI_HOME"
       ./scripts/generate_ase_environment.py -t QUESTA -p dcp $sim_afu_path
       echo "MENT_VLOG_OPT += +define+INCLUDE_DDR4 +define+DDR_ADDR_WIDTH=26 -suppress 3485,3584" >> ase_sources.mk
       echo "MENT_VSIM_OPT += -suppress 3485,3584" >> ase_sources.mk

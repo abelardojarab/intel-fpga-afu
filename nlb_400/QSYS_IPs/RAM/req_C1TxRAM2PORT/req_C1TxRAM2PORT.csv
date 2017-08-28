@@ -1,18 +1,18 @@
-# system info req_C1TxRAM2PORT on 2016.06.30.22:05:09
+# system info req_C1TxRAM2PORT on 2017.08.26.20:11:32
 system_info:
 name,value
-DEVICE,10AX115U3F45E2SG
+DEVICE,10AX115N3F40E2SG
 DEVICE_FAMILY,Arria 10
-GENERATION_ID,1467349509
+GENERATION_ID,1503803492
 #
 #
-# Files generated for req_C1TxRAM2PORT on 2016.06.30.22:05:09
+# Files generated for req_C1TxRAM2PORT on 2017.08.26.20:11:32
 files:
 filepath,kind,attributes,module,is_top
 sim/req_C1TxRAM2PORT.v,VERILOG,CONTAINS_INLINE_CONFIGURATION,req_C1TxRAM2PORT,true
-ram_2port_160/sim/req_C1TxRAM2PORT_ram_2port_160_nfprwsy.v,VERILOG,,req_C1TxRAM2PORT_ram_2port_160_nfprwsy,false
+ram_2port_170/sim/req_C1TxRAM2PORT_ram_2port_170_hecum7i.v,VERILOG,,req_C1TxRAM2PORT_ram_2port_170_hecum7i,false
 #
 # Map from instance-path to kind of module
 instances:
 instancePath,module
-req_C1TxRAM2PORT.ram_2port_0,req_C1TxRAM2PORT_ram_2port_160_nfprwsy
+req_C1TxRAM2PORT.ram_2port_0,req_C1TxRAM2PORT_ram_2port_170_hecum7i

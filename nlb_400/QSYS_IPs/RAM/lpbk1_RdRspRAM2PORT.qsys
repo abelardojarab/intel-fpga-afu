@@ -10,6 +10,9 @@
    tool="QsysStandard" />
  <parameter name="bonusData"><![CDATA[bonusData 
 {
+   element $system
+   {
+   }
    element ram_2port_0
    {
       datum _sortIndex
@@ -21,7 +24,7 @@
 }
 ]]></parameter>
  <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
- <parameter name="device" value="10AX115U3F45E2SG" />
+ <parameter name="device" value="10AX115N3F40E2SG" />
  <parameter name="deviceFamily" value="Arria 10" />
  <parameter name="deviceSpeedGrade" value="2" />
  <parameter name="fabricMode" value="QSYS" />
@@ -32,12 +35,12 @@
  <parameter name="hideFromIPCatalog" value="true" />
  <parameter name="lockedInterfaceDefinition" value="" />
  <parameter name="maxAdditionalLatency" value="1" />
- <parameter name="projectName" value="" />
  <parameter name="sopcBorderPoints" value="false" />
  <parameter name="systemHash" value="0" />
  <parameter name="systemInfos"><![CDATA[<systemInfosDefinition>
     <connPtSystemInfos/>
 </systemInfosDefinition>]]></parameter>
+ <parameter name="systemScripts" value="" />
  <parameter name="testBenchDutName" value="" />
  <parameter name="timeStamp" value="0" />
  <parameter name="useTestBenchNamingPattern" value="false" />
@@ -63,7 +66,7 @@
  <module
    name="ram_2port_0"
    kind="ram_2port"
-   version="16.0"
+   version="17.0"
    enabled="1"
    autoexport="1">
   <parameter name="DEVICE_FAMILY" value="Arria 10" />
@@ -95,6 +98,7 @@
   <parameter name="GUI_ECC_PIPELINE" value="false" />
   <parameter name="GUI_ECC_TRIPLE" value="false" />
   <parameter name="GUI_FILE_REFERENCE" value="0" />
+  <parameter name="GUI_FORCE_TO_ZERO" value="false" />
   <parameter name="GUI_INIT_FILE_LAYOUT" value="PORT_B" />
   <parameter name="GUI_INIT_SIM_TO_X" value="false" />
   <parameter name="GUI_LC_IMPLEMENTION_OPTIONS" value="0" />
@@ -106,6 +110,7 @@
   <parameter name="GUI_MODE" value="0" />
   <parameter name="GUI_NBE_A" value="true" />
   <parameter name="GUI_NBE_B" value="true" />
+  <parameter name="GUI_PR" value="false" />
   <parameter name="GUI_QA_WIDTH" value="534" />
   <parameter name="GUI_QB_WIDTH" value="534" />
   <parameter name="GUI_Q_PORT_MODE" value="2" />

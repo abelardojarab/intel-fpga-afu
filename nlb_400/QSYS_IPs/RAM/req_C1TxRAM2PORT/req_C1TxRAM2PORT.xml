@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <deploy
- date="2016.06.30.22:19:49"
- outputDirectory="/nfs/pdx/disks/atp.01/work/sschang/fpga/proj/skxp-a0/rtl/afu/nlb_400/QSYS_IPs/RAM/req_C1TxRAM2PORT/">
+ date="2017.08.26.20:11:45"
+ outputDirectory="/ipd/dhw/user/lpchua/work/qshell/171/139_qsys/p4/afu/nlb_400/QSYS_IPs/RAM/req_C1TxRAM2PORT/">
  <perimeter>
   <parameter
      name="AUTO_GENERATION_ID"
@@ -24,7 +24,7 @@
   <parameter
      name="AUTO_DEVICE"
      type="String"
-     defaultValue="10AX115U3F45E2SG"
+     defaultValue="10AX115N3F40E2SG"
      onHdl="0"
      affectsHdl="1" />
   <parameter
@@ -36,6 +36,7 @@
   <interface name="ram_input" kind="conduit" start="0">
    <property name="associatedClock" value="" />
    <property name="associatedReset" value="" />
+   <property name="prSafe" value="false" />
    <port name="data" direction="input" role="datain" width="556" />
    <port name="wraddress" direction="input" role="wraddress" width="9" />
    <port name="rdaddress" direction="input" role="rdaddress" width="9" />
@@ -45,42 +46,43 @@
   <interface name="ram_output" kind="conduit" start="0">
    <property name="associatedClock" value="" />
    <property name="associatedReset" value="" />
+   <property name="prSafe" value="false" />
    <port name="q" direction="output" role="dataout" width="556" />
   </interface>
  </perimeter>
  <entity kind="req_C1TxRAM2PORT" version="1.0" name="req_C1TxRAM2PORT">
-  <parameter name="AUTO_GENERATION_ID" value="1467350388" />
-  <parameter name="AUTO_DEVICE" value="10AX115U3F45E2SG" />
+  <parameter name="AUTO_GENERATION_ID" value="1503803505" />
+  <parameter name="AUTO_DEVICE" value="10AX115N3F40E2SG" />
   <parameter name="AUTO_DEVICE_FAMILY" value="Arria 10" />
   <parameter name="AUTO_UNIQUE_ID" value="" />
   <parameter name="AUTO_DEVICE_SPEEDGRADE" value="2" />
   <generatedFiles>
    <file
-       path="/nfs/pdx/disks/atp.01/work/sschang/fpga/proj/skxp-a0/rtl/afu/nlb_400/QSYS_IPs/RAM/req_C1TxRAM2PORT/synth/req_C1TxRAM2PORT.v"
+       path="/ipd/dhw/user/lpchua/work/qshell/171/139_qsys/p4/afu/nlb_400/QSYS_IPs/RAM/req_C1TxRAM2PORT/synth/req_C1TxRAM2PORT.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="/nfs/pdx/disks/atp.01/work/sschang/fpga/proj/skxp-a0/rtl/afu/nlb_400/QSYS_IPs/RAM/req_C1TxRAM2PORT/synth/req_C1TxRAM2PORT.v"
+       path="/ipd/dhw/user/lpchua/work/qshell/171/139_qsys/p4/afu/nlb_400/QSYS_IPs/RAM/req_C1TxRAM2PORT/synth/req_C1TxRAM2PORT.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </childGeneratedFiles>
   <sourceFiles>
    <file
-       path="/nfs/pdx/disks/atp.01/work/sschang/fpga/proj/skxp-a0/rtl/afu/nlb_400/QSYS_IPs/RAM/req_C1TxRAM2PORT.qsys" />
+       path="/ipd/dhw/user/lpchua/work/qshell/171/139_qsys/p4/afu/nlb_400/QSYS_IPs/RAM/req_C1TxRAM2PORT.qsys" />
   </sourceFiles>
   <childSourceFiles>
    <file
-       path="/nfs/pdx/disks/atp.08/tools/altera/16.0.1.218-Pro_Patch-109/ip/altera/megafunctions/ram_2port/ram_2_port_hw.tcl" />
+       path="/swip_build/archive/acds/17.0/290/linux64/ip/altera/megafunctions/ram_2port/ram_2_port_hw.tcl" />
   </childSourceFiles>
   <messages>
    <message level="Info" culprit="req_C1TxRAM2PORT">"Generating: req_C1TxRAM2PORT"</message>
-   <message level="Info" culprit="req_C1TxRAM2PORT">"Generating: req_C1TxRAM2PORT_ram_2port_160_nfprwsy"</message>
+   <message level="Info" culprit="req_C1TxRAM2PORT">"Generating: req_C1TxRAM2PORT_ram_2port_170_hecum7i"</message>
   </messages>
  </entity>
  <entity
    kind="ram_2port"
-   version="16.0"
-   name="req_C1TxRAM2PORT_ram_2port_160_nfprwsy">
+   version="17.0"
+   name="req_C1TxRAM2PORT_ram_2port_170_hecum7i">
   <parameter name="GUI_CLKEN_ADDRESS_STALL_A" value="false" />
   <parameter name="GUI_RDEN_DOUBLE" value="false" />
   <parameter name="GUI_NBE_A" value="true" />
@@ -100,11 +102,13 @@
   <parameter name="GUI_BYTE_ENABLE_WIDTH" value="8" />
   <parameter name="GUI_MODE" value="0" />
   <parameter name="GUI_CLKEN_READ_OUTPUT_REG" value="false" />
+  <parameter name="GUI_RESOURCE_USAGE" value="14 M20K" />
   <parameter name="GUI_SCLR_READ_OUTPUT_QB" value="false" />
   <parameter name="GUI_SCLR_READ_OUTPUT_QA" value="false" />
   <parameter name="GUI_QA_WIDTH" value="556" />
   <parameter name="GUI_NBE_B" value="true" />
   <parameter name="GUI_ECCENCBYPASS" value="false" />
+  <parameter name="GUI_FORCE_TO_ZERO" value="false" />
   <parameter name="GUI_ECC_PIPELINE" value="false" />
   <parameter name="GUI_WRITE_INPUT_PORTS" value="true" />
   <parameter name="GUI_LC_IMPLEMENTION_OPTIONS" value="0" />
@@ -135,6 +139,7 @@
   <parameter name="GUI_READ_OUTPUT_QA" value="true" />
   <parameter name="GUI_WIDTH_ECCSTATUS" value="2" />
   <parameter name="GUI_RDEN_SINGLE" value="false" />
+  <parameter name="GUI_PR" value="false" />
   <parameter name="GUI_READ_INPUT_RDADDRESS" value="true" />
   <parameter name="GUI_RDW_A_MODE" value="New Data" />
   <parameter name="GUI_WRADDRESS_WIDTH" value="9" />
@@ -149,22 +154,22 @@
   <parameter name="GUI_WIDTH_ECCENCPARITY" value="8" />
   <generatedFiles>
    <file
-       path="/nfs/pdx/disks/atp.01/work/sschang/fpga/proj/skxp-a0/rtl/afu/nlb_400/QSYS_IPs/RAM/req_C1TxRAM2PORT/ram_2port_160/synth/req_C1TxRAM2PORT_ram_2port_160_nfprwsy.v"
+       path="/ipd/dhw/user/lpchua/work/qshell/171/139_qsys/p4/afu/nlb_400/QSYS_IPs/RAM/req_C1TxRAM2PORT/ram_2port_170/synth/req_C1TxRAM2PORT_ram_2port_170_hecum7i.v"
        attributes="" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="/nfs/pdx/disks/atp.01/work/sschang/fpga/proj/skxp-a0/rtl/afu/nlb_400/QSYS_IPs/RAM/req_C1TxRAM2PORT/ram_2port_160/synth/req_C1TxRAM2PORT_ram_2port_160_nfprwsy.v"
+       path="/ipd/dhw/user/lpchua/work/qshell/171/139_qsys/p4/afu/nlb_400/QSYS_IPs/RAM/req_C1TxRAM2PORT/ram_2port_170/synth/req_C1TxRAM2PORT_ram_2port_170_hecum7i.v"
        attributes="" />
   </childGeneratedFiles>
   <sourceFiles>
    <file
-       path="/nfs/pdx/disks/atp.08/tools/altera/16.0.1.218-Pro_Patch-109/ip/altera/megafunctions/ram_2port/ram_2_port_hw.tcl" />
+       path="/swip_build/archive/acds/17.0/290/linux64/ip/altera/megafunctions/ram_2port/ram_2_port_hw.tcl" />
   </sourceFiles>
   <childSourceFiles/>
   <instantiator instantiator="req_C1TxRAM2PORT" as="ram_2port_0" />
   <messages>
-   <message level="Info" culprit="req_C1TxRAM2PORT">"Generating: req_C1TxRAM2PORT_ram_2port_160_nfprwsy"</message>
+   <message level="Info" culprit="req_C1TxRAM2PORT">"Generating: req_C1TxRAM2PORT_ram_2port_170_hecum7i"</message>
   </messages>
  </entity>
 </deploy>

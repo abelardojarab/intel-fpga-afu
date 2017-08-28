@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <simPackage>
  <file
-   path="ram_2port_160/sim/req_C1TxRAM2PORT_ram_2port_160_nfprwsy.v"
+   path="ram_2port_170/sim/req_C1TxRAM2PORT_ram_2port_170_hecum7i.v"
    type="VERILOG"
-   library="ram_2port_160" />
+   library="ram_2port_170" />
  <file
    path="sim/req_C1TxRAM2PORT.v"
    type="VERILOG"
+   library="req_C1TxRAM2PORT"
    hasInlineConfiguration="true" />
- <topLevel name="req_C1TxRAM2PORT" />
+ <topLevel name="req_C1TxRAM2PORT.req_C1TxRAM2PORT" />
  <deviceFamily name="arria10" />
 </simPackage>

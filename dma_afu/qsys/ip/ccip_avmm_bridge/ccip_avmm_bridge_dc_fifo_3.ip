@@ -484,7 +484,7 @@
         <spirit:parameter>
           <spirit:name>FIFO_DEPTH</spirit:name>
           <spirit:displayName>FIFO depth</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="FIFO_DEPTH">16</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="FIFO_DEPTH">64</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>CHANNEL_WIDTH</spirit:name>

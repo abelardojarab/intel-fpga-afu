@@ -29,6 +29,8 @@ def quartus_assignment_name(filename):
         '.json': 'MISC_FILE',
         '.tcl':  'MISC_FILE',
         '.stp' : 'SIGNALTAP_FILE',
+        '.hex' : 'MIF_FILE',
+        '.mif' : 'MIF_FILE',
     }
     _basename, ext = os.path.splitext(filename)
 

@@ -28,7 +28,7 @@
         <spirit:parameter>
           <spirit:name>clockRate</spirit:name>
           <spirit:displayName>Clock rate</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="clockRate">100000000</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="clockRate">200000000</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>clockRateKnown</spirit:name>
@@ -65,7 +65,7 @@
         <spirit:parameter>
           <spirit:name>clockRate</spirit:name>
           <spirit:displayName>Clock rate</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="clockRate">100000000</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="clockRate">200000000</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>externallyDriven</spirit:name>
@@ -112,7 +112,7 @@
         <spirit:parameter>
           <spirit:name>synchronousEdges</spirit:name>
           <spirit:displayName>Synchronous edges</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="synchronousEdges">DEASSERT</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="synchronousEdges">BOTH</spirit:value>
         </spirit:parameter>
       </spirit:parameters>
       <spirit:vendorExtensions>
@@ -159,7 +159,7 @@
         <spirit:parameter>
           <spirit:name>synchronousEdges</spirit:name>
           <spirit:displayName>Synchronous edges</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="synchronousEdges">DEASSERT</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="synchronousEdges">BOTH</spirit:value>
         </spirit:parameter>
       </spirit:parameters>
     </spirit:busInterface>
@@ -248,12 +248,12 @@
         <spirit:parameter>
           <spirit:name>inputClockFrequency</spirit:name>
           <spirit:displayName>inputClockFrequency</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="inputClockFrequency">0</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="inputClockFrequency">200000000</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>resetSynchronousEdges</spirit:name>
           <spirit:displayName>Reset synchronous edges</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="resetSynchronousEdges">DEASSERT</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="resetSynchronousEdges">BOTH</spirit:value>
         </spirit:parameter>
       </spirit:parameters>
     </altera:altera_module_parameters>
@@ -325,7 +325,7 @@
                     </entry>
                     <entry>
                         <key>clockRate</key>
-                        <value>100000000</value>
+                        <value>200000000</value>
                     </entry>
                     <entry>
                         <key>clockRateKnown</key>
@@ -367,7 +367,7 @@
                 <parameterValueMap>
                     <entry>
                         <key>clockRate</key>
-                        <value>100000000</value>
+                        <value>200000000</value>
                     </entry>
                     <entry>
                         <key>externallyDriven</key>
@@ -409,7 +409,7 @@
                     </entry>
                     <entry>
                         <key>synchronousEdges</key>
-                        <value>DEASSERT</value>
+                        <value>BOTH</value>
                     </entry>
                 </parameterValueMap>
             </parameters>
@@ -447,7 +447,7 @@
                     </entry>
                     <entry>
                         <key>synchronousEdges</key>
-                        <value>DEASSERT</value>
+                        <value>BOTH</value>
                     </entry>
                 </parameterValueMap>
             </parameters>
@@ -472,7 +472,7 @@
                 <consumedSystemInfos>
                     <entry>
                         <key>CLOCK_RATE</key>
-                        <value>100000000</value>
+                        <value>200000000</value>
                     </entry>
                 </consumedSystemInfos>
             </value>
@@ -484,7 +484,7 @@
                 <suppliedSystemInfos>
                     <entry>
                         <key>CLOCK_RATE</key>
-                        <value>0</value>
+                        <value>200000000</value>
                     </entry>
                 </suppliedSystemInfos>
                 <consumedSystemInfos/>

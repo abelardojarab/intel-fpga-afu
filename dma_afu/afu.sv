@@ -42,7 +42,7 @@ module afu (
         
         
 `ifdef INCLUDE_DDR4
-     input                    DDR4_USERCLK,
+     input                    DDR4a_USERCLK,
      input                    DDR4a_waitrequest,
      input  [511:0]           DDR4a_readdata,
      input                    DDR4a_readdatavalid,
@@ -52,6 +52,7 @@ module afu (
      output                   DDR4a_write,
      output                   DDR4a_read,
      output  [63:0]           DDR4a_byteenable,
+     input                    DDR4b_USERCLK,
      input                    DDR4b_waitrequest,
      input  [511:0]           DDR4b_readdata,
      input                    DDR4b_readdatavalid,
@@ -102,6 +103,45 @@ module afu (
 	wire [63:0]  DDR4b_byteenable;
 	wire         DDR4b_write;
 	wire         DDR4b_read;
+	
+	`timescale 1 ps / 1 ps
+	reg          DDR4a_USERCLK = 0;  
+	always begin
+		#1875 DDR4a_USERCLK = ~DDR4a_USERCLK;
+	end
+	
+	reg          DDR4b_USERCLK = 0;  
+	always begin
+		#1800 DDR4b_USERCLK = ~DDR4b_USERCLK;
+	end
+	
+	mem_sim_model ddr4a_inst(
+		.clk(DDR4a_USERCLK),
+		.reset(SoftReset),
+		.avmm_waitrequest(DDR4a_waitrequest),
+		.avmm_readdata(DDR4a_readdata),
+		.avmm_readdatavalid(DDR4a_readdatavalid),
+		.avmm_burstcount(DDR4a_burstcount),
+		.avmm_writedata(DDR4a_writedata),
+		.avmm_address(DDR4a_address),
+		.avmm_write(DDR4a_write),
+		.avmm_read(DDR4a_read),
+		.avmm_byteenable(DDR4a_byteenable)
+	);
+	
+	mem_sim_model ddr4b_inst(
+		.clk(DDR4b_USERCLK),
+		.reset(SoftReset),
+		.avmm_waitrequest(DDR4b_waitrequest),
+		.avmm_readdata(DDR4b_readdata),
+		.avmm_readdatavalid(DDR4b_readdatavalid),
+		.avmm_burstcount(DDR4b_burstcount),
+		.avmm_writedata(DDR4b_writedata),
+		.avmm_address(DDR4b_address),
+		.avmm_write(DDR4b_write),
+		.avmm_read(DDR4b_read),
+		.avmm_byteenable(DDR4b_byteenable)
+	);
 `endif
 
 	assign DDR4a_address = DDR4a_byte_address[31:6];
@@ -156,9 +196,10 @@ module afu (
 		.avst_avcmd_valid,
 		.avst_avcmd_ready,
 		
-		.clk_clk            (pClkDiv4),            //   clk.clk
-		.ddr_clk_clk(DDR4_USERCLK),
-		//.clk_clk            (Clk_400),            //   clk.clk
+		.mmio_clk_clk            (pClkDiv4),            //   clk.clk
+		.ddr4a_clk_clk(DDR4a_USERCLK),
+		.ddr4b_clk_clk(DDR4b_USERCLK),
+		.host_clk_clk(pClkDiv2),
 		.pclk400_clk(Clk_400),
 		.reset_reset        (SoftReset)         // reset.reset
 	);

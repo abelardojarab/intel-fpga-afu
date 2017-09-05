@@ -359,15 +359,15 @@
                 <suppliedSystemInfos>
                     <entry>
                         <key>CLOCK_DOMAIN</key>
-                        <value>2</value>
+                        <value>3</value>
                     </entry>
                     <entry>
                         <key>CLOCK_RATE</key>
-                        <value>0</value>
+                        <value>200000000</value>
                     </entry>
                     <entry>
                         <key>RESET_DOMAIN</key>
-                        <value>2</value>
+                        <value>3</value>
                     </entry>
                 </suppliedSystemInfos>
                 <consumedSystemInfos/>
@@ -1376,7 +1376,7 @@
                         </entry>
                         <entry>
                             <key>clockRate</key>
-                            <value>100000000</value>
+                            <value>200000000</value>
                         </entry>
                         <entry>
                             <key>clockRateKnown</key>
@@ -1418,7 +1418,7 @@
                     <parameterValueMap>
                         <entry>
                             <key>clockRate</key>
-                            <value>100000000</value>
+                            <value>200000000</value>
                         </entry>
                         <entry>
                             <key>externallyDriven</key>
@@ -1460,7 +1460,7 @@
                         </entry>
                         <entry>
                             <key>synchronousEdges</key>
-                            <value>DEASSERT</value>
+                            <value>BOTH</value>
                         </entry>
                     </parameterValueMap>
                 </parameters>
@@ -1498,7 +1498,7 @@
                         </entry>
                         <entry>
                             <key>synchronousEdges</key>
-                            <value>DEASSERT</value>
+                            <value>BOTH</value>
                         </entry>
                     </parameterValueMap>
                 </parameters>
@@ -1529,7 +1529,7 @@
                     <suppliedSystemInfos>
                         <entry>
                             <key>CLOCK_RATE</key>
-                            <value>100000000</value>
+                            <value>200000000</value>
                         </entry>
                     </suppliedSystemInfos>
                     <consumedSystemInfos/>
@@ -1543,7 +1543,7 @@
                     <consumedSystemInfos>
                         <entry>
                             <key>CLOCK_RATE</key>
-                            <value>0</value>
+                            <value>200000000</value>
                         </entry>
                     </consumedSystemInfos>
                 </value>

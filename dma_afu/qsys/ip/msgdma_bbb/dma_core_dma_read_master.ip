@@ -874,7 +874,7 @@
         <spirit:parameter>
           <spirit:name>FIFO_DEPTH</spirit:name>
           <spirit:displayName>FIFO Depth</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="FIFO_DEPTH">256</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="FIFO_DEPTH">128</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>USE_FIX_ADDRESS_WIDTH</spirit:name>
@@ -969,7 +969,7 @@
         <spirit:parameter>
           <spirit:name>FIFO_DEPTH_LOG2</spirit:name>
           <spirit:displayName>FIFO_DEPTH_LOG2</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="FIFO_DEPTH_LOG2">8</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="FIFO_DEPTH_LOG2">7</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>SYMBOL_WIDTH</spirit:name>

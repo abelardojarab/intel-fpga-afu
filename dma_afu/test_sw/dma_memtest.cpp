@@ -555,6 +555,8 @@ int test_main(int argc, char *argv[], fpga_handle afc_handle)
 	#endif
 	
 	DMABuffer dma_buf(afc_handle);
+	printf("DMA Buffer IOVA %p\n", dma_buf.dma_buf_iova);
+	printf("DMA Buffer Virtual %p\n", dma_buf.dma_buf_ptr);
 	
 	switch(test_mode)
 	{

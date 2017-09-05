@@ -313,7 +313,7 @@ afu afu_inst(
     .uClk_usrDiv2(uClk_usrDiv2),
     
 `ifdef INCLUDE_DDR4
-    .DDR4_USERCLK(DDR4a_USERCLK),
+    .DDR4a_USERCLK(DDR4a_USERCLK),
     .DDR4a_waitrequest(DDR4a_waitrequest),
     .DDR4a_readdata(DDR4a_readdata),
     .DDR4a_readdatavalid(DDR4a_readdatavalid),
@@ -323,6 +323,7 @@ afu afu_inst(
     .DDR4a_write(DDR4a_write),
     .DDR4a_read(DDR4a_read),
     .DDR4a_byteenable(DDR4a_byteenable),
+    .DDR4b_USERCLK(DDR4b_USERCLK),
     .DDR4b_waitrequest(DDR4b_waitrequest),
     .DDR4b_readdata(DDR4b_readdata),
     .DDR4b_readdatavalid(DDR4b_readdatavalid),
@@ -338,6 +339,5 @@ afu afu_inst(
 	.cp2af_sRxPort       ( mpf2af_sRxPort ) ,
 	.af2cp_sTxPort       ( af2mpf_sTxPort ) 
 );
-
 
 endmodule

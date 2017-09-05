@@ -73,12 +73,16 @@ module ccip_avmm_mmio #(
 	wire mmio32_highword_req = mmio32_req & mmioHdr.address[0];
 	
 	logic tid_fifo_wrreq;
-	logic tid_fifo_rdreq;
+	reg tid_fifo_rdreq;
 	logic [TID_FIFO_WIDTH-1:0] tid_fifo_input;
 	wire [TID_FIFO_WIDTH-1:0] tid_fifo_output;
+	reg [63:0] rd_rsp_data_reg;
+	reg [63:0] rd_rsp_data_reg2;
+	reg rd_rsp_valid_reg;
 	
 	wire fifo_mmio32_highword_req = tid_fifo_output[TID_FIFO_WIDTH-1];
 	
+	//need to avoid region that MPF responds to
 	wire mmio_address_valid = !(mmioHdr.address >= 16'h800 && mmioHdr.address < (16'h800+CCI_MPF_MMIO_SIZE/4));
 	
 	scfifo  tid_fifo_inst (
@@ -97,75 +101,45 @@ module ccip_avmm_mmio #(
 		.usedw ()
 	);
     defparam
-        tid_fifo_inst.add_ram_output_register  = "OFF",
+        tid_fifo_inst.add_ram_output_register  = "ON",
         tid_fifo_inst.enable_ecc  = "FALSE",
         tid_fifo_inst.intended_device_family  = "Arria 10",
         tid_fifo_inst.lpm_numwords  = 64,
-        tid_fifo_inst.lpm_showahead  = "ON",
+        tid_fifo_inst.lpm_showahead  = "OFF",
         tid_fifo_inst.lpm_type  = "scfifo",
         tid_fifo_inst.lpm_width  = TID_FIFO_WIDTH,
         tid_fifo_inst.lpm_widthu  = 6,
         tid_fifo_inst.overflow_checking  = "ON",
         tid_fifo_inst.underflow_checking  = "ON",
         tid_fifo_inst.use_eab  = "ON";
-	
+
 	always_ff @(posedge clk)
 	begin
-		tid_fifo_wrreq <= '0;
-		tid_fifo_rdreq <= '0;
-		tid_fifo_input <= '0;
+		out_ready <= SoftReset ? 1'b0 : 1'b1;
 		
-		ccip_c2_Tx_port.hdr        <= '0;
-		ccip_c2_Tx_port.data       <= '0;
-		ccip_c2_Tx_port.mmioRdValid <= '0;
+		//MMIO request (read or write)
+		in_valid <= SoftReset ? 1'b0 : (ccip_c0_Rx_port.mmioRdValid || ccip_c0_Rx_port.mmioWrValid) && mmio_address_valid;
+		avst_input_data.addr <= {mmioHdr.address, 2'b00};
+		avst_input_data.is_32bit <= mmio32_req;
+		avst_input_data.is_read <= ccip_c0_Rx_port.mmioRdValid && mmio_address_valid;
+
+		//MMIO write request
+		avst_input_data.write_data[31:0] <= ccip_c0_Rx_port.data[31:0];
+		avst_input_data.write_data[63:32] <= mmio32_highword_req ? ccip_c0_Rx_port.data[31:0] : ccip_c0_Rx_port.data[63:32];
 		
-		avst_input_data <= '0;
-		in_valid <= '0;
-		out_ready <= '1;
-		avst_input_data <= '0;
-		
-		if(SoftReset) begin
-			tid_fifo_wrreq <= '0;
-			tid_fifo_rdreq <= '0;
-			tid_fifo_input <= '0;
-			
-			ccip_c2_Tx_port.hdr        <= '0;
-			ccip_c2_Tx_port.data       <= '0;
-			ccip_c2_Tx_port.mmioRdValid <= '0;
-			
-			avst_input_data <= '0;
-			in_valid <= '0;
-			out_ready <= '0;
-		end
-		else begin
-			ccip_c2_Tx_port.mmioRdValid <= 0;
-			// set the registers on MMIO write request
-			if(ccip_c0_Rx_port.mmioWrValid && mmio_address_valid) begin
-				avst_input_data.addr <= {mmioHdr.address, 2'b00};
-				avst_input_data.write_data[31:0] <= ccip_c0_Rx_port.data[31:0];
-				avst_input_data.write_data[63:32] <= mmio32_highword_req ? ccip_c0_Rx_port.data[31:0] : ccip_c0_Rx_port.data[63:32];
-				avst_input_data.is_read <= 1'b0;
-				avst_input_data.is_32bit <= mmio32_req;
-				in_valid <= 1'b1;
-			end
-			// serve MMIO read requests
-			if(ccip_c0_Rx_port.mmioRdValid && mmio_address_valid) begin
-				tid_fifo_input <= {mmio32_highword_req, mmioHdr.tid}; // copy TID
-				tid_fifo_wrreq <= '1;
-				avst_input_data.addr <= {mmioHdr.address, 2'b00};
-				avst_input_data.is_read <= 1'b1;
-				avst_input_data.is_32bit <= mmio32_req;
-				in_valid <= 1'b1;
-			end
-		  
-			if(out_valid == 1'b1) begin
-				tid_fifo_rdreq <= '1;
-				ccip_c2_Tx_port.hdr.tid <= tid_fifo_output[CCIP_TID_WIDTH-1:0];
-				ccip_c2_Tx_port.data[31:0] <= fifo_mmio32_highword_req ? out_data[63:32] : out_data[31:0];
-				ccip_c2_Tx_port.data[63:32] <= out_data[63:32];
-				ccip_c2_Tx_port.mmioRdValid <= 1; // post response
-			end
-		end
+		//MMIO read requests
+		tid_fifo_wrreq <= SoftReset ? 1'b0 : (ccip_c0_Rx_port.mmioRdValid && mmio_address_valid);
+		tid_fifo_input <= {mmio32_highword_req, mmioHdr.tid}; // copy TID
+
+		//MMIO read response
+		tid_fifo_rdreq <= SoftReset ? 1'b0 : out_valid;
+		rd_rsp_valid_reg <= SoftReset ? 1'b0 : tid_fifo_rdreq;
+		rd_rsp_data_reg <= out_data;
+		rd_rsp_data_reg2 <= rd_rsp_data_reg;
+		ccip_c2_Tx_port.mmioRdValid <= SoftReset ? 1'b0 : rd_rsp_valid_reg; // post response
+		ccip_c2_Tx_port.hdr.tid <= tid_fifo_output[CCIP_TID_WIDTH-1:0];
+		ccip_c2_Tx_port.data[31:0] <= fifo_mmio32_highword_req ? rd_rsp_data_reg2[63:32] : rd_rsp_data_reg2[31:0];
+		ccip_c2_Tx_port.data[63:32] <= rd_rsp_data_reg2[63:32];
 	end
 
 endmodule

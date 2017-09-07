@@ -157,6 +157,16 @@ module afu (
 	wire		ccip_host_bridge_m0_read;
 	wire	[63:0]	ccip_host_bridge_m0_byteenable;
 	
+   wire [512-1:0] avst_rd_rsp_data;
+   wire avst_rd_rsp_valid;
+   wire avst_rd_rsp_ready;
+   
+   wire [512+48+3+1-1:0] avst_avcmd_data;
+   wire avst_avcmd_valid;
+   wire avst_avcmd_ready;
+
+    
+
 	dma_test_system u0 (
 		.in_data,
         .in_ready,
@@ -208,13 +218,6 @@ module afu (
     assign DDR4a_burstcount[6:3] = 4'b0000;
     assign DDR4b_burstcount[6:3] = 4'b0000;
 
-	 wire [512-1:0] avst_rd_rsp_data;
-    wire avst_rd_rsp_valid;
-    wire avst_rd_rsp_ready;
-    
-    wire [512+48+3+1-1:0] avst_avcmd_data;
-    wire avst_avcmd_valid;
-    wire avst_avcmd_ready;
 	
 	avmm_ccip_host #(
 		.AVMM_ADDR_WIDTH(48), 

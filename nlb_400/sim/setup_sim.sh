@@ -13,5 +13,8 @@ setup_sim_dir
 setup_quartus_home
 gen_qsys
 
+#nlb needs additional user-defined macros
+add_text_macros +define+NLB400_MODE_0
+
 set -e
 run_sim

@@ -8,6 +8,6 @@ SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
 . $SCRIPT_DIR_PATH/sim_common.sh
 # Run this script from Terminal 2
 menu_regress "$@"
-configure_ase_reg_mode
 sh setup_sim.sh -a $afu -b $opae_base -s $sim &
 sh run_app.sh -a $app -b $opae_base
+kill_sim

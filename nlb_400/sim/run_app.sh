@@ -12,5 +12,5 @@ menu_run_app "$@"
 wait_for_sim_ready
 setup_app_env
 # nlb requires special build since app source isn't located with afu
-gcc -g -o $app_base/hello_fpga $app_base/hello_fpga.c -L $opae_base/inst/lib/ -I $opae_base/inst/include -luuid -lpthread -lopae-c-ase -std=c99
+gcc -g -o $app_base/hello_fpga $app_base/hello_fpga.c -L $opae_base/build/lib/ -I $opae_base/common/include -luuid -lpthread -lopae-c-ase -std=c99
 exec_app

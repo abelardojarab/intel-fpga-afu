@@ -18,9 +18,9 @@ mkdir -p $sim_afu_path/dummy_rtl_dir
 
 # generate qsys systems
 pushd sim_afu/interfaces
-find . -name *.qsys -exec qsys-generate {} --simulation=VERILOG \;
+find . -name *.qsys -exec $QUARTUS_HOME/sopc_builder/bin/qsys-generate {} --simulation=VERILOG \;
 
-qsys-generate --synthesis=VERILOG $sim_afu_path/qsys/dma_test_system.qsys
+$QUARTUS_HOME/sopc_builder/bin/qsys-generate --synthesis=VERILOG $sim_afu_path/qsys/dma_test_system.qsys
 copy_qsys_ip_files dma_test_system
 copy_qsys_ip_files msgdma_bbb
 copy_qsys_ip_files ccip_avmm_bridge

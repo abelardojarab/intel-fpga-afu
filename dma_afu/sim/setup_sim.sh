@@ -67,14 +67,14 @@ rm -rf ase_sources.mk
 touch $sim_afu_path/dummy_rtl_dir/dummy_rtl.sv
 
 if [ "$sim" == "vcs" ]; then
-  echo "Using VCS"
+  get_vcs_home
   ./scripts/generate_ase_environment.py -t VCS -p dcp $sim_afu_path/dummy_rtl_dir
   echo "-F $sim_afu_path/sim.filelist" > vlog_files.list
   echo "SNPS_VLOGAN_OPT+= +define+INCLUDE_DDR4" >> ase_sources.mk
   echo "SNPS_VLOGAN_OPT+= +define+INCLUDE_DDR4 +define+DDR_ADDR_WIDTH=26" >> ase_sources.mk
 else
   echo "Using Questa"
-  export MTI_HOME=$MODELSIM_ROOTDIR
+  get_mti_home
   ./scripts/generate_ase_environment.py -t QUESTA -p dcp $sim_afu_path/dummy_rtl_dir
   echo "-F $sim_afu_path/sim.filelist" > vlog_files.list
   echo "MENT_VLOG_OPT += +define+INCLUDE_DDR4 +define+DDR_ADDR_WIDTH=26 -suppress 3485,3584" >> ase_sources.mk
@@ -83,6 +83,6 @@ fi
 
 # run ase make
 make platform=ASE_PLATFORM_DCP
-make sim &
+make sim
 
 popd

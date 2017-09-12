@@ -33,9 +33,7 @@ SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
 # Run this script from Terminal 2
 
 set -e
-
 menu_run_app "$@"
-
 wait_for_sim_ready
 setup_app_env
 build_app

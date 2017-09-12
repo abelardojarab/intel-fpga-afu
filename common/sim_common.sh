@@ -167,6 +167,44 @@ add_text_macros() {
    add_macros=$1;
 }
 
+get_vcs_home() {
+   # Use VCS_HOME (if available in env)      
+   if [ -z "$VCS_HOME" ] ; then      
+      # env not found
+      echo "Your environment did not set VCS_HOME. Trying to detect VCS.. "
+      vcs_bin=`which vcs`
+      if [ -z "$vcs_bin" ] ; then          
+         echo "Unable to find VCS. Please set the env variable VCS_HOME to your VCS install path"
+         exit 1;
+      else            
+         vcs_bin_dir=`dirname $vcs_bin`
+         export VCS_HOME="$vcs_bin_dir/../"      
+         echo "Auto-detected VCS_HOME at $VCS_HOME"
+      fi
+   else
+      echo "Detected VCS_HOME at $VCS_HOME"
+   fi
+}
+
+get_mti_home() {
+	if [ -z "$MTI_HOME" ] ; then      
+      # env not found
+      echo "Your environment did not set MTI_HOME. Trying to detect Modelsim SE.. "
+      vsim_bin=`which vsim`
+      if [ -z "$vsim_bin" ] ; then
+         echo "Unable to find Modelsim. Please set the env variable MTI_HOME to your Modelsim install path"
+         exit 1;
+      else
+         vsim_bin_dir=`dirname $vsim_bin`
+         export MTI_HOME="$vsim_bin_dir/../"   
+         echo "Auto-detected MTI_HOME at $MTI_HOME"
+      fi
+   else
+      echo "Detected MTI_HOME at $MTI_HOME"
+   fi	
+}
+
+
 run_sim() {
    pushd $opae_base/ase
    rm -rf ase_sources.mk
@@ -174,21 +212,7 @@ run_sim() {
    if [ "$sim" == "vcs" ] ; then
       echo "Using VCS"
 
-      # Use VCS_HOME (if available in env)      
-      if [ -z "$VCS_HOME" ] ; then      
-         # env not found
-         echo "Your environment did not set VCS_HOME. Trying to detect VCS.. "
-         vcs_bin=`which vcs`
-         if [ -z "$vcs_bin" ] ; then          
-            echo "Unable to find VCS. Please set the env variable VCS_HOME to your VCS install path"
-         else            
-            vcs_bin_dir=`dirname $vcs_bin`
-            export VCS_HOME="$vcs_bin_dir/../"      
-            echo "Auto-detected VCS_HOME at $VCS_HOME"
-         fi
-      else
-         echo "Detected VCS_HOME at $VCS_HOME"
-      fi
+      get_vcs_home
 
       # Else, try to auto-detect VCS_HOME
       ./scripts/generate_ase_environment.py -t VCS -p dcp $sim_afu_path
@@ -199,45 +223,20 @@ run_sim() {
       echo "SNPS_VLOGAN_OPT+= $add_macros" >> ase_sources.mk      
 
    elif [ "$sim" == "modelsim" ] ; then
-      if [ -z "$MTI_HOME" ] ; then      
-         # env not found
-         echo "Your environment did not set MTI_HOME. Trying to detect Modelsim SE.. "
-         vsim_bin=`which vsim`
-         if [ -z "$vsim_bin" ] ; then
-            echo "Unable to find Modelsim. Please set the env variable MTI_HOME to your Modelsim install path"
-         else
-            vsim_bin_dir=`dirname $vsim_bin`
-            export MTI_HOME="$vsim_bin_dir/../"   
-            echo "Auto-detected MTI_HOME at $MTI_HOME"
-         fi
-      else
-         echo "Detected MTI_HOME at $MTI_HOME"
-      fi
+      get_mti_home
 
       echo "Info: MTI_ROOTDIR set to $MTI_HOME"
       # ASE treats modelsim and questa similarly
       ./scripts/generate_ase_environment.py -t QUESTA -p dcp $sim_afu_path
       echo "MENT_VLOG_OPT += +define+INCLUDE_DDR4 +define+DDR_ADDR_WIDTH=26 -suppress 3485,3584" >> ase_sources.mk
+      echo "MENT_VLOG_OPT += $add_macros" >> ase_sources.mk
       echo "MENT_VSIM_OPT += -suppress 3485,3584" >> ase_sources.mk
 
       # add non-standard text macros (if any)
       # specify them using add_text_macros      
       echo "MENT_VSIM_OPT += $add_macros" >> ase_sources.mk
    elif [ "$sim" == "questa" ] ; then
-      if [ -z "$MTI_HOME" ] ; then
-         # env not found
-         echo "Your environment did not set MTI_HOME. Trying to detect QuestaSim. "
-         vsim_bin=`which vsim`
-         if [ -z "$vsim_bin" ] ; then
-            echo "Unable to find QuestaSim. Please set the env variable MTI_HOME to your QuestaSim install path"
-         else
-            vsim_bin_dir=`dirname $vsim_bin`
-            export MTI_HOME="$vsim_bin_dir/../"   
-            echo "Auto-detected MTI_HOME at $MTI_HOME"
-         fi
-      else
-         echo "Detected MTI_HOME at $MTI_HOME"
-      fi
+      get_mti_home
 
       echo "Info: MTI_ROOTDIR set to $MTI_HOME"
       # ASE treats modelsim and questa similarly

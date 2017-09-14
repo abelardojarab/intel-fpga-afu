@@ -836,7 +836,6 @@ fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_h, uint64_t dst, uint64_t sr
                                 fpga_dma_transfer_t type) {
 
    fpga_result res = FPGA_OK;
-   size_t i;
 
    if(!dma_h)
       return FPGA_INVALID_PARAM;

@@ -74,7 +74,7 @@ fpga_result verify_buffer(char *buf, size_t size) {
    for(i=0; i<size; i++) {
       rnum = rand()%256;
       if((*buf&0xFF) != rnum) {
-         printf("Invalid data at %zx Expected = %x Actual = %x\n",i,rnum,(*buf&0xFF));
+         printf("Invalid data at %zx Expected = %zx Actual = %x\n",i,rnum,(*buf&0xFF));
          return FPGA_INVALID_PARAM;
       }
       buf++;

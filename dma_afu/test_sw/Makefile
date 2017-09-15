@@ -3,7 +3,9 @@ CFLAGS = -g -O2 -fPIC
 
 CFLAGS += -I$(prefix)/include
 CFLAGS += -D FPGA_DMA_DEBUG=0
-LDFLAGS += -L$(prefix)/lib -luuid 
+LDFLAGS += -L$(prefix)/lib -luuid
+
+GTEST_INC += -I$(drv_path)
 
 ifeq ($(USE_ASE),1)
 	LDFLAGS += -lopae-c-ase
@@ -15,7 +17,7 @@ else
 endif
 
 DMA_OBJS ?=
-ifneq ($(wildcard fpga_dma.c),) 
+ifneq ($(wildcard fpga_dma.c),)
 	DMA_OBJS += fpga_dma.o
 	CFLAGS += -DINCLUDE_DMA_DRIVER
 	CFLAGS += -DINCLUDE_DMA_DRIVER
@@ -28,6 +30,13 @@ dma_memtest: dma_memtest.o dma_test_common.o
 
 dma_afu_test: dma_afu_test.o dma_test_common.o
 	g++ $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+fpga_dma_gtest: fpga_dma_gtest.o
+	g++ -o $@ $^ -L/usr/lib/libgtest.so -L$(drv_path) -l:fpga_dma.so -lgtest  $(LDFLAGS)
+
+fpga_dma_gtest.o: fpga_dma_gtest.cpp
+	g++ -o $@ -c $^ $(CFLAGS) -I$(drv_path)
+
 
 dma_bbb_speed_test: dma_bbb_speed_test.o dma_test_common.o $(DMA_OBJS)
 	g++ $(CFLAGS) -o $@ $^ $(LDFLAGS)

@@ -28,47 +28,47 @@
 // ***************************************************************************
 
 import ccip_if_pkg::*;
-import cci_mpf_csrs_pkg::*;
+import ccip_avmm_pkg::*;
 
 module ccip_avmm_mmio #(
-	parameter AVMM_ADDR_WIDTH = 16,
-	parameter AVMM_DATA_WIDTH = 64
+	parameter MMIO_BYPASS_ADDRESS = 0,
+	parameter MMIO_BYPASS_SIZE = 0
 	)
 	
 	(
 	input clk,
-	input	SoftReset,
+	input	reset,
 
-	output logic [AVMM_ADDR_WIDTH+AVMM_DATA_WIDTH+2-1:0] in_data,
-    output logic in_valid,
-    input in_ready,
-             
-    input [AVMM_DATA_WIDTH-1:0] out_data,
-    input out_valid,
-    output logic out_ready,
+	input		avmm_waitrequest,
+	input	[CCIP_AVMM_MMIO_DATA_WIDTH-1:0]	avmm_readdata,
+	input		avmm_readdatavalid,
+	output logic 	[CCIP_AVMM_MMIO_DATA_WIDTH-1:0]	avmm_writedata,
+	output logic 	[CCIP_AVMM_MMIO_ADDR_WIDTH-1:0]	avmm_address,
+	output logic 		avmm_write,
+	output logic 		avmm_read,
+	output logic 	[(CCIP_AVMM_MMIO_DATA_WIDTH/8)-1:0]	avmm_byteenable,
 	
 	// ---------------------------IF signals between CCI and AFU  --------------------------------
 	//input	t_if_ccip_Rx    cp2af_sRxPort,
-	input t_if_ccip_c0_Rx ccip_c0_Rx_port,
+	input t_if_ccip_c0_Rx c0rx,
 	//output	t_if_ccip_Tx	af2cp_sTxPort
-	output t_if_ccip_c2_Tx ccip_c2_Tx_port
+	output t_if_ccip_c2_Tx c2tx
 );
-	localparam INPUT_AVST_WIDTH = AVMM_ADDR_WIDTH+AVMM_DATA_WIDTH+2;
-	localparam TID_FIFO_WIDTH = CCIP_TID_WIDTH+1;
+	localparam TID_FIFO_WIDTH = CCIP_TID_WIDTH+1; //+1 bit to indicate 32/64 bit request
 
-	typedef struct packed { 
-		logic is_read;
-		logic is_32bit;
-		logic [AVMM_ADDR_WIDTH-1:0] addr;
-		logic [AVMM_DATA_WIDTH-1:0] write_data;
-    } t_avst_input;
+
+	//
+    logic [CCIP_AVMM_MMIO_DATA_WIDTH-1:0] mmio_rsp_data;
+    logic mmio_rsp_valid;
+    logic mmio_rsp_ready;
     
-    t_avst_input avst_input_data;
-    assign in_data = avst_input_data;
-
+    t_ccip_avmm_mmio_cmd mmio_cmd_data;
+    logic mmio_cmd_valid;
+    logic mmio_cmd_ready;
+    
 	// cast c0 header into ReqMmioHdr
 	t_ccip_c0_ReqMmioHdr mmioHdr;
-	assign mmioHdr = t_ccip_c0_ReqMmioHdr'(ccip_c0_Rx_port.hdr);
+	assign mmioHdr = t_ccip_c0_ReqMmioHdr'(c0rx.hdr);
 	wire mmio32_req = (mmioHdr.length == 2'b00);
 	wire mmio32_highword_req = mmio32_req & mmioHdr.address[0];
 	
@@ -83,12 +83,13 @@ module ccip_avmm_mmio #(
 	wire fifo_mmio32_highword_req = tid_fifo_output[TID_FIFO_WIDTH-1];
 	
 	//need to avoid region that MPF responds to
-	wire mmio_address_valid = !(mmioHdr.address >= 16'h800 && mmioHdr.address < (16'h800+CCI_MPF_MMIO_SIZE/4));
+	wire mmio_address_valid = (MMIO_BYPASS_SIZE == 0) ? 1'b1 : 
+		!(mmioHdr.address >= (MMIO_BYPASS_ADDRESS/4) && mmioHdr.address < ((MMIO_BYPASS_ADDRESS/4)+MMIO_BYPASS_SIZE/4));
 	
 	scfifo  tid_fifo_inst (
 		.data(tid_fifo_input),
 		.q(tid_fifo_output),
-		.sclr(SoftReset),
+		.sclr(reset),
 		.clock(clk),
 		.wrreq(tid_fifo_wrreq),
 		.rdreq(tid_fifo_rdreq),
@@ -115,31 +116,48 @@ module ccip_avmm_mmio #(
 
 	always_ff @(posedge clk)
 	begin
-		out_ready <= SoftReset ? 1'b0 : 1'b1;
+		mmio_rsp_ready <= reset ? 1'b0 : 1'b1;
 		
 		//MMIO request (read or write)
-		in_valid <= SoftReset ? 1'b0 : (ccip_c0_Rx_port.mmioRdValid || ccip_c0_Rx_port.mmioWrValid) && mmio_address_valid;
-		avst_input_data.addr <= {mmioHdr.address, 2'b00};
-		avst_input_data.is_32bit <= mmio32_req;
-		avst_input_data.is_read <= ccip_c0_Rx_port.mmioRdValid && mmio_address_valid;
+		mmio_cmd_valid <= reset ? 1'b0 : (c0rx.mmioRdValid || c0rx.mmioWrValid) && mmio_address_valid;
+		mmio_cmd_data.addr <= {mmioHdr.address, 2'b00};
+		mmio_cmd_data.is_32bit <= mmio32_req;
+		mmio_cmd_data.is_read <= c0rx.mmioRdValid && mmio_address_valid;
 
 		//MMIO write request
-		avst_input_data.write_data[31:0] <= ccip_c0_Rx_port.data[31:0];
-		avst_input_data.write_data[63:32] <= mmio32_highword_req ? ccip_c0_Rx_port.data[31:0] : ccip_c0_Rx_port.data[63:32];
+		mmio_cmd_data.write_data[31:0] <= c0rx.data[31:0];
+		mmio_cmd_data.write_data[63:32] <= mmio32_highword_req ? c0rx.data[31:0] : c0rx.data[63:32];
 		
 		//MMIO read requests
-		tid_fifo_wrreq <= SoftReset ? 1'b0 : (ccip_c0_Rx_port.mmioRdValid && mmio_address_valid);
+		tid_fifo_wrreq <= reset ? 1'b0 : (c0rx.mmioRdValid && mmio_address_valid);
 		tid_fifo_input <= {mmio32_highword_req, mmioHdr.tid}; // copy TID
 
 		//MMIO read response
-		tid_fifo_rdreq <= SoftReset ? 1'b0 : out_valid;
-		rd_rsp_valid_reg <= SoftReset ? 1'b0 : tid_fifo_rdreq;
-		rd_rsp_data_reg <= out_data;
+		tid_fifo_rdreq <= reset ? 1'b0 : mmio_rsp_valid;
+		rd_rsp_valid_reg <= reset ? 1'b0 : tid_fifo_rdreq;
+		rd_rsp_data_reg <= mmio_rsp_data;
 		rd_rsp_data_reg2 <= rd_rsp_data_reg;
-		ccip_c2_Tx_port.mmioRdValid <= SoftReset ? 1'b0 : rd_rsp_valid_reg; // post response
-		ccip_c2_Tx_port.hdr.tid <= tid_fifo_output[CCIP_TID_WIDTH-1:0];
-		ccip_c2_Tx_port.data[31:0] <= fifo_mmio32_highword_req ? rd_rsp_data_reg2[63:32] : rd_rsp_data_reg2[31:0];
-		ccip_c2_Tx_port.data[63:32] <= rd_rsp_data_reg2[63:32];
+		c2tx.mmioRdValid <= reset ? 1'b0 : rd_rsp_valid_reg; // post response
+		c2tx.hdr.tid <= tid_fifo_output[CCIP_TID_WIDTH-1:0];
+		c2tx.data[31:0] <= fifo_mmio32_highword_req ? rd_rsp_data_reg2[63:32] : rd_rsp_data_reg2[31:0];
+		c2tx.data[63:32] <= rd_rsp_data_reg2[63:32];
 	end
+	
+	//handle avmm signals
+	assign avmm_byteenable = mmio_cmd_data.is_32bit ? 
+    	(mmio_cmd_data.addr[2] ? 8'b11110000 : 8'b00001111) : 8'b11111111;
+
+	//read/write request
+    assign avmm_address = mmio_cmd_data.addr;
+    assign avmm_writedata = mmio_cmd_data.write_data;
+
+	assign mmio_cmd_ready = !reset & !avmm_waitrequest;	
+    wire avmm_ready = !reset & (!avmm_waitrequest && mmio_cmd_valid);
+    assign avmm_write = avmm_ready & !mmio_cmd_data.is_read;
+    assign avmm_read = avmm_ready & mmio_cmd_data.is_read;
+
+	//handle read response
+	assign mmio_rsp_data = avmm_readdata;
+	assign mmio_rsp_valid = reset ? 1'b0 : avmm_readdatavalid;
 
 endmodule

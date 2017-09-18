@@ -32,6 +32,7 @@
 // ***************************************************************************
 // Include MPF data types, including the CCI interface pacakge.
 `include "cci_mpf_if.vh"
+import cci_mpf_csrs_pkg::*;
 
 module ccip_std_afu(
   // CCI-P Clocks and Resets
@@ -101,9 +102,30 @@ module ccip_std_afu(
   output  wire                          DDR4b_read;
   output  wire [63:0]                   DDR4b_byteenable;
 `endif
-  // Interface structures
-  input           t_if_ccip_Rx     pck_cp2af_sRx;           // CCI-P Rx Port
-  output          t_if_ccip_Tx     pck_af2cp_sTx;           // CCI-P Tx Port
+
+    // Interface structures
+    input           t_if_ccip_Rx     pck_cp2af_sRx;           // CCI-P Rx Port
+    output          t_if_ccip_Tx     pck_af2cp_sTx;           // CCI-P Tx Port
+
+    //ccip async shim
+    wire 	  async_shim_reset_out;   
+    wire 	  afu_clk;   
+
+    t_if_ccip_Tx async2af_sTxPort;
+    t_if_ccip_Rx async2af_sRxPort;
+   
+    assign afu_clk = pClkDiv2 ;
+   
+    ccip_async_shim ccip_async_shim (
+				    .bb_softreset    (pck_cp2af_softReset),
+				    .bb_clk          (pClk),
+				    .bb_tx           (pck_af2cp_sTx),
+				    .bb_rx           (pck_cp2af_sRx),
+				    .afu_softreset   (async_shim_reset_out),
+				    .afu_clk         (afu_clk),
+				    .afu_tx          (async2af_sTxPort),
+				    .afu_rx          (async2af_sRxPort)
+				    );
 
     // ====================================================================
     //
@@ -134,7 +156,7 @@ module ccip_std_afu(
     //
     // Expose FIU as an MPF interface
     //
-    cci_mpf_if fiu(.clk(pClk));
+    cci_mpf_if fiu(.clk(afu_clk));
 
     // The CCI wires to MPF mapping connections have identical naming to
     // the standard AFU.  The module exports an interface named "fiu".
@@ -144,12 +166,19 @@ module ccip_std_afu(
         .REGISTER_INPUTS(1),
         .REGISTER_OUTPUTS(1)
         )
-      map_ifc(.*);
+      map_ifc
+       (
+        .pClk(afu_clk),
+        .pck_cp2af_softReset(async_shim_reset_out),
+        .pck_cp2af_sRx(async2af_sRxPort),
+        .pck_af2cp_sTx(async2af_sTxPort),
+        .*
+        );
 
     //
     // Instantiate MPF with the desired properties.
     //
-    cci_mpf_if afu(.clk(pClk));
+    cci_mpf_if afu(.clk(afu_clk));
 
     cci_mpf
       #(
@@ -226,7 +255,7 @@ module ccip_std_afu(
         )
       mpf
        (
-        .clk(pClk),
+        .clk(afu_clk),
         .fiu,
         .afu,
         .c0NotEmpty(),
@@ -305,7 +334,10 @@ module ccip_std_afu(
 // User AFU goes here
 //===============================================================================================
 
-afu afu_inst(
+afu #(
+		.MMIO_BYPASS_ADDRESS(MPF_DFH_MMIO_ADDR),
+		.MMIO_BYPASS_SIZE(CCI_MPF_MMIO_SIZE)
+	) afu_inst(
     .Clk_400                        (pClk),
 	.pClkDiv2(pClkDiv2),
     .pClkDiv4(pClkDiv4),
@@ -335,7 +367,7 @@ afu afu_inst(
     .DDR4b_read(DDR4b_read),
 `endif
     
-	.SoftReset           ( fiu.reset ) ,
+	.reset           ( fiu.reset ) ,
 	.cp2af_sRxPort       ( mpf2af_sRxPort ) ,
 	.af2cp_sTxPort       ( af2mpf_sTxPort ) 
 );

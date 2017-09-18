@@ -184,7 +184,7 @@
         <spirit:parameter>
           <spirit:name>AUTO_CLK_CLOCK_RATE</spirit:name>
           <spirit:displayName>Auto CLOCK_RATE</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="AUTO_CLK_CLOCK_RATE">400000000</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="AUTO_CLK_CLOCK_RATE">200000000</spirit:value>
         </spirit:parameter>
       </spirit:parameters>
     </altera:altera_module_parameters>
@@ -339,7 +339,7 @@
                 <suppliedSystemInfos>
                     <entry>
                         <key>CLOCK_RATE</key>
-                        <value>400000000</value>
+                        <value>200000000</value>
                     </entry>
                 </suppliedSystemInfos>
                 <consumedSystemInfos/>

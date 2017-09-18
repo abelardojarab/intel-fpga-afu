@@ -28,17 +28,20 @@
 // ***************************************************************************
 
 import ccip_if_pkg::*;
+import ccip_avmm_pkg::*;
 
-//`define DISABLE_DDR4B_BANK
-
-module afu (
+module afu #(
+		parameter MMIO_BYPASS_ADDRESS = 0,
+		parameter MMIO_BYPASS_SIZE = 0
+	)
+	(
 	// ---------------------------global signals-------------------------------------------------
         input	Clk_400,	  //              in    std_logic;           Core clock. CCI interface is synchronous to this clock.
 		input pClkDiv2,
 		input pClkDiv4,
 		input uClk_usr,
 		input uClk_usrDiv2,
-        input	SoftReset,	  //              in    std_logic;           CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH
+        input	reset,	  //              in    std_logic;           CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH
         
         
 `ifdef INCLUDE_DDR4
@@ -69,19 +72,6 @@ module afu (
 	output	t_if_ccip_Tx	af2cp_sTxPort
 );
 
-    // MMIO parameters and ports
-	localparam AVMM_ADDR_WIDTH = 18;
-	localparam AVMM_DATA_WIDTH = 64;
-	localparam AVMM_BYTE_ENABLE_WIDTH=(AVMM_DATA_WIDTH/8);
-
-	wire [AVMM_ADDR_WIDTH+AVMM_DATA_WIDTH+2-1:0] in_data;
-    wire in_valid;
-    wire in_ready;
-             
-    wire [AVMM_DATA_WIDTH-1:0] out_data;
-    wire out_valid;
-    wire out_ready;
-	
     wire [31:0]           DDR4a_byte_address;
     wire [31:0]           DDR4b_byte_address;
 `ifndef INCLUDE_DDR4
@@ -117,7 +107,7 @@ module afu (
 	
 	mem_sim_model ddr4a_inst(
 		.clk(DDR4a_USERCLK),
-		.reset(SoftReset),
+		.reset(reset),
 		.avmm_waitrequest(DDR4a_waitrequest),
 		.avmm_readdata(DDR4a_readdata),
 		.avmm_readdatavalid(DDR4a_readdatavalid),
@@ -131,7 +121,7 @@ module afu (
 	
 	mem_sim_model ddr4b_inst(
 		.clk(DDR4b_USERCLK),
-		.reset(SoftReset),
+		.reset(reset),
 		.avmm_waitrequest(DDR4b_waitrequest),
 		.avmm_readdata(DDR4b_readdata),
 		.avmm_readdatavalid(DDR4b_readdatavalid),
@@ -144,37 +134,33 @@ module afu (
 	);
 `endif
 
+    // DMA will send out bursts of 4 (max) to the memory controllers
+    assign DDR4a_burstcount[6:3] = 4'b0000;
+    assign DDR4b_burstcount[6:3] = 4'b0000;
+
 	assign DDR4a_address = DDR4a_byte_address[31:6];
 	assign DDR4b_address = DDR4b_byte_address[31:6];
-
-	wire		ccip_host_bridge_m0_waitrequest;
-	wire	[511:0]	ccip_host_bridge_m0_readdata;
-	wire		ccip_host_bridge_m0_readdatavalid;
-	wire	[0:0]	ccip_host_bridge_m0_burstcount;
-	wire	[511:0]	ccip_host_bridge_m0_writedata;
-	wire	[47:0]	ccip_host_bridge_m0_address;
-	wire		ccip_host_bridge_m0_write;
-	wire		ccip_host_bridge_m0_read;
-	wire	[63:0]	ccip_host_bridge_m0_byteenable;
 	
-   wire [512-1:0] avst_rd_rsp_data;
-   wire avst_rd_rsp_valid;
-   wire avst_rd_rsp_ready;
-   
-   wire [512+48+3+1-1:0] avst_avcmd_data;
-   wire avst_avcmd_valid;
-   wire avst_avcmd_ready;
-
-    
+	//ccip avmm signals
+	wire requestor_avmm_waitrequest;
+	wire [CCIP_AVMM_REQUESTOR_DATA_WIDTH-1:0]	requestor_avmm_readdata;
+	wire requestor_avmm_readdatavalid;
+	wire [CCIP_AVMM_REQUESTOR_DATA_WIDTH-1:0]	requestor_avmm_writedata;
+	wire [CCIP_AVMM_REQUESTOR_ADDR_WIDTH-1:0]	requestor_avmm_address;
+	wire requestor_avmm_write;
+	wire requestor_avmm_read;
+	wire [CCIP_AVMM_REQUESTOR_BURST_WIDTH-1:0]	requestor_avmm_burstcount;
+	
+	wire mmio_avmm_waitrequest;
+	wire [CCIP_AVMM_MMIO_DATA_WIDTH-1:0]	mmio_avmm_readdata;
+	wire mmio_avmm_readdatavalid;
+	wire [CCIP_AVMM_MMIO_DATA_WIDTH-1:0]	mmio_avmm_writedata;
+	wire [CCIP_AVMM_MMIO_ADDR_WIDTH-1:0]	mmio_avmm_address;
+	wire mmio_avmm_write;
+	wire mmio_avmm_read;
+	wire [(CCIP_AVMM_MMIO_DATA_WIDTH/8)-1:0]	mmio_avmm_byteenable;
 
 	dma_test_system u0 (
-		.in_data,
-        .in_ready,
-        .in_valid,
-        .out_data,
-        .out_ready,
-        .out_valid,
-        
         .ddr4a_master_waitrequest   (DDR4a_waitrequest),   // dma_master.waitrequest
 		.ddr4a_master_readdata      (DDR4a_readdata),      //           .readdata
 		.ddr4a_master_readdatavalid (DDR4a_readdatavalid), //           .readdatavalid
@@ -185,7 +171,7 @@ module afu (
 		.ddr4a_master_read          (DDR4a_read),          //           .read
 		.ddr4a_master_byteenable    (DDR4a_byteenable),    //           .byteenable
 		.ddr4a_master_debugaccess   (),   //           .debugaccess
-		`ifndef DISABLE_DDR4B_BANK
+		
 		.ddr4b_master_waitrequest   (DDR4b_waitrequest),   // dma_master.waitrequest
 		.ddr4b_master_readdata      (DDR4b_readdata),      //           .readdata
 		.ddr4b_master_readdatavalid (DDR4b_readdatavalid), //           .readdatavalid
@@ -196,68 +182,74 @@ module afu (
 		.ddr4b_master_read          (DDR4b_read),          //           .read
 		.ddr4b_master_byteenable    (DDR4b_byteenable),    //           .byteenable
 		.ddr4b_master_debugaccess   (),   //           .debugaccess
-        `endif
         
-        .avst_rd_rsp_data,
-		.avst_rd_rsp_valid,
-		.avst_rd_rsp_ready,
-		
-		.avst_avcmd_data,
-		.avst_avcmd_valid,
-		.avst_avcmd_ready,
-		
-		.mmio_clk_clk            (pClkDiv4),            //   clk.clk
+        .ccip_avmm_mmio_waitrequest         (mmio_avmm_waitrequest),         //       ccip_avmm_mmio.waitrequest
+        .ccip_avmm_mmio_readdata            (mmio_avmm_readdata),            //                    .readdata
+        .ccip_avmm_mmio_readdatavalid       (mmio_avmm_readdatavalid),       //                    .readdatavalid
+        .ccip_avmm_mmio_burstcount          (1'b1),          //                    .burstcount
+        .ccip_avmm_mmio_writedata           (mmio_avmm_writedata),           //                    .writedata
+        .ccip_avmm_mmio_address             (mmio_avmm_address),             //                    .address
+        .ccip_avmm_mmio_write               (mmio_avmm_write),               //                    .write
+        .ccip_avmm_mmio_read                (mmio_avmm_read),                //                    .read
+        .ccip_avmm_mmio_byteenable          (mmio_avmm_byteenable),          //                    .byteenable
+        .ccip_avmm_mmio_debugaccess         (),         //                    .debugaccess
+        .ccip_avmm_requestor_waitrequest   (requestor_avmm_waitrequest),   // ccip_avmm_requestor.waitrequest
+        .ccip_avmm_requestor_readdata      (requestor_avmm_readdata),      //                    .readdata
+        .ccip_avmm_requestor_readdatavalid (requestor_avmm_readdatavalid), //                    .readdatavalid
+        .ccip_avmm_requestor_burstcount    (requestor_avmm_burstcount),    //                    .burstcount
+        .ccip_avmm_requestor_writedata     (requestor_avmm_writedata),     //                    .writedata
+        .ccip_avmm_requestor_address       (requestor_avmm_address),       //                    .address
+        .ccip_avmm_requestor_write         (requestor_avmm_write),         //                    .write
+        .ccip_avmm_requestor_read          (requestor_avmm_read),          //                    .read
+        .ccip_avmm_requestor_byteenable    (),    //                    .byteenable
+        .ccip_avmm_requestor_debugaccess   (),   //                    .debugaccess
+        
 		.ddr4a_clk_clk(DDR4a_USERCLK),
 		.ddr4b_clk_clk(DDR4b_USERCLK),
 		.host_clk_clk(pClkDiv2),
-		.pclk400_clk(Clk_400),
-		.reset_reset        (SoftReset)         // reset.reset
+		.reset_reset(reset)         // reset.reset
 	);
 	
-    // DMA will send out bursts of 4 (max) to the memory controllers
-    assign DDR4a_burstcount[6:3] = 4'b0000;
-    assign DDR4b_burstcount[6:3] = 4'b0000;
-
-	
-	avmm_ccip_host #(
-		.AVMM_ADDR_WIDTH(48), 
-		.AVMM_DATA_WIDTH(512),
-        .AVMM_BURST_WIDTH(3))
-	avmm_ccip_host_inst (
-		.clk            (Clk_400),            //   clk.clk
-		.reset        (SoftReset),         // reset.reset
+	avmm_ccip_host avmm_ccip_host_inst (
+		.clk            (pClkDiv2),            //   clk.clk
+		.reset        (reset),         // reset.reset
 		
-		.avst_rd_rsp_data,
-		.avst_rd_rsp_valid,
-		.avst_rd_rsp_ready,
-		
-		.avst_avcmd_data,
-		.avst_avcmd_valid,
-		.avst_avcmd_ready,
+		.avmm_waitrequest(requestor_avmm_waitrequest),
+		.avmm_readdata(requestor_avmm_readdata),
+		.avmm_readdatavalid(requestor_avmm_readdatavalid),
+		.avmm_writedata(requestor_avmm_writedata),
+		.avmm_address(requestor_avmm_address),
+		.avmm_write(requestor_avmm_write),
+		.avmm_read(requestor_avmm_read),
+		.avmm_burstcount(requestor_avmm_burstcount),
 		
 		.c0TxAlmFull(cp2af_sRxPort.c0TxAlmFull),
 		.c1TxAlmFull(cp2af_sRxPort.c1TxAlmFull),
 		.c0rx(cp2af_sRxPort.c0),
-		//.c1rx(cp2af_sRxPort.c1),
+		//.c1rx(cp2af_sRxPort.c1),	//write response
 		.c0tx(af2cp_sTxPort.c0),
 		.c1tx(af2cp_sTxPort.c1)
 	);
 	
-	ccip_avmm_mmio #(AVMM_ADDR_WIDTH, AVMM_DATA_WIDTH)
+	ccip_avmm_mmio #(
+		.MMIO_BYPASS_ADDRESS(MMIO_BYPASS_ADDRESS),
+		.MMIO_BYPASS_SIZE(MMIO_BYPASS_SIZE)
+	)
 	ccip_avmm_mmio_inst (
-		.in_data,
-		.in_valid,
-		.in_ready,
-				 
-		.out_data,
-		.out_valid,
-		.out_ready,
+		.avmm_waitrequest(mmio_avmm_waitrequest),
+		.avmm_readdata(mmio_avmm_readdata),
+		.avmm_readdatavalid(mmio_avmm_readdatavalid),
+		.avmm_writedata(mmio_avmm_writedata),
+		.avmm_address(mmio_avmm_address),
+		.avmm_write(mmio_avmm_write),
+		.avmm_read(mmio_avmm_read),
+		.avmm_byteenable(mmio_avmm_byteenable),
 	
-		.clk            (Clk_400),            //   clk.clk
-		.SoftReset        (SoftReset),         // reset.reset
+		.clk            (pClkDiv2),            //   clk.clk
+		.reset        (reset),         // reset.reset
 		
-		.ccip_c0_Rx_port(cp2af_sRxPort.c0),
-		.ccip_c2_Tx_port(af2cp_sTxPort.c2)
+		.c0rx(cp2af_sRxPort.c0),
+		.c2tx(af2cp_sTxPort.c2)
 	);
 	
 endmodule

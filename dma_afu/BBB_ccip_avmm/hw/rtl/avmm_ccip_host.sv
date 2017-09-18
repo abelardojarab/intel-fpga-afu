@@ -28,30 +28,23 @@
 // ***************************************************************************
 
 import ccip_if_pkg::*;
+import ccip_avmm_pkg::*;
 
-module avmm_ccip_host #(
-	parameter AVMM_ADDR_WIDTH = 48,
-	parameter AVMM_DATA_WIDTH = 512,
-	parameter AVMM_BURST_WIDTH = 3,
-	parameter INGORE_BYTE_ENABLE = 1,
-	//derived parameters
-	parameter INPUT_AVST_WIDTH = AVMM_DATA_WIDTH,
-	parameter AVST_BYTE_ENABLE_WIDTH = ((INGORE_BYTE_ENABLE == 0) ? AVMM_DATA_WIDTH/8 : 0),
-	parameter AVST_OUTPUT_CONTROL_WIDTH = 1+AVST_BYTE_ENABLE_WIDTH,
-    parameter OUTPUT_AVST_WIDTH = AVMM_ADDR_WIDTH+AVMM_DATA_WIDTH+AVMM_BURST_WIDTH+AVST_OUTPUT_CONTROL_WIDTH
-	)
-	
-	(
+module avmm_ccip_host (
 	input clk,
-	input	reset,
+	input reset,
 
-	output logic [INPUT_AVST_WIDTH-1:0] avst_rd_rsp_data,
-    output logic avst_rd_rsp_valid,
-    input avst_rd_rsp_ready,
-             
-    input [OUTPUT_AVST_WIDTH-1:0] avst_avcmd_data,
-    input avst_avcmd_valid,
-    output logic avst_avcmd_ready,
+	output logic		avmm_waitrequest,
+	output logic	[CCIP_AVMM_REQUESTOR_DATA_WIDTH-1:0]	avmm_readdata,
+	output logic		avmm_readdatavalid,
+	input 	[CCIP_AVMM_REQUESTOR_DATA_WIDTH-1:0]	avmm_writedata,
+	input 	[CCIP_AVMM_REQUESTOR_ADDR_WIDTH-1:0]	avmm_address,
+	input 		avmm_write,
+	input 		avmm_read,
+	input 	[CCIP_AVMM_REQUESTOR_BURST_WIDTH-1:0]	avmm_burstcount,
+	
+	//not used right now
+	input 	[(CCIP_AVMM_REQUESTOR_DATA_WIDTH/8)-1:0]	avmm_byteenable,
     
 	// ---------------------------IF signals between CCI and AFU  --------------------------------
 	input c0TxAlmFull,
@@ -74,18 +67,8 @@ module avmm_ccip_host #(
 	//write request
 	t_if_ccip_c1_Tx c1tx_next;
 
-	typedef struct packed { 
-		logic [AVMM_ADDR_WIDTH-1:0] addr;
-		logic [AVMM_DATA_WIDTH-1:0] write_data;
-        logic [AVMM_BURST_WIDTH-1:0] burst;
-		logic [AVST_OUTPUT_CONTROL_WIDTH-1:0] control;
-    } t_avst_output;
-    
-    t_avst_output avmm_request;
-
-
     t_ccip_clLen burst_encoded;
-
+    
     always @ (avmm_request.burst)
     begin
       case (avmm_request.burst)
@@ -101,7 +84,16 @@ module avmm_ccip_host #(
     wire load_burst_counter;
     wire write_sop;
     reg [1:0] address_counter;
-    wire avmm_write;
+    wire is_avmm_write;
+    wire is_avmm_read;
+
+	logic [CCIP_AVMM_REQUESTOR_DATA_WIDTH-1:0] avst_rd_rsp_data;
+    logic avst_rd_rsp_valid;
+    logic avst_rd_rsp_ready;
+
+    t_ccip_avmm_requestor_cmd avmm_request;
+    logic avst_avcmd_valid;
+    logic avst_avcmd_ready;
 
     /* Timing counter for signalling the write channel SOP.
        The incoming bursts are values of 0, 1, or 3.  The steady
@@ -139,22 +131,21 @@ module avmm_ccip_host #(
     end
 
     assign write_sop = (burst_counter == 2'b00);
-    assign load_burst_counter = (burst_counter == 2'b00) & (avmm_write == 1'b1) & (avst_avcmd_ready == 1'b1);
-    assign burst_counter_enable = (burst_counter != 2'b00) & (avmm_write == 1'b1) & (avst_avcmd_ready == 1'b1);
+    assign load_burst_counter = (burst_counter == 2'b00) & (is_avmm_write == 1'b1) & (avst_avcmd_ready == 1'b1);
+    assign burst_counter_enable = (burst_counter != 2'b00) & (is_avmm_write == 1'b1) & (avst_avcmd_ready == 1'b1);
 	
 	//read request
-	assign avmm_request = avst_avcmd_data;
-	wire avmm_read = avmm_request.control[0] & avst_avcmd_valid;
+	assign is_avmm_read = avmm_request.control[0] & avst_avcmd_valid;
 	assign c0tx_next.hdr.vc_sel = eVC_VH0;
 	assign c0tx_next.hdr.rsvd1 = '0;
 	assign c0tx_next.hdr.cl_len = burst_encoded;
 	assign c0tx_next.hdr.req_type = eREQ_RDLINE_I;
 	assign c0tx_next.hdr.address = avmm_request.addr[47:6];
 	assign c0tx_next.hdr.mdata = rx_mdata;
-	assign c0tx_next.valid = reset ? 1'b0 : avmm_read;
+	assign c0tx_next.valid = reset ? 1'b0 : is_avmm_read;
 	
 	//write request
-	assign avmm_write = ~avmm_request.control[0] & avst_avcmd_valid;
+	assign is_avmm_write = ~avmm_request.control[0] & avst_avcmd_valid;
 	assign c1tx_next.hdr.rsvd2 = '0;
 	assign c1tx_next.hdr.vc_sel = eVC_VH0;
 	assign c1tx_next.hdr.sop = write_sop;
@@ -165,40 +156,10 @@ module avmm_ccip_host #(
     assign c1tx_next.hdr.address = {avmm_request.addr[47:8], ((write_sop == 1'b1)? avmm_request.addr[7:6] : address_counter)};
 	assign c1tx_next.hdr.mdata = tx_mdata;
 	assign c1tx_next.data = avmm_request.write_data; 
-    assign c1tx_next.valid = reset ? 1'b0 : avmm_write;
-    
-//`define TEST_CCIP_STALL2
-`ifdef TEST_CCIP_STALL
-    reg ready_was_stalled;
-    //wire test_ccip_pipeline_stall = 1'b1 & ~ready_was_stalled;
-    wire test_ccip_pipeline_stall = ~ready_was_stalled & (tx_mdata == 1);
-    wire avst_avcmd_ready_next = ~(c0TxAlmFull | c1TxAlmFull | test_ccip_pipeline_stall);
-	always @(posedge clk) begin
-    	if (reset)
-    		ready_was_stalled <= 1'b0;
-		else
-			ready_was_stalled <= ~avst_avcmd_ready;
-	end
-`elsif TEST_CCIP_STALL2
-
-	logic [15:0] stall_counter;
-	always @(posedge clk) begin
-		if (reset) begin // global reset
-			stall_counter <= '0;
-		end
-		else begin
-			if(avst_avcmd_ready)
-				stall_counter <= '0;
-			else
-				stall_counter <= stall_counter + 1;
-		end
-	end
-	wire test_ccip_pipeline_stall = (stall_counter != 16);
-	wire avst_avcmd_ready_next = ~(c0TxAlmFull | c1TxAlmFull | test_ccip_pipeline_stall);
-`else
+    assign c1tx_next.valid = reset ? 1'b0 : is_avmm_write;
+ 
 	wire avst_avcmd_ready_next = ~(c0TxAlmFull | c1TxAlmFull);
-`endif
-    
+
 	always @(posedge clk) begin
 		if (reset) begin // global reset
 			//wait request
@@ -240,11 +201,6 @@ module avmm_ccip_host #(
 				tx_mdata <= tx_mdata;
 				rx_mdata <= rx_mdata;
 			end
-				
-			//debug
-			if(avst_rd_rsp_valid) begin
-				$display("DCP_DEBUG: rsp_mdata=%x rsp_data=%x\n", c0rx.hdr.mdata, avst_rd_rsp_data);
-			end
 		end
 	end
 	
@@ -258,4 +214,19 @@ module avmm_ccip_host #(
 		c1tx.data <= c1tx_next.data;
 	end
 
+	//convert to avalon mm
+	
+    //read/write request
+    assign avmm_request.addr = avmm_address;
+	assign avmm_request.write_data = avmm_writedata;
+    assign avmm_request.burst = avmm_burstcount;
+	assign avmm_request.control[0] = avmm_read;
+    
+    assign avmm_waitrequest = ~avst_avcmd_ready;
+	assign avst_avcmd_valid = reset ? 1'b0 : (avmm_read | avmm_write);
+		
+	//read resp
+    assign avmm_readdatavalid = reset ? 1'b0 : avst_rd_rsp_valid;
+	assign avmm_readdata = avst_rd_rsp_data;
+	assign avst_rd_rsp_ready = ~reset;
 endmodule

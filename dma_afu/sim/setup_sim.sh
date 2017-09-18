@@ -49,7 +49,6 @@ find . -name *.qsys -exec $QUARTUS_HOME/sopc_builder/bin/qsys-generate {} --simu
 $QUARTUS_HOME/sopc_builder/bin/qsys-generate --synthesis=VERILOG $sim_afu_path/qsys/dma_test_system.qsys
 copy_qsys_ip_files dma_test_system
 copy_qsys_ip_files msgdma_bbb
-copy_qsys_ip_files ccip_avmm_bridge
 
 find $sim_afu_path/qsys_sim_files -type f > $sim_afu_path/qsys_sim_filelist.txt
 touch $sim_afu_path/dummy_rtl_dir/dummy_rtl_file.sv

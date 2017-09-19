@@ -116,7 +116,15 @@ module ccip_std_afu(
    
     assign afu_clk = pClkDiv2 ;
    
-    ccip_async_shim ccip_async_shim (
+    ccip_async_shim #(
+        //.C0TX_DEPTH_RADIX(8),
+    	//.C1TX_DEPTH_RADIX(8),
+    	//.C2TX_DEPTH_RADIX(8),
+    	//For DCP only 256 is needed.  going to 512 because m20k count wont be reduced
+    	.C0RX_DEPTH_RADIX(9),	//default was 10
+    	.C1RX_DEPTH_RADIX(9)	//default was 10
+    )
+    ccip_async_shim (
 				    .bb_softreset    (pck_cp2af_softReset),
 				    .bb_clk          (pClk),
 				    .bb_tx           (pck_af2cp_sTx),

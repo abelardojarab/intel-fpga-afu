@@ -164,7 +164,7 @@ TEST_MEM_PERF::runTest(const t_test_config* config, t_test_stats* stats)
     stats->actual_cycles = *dsm;
     // Run length in seconds
     stats->run_sec = double(stats->actual_cycles) /
-                     (double(readCommonCSR(CSR_COMMON_FREQ)) * 1000.0 * 1000.0);
+                     (double(getAFUMHz()) * 1000.0 * 1000.0);
 
     totalCycles += config->cycles;
 

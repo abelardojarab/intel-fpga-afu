@@ -199,7 +199,10 @@ int AAL_SVC_WRAPPER::initialize(const char *afuID)
     m_pALIResetService->afuReset();
 
     // AFU Reset clear VTP, too, so reinitialize hardware
-    pVTPService->vtpReset();
+    if (pVTPService != NULL)
+    {
+        pVTPService->vtpReset();
+    }
 
     return m_Result;
 }
@@ -281,17 +284,8 @@ void AAL_SVC_WRAPPER::serviceAllocated(IBase *pServiceBase,
             return;
         }
 
-        // Documentation says VTP Service publishes
-        //    IVTP as subclass interface. Used for allocating shared
-        //    buffers that support virtual addresses from AFU
-        pVTPService = dynamic_ptr<IMPFVTP>(iidMPFVTPService, pServiceBase);
-        ASSERT(NULL != pVTPService);
-        if ( NULL == pVTPService ) {
-            m_bIsOK = false;
-            return;
-        }
-
         // Services will be NULL if not found
+        pVTPService = dynamic_ptr<IMPFVTP>(iidMPFVTPService, pServiceBase);
         pVCMAPService = dynamic_ptr<IMPFVCMAP>(iidMPFVCMAPService, pServiceBase);
         pLATQOSService = dynamic_ptr<IMPFLATQOS>(iidMPFLATQOSService, pServiceBase);
         pWROService = dynamic_ptr<IMPFWRO>(iidMPFWROService, pServiceBase);

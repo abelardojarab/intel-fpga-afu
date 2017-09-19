@@ -74,7 +74,7 @@ int TEST_MEM_PERF::test()
     memset(&config, 0, sizeof(config));
 
     // What's the AFU frequency (MHz)?
-    uint64_t afu_mhz = readCommonCSR(CSR_COMMON_FREQ);
+    uint64_t afu_mhz = getAFUMHz();
 
     uint64_t c0_qos_enable = uint64_t(vm["c0-qos-enable"].as<bool>());
     uint64_t c1_qos_enable = uint64_t(vm["c1-qos-enable"].as<bool>());

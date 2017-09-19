@@ -28,7 +28,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include <fpga/mpf/mpf.h>
+#include <opae/mpf/mpf.h>
 #include "mpf_internal.h"
 
 

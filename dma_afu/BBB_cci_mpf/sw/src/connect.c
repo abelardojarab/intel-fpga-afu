@@ -33,7 +33,7 @@
 #include <stdbool.h>
 #include <inttypes.h>
 
-#include <fpga/mpf/mpf.h>
+#include <opae/mpf/mpf.h>
 #include "mpf_internal.h"
 
 
@@ -232,8 +232,8 @@ static void _mpf_find_features(
 
                     if (_mpf_handle->dbg_mode)
                     {
-                        FPGA_MSG("Found MPF shim UUID [0x%016" PRIx64 ", 0x%016" PRIx64 "] (%s) at offset %" PRId64,
-                                 feature_uuid[0], feature_uuid[1], mpf_shim_info[i].name, offset);
+                        MPF_FPGA_MSG("Found MPF shim UUID [0x%016" PRIx64 ", 0x%016" PRIx64 "] (%s) at offset %" PRId64,
+                                     feature_uuid[0], feature_uuid[1], mpf_shim_info[i].name, offset);
                     }
                 }
             }

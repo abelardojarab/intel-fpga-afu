@@ -91,18 +91,46 @@ class AAL_SVC_WRAPPER: public CAASBase,
     }
 
     //
-    // Expose malloc/free interfaces to avoid exposing VTP directly.
+    // Expose buffer allocate and free interfaces to avoid exposing VTP directly.
     //
-    void* malloc(size_t nBytes)
+    void* allocBuffer(size_t nBytes, uint64_t* ioAddress = NULL)
     {
         btVirtAddr va;
-        if (pVTPService->bufferAllocate(nBytes, &va) != ali_errnumOK) return NULL;
+        if (pVTPService != NULL)
+        {
+            // VTP is available.  Use it to get a virtually addressable page.
+            if (pVTPService->bufferAllocate(nBytes, &va) != ali_errnumOK) return NULL;
+
+            if (ioAddress != NULL)
+            {
+                *ioAddress = pVTPService->bufferGetIOVA(va);
+            }
+        }
+        else
+        {
+            // VTP is not available.  Map a page without a TLB entry.
+            if (m_pALIBufferService->bufferAllocate(nBytes, &va) != ali_errnumOK)
+            {
+                return NULL;
+            }
+
+            if (ioAddress != NULL)
+            {
+                *ioAddress = m_pALIBufferService->bufferGetIOVA(va);
+            }
+        }
+
         return va;
     }
 
-    void free(void* va)
+    void freeBuffer(void* va)
     {
-        pVTPService->bufferFree(btVirtAddr(va));
+        // For now this class only handles VTP cleanly.  Unmanaged pages
+        // aren't released.
+        if (pVTPService != NULL)
+        {
+            pVTPService->bufferFree(btVirtAddr(va));
+        }
     }
 
     // Unsupported in AAL driver
@@ -141,7 +169,7 @@ class AAL_SVC_WRAPPER: public CAASBase,
 
     void runtimeEvent(const IEvent &rEvent);
 
-    bool isOK()  {return m_bIsOK;}
+    bool isOk()  {return m_bIsOK;}
     // <end IRuntimeClient interface>
 
   protected:

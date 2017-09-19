@@ -284,19 +284,19 @@ module test_afu
         if (csrs.cpu_wr_csrs[1].en)
         begin
             dsm <= csrs.cpu_wr_csrs[1].data;
-            $display("DSM: 0x%x", csrs.cpu_wr_csrs[1].data);
+            if (! reset) $display("DSM: 0x%x", csrs.cpu_wr_csrs[1].data);
         end
 
         if (csrs.cpu_wr_csrs[2].en)
         begin
             mem <= csrs.cpu_wr_csrs[2].data;
-            $display("MEM: 0x%x", csrs.cpu_wr_csrs[2].data);
+            if (! reset) $display("MEM: 0x%x", csrs.cpu_wr_csrs[2].data);
         end
 
         if (csrs.cpu_wr_csrs[3].en)
         begin
             memMask <= csrs.cpu_wr_csrs[3].data;
-            $display("MEM MASK: 0x%x", csrs.cpu_wr_csrs[3].data);
+            if (! reset) $display("MEM MASK: 0x%x", csrs.cpu_wr_csrs[3].data);
         end
     end
 
@@ -520,6 +520,11 @@ module test_afu
         rd_addr_is_checked <= addrIsChecked(rd_addr_rand_idx);
         rd_addr_chk_idx <= checkedAddr(rd_addr_rand_idx);
         rd_addr_chk_idx_q <= rd_addr_chk_idx;
+
+        if (reset)
+        begin
+            rd_addr_chk_idx <= t_checked_addr_idx'(0);
+        end
     end
 
 
@@ -692,7 +697,8 @@ module test_afu
 
         if (reset)
         begin
-            wr_beats <= eCL_LEN_1;
+            wr_beats <= eCL_LEN_2;
+            wr_addr_chk_idx <= t_checked_addr_idx'(0);
         end
     end
 

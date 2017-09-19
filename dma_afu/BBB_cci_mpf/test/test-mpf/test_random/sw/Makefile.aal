@@ -1,14 +1,28 @@
 include ../../base/sw/base_include_aal.mk
 
-all: test_random_aal
+# Primary test name
+TEST = test_random
 
-test_random_aal: test_random.o $(BASE_FILE_OBJ)
-	$(CXX) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+# Build directory
+OBJDIR = obj/aal
 
-.cpp.o: cci_test.h $(BASE_FILE_INC)
-	$(CXX) $(CPPFLAGS) $(CFLAGS) -DUSE_LEGACY_AAL -c -o $@ $<
+# Files and folders
+SRCS = $(TEST).cpp $(BASE_FILE_SRC)
+OBJS = $(addprefix $(OBJDIR)/,$(patsubst %.cpp,%.o,$(SRCS)))
+
+# Targets
+all: $(TEST)_aal
+
+$(TEST)_aal: $(OBJS)
+	$(CXX) -o $@ $^ $(LDFLAGS) $(FPGA_LIBS)
+
+$(OBJDIR)/%.o: %.cpp | objdir
+	$(CXX) $(CPPFLAGS) $(CFLAGS) -DUSE_LEGACY_AAL -c $< -o $@
 
 clean:
-	$(RM) test_random_aal $(BASE_FILE_OBJ) *.o
+	rm -rf $(TEST)_aal $(OBJDIR)
 
-.PHONY:all clean
+objdir:
+	@mkdir -p $(OBJDIR)
+
+.PHONY: all clean

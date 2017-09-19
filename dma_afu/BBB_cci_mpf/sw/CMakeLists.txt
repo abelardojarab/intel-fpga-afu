@@ -27,9 +27,20 @@
 project("mpf")
 
 cmake_minimum_required(VERSION 2.8)
-set(CMAKE_VERSION_MAJOR 0)
-set(CMAKE_VERSION_MINOR 0)
-set(CMAKE_VERSION_PATCH 0)
+
+############################################################################
+## Add 'versioning' library ################################################
+############################################################################
+
+set(MPF_API_VER_MAJOR 0 CACHE STRING "MPF API major version")
+set(MPF_API_VER_MINOR 9 CACHE STRING "MPF API minor version")
+set(MPF_API_VER_REV   0 CACHE STRING "MPF API revision version")
+set(MPF_API_VERSION   ${MPF_API_VER_MAJOR}.${MPF_API_VER_MINOR}.${MPF_API_VER_REV})
+
+set(CMAKE_PROJECT "MPF")
+set(CMAKE_VERSION_MAJOR "${MPF_API_VER_MAJOR}")
+set(CMAKE_VERSION_MINOR "${MPF_API_VER_MINOR}")
+set(CMAKE_VERSION_PATCH "${MPF_API_VER_REV}")
 
 find_package(Threads REQUIRED)
 include(CheckIncludeFile)
@@ -41,9 +52,9 @@ if (NOT CMAKE_VERSION VERSION_LESS "3.1")
     else ()
         # Ideally here we would set CMAKE_C_STANDARD 99 but that isn't
         # working for our standard setup.
-	if (NOT WIN32)
+        if (NOT WIN32)
             set (CMAKE_C_FLAGS "--std=gnu99 ${CMAKE_C_FLAGS}")
-	endif()
+        endif()
     endif ()
 else ()
     # Old version of CMake doesn't know how to set C standard
@@ -64,39 +75,45 @@ endif(DOXYGEN_FOUND)
 ## Allow specification of an alternate path to the FPGA library include files
 ## and binary.
 ##
-set (FPGALIB_LIBS_PATH "")
-set (FPGALIB_INC_PATH "")
+set (OPAELIB_LIBS_PATH "")
+set (OPAELIB_INC_PATH "")
 
 if (WIN32)
-    if("X$ENV{FPGALIB_ROOT}X" STREQUAL "XX")
-        message(FATAL_ERROR "Must specify FPGALIB_ROOT")
+    if("X$ENV{OPAELIB_ROOT}X" STREQUAL "XX")
+        message(FATAL_ERROR "Must specify OPAELIB_ROOT")
     else()
-        set(FPGALIB_ROOT $ENV{FPGALIB_ROOT})
+        set(OPAELIB_ROOT $ENV{OPAELIB_ROOT})
     endif()
 
-    get_filename_component(dir ${FPGALIB_ROOT} ABSOLUTE DIRECTORY)
+    get_filename_component(dir ${OPAELIB_ROOT} ABSOLUTE DIRECTORY)
 
-    set(FPGALIB_LIBS_PATH ${dir}/binary/app+lib/x64)
-    set(FPGALIB_INC_PATH ${dir}/headers)
+    set(OPAELIB_LIBS_PATH ${dir}/binary/app+lib/x64)
+    set(OPAELIB_INC_PATH ${dir}/headers)
 
-    if(NOT IS_DIRECTORY ${FPGALIB_LIBS_PATH} OR NOT IS_DIRECTORY ${FPGALIB_INC_PATH}/fpga)
-        message(FATAL_ERROR "Invalid FPGALIB_ROOT")
+    if(NOT IS_DIRECTORY ${OPAELIB_LIBS_PATH} OR NOT IS_DIRECTORY ${OPAELIB_INC_PATH}/opae)
+        message(FATAL_ERROR "Invalid OPAELIB_ROOT")
     endif()
 
-    add_library(FpgaLib SHARED IMPORTED GLOBAL)
+    add_library(OpaeLib SHARED IMPORTED GLOBAL)
 
-    set_property(TARGET FpgaLib PROPERTY IMPORTED_LOCATION_DEBUG ${FPGALIB_LIBS_PATH}/Debug/FpgaLib.dll)
-    set_property(TARGET FpgaLib PROPERTY IMPORTED_IMPLIB_DEBUG ${FPGALIB_LIBS_PATH}/Debug/FpgaLib.lib)
-    set_property(TARGET FpgaLib PROPERTY IMPORTED_LOCATION_RELEASE ${FPGALIB_LIBS_PATH}/Release/FpgaLib.dll)
-    set_property(TARGET FpgaLib PROPERTY IMPORTED_IMPLIB_RELEASE ${FPGALIB_LIBS_PATH}/Release/FpgaLib.lib)
+    set_property(TARGET OpaeLib PROPERTY IMPORTED_LOCATION_DEBUG ${OPAELIB_LIBS_PATH}/Debug/OpaeLib.dll)
+    set_property(TARGET OpaeLib PROPERTY IMPORTED_IMPLIB_DEBUG ${OPAELIB_LIBS_PATH}/Debug/OpaeLib.lib)
+    set_property(TARGET OpaeLib PROPERTY IMPORTED_LOCATION_RELEASE ${OPAELIB_LIBS_PATH}/Release/OpaeLib.dll)
+    set_property(TARGET OpaeLib PROPERTY IMPORTED_IMPLIB_RELEASE ${OPAELIB_LIBS_PATH}/Release/OpaeLib.lib)
 
-    include_directories(${FPGALIB_INC_PATH})
+    include_directories(${OPAELIB_INC_PATH})
 endif(WIN32)
 
 
-include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/include)
 
-find_file(FPGALIB_HDRS_PRESENT fpga/fpga.h PATHS ${FPGALIB_INC_PATH})
+## Add install directory to include path in case OPAE has been installed there
+if (IS_DIRECTORY ${CMAKE_INSTALL_PREFIX}/include)
+    include_directories(AFTER ${CMAKE_INSTALL_PREFIX}/include)
+    list(APPEND CMAKE_REQUIRED_INCLUDES ${CMAKE_INSTALL_PREFIX}/include)
+endif()
+
+find_file(OPAELIB_HDRS_PRESENT opae/fpga.h PATHS "${OPAELIB_INC_PATH}" NO_DEFAULT_PATH)
 
 if (WIN32)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -wd4710 -wd4711 -wd4820 -O2")
@@ -120,12 +137,12 @@ endif(CMAKE_BUILD_TYPE STREQUAL "Release")
 ##
 ## Build FPGA library if libfpga header files are present
 ##
-check_include_file("fpga/fpga.h" FPGA_PRESENT)
-if (FPGA_PRESENT OR FPGALIB_HDRS_PRESENT)
+check_include_file("opae/fpga.h" OPAE_PRESENT)
+if (OPAE_PRESENT OR OPAELIB_HDRS_PRESENT)
     include(src/mpf.cmake)
-else(FPGA_PRESENT OR FPGALIB_HDRS_PRESENT)
-    message("Not building ${CMAKE_SHARED_LIBRARY_PREFIX}MPF${CMAKE_SHARED_LIBRARY_SUFFIX} for ${CMAKE_SHARED_LIBRARY_PREFIX}fpga${CMAKE_SHARED_LIBRARY_SUFFIX} -- fpga/fpga.h not found")
-endif(FPGA_PRESENT OR FPGALIB_HDRS_PRESENT)
+else(OPAE_PRESENT OR OPAELIB_HDRS_PRESENT)
+    message("Not building ${CMAKE_SHARED_LIBRARY_PREFIX}MPF${CMAKE_SHARED_LIBRARY_SUFFIX} for ${CMAKE_SHARED_LIBRARY_PREFIX}fpga${CMAKE_SHARED_LIBRARY_SUFFIX} -- opae/fpga.h not found")
+endif(OPAE_PRESENT OR OPAELIB_HDRS_PRESENT)
 
 
 ##

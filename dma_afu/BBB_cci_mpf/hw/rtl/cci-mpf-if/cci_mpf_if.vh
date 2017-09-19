@@ -105,6 +105,21 @@ interface cci_mpf_if
        input  c2Tx
        );
 
+    modport snoop
+      (
+       input  reset,
+
+       input  c0TxAlmFull,
+       input  c1TxAlmFull,
+
+       input  c0Rx,
+       input  c1Rx,
+
+       input  c0Tx,
+       input  c1Tx,
+       input  c2Tx
+       );
+
 
     // ====================================================================
     //

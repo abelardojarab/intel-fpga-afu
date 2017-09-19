@@ -35,7 +35,7 @@
 
 #include <string.h>
 
-#include <fpga/mpf/mpf.h>
+#include <opae/mpf/mpf.h>
 #include "mpf_internal.h"
 
 

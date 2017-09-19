@@ -28,11 +28,11 @@ file(
     GLOB_RECURSE
     HDR
     FOLLOW_SYMLINKS
-    ${CMAKE_SOURCE_DIR}/include/fpga/mpf/*.h
+    ${PROJECT_SOURCE_DIR}/include/opae/mpf/*.h
     )
 
 aux_source_directory(
-    ${CMAKE_SOURCE_DIR}/src
+    ${PROJECT_SOURCE_DIR}/src
     SRC
     )
 
@@ -56,7 +56,7 @@ foreach (_file ${HDR})
 endforeach()
 
 install(
-     FILES ${_resolvedHDR} DESTINATION include/fpga/mpf
+     FILES ${_resolvedHDR} DESTINATION include/opae/mpf
      )
 
 ##
@@ -68,6 +68,6 @@ if(CMAKE_THREAD_LIBS_INIT)
     target_link_libraries(MPF "${CMAKE_THREAD_LIBS_INIT}")
 endif()
 
-if(FPGALIB_LIBS_PATH)
-    target_link_libraries(MPF FpgaLib)
+if(OPAELIB_LIBS_PATH)
+    target_link_libraries(MPF OpaeLib)
 endif()

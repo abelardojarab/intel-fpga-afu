@@ -1,25 +1,38 @@
 include ../../base/sw/base_include_aal.mk
 
+# Build directory
+OBJDIR = obj/aal
+
+# Files and folders
+SRCS = test_mem_perf_common.cpp $(BASE_FILE_SRC)
+OBJS = $(addprefix $(OBJDIR)/,$(patsubst %.cpp,%.o,$(SRCS)))
+
 CFLAGS += -DVCMAP_ENABLE_DEFAULT=false
 
-all: test_mem_perf_aal test_mem_latency_aal compute_latency_qos_params_aal compute_vc_map_params_aal
+all: test_mem_perf_aal test_mem_latency_aal \
+	compute_latency_qos_params_aal \
+	compute_vc_map_params_aal
 
-test_mem_perf_aal: test_mem_perf.o test_mem_perf_common.o $(BASE_FILE_OBJ)
-	$(CXX) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+test_mem_perf_aal: $(OBJDIR)/test_mem_perf.o $(OBJS)
+	$(CXX) -o $@ $^ $(LDFLAGS) $(FPGA_LIBS)
 
-test_mem_latency_aal: test_mem_latency.o test_mem_perf_common.o $(BASE_FILE_OBJ)
-	$(CXX) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+test_mem_latency_aal: $(OBJDIR)/test_mem_latency.o $(OBJS)
+	$(CXX) -o $@ $^ $(LDFLAGS) $(FPGA_LIBS)
 
-compute_latency_qos_params_aal: compute_latency_qos_params.o test_mem_perf_common.o $(BASE_FILE_OBJ)
-	$(CXX) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+compute_latency_qos_params_aal: $(OBJDIR)/compute_latency_qos_params.o $(OBJS)
+	$(CXX) -o $@ $^ $(LDFLAGS) $(FPGA_LIBS)
 
-compute_vc_map_params_aal: compute_vc_map_params.o test_mem_perf_common.o $(BASE_FILE_OBJ)
-	$(CXX) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+compute_vc_map_params_aal: $(OBJDIR)/compute_vc_map_params.o $(OBJS)
+	$(CXX) -o $@ $^ $(LDFLAGS) $(FPGA_LIBS)
 
-.cpp.o: cci_test.h $(BASE_FILE_INC)
-	$(CXX) $(CPPFLAGS) $(CFLAGS) -DUSE_LEGACY_AAL -c -o $@ $<
+$(OBJDIR)/%.o: %.cpp | objdir
+	$(CXX) $(CPPFLAGS) $(CFLAGS) $(OPTS) -DUSE_LEGACY_AAL -c $< -o $@
 
 clean:
-	$(RM) test_mem_perf_aal test_mem_latency_aal compute_latency_qos_params_aal compute_vc_map_params_aal $(BASE_FILE_OBJ) *.o
+	rm -rf *_aal $(OBJDIR)
 
-.PHONY:all clean
+objdir:
+	@mkdir -p $(OBJDIR)
+
+.PHONY: all clean
+

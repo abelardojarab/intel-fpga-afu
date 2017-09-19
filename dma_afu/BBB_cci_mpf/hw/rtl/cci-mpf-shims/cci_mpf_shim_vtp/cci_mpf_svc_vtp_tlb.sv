@@ -172,6 +172,13 @@ module cci_mpf_svc_vtp_tlb
     // Reset (invalidate) the TLB when requested by SW.
     // inval_translation_cache is held for only one cycle.
     logic n_reset_tlb[0:1];
+
+    initial
+    begin
+        n_reset_tlb[0] = 1'b0;
+        n_reset_tlb[0] = 1'b0;
+    end
+
     always @(posedge clk)
     begin
         n_reset_tlb[1] <= ~csrs.vtp_in_mode.inval_translation_cache;

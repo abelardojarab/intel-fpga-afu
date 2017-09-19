@@ -125,7 +125,7 @@ int TEST_RANDOM::test()
     writeTestCSR(3, (n_bytes / CL(1)) - 1);
 
     // What's the AFU frequency (MHz)?
-    uint64_t afu_mhz = readCommonCSR(CSR_COMMON_FREQ);
+    uint64_t afu_mhz = getAFUMHz();
 
     uint64_t cycles = uint64_t(vm["tc"].as<int>());
     if (cycles == 0)

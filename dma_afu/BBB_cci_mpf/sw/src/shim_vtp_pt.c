@@ -34,7 +34,7 @@
 #include <assert.h>
 #include <inttypes.h>
 
-#include <fpga/mpf/mpf.h>
+#include <opae/mpf/mpf.h>
 #include "mpf_internal.h"
 
 
@@ -241,8 +241,8 @@ static fpga_result releaseTrackedNodes(
         {
             if (pt->_mpf_handle->dbg_mode)
             {
-                FPGA_MSG("release I/O mapped TLB node wsid 0x%" PRIx64,
-                         trk->wsid[i]);
+                MPF_FPGA_MSG("release I/O mapped TLB node wsid 0x%" PRIx64,
+                             trk->wsid[i]);
             }
 
             assert(FPGA_OK == fpgaReleaseBuffer(pt->_mpf_handle->handle,
@@ -345,12 +345,12 @@ static fpga_result ptAllocSharedPage(
     if (r != FPGA_OK) return r;
 
     // Get the FPGA-side physical address
-    r = fpgaGetIOVA(pt->_mpf_handle->handle, *wsid_p, pa_p);
+    r = fpgaGetIOAddress(pt->_mpf_handle->handle, *wsid_p, pa_p);
 
     if (pt->_mpf_handle->dbg_mode)
     {
-        FPGA_MSG("allocate I/O mapped TLB node VA %p, PA 0x%" PRIx64 ", wsid 0x%" PRIx64,
-                 *va_p, *pa_p, *wsid_p);
+        MPF_FPGA_MSG("allocate I/O mapped TLB node VA %p, PA 0x%" PRIx64 ", wsid 0x%" PRIx64,
+                     *va_p, *pa_p, *wsid_p);
     }
 
     return r;
@@ -579,7 +579,7 @@ static fpga_result freePAtoVA(
     // Done with this node in the table
     if (pt->_mpf_handle->dbg_mode)
     {
-        FPGA_MSG("release PA->VA node %p", table);
+        MPF_FPGA_MSG("release PA->VA node %p", table);
     }
     free(table);
 
@@ -612,7 +612,7 @@ static void freeAllMappedPages(
 
                 if (pt->_mpf_handle->dbg_mode)
                 {
-                    FPGA_MSG("release page wsid 0x%" PRIx64, wsid);
+                    MPF_FPGA_MSG("release page wsid 0x%" PRIx64, wsid);
                 }
 
                 fpgaReleaseBuffer(pt->_mpf_handle->handle, wsid);

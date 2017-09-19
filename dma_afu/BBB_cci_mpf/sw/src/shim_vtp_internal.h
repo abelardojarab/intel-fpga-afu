@@ -82,6 +82,9 @@ typedef struct
     // Does libfpga support FPGA_PREALLOCATED?  The old AAL compatibility
     // version does not.
     bool use_fpga_buf_preallocated;
+
+    // Is VTP available in the FPGA?
+    bool is_available;
 }
 mpf_vtp_state;
 

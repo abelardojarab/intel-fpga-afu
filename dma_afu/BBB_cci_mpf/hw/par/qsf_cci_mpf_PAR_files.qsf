@@ -1,28 +1,16 @@
 ##
-## CCI_MPF_SRC must be defined before this file is included, pointing to the
-## MPF source tree, e.g.:
-##
-##   set CCI_MPF_SRC "../src/cci-mpf"
-##
-##     *** NOTE: The "set CCI_MPF_SRC ..." syntax does not work in
-##     ***       the primary QSF file since it is Tcl. You must, instead,
-##     ***       build a small file (e.g. "mpf_synth.qsf") and source it
-##     ***       from the qsf synthesis file. mpf_synth.qsf will likely
-##     ***       be small, e.g.:
-##
-##          # Import MPF library
-##          set CCI_MPF_SRC "../src/cci-mpf"
-##          set_global_assignment -name VERILOG_MACRO "MPF_PLATFORM_BDX=1"
-##          source $CCI_MPF_SRC/hw/par/qsf_cci_mpf_PAR_files.qsf
-##
-
-##
-## MPF supports multiple CCI platforms.  One of the platform macros
-## in cci_mpf_platform.vh must be defined, e.g.:
+## Pick a platform and replace the sequence below with the proper platform
+## name, e.g. MPF_PLATFORM_BDX.  MPF is then imported into Quartus with:
 ##
 ##   set_global_assignment -name VERILOG_MACRO "MPF_PLATFORM_BDX=1"
+##   source <path to BBBs>/BBB_cci_mpf/hw/par/qsf_cci_mpf_PAR_files.qsf
 ##
 
+#we will set CCI_MPF_SRC in the calling script
+### Find the MPF source tree relative to this script
+#set this_script [dict get [ info frame 0 ] file]
+## Pop 3 levels (including the script name) off the path to find the root
+#set CCI_MPF_SRC [file join {*}[lrange [file split $this_script] 0 end-3]]
 
 ## MPF directories
 set_global_assignment -name SEARCH_PATH $CCI_MPF_SRC/hw/rtl
@@ -34,7 +22,7 @@ set_global_assignment -name SEARCH_PATH $CCI_MPF_SRC/hw/rtl/cci-mpf-shims/cci_mp
 set_global_assignment -name SEARCH_PATH $CCI_MPF_SRC/hw/rtl/cci-mpf-shims/cci_mpf_shim_pwrite
 set_global_assignment -name SEARCH_PATH $CCI_MPF_SRC/hw/rtl/cci-mpf-shims/cci_mpf_shim_vtp
 set_global_assignment -name SEARCH_PATH $CCI_MPF_SRC/hw/rtl/cci-mpf-shims/cci_mpf_shim_wro
-set_global_assignment -name SEARCH_PATH $CCI_MPF_SRC/sw/include/fpga/mpf
+set_global_assignment -name SEARCH_PATH $CCI_MPF_SRC/sw/include/opae/mpf
 
 ## Type and interface Packages and header files
 set_global_assignment -name SYSTEMVERILOG_FILE $CCI_MPF_SRC/hw/rtl/cci-if/ccis_if_pkg.sv
@@ -49,6 +37,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE $CCI_MPF_SRC/hw/rtl/cci-mpf-shims
 
 ## Primary MPF module that instantiates the desired shims
 set_global_assignment -name SYSTEMVERILOG_FILE $CCI_MPF_SRC/hw/rtl/cci_mpf.sv
+set_global_assignment -name SYSTEMVERILOG_FILE $CCI_MPF_SRC/hw/rtl/cci_mpf_null.sv
 set_global_assignment -name SYSTEMVERILOG_FILE $CCI_MPF_SRC/hw/rtl/cci_mpf_pipe_std.sv
 
 ## Map CCI wires to MPF's primary interface

@@ -33,7 +33,7 @@
 #ifndef __FPGA_MPF_SHIM_VTP_PT_H__
 #define __FPGA_MPF_SHIM_VTP_PT_H__
 
-#include <fpga/mpf/shim_vtp.h>
+#include <opae/mpf/shim_vtp.h>
 
 /**
  * Flags that may be set in page table entries.  These are ORed into the low

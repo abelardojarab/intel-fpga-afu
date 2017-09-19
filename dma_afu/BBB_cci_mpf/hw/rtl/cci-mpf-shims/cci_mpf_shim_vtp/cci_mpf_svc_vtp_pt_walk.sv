@@ -488,8 +488,11 @@ module cci_mpf_svc_vtp_pt_walk
                 pt_walk.notPresent <= 1'b1;
                 state <= STATE_PT_WALK_HALT;
 
-                $fatal("VTP PT WALK: No translation found for VA 0x%x",
-                       { translate_va, CCI_PT_4KB_PAGE_OFFSET_BITS'(0), 6'b0 });
+                if (! reset)
+                begin
+                    $fatal("VTP PT WALK: No translation found for VA 0x%x",
+                           { translate_va, CCI_PT_4KB_PAGE_OFFSET_BITS'(0), 6'b0 });
+                end
             end
 
           STATE_PT_WALK_HALT:

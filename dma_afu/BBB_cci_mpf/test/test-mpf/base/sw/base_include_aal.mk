@@ -3,8 +3,10 @@
 ##
 
 BASE_FILE_PATH = ../../base/sw
+BASE_FILE_SRC = cci_test_main.cpp aal_svc_wrapper.cpp
 BASE_FILE_INC = $(BASE_FILE_PATH)/aal_svc_wrapper.h
-BASE_FILE_OBJ = $(BASE_FILE_PATH)/cci_test_main.o $(BASE_FILE_PATH)/aal_svc_wrapper.o
+
+VPATH = .:$(BASE_FILE_PATH)
 
 CPPFLAGS ?=
 CXX	 ?= g++
@@ -39,4 +41,7 @@ LDFLAGS	 += -L$(DESTDIR)$(prefix)/lib -Wl,-rpath-link -Wl,$(prefix)/lib -Wl,-rpa
 endif
 
 CPPFLAGS += -I../../base/sw
-LDFLAGS += -lboost_program_options -lOSAL -lAAS -laalrt
+LDFLAGS += -lboost_program_options
+
+FPGA_LIBS = -lOSAL -lAAS -laalrt
+ASE_LIBS = $(FPGA_LIBS)

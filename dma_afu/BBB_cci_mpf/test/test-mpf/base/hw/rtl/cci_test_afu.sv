@@ -62,14 +62,14 @@ module ccip_std_afu
     generate
         if (AFU_CLOCK_FREQ == 400)
             assign afu_clk = pClk;
-        else if (AFU_CLOCK_FREQ == 300)
-            assign afu_clk = uClk_usr;
         else if (AFU_CLOCK_FREQ == 200)
             assign afu_clk = pClkDiv2;
-        else if (AFU_CLOCK_FREQ == 150)
-            assign afu_clk = uClk_usrDiv2;
         else if (AFU_CLOCK_FREQ == 100)
             assign afu_clk = pClkDiv4;
+        else if (AFU_CLOCK_FREQ == 2)
+            assign afu_clk = uClk_usr;
+        else if (AFU_CLOCK_FREQ == 1)
+            assign afu_clk = uClk_usrDiv2;
         else
         begin : ferr
             always_ff @(posedge pClk)
@@ -96,20 +96,25 @@ module ccip_std_afu
         else
         begin : cc
             ccip_async_shim
+              #(
+                .DEBUG_ENABLE(1)
+                )
               afu_clock_crossing
-                (
-                 // Blue bitstream interface (pClk)
-                 .bb_softreset(pck_cp2af_softReset),
-                 .bb_clk(pClk),
-                 .bb_rx(pck_cp2af_sRx),
-                 .bb_tx(pck_af2cp_sTx),
+               (
+                // Blue bitstream interface (pClk)
+                .bb_softreset(pck_cp2af_softReset),
+                .bb_clk(pClk),
+                .bb_tx(pck_af2cp_sTx),
+                .bb_rx(pck_cp2af_sRx),
 
-                 // AFU
-                 .afu_softreset(afu_reset),
-                 .afu_clk(afu_clk),
-                 .afu_rx(afck_cp2af_sRx),
-                 .afu_tx(afck_af2cp_sTx)
-                 );
+                // AFU
+                .afu_softreset(afu_reset),
+                .afu_clk(afu_clk),
+                .afu_tx(afck_af2cp_sTx),
+                .afu_rx(afck_cp2af_sRx),
+
+                .async_shim_error()
+                );
         end
     endgenerate
 
@@ -152,7 +157,11 @@ module ccip_std_afu
     // also tell the MPF module the MMIO address at which MPF should start
     // its feature chain.
     //
+`ifndef MPF_DISABLED
     localparam MPF_DFH_MMIO_ADDR = 'h1000;
+`else
+    localparam MPF_DFH_MMIO_ADDR = 0;
+`endif
 
     //
     // MPF represents CCI as a SystemVerilog interface, derived from the
@@ -222,6 +231,8 @@ module ccip_std_afu
 
     logic c0NotEmpty;
     logic c1NotEmpty;
+
+`ifndef MPF_DISABLED
 
     cci_mpf
       #(
@@ -321,6 +332,21 @@ module ccip_std_afu
         .c1NotEmpty
         );
 
+`else // !`ifndef MPF_DISABLED
+
+    // Not using MPF.  Inject a dummy instance that passes the signals
+    // through and generates the not empty signals.
+    cci_mpf_null
+      mpf_null
+       (
+        .clk(afu_clk),
+        .fiu(afu_csrs),
+        .afu,
+        .c0NotEmpty,
+        .c1NotEmpty
+        );
+
+`endif // !`ifndef MPF_DISABLED
 
     // ====================================================================
     //

@@ -1,20 +1,31 @@
 include ../../base/sw/base_include.mk
 
-FPGA_LIBS = -lfpga -ljson-c
-ASE_LIBS = -lfpga-ASE
+# Primary test name
+TEST = test_random
 
-all: test_random test_random_ase
+# Build directory
+OBJDIR = obj
 
-test_random: test_random.o $(BASE_FILE_OBJ)
-	$(CXX) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(FPGA_LIBS)
+# Files and folders
+SRCS = $(TEST).cpp $(BASE_FILE_SRC)
+OBJS = $(addprefix $(OBJDIR)/,$(patsubst %.cpp,%.o,$(SRCS)))
 
-test_random_ase: test_random.o $(BASE_FILE_OBJ)
-	$(CXX) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(ASE_LIBS)
+# Targets
+all: $(TEST) $(TEST)_ase
 
-.cpp.o: cci_test.h $(BASE_FILE_INC)
-	$(CXX) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+$(TEST): $(OBJS)
+	$(CXX) -o $@ $^ $(LDFLAGS) $(FPGA_LIBS)
+
+$(TEST)_ase: $(OBJS)
+	$(CXX) -o $@ $^ $(LDFLAGS) $(ASE_LIBS)
+
+$(OBJDIR)/%.o: %.cpp | objdir
+	$(CXX) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 clean:
-	$(RM) test_random $(BASE_FILE_OBJ) *.o
+	rm -rf $(TEST) $(TEST)_ase $(OBJDIR)
 
-.PHONY:all clean
+objdir:
+	@mkdir -p $(OBJDIR)
+
+.PHONY: all clean

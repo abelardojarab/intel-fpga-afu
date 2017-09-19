@@ -33,12 +33,13 @@
 
 using namespace std;
 
+#include <iostream>
 #include <string>
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 
 #ifndef USE_LEGACY_AAL
-#include "fpga_svc_wrapper.h"
+#include "opae_svc_wrapper.h"
 #else
 #include "aal_svc_wrapper.h"
 #endif
@@ -79,14 +80,14 @@ class CCI_TEST
 
     bool hwIsSimulated(void) const { return svc.hwIsSimulated(); }
 
-    void* malloc(size_t nBytes)
+    void* malloc(size_t nBytes, uint64_t* ioAddress = NULL)
     {
-        return svc.malloc(nBytes);
+        return svc.allocBuffer(nBytes, ioAddress);
     }
 
     void free(void* va)
     {
-        svc.free(va);
+        svc.freeBuffer(va);
     }
 
     void writeTestCSR(uint32_t idx, uint64_t v)
@@ -138,6 +139,33 @@ class CCI_TEST
           default:
             return "VA";
         }
+    }
+
+    uint64_t getAFUMHz()
+    {
+        // What's the AFU frequency (MHz)?
+        uint64_t afu_mhz = readCommonCSR(CSR_COMMON_FREQ);
+
+        // Some low frequencies are a clue that the run-time configurable
+        // frequency is being used.
+        if (afu_mhz == 2)
+        {
+            // What's the frequency of uClk_usr?  For now this is a
+            // run-time user-provided parameter.
+            afu_mhz = uint64_t(vm["uclk-freq"].as<int>());
+        }
+        else if (afu_mhz == 1)
+        {
+            afu_mhz = uint64_t(vm["uclk-freq"].as<int>()) >> 1;
+        }
+
+        if (afu_mhz == 0)
+        {
+            cerr << "--uclk-freq must be specified when connecting to uClk_usr" << endl;
+            exit(1);
+        }
+
+        return afu_mhz;
     }
 
   protected:

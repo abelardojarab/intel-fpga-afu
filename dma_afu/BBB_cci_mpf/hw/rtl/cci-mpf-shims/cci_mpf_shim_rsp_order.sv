@@ -224,18 +224,18 @@ module cci_mpf_shim_rsp_order
     t_cci_clNum rd_rob_cl_num;
     t_cci_clData rd_rob_out_data;
 
+    // Number of read buffer entries to allocate.  More than one must be
+    // allocated to hold multi-beat read responses. CCI-P allows
+    // up to 4 lines per request, one line per beat.
+    logic [2:0] n_alloc;
+    assign n_alloc =
+        cci_mpf_c0TxIsReadReq(afu.c0Tx) ?
+            3'(afu.c0Tx.hdr.base.cl_len) + 3'(1) :
+            3'(0);
+
     generate
         if (SORT_READ_RESPONSES)
         begin : gen_rd_rob
-            // Number of ROB entries to allocate.  More than one must be
-            // allocated to hold multi-beat read responses. CCI-P allows
-            // up to 4 lines per request, one line per beat.
-            logic [2:0] n_alloc;
-            assign n_alloc = 
-                cci_mpf_c0TxIsReadReq(afu.c0Tx) ?
-                    3'(afu.c0Tx.hdr.base.cl_len) + 3'(1) :
-                    3'(0);
-
             // Read response index is the base index allocated by the
             // c0Tx read request plus the beat offset for multi-line reads.
             logic rd_rob_rsp_en;
@@ -366,11 +366,16 @@ module cci_mpf_shim_rsp_order
             // Read responses are not sorted.  Allocate a heap to
             // preserve Mdata.
             //
+            logic heap_notFull;
+
             cci_mpf_prim_heap
               #(
                 .N_ENTRIES(MAX_ACTIVE_REQS),
                 .N_DATA_BITS(CCI_MDATA_WIDTH),
-                .MIN_FREE_SLOTS(CCI_TX_ALMOST_FULL_THRESHOLD + THRESHOLD_EXTRA),
+                // Almost full is tracked with rd_lines_active below, not
+                // this heap.  The heap can never fill because rd_lines_active
+                // will cut off requests.
+                .MIN_FREE_SLOTS(0),
                 .N_OUTPUT_REG_STAGES(1)
                 )
               rd_heap
@@ -380,7 +385,7 @@ module cci_mpf_shim_rsp_order
 
                 .enq(cci_mpf_c0TxIsReadReq(afu.c0Tx)),
                 .enqData(afu.c0Tx.hdr.base.mdata),
-                .notFull(rd_not_full),
+                .notFull(heap_notFull),
                 .allocIdx(rd_rob_allocIdx),
 
                 .readReq(t_req_idx'(fiu.c0Rx.hdr.mdata)),
@@ -396,6 +401,32 @@ module cci_mpf_shim_rsp_order
             assign rd_rob_mdata = 'x;
             assign rd_rob_notEmpty = 'x;
             assign rd_rob_data_rdy = 'x;
+
+            //
+            // Count the number of lines in flight.  This is needed to make
+            // sure we don't overflow any clock crossing FIFOs by exceeding
+            // the read response buffer.
+            //
+            t_req_idx rd_lines_active;
+
+            always_ff @(posedge clk)
+            begin
+                // Update active lines.  The number active grows by the number
+                // of beats requested and shrinks by at most one per cycle.
+                rd_lines_active <= rd_lines_active +
+                                   t_req_idx'(n_alloc) -
+                                   t_req_idx'(cci_c0Rx_isReadRsp(fiu.c0Rx));
+
+                rd_not_full <=
+                    heap_notFull &&
+                    (rd_lines_active <
+                     t_req_idx'(MAX_ACTIVE_REQS - (CCI_TX_ALMOST_FULL_THRESHOLD + THRESHOLD_EXTRA) * CCI_MAX_MULTI_LINE_BEATS));
+
+                if (reset)
+                begin
+                    rd_lines_active <= t_req_idx'(0);
+                end
+            end
         end
     endgenerate
 

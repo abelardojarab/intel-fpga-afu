@@ -203,7 +203,9 @@ module cci_mpf_prim_ram_simple_init
     output logic [N_DATA_BITS-1 : 0] rdata
     );
 
-    logic [$clog2(N_ENTRIES)-1 : 0] waddr_local;
+    typedef logic [$clog2(N_ENTRIES)-1 : 0] t_addr;
+
+    t_addr waddr_local;
     logic wen_local;
     logic [N_DATA_BITS-1 : 0] wdata_local;
 
@@ -229,23 +231,29 @@ module cci_mpf_prim_ram_simple_init
     // Initialization loop
     //
 
-    logic [$clog2(N_ENTRIES)-1 : 0] waddr_init;
+    t_addr waddr_init;
 
     assign waddr_local = rdy ? waddr : waddr_init;
     assign wen_local = rdy ? wen : 1'b1;
     assign wdata_local = rdy ? wdata : (N_DATA_BITS'(INIT_VALUE));
 
-    always_ff @(posedge clk)
+    initial
+    begin
+        rdy = 1'b0;
+        waddr_init = t_addr'(0);
+    end
+
+    always @(posedge clk)
     begin
         if (reset)
         begin
             rdy <= 1'b0;
-            waddr_init <= 0;
+            waddr_init <= t_addr'(0);
         end
-        else if (! rdy)
+        else
         begin
-            waddr_init <= waddr_init + 1;
-            rdy <= (waddr_init == (N_ENTRIES-1));
+            rdy <= rdy || (waddr_init == t_addr'(N_ENTRIES-1));
+            waddr_init <= waddr_init + t_addr'(1'(~rdy));
         end
     end
 
@@ -316,13 +324,13 @@ module cci_mpf_prim_ram_simple_base
         .wren_a(c_wen),
         .address_a(c_waddr),
         .data_a(c_wdata),
+        .rden_a(1'b0),
 
         .address_b(raddr),
         .q_b(c_rdata),
+        .wren_b(1'b0),
 
         // Legally unconnected ports -- get rid of lint errors
-        .wren_b(),
-        .rden_a(),
         .rden_b(),
         .data_b(),
         .clock1(),

@@ -59,7 +59,7 @@ int TEST_MEM_PERF::test()
     memset(&config, 0, sizeof(config));
 
     // What's the AFU frequency (MHz)?
-    uint64_t afu_mhz = readCommonCSR(CSR_COMMON_FREQ);
+    uint64_t afu_mhz = getAFUMHz();
 
     // Ignore the command line and set VC Map to fixed
     config.vc = 0;

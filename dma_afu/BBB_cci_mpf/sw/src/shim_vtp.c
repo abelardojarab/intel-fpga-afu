@@ -38,7 +38,7 @@
 #include <assert.h>
 #include <inttypes.h>
 
-#include <fpga/mpf/mpf.h>
+#include <opae/mpf/mpf.h>
 #include "mpf_internal.h"
 
 static const size_t CCI_MPF_VTP_LARGE_PAGE_THRESHOLD = (128*1024);
@@ -115,9 +115,9 @@ static fpga_result allocateAndInsertPage(
     {
         if (_mpf_handle->dbg_mode)
         {
-            FPGA_MSG("FAILED allocating %s page VA %p, status %d",
-                     (page_size == MPF_VTP_PAGE_2MB ? "2MB" : "4KB"),
-                     alloc_va, r);
+            MPF_FPGA_MSG("FAILED allocating %s page VA %p, status %d",
+                         (page_size == MPF_VTP_PAGE_2MB ? "2MB" : "4KB"),
+                         alloc_va, r);
         }
 
         return r;
@@ -128,9 +128,9 @@ static fpga_result allocateAndInsertPage(
     {
         if (_mpf_handle->dbg_mode)
         {
-            FPGA_MSG("FAILED allocating %s page VA %p -- at %p instead of requested address",
-                     (page_size == MPF_VTP_PAGE_2MB ? "2MB" : "4KB"),
-                     alloc_va, va);
+            MPF_FPGA_MSG("FAILED allocating %s page VA %p -- at %p instead of requested address",
+                         (page_size == MPF_VTP_PAGE_2MB ? "2MB" : "4KB"),
+                         alloc_va, va);
         }
 
         return FPGA_NO_MEMORY;
@@ -138,14 +138,14 @@ static fpga_result allocateAndInsertPage(
 
     // Get the physical address of the buffer
     mpf_vtp_pt_paddr alloc_pa;
-    r = fpgaGetIOVA(_mpf_handle->handle, wsid, &alloc_pa);
+    r = fpgaGetIOAddress(_mpf_handle->handle, wsid, &alloc_pa);
     if (FPGA_OK != r) return r;
 
     if (_mpf_handle->dbg_mode)
     {
-        FPGA_MSG("allocate %s page VA %p, PA 0x%" PRIx64 ", wsid 0x%" PRIx64,
-                 (page_size == MPF_VTP_PAGE_2MB ? "2MB" : "4KB"),
-                 alloc_va, alloc_pa, wsid);
+        MPF_FPGA_MSG("allocate %s page VA %p, PA 0x%" PRIx64 ", wsid 0x%" PRIx64,
+                     (page_size == MPF_VTP_PAGE_2MB ? "2MB" : "4KB"),
+                     alloc_va, alloc_pa, wsid);
     }
 
     // Insert VTP page table entry
@@ -155,7 +155,7 @@ static fpga_result allocateAndInsertPage(
     {
         if (_mpf_handle->dbg_mode)
         {
-            FPGA_MSG("FAILED inserting page mapping, status %d", r);
+            MPF_FPGA_MSG("FAILED inserting page mapping, status %d", r);
         }
 
         fpgaReleaseBuffer(_mpf_handle->handle, wsid);
@@ -180,7 +180,9 @@ fpga_result mpfVtpInit(
     fpga_result r;
 
     // Is the VTP feature present?
+    _mpf_handle->vtp.is_available = false;
     if (! mpfShimPresent(_mpf_handle, CCI_MPF_SHIM_VTP)) return FPGA_NOT_SUPPORTED;
+    _mpf_handle->vtp.is_available = true;
 
     // Already initialized?
     if (NULL != _mpf_handle->vtp.pt) return FPGA_EXCEPTION;
@@ -206,10 +208,10 @@ fpga_result mpfVtpInit(
                                       FPGA_BUF_PREALLOCATED));
     if (_mpf_handle->dbg_mode)
     {
-        FPGA_MSG("FPGA_BUF_PREALLOCATED %s",
-                 (_mpf_handle->vtp.use_fpga_buf_preallocated ?
-                      "supported." :
-                      "not supported.  Using compatibility mode."));
+        MPF_FPGA_MSG("FPGA_BUF_PREALLOCATED %s",
+                     (_mpf_handle->vtp.use_fpga_buf_preallocated ?
+                          "supported." :
+                          "not supported.  Using compatibility mode."));
     }
 
     _mpf_handle->vtp.max_physical_page_size = MPF_VTP_PAGE_2MB;
@@ -228,10 +230,12 @@ fpga_result mpfVtpTerm(
 {
     fpga_result r;
 
+    if (! _mpf_handle->vtp.is_available) return FPGA_NOT_SUPPORTED;
+
     // Turn off VTP in the FPGA, blocking all traffic.
     mpfWriteCsr(_mpf_handle, CCI_MPF_SHIM_VTP, CCI_MPF_VTP_CSR_MODE, 0);
 
-    if (_mpf_handle->dbg_mode) FPGA_MSG("VTP terminating...");
+    if (_mpf_handle->dbg_mode) MPF_FPGA_MSG("VTP terminating...");
 
     r = mpfVtpPtTerm(_mpf_handle->vtp.pt);
     _mpf_handle->vtp.pt = NULL;
@@ -252,6 +256,15 @@ fpga_result mpfVtpTerm(
 // ========================================================================
 
 
+bool __MPF_API__ mpfVtpIsAvailable(
+    mpf_handle_t mpf_handle
+)
+{
+    _mpf_handle_p _mpf_handle = (_mpf_handle_p)mpf_handle;
+    return _mpf_handle->vtp.is_available;
+}
+
+
 fpga_result __MPF_API__ mpfVtpBufferAllocate(
     mpf_handle_t mpf_handle,
     uint64_t len,
@@ -261,12 +274,13 @@ fpga_result __MPF_API__ mpfVtpBufferAllocate(
     fpga_result r;
     _mpf_handle_p _mpf_handle = (_mpf_handle_p)mpf_handle;
 
+    if (! _mpf_handle->vtp.is_available) return FPGA_NOT_SUPPORTED;
     if ((NULL == buf_addr) || (0 == len)) return FPGA_INVALID_PARAM;
 
     // Page table updates aren't thread safe
     mpfOsLockMutex(_mpf_handle->vtp.alloc_mutex);
 
-    if (_mpf_handle->dbg_mode) FPGA_MSG("requested 0x%" PRIx64 " byte buffer", len);
+    if (_mpf_handle->dbg_mode) MPF_FPGA_MSG("requested 0x%" PRIx64 " byte buffer", len);
 
     // Pick a requested page size
     mpf_vtp_page_size page_size = MPF_VTP_PAGE_4KB;
@@ -368,6 +382,8 @@ fpga_result __MPF_API__ mpfVtpBufferFree(
     uint64_t wsid;
     fpga_result r;
 
+    if (! _mpf_handle->vtp.is_available) return FPGA_NOT_SUPPORTED;
+
     // Is the address the beginning of an allocation region?
     r = mpfVtpPtTranslateVAtoPA(_mpf_handle->vtp.pt, va, &pa, &flags);
     if (FPGA_OK != r) return r;
@@ -385,9 +401,9 @@ fpga_result __MPF_API__ mpfVtpBufferFree(
     {
         if (_mpf_handle->dbg_mode)
         {
-            FPGA_MSG("release %s page VA %p, PA 0x%" PRIx64 ", wsid 0x%" PRIx64,
-                     (size == MPF_VTP_PAGE_2MB ? "2MB" : "4KB"),
-                     va, pa, wsid);
+            MPF_FPGA_MSG("release %s page VA %p, PA 0x%" PRIx64 ", wsid 0x%" PRIx64,
+                         (size == MPF_VTP_PAGE_2MB ? "2MB" : "4KB"),
+                         va, pa, wsid);
         }
 
         size_t page_bytes = mpfPageSizeEnumToBytes(size);
@@ -422,7 +438,7 @@ fpga_result __MPF_API__ mpfVtpBufferFree(
 }
 
 
-uint64_t __MPF_API__ mpfVtpGetIOVA(
+uint64_t __MPF_API__ mpfVtpGetIOAddress(
     mpf_handle_t mpf_handle,
     void* buf_addr
 )
@@ -445,6 +461,8 @@ fpga_result __MPF_API__ mpfVtpInvalHWTLB(
     fpga_result r;
     _mpf_handle_p _mpf_handle = (_mpf_handle_p)mpf_handle;
 
+    if (! _mpf_handle->vtp.is_available) return FPGA_NOT_SUPPORTED;
+
     // Mode 2 blocks traffic and invalidates the FPGA-side TLB cache
     r = mpfWriteCsr(mpf_handle, CCI_MPF_SHIM_VTP, CCI_MPF_VTP_CSR_MODE, 2);
     if (FPGA_OK != r) return r;
@@ -458,6 +476,10 @@ fpga_result __MPF_API__ mpfVtpInvalVAMapping(
     mpf_vtp_pt_vaddr va
 )
 {
+    _mpf_handle_p _mpf_handle = (_mpf_handle_p)mpf_handle;
+
+    if (! _mpf_handle->vtp.is_available) return FPGA_NOT_SUPPORTED;
+
     return mpfWriteCsr(mpf_handle,
                        CCI_MPF_SHIM_VTP, CCI_MPF_VTP_CSR_INVAL_PAGE_VADDR,
                        // Convert VA to a line index

@@ -42,7 +42,7 @@
 #include <assert.h>
 #include <inttypes.h>
 
-#include <fpga/mpf/mpf.h>
+#include <opae/mpf/mpf.h>
 #include "mpf_internal.h"
 
 // MAP_HUGE_SHIFT is defined since Linux 3.8

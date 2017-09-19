@@ -37,12 +37,15 @@ int main(int argc, char *argv[])
     po::options_description desc("Usage");
     desc.add_options()
         ("help", "Print this message")
+#ifdef USE_LEGACY_AAL
         ("target", po::value<string>()->default_value("fpga"), "RTL target (\"fpga\" or \"ase\")")
+#endif
         ("vcmap-all", po::value<bool>()->default_value(false), "VC MAP: Map all requests, ignoring vc_sel")
         ("vcmap-enable", po::value<bool>()->default_value(VCMAP_ENABLE_DEFAULT), "VC MAP: Enable channel mapping")
         ("vcmap-dynamic", po::value<bool>()->default_value(true), "VC MAP: Use dynamic channel mapping (overridden by --vcmap-fixed)")
         ("vcmap-fixed", po::value<int>()->default_value(-1), "VC MAP: Use fixed mapping with VL0 getting <n>/64 of traffic")
         ("vcmap-only-writes", po::value<bool>()->default_value(false), "VC MAP: Apply the chosen mapping mode only to write requests")
+        ("uclk-freq", po::value<int>()->default_value(0), "Frequency of uClk_usr (MHz)")
         ;
 
     testConfigOptions(desc);
@@ -56,18 +59,23 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    // On OPAE we will figure out automatically that the run is either on
+    // real HW or simulated.  AAL had the user choose.
+    bool use_fpga = false;
+#ifdef USE_LEGACY_AAL
     string tgt = vm["target"].as<string>();
-    bool use_fpga = (tgt.compare("fpga") == 0);
+    use_fpga = (tgt.compare("fpga") == 0);
     if (! use_fpga && tgt.compare("ase"))
     {
         cerr << "Illegal --target" << endl << endl;
         cerr << desc << endl;
         exit(1);
     }
+#endif
 
     SVC_WRAPPER svc(use_fpga);
 
-    if (!svc.isOK())
+    if (!svc.isOk())
     {
         cout << "Runtime Failed to Start" << endl;
         exit(1);
@@ -186,7 +194,10 @@ int main(int argc, char *argv[])
     if (cycles != 0)
     {
         cout << "#" << endl
-             << "# Test cycles executed: " << cycles << endl;
+             << "# Test cycles executed: " << cycles
+             << " (" << t->getAFUMHz() << " MHz)"
+             << (svc.hwIsSimulated() ? " [simulated]" : "")
+             << endl;
     }
 
     uint64_t rd_hits = t->readCommonCSR(CCI_TEST::CSR_COMMON_CACHE_RD_HITS);
@@ -217,23 +228,35 @@ int main(int argc, char *argv[])
          << "#   VH1 line ops:       " << vh1_lines << endl
          << "#" << endl;
 
+    bool vtp_available;
 #ifndef USE_LEGACY_AAL
     mpf_vtp_stats vtp_stats;
-    mpfVtpGetStats(svc.mpf_handle, &vtp_stats);
+    vtp_available = mpfVtpIsAvailable(svc.mpf_handle);
+    if (vtp_available)
+    {
+        mpfVtpGetStats(svc.mpf_handle, &vtp_stats);
+    }
 #else
     t_cci_mpf_vtp_stats vtp_stats;
-    svc.pVTPService->vtpGetStats(&vtp_stats);
-#endif
-    cout << "#   VTP failed:         " << vtp_stats.numFailedTranslations << endl;
-    if (vtp_stats.numFailedTranslations)
+    vtp_available = (NULL != svc.pVTPService);
+    if (vtp_available)
     {
-        cout << "#   VTP failed addr:    0x" << hex << uint64_t(vtp_stats.ptWalkLastVAddr) << dec << endl;
+        svc.pVTPService->vtpGetStats(&vtp_stats);
     }
-    cout << "#   VTP PT walk cycles: " << vtp_stats.numPTWalkBusyCycles << endl
-         << "#   VTP 4KB hit / miss: " << vtp_stats.numTLBHits4KB << " / "
-                                       << vtp_stats.numTLBMisses4KB << endl
-         << "#   VTP 2MB hit / miss: " << vtp_stats.numTLBHits2MB << " / "
-                                       << vtp_stats.numTLBMisses2MB << endl;
+#endif
+    if (vtp_available)
+    {
+        cout << "#   VTP failed:         " << vtp_stats.numFailedTranslations << endl;
+        if (vtp_stats.numFailedTranslations)
+        {
+            cout << "#   VTP failed addr:    0x" << hex << uint64_t(vtp_stats.ptWalkLastVAddr) << dec << endl;
+        }
+        cout << "#   VTP PT walk cycles: " << vtp_stats.numPTWalkBusyCycles << endl
+             << "#   VTP 4KB hit / miss: " << vtp_stats.numTLBHits4KB << " / "
+             << vtp_stats.numTLBMisses4KB << endl
+             << "#   VTP 2MB hit / miss: " << vtp_stats.numTLBHits2MB << " / "
+             << vtp_stats.numTLBMisses2MB << endl;
+    }
 
 #ifndef USE_LEGACY_AAL
     if (mpfShimPresent(svc.mpf_handle, CCI_MPF_SHIM_VC_MAP))

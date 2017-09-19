@@ -215,6 +215,67 @@ module cci_mpf_prim_heap_ctrl
         end
     endgenerate
 
+
+    //
+    // Check heap integrity.  Don't allow double free!
+    //
+
+    // synthesis translate_off
+    logic [N_ENTRIES-1 : 0] entry_busy;
+
+    // Track free/busy entries
+    always_ff @(posedge clk)
+    begin
+        if (enq)
+        begin
+            entry_busy[allocIdx] <= 1'b1;
+        end
+
+        if (free)
+        begin
+            entry_busy[freeIdx] <= 1'b0;
+        end
+
+        if (reset)
+        begin
+            entry_busy <= N_ENTRIES'(0);
+        end
+    end
+
+    logic error;
+
+    always_ff @(posedge clk)
+    begin
+        if (reset)
+        begin
+            error <= 1'b0;
+        end
+        else
+        begin
+            error <= 1'b0;
+
+            if (enq && free && (allocIdx == freeIdx))
+            begin
+                $error("cci_mpf_prim_heap: Alloc and free same cycle (idx 0x%0h)", allocIdx);
+                error <= 1'b1;
+            end
+
+            if (enq && entry_busy[allocIdx])
+            begin
+                $error("cci_mpf_prim_heap: Alloc busy entry (idx 0x%0h)", allocIdx);
+                error <= 1'b1;
+            end
+
+            if (free && ! entry_busy[freeIdx])
+            begin
+                $error("cci_mpf_prim_heap: Free unused entry (idx 0x%0h)", freeIdx);
+                error <= 1'b1;
+            end
+        end
+    end
+
+    // synthesis translate_on
+
 endmodule // cci_mpf_prim_heap_ctrl
 
 
@@ -880,7 +941,7 @@ module cci_mpf_prim_heap_ctrl_checker
     begin
         if (chk_alloc)
         begin
-            assert (chk_state[chk_alloc_idx] == 1'b0) else
+            assert ((chk_state[chk_alloc_idx] == 1'b0) || reset) else
                 $fatal("cci_mpf_prim_heap.sv: HEAP double allocation!");
 
             chk_state[chk_alloc_idx] <= 1'b1;
@@ -888,7 +949,7 @@ module cci_mpf_prim_heap_ctrl_checker
 
         if (chk_free)
         begin
-            assert (chk_state[chk_free_idx] == 1'b1) else
+            assert ((chk_state[chk_free_idx] == 1'b1) || reset) else
                 $fatal("cci_mpf_prim_heap.sv: HEAP double free!");
 
             chk_state[chk_free_idx] <= 1'b0;

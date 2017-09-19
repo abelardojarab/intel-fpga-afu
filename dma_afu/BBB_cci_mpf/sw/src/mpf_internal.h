@@ -38,6 +38,30 @@
 
 #include <stdint.h>
 
+/*
+ * Convenience macros for printing messages and errors.
+ */
+#ifdef __MPF_SHORT_FILE__
+#undef __MPF_SHORT_FILE__
+#endif // __MPF_SHORT_FILE__
+#define __MPF_SHORT_FILE__             \
+({ const char *file = __FILE__;    \
+   const char *p    = file;        \
+   while ( *p ) { ++p; }           \
+   while ( (p > file)  &&          \
+           ('/'  != *p) &&         \
+           ('\\' != *p) ) { --p; } \
+   if ( p > file ) { ++p; }        \
+   p;                              \
+})
+
+#ifdef MPF_FPGA_MSG
+#undef MPF_FPGA_MSG
+#endif // MPF_FPGA_MSG
+#define MPF_FPGA_MSG(format, ...)\
+        printf( "%s:%u:%s() : " format "\n", __MPF_SHORT_FILE__, __LINE__,\
+                                                __func__, ## __VA_ARGS__ )
+
 // Forward declaration to avoid circular dependence.
 typedef struct _mpf_handle_t* _mpf_handle_p;
 

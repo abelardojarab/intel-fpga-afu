@@ -63,7 +63,7 @@ int TEST_MEM_PERF::test()
     memset(&config, 0, sizeof(config));
 
     // What's the AFU frequency (MHz)?
-    uint64_t afu_mhz = readCommonCSR(CSR_COMMON_FREQ);
+    uint64_t afu_mhz = getAFUMHz();
 
     config.vc = uint8_t(vm["vc"].as<int>());
     assert(config.vc < 4);
@@ -145,17 +145,23 @@ int TEST_MEM_PERF::test()
         cout << statsHeader()
              << endl;
 
+        uint64_t max_cycles = 128 * 65536;
+        if (afu_mhz < 400)
+        {
+            max_cycles = uint64_t(double(max_cycles) * double(afu_mhz) / 400.0);
+        }
+
         // Warmup
         if (mode < 2)
         {
             t_test_stats stats;
-            config.cycles = 128 * 65536;
+            config.cycles = max_cycles;
             assert(runTest(&config, &stats) == 0);
         }
 
         // Vary number of cycles in the run.  For small numbers of cycles this works
         // as a proxy for the number requests emitted.
-        for (uint64_t cycles = 1; cycles <= 128 * 65536; cycles <<= 1)
+        for (uint64_t cycles = 1; cycles <= max_cycles; cycles <<= 1)
         {
             t_test_stats stats;
             config.cycles = cycles;

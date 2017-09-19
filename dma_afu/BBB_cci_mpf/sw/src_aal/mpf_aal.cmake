@@ -29,11 +29,11 @@ file(
     GLOB_RECURSE
     HDR_AAL
     FOLLOW_SYMLINKS
-    ${CMAKE_SOURCE_DIR}/include/aalsdk/mpf/*.h
+    ${PROJECT_SOURCE_DIR}/include/aalsdk/mpf/*.h
     )
 
 aux_source_directory(
-    ${CMAKE_SOURCE_DIR}/src_aal
+    ${PROJECT_SOURCE_DIR}/src_aal
     SRC_AAL
     )
 

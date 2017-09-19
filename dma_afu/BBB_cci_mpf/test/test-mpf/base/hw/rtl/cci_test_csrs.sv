@@ -170,6 +170,7 @@ module cci_test_csrs
                 t_ccip_dfh afu_dfh;
                 afu_dfh = ccip_dfh_defaultDFH();
                 afu_dfh.f_type = eFTYP_AFU;
+                afu_dfh.eol = (NEXT_DFH_BYTE_OFFSET == 0);
                 afu_dfh.nextFeature = NEXT_DFH_BYTE_OFFSET;
 
                 c2Tx.data <= afu_dfh;

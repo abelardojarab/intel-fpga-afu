@@ -1,7 +1,8 @@
 +define+MPF_PLATFORM_DCP_PCIE
-+define+INCLUDE_DDR4
--F mpf/hw/sim/cci_mpf_sim_addenda.txt
+-F BBB_cci_mpf/hw/sim/cci_mpf_sim_addenda.txt
 
+#afu
++define+INCLUDE_DDR4
 afu.sv
 ccip_std_afu.sv
 ccip_avmm_mmio.sv

@@ -132,7 +132,7 @@ out:
 static fpga_result _do_dma(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, int count, fpga_dma_transfer_t type)
 {
    msgdma_ext_descriptor_t desc;
-   fpga_result res;
+   fpga_result res = FPGA_OK;
    int alignment_offset;
    int segment_size;
 
@@ -420,6 +420,10 @@ static fpga_result _write_memory_mmio(fpga_dma_handle dma_h, uint64_t *dst_ptr,u
       alignment = QWORD_BYTES;
    else if(IS_ALIGNED_DWORD(dst))
       alignment = DWORD_BYTES;
+
+   if(alignment == 0)
+      return FPGA_EXCEPTION;
+
    fpgaReadMMIO64(dma_h->fpga_h, 0, (dma_h->dma_base)+FPGA_DMA_ADDR_SPAN_EXT_CNTL, &cur_mem_page);
    for(i = 0; i < align_bytes/alignment ; i++){
       uint64_t mem_page = dst & ~DMA_ADDR_SPAN_EXT_WINDOW_MASK;
@@ -550,6 +554,9 @@ static fpga_result _read_memory_mmio(fpga_dma_handle dma_h, uint64_t *src_ptr,ui
       alignment = QWORD_BYTES;
    else if(IS_ALIGNED_DWORD(src))
       alignment = DWORD_BYTES;
+
+   if(alignment == 0)
+      return FPGA_EXCEPTION;
 
    fpgaReadMMIO64(dma_h->fpga_h, 0, (dma_h->dma_base)+FPGA_DMA_ADDR_SPAN_EXT_CNTL, &cur_mem_page);
    for(i = 0; i < align_bytes/alignment ; i++){

@@ -100,6 +100,7 @@ fpga_result ddr_sweep(fpga_dma_handle dma_h) {
    uint64_t *dma_buf_ptr = malloc(total_mem_size);
    if(dma_buf_ptr == NULL) {
       printf("Unable to allocate %ld bytes of memory", total_mem_size);
+      return FPGA_NO_MEMORY;
    }
    printf("Allocated test buffer\n");
    printf("Fill test buffer\n");
@@ -215,6 +216,11 @@ int main(int argc, char *argv[]) {
 
    dma_buf_ptr = (uint64_t*)malloc(count);
 
+   if(dma_buf_ptr == NULL) {
+      res = FPGA_NO_MEMORY;
+      ON_ERR_GOTO(res, out_dma_close, "Malloc failed: no memory");
+   }
+
    fill_buffer((char*)dma_buf_ptr, count);
 
    // Test procedure
@@ -261,6 +267,8 @@ int main(int argc, char *argv[]) {
 out_dma_close:
    free(dma_buf_ptr);
    res = fpgaDmaClose(dma_h);
+   if(dma_h)
+       free((void*)dma_h);
    ON_ERR_GOTO(res, out_unmap, "fpgaDmaClose");
 
 out_unmap:

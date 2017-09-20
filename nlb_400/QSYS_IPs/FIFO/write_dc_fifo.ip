@@ -333,7 +333,7 @@
         <spirit:parameter>
           <spirit:name>GUI_Width</spirit:name>
           <spirit:displayName>How wide should the FIFO be?</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="GUI_Width">109</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="GUI_Width">110</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>GUI_Depth</spirit:name>

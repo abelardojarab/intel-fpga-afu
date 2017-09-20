@@ -282,7 +282,7 @@ module nlb_lpbk #(parameter TXHDR_WIDTH=61, RXHDR_WIDTH=18, DATA_WIDTH =512, DDR
    input  wire                      DDR4a_readdatavalid;
    output wire [6:0]                DDR4a_burstcount;
    output wire [511:0]              DDR4a_writedata;
-   output wire [25:0]               DDR4a_address;
+   output wire [26:0]               DDR4a_address;
    output wire                      DDR4a_write;
    output wire                      DDR4a_read;
    output wire [63:0]               DDR4a_byteenable;
@@ -293,7 +293,7 @@ module nlb_lpbk #(parameter TXHDR_WIDTH=61, RXHDR_WIDTH=18, DATA_WIDTH =512, DDR
    input  wire                      DDR4b_readdatavalid;
    output wire [6:0]                DDR4b_burstcount;
    output wire [511:0]              DDR4b_writedata;
-   output wire [25:0]               DDR4b_address;
+   output wire [26:0]               DDR4b_address;
    output wire                      DDR4b_write;
    output wire                      DDR4b_read;
    output wire [63:0]               DDR4b_byteenable;

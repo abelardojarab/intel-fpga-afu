@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <EnsembleReport name="write_dc_fifo" kind="write_dc_fifo" version="1.0" fabric="QSYS">
  <!-- Format version 17.0 290 (Future versions may contain additional information.) -->
- <!-- 2017.08.05.22:22:10 -->
+ <!-- 2017.09.14.15:09:28 -->
  <!-- A collection of modules and connections -->
  <parameter name="AUTO_GENERATION_ID">
   <type>java.lang.Integer</type>
-  <value>1501996930</value>
+  <value>1505426968</value>
   <derived>false</derived>
   <enabled>true</enabled>
   <visible>false</visible>
@@ -143,7 +143,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="GUI_Width">
    <type>int</type>
-   <value>109</value>
+   <value>110</value>
    <derived>false</derived>
    <enabled>true</enabled>
    <visible>true</visible>
@@ -474,7 +474,7 @@ parameters are a RESULT of the module parameters. -->
    <port>
     <name>data</name>
     <direction>Input</direction>
-    <width>109</width>
+    <width>110</width>
     <role>datain</role>
    </port>
    <port>
@@ -561,7 +561,7 @@ parameters are a RESULT of the module parameters. -->
    <port>
     <name>q</name>
     <direction>Output</direction>
-    <width>109</width>
+    <width>110</width>
     <role>dataout</role>
    </port>
    <port>

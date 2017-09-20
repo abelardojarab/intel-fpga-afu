@@ -123,7 +123,7 @@
           </parameter>
           <parameter>
             <name>GUI_Width</name>
-            <value>109</value>
+            <value>110</value>
           </parameter>
           <parameter>
             <name>GUI_WrUsedw_width</name>
@@ -198,7 +198,7 @@
         <className>fifo</className>
         <version>17.0</version>
         <name>fifo_0</name>
-        <uniqueName>write_dc_fifo_fifo_170_bktbtyy</uniqueName>
+        <uniqueName>write_dc_fifo_fifo_170_bhnb7cq</uniqueName>
         <nonce>0</nonce>
         <incidentConnections></incidentConnections>
         <path>write_dc_fifo.fifo_0</path>

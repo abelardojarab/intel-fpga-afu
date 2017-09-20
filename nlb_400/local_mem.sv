@@ -1,6 +1,6 @@
 module local_mem #(
    DATA_WIDTH = 64,
-	ADDR_WIDTH = 26,
+	ADDR_WIDTH = 27,
 	BYTEEN_WIDTH = 8,
 	BURSTCOUNT_WIDTH = 7
 )(
@@ -101,7 +101,7 @@ assign csr_ddr4a_read        = cr2mem_ctrl_d1[1];
 assign csr_ddr4a_byteenable  = cr2mem_ctrl_d1[11:4];
 assign csr_ddr4a_word_select = cr2mem_ctrl_d1[18:16];
 assign csr_ddr4a_burstcount  = cr2mem_ctrl_d1[26:20];	
-assign csr_ddr4a_address     = cr2mem_address_d1[25:0];
+assign csr_ddr4a_address     = cr2mem_address_d1[ADDR_WIDTH-1:0];
 assign csr_ddr4a_writedata   = cr2mem_writedata_d1;
 assign DDR4a_writedata       = {8{temp_ddr4a_writedata}};	
 assign DDR4a_byteenable      = {8{temp_ddr4a_byteenable}};
@@ -111,7 +111,7 @@ assign csr_ddr4b_read        = cr2mem_ctrl_d1[3];
 assign csr_ddr4b_byteenable  = cr2mem_ctrl_d1[11:4];
 assign csr_ddr4b_word_select = cr2mem_ctrl_d1[18:16];
 assign csr_ddr4b_burstcount  = cr2mem_ctrl_d1[26:20];
-assign csr_ddr4b_address     = cr2mem_address_d1[25:0];
+assign csr_ddr4b_address     = cr2mem_address_d1[ADDR_WIDTH-1:0];
 assign csr_ddr4b_writedata   = cr2mem_writedata_d1;
 assign DDR4b_writedata       = {8{temp_ddr4b_writedata}};
 assign DDR4b_byteenable      = {8{temp_ddr4b_byteenable}};

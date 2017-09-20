@@ -4,18 +4,18 @@
 
 `timescale 1 ps / 1 ps
 module write_dc_fifo (
-		input  wire [108:0] data,    //  fifo_input.datain
+		input  wire [109:0] data,    //  fifo_input.datain
 		input  wire         wrreq,   //            .wrreq
 		input  wire         rdreq,   //            .rdreq
 		input  wire         wrclk,   //            .wrclk
 		input  wire         rdclk,   //            .rdclk
 		input  wire         aclr,    //            .aclr
-		output wire [108:0] q,       // fifo_output.dataout
+		output wire [109:0] q,       // fifo_output.dataout
 		output wire         rdempty, //            .rdempty
 		output wire         wrfull   //            .wrfull
 	);
 
-	write_dc_fifo_fifo_170_bktbtyy fifo_0 (
+	write_dc_fifo_fifo_170_bhnb7cq fifo_0 (
 		.data    (data),    //  fifo_input.datain
 		.wrreq   (wrreq),   //            .wrreq
 		.rdreq   (rdreq),   //            .rdreq

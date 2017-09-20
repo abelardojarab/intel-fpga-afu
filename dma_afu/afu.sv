@@ -48,7 +48,7 @@ module afu (
      input                    DDR4a_readdatavalid,
      output  [6:0]            DDR4a_burstcount,
      output  [511:0]          DDR4a_writedata,
-     output  [25:0]           DDR4a_address,
+     output  [26:0]           DDR4a_address,
      output                   DDR4a_write,
      output                   DDR4a_read,
      output  [63:0]           DDR4a_byteenable,
@@ -58,7 +58,7 @@ module afu (
      input                    DDR4b_readdatavalid,
      output  [6:0]            DDR4b_burstcount,
      output  [511:0]          DDR4b_writedata,
-     output  [25:0]           DDR4b_address,
+     output  [26:0]           DDR4b_address,
      output                   DDR4b_write,
      output                   DDR4b_read,
      output  [63:0]           DDR4b_byteenable,
@@ -90,7 +90,7 @@ module afu (
 	wire          DDR4a_readdatavalid;
 	wire [6:0]   DDR4a_burstcount;
 	wire [511:0] DDR4a_writedata;
-	wire [25:0]  DDR4a_address;
+	wire [26:0]  DDR4a_address;
 	wire         DDR4a_write;
 	wire         DDR4a_read;
 	wire [63:0]  DDR4a_byteenable;
@@ -99,7 +99,7 @@ module afu (
 	wire          DDR4b_readdatavalid;
 	wire [6:0]   DDR4b_burstcount;
 	wire [511:0] DDR4b_writedata;
-	wire [25:0]  DDR4b_address;
+	wire [26:0]  DDR4b_address;
 	wire [63:0]  DDR4b_byteenable;
 	wire         DDR4b_write;
 	wire         DDR4b_read;

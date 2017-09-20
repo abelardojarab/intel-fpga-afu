@@ -85,7 +85,7 @@ module ccip_std_afu(
   input   wire                          DDR4a_readdatavalid;
   output  wire [6:0]                    DDR4a_burstcount;
   output  wire [511:0]                  DDR4a_writedata;
-  output  wire [25:0]                   DDR4a_address;
+  output  wire [26:0]                   DDR4a_address;
   output  wire                          DDR4a_write;
   output  wire                          DDR4a_read;
   output  wire [63:0]                   DDR4a_byteenable;
@@ -95,7 +95,7 @@ module ccip_std_afu(
   input   wire                          DDR4b_readdatavalid;
   output  wire [6:0]                    DDR4b_burstcount;
   output  wire [511:0]                  DDR4b_writedata;
-  output  wire [25:0]                   DDR4b_address;
+  output  wire [26:0]                   DDR4b_address;
   output  wire                          DDR4b_write;
   output  wire                          DDR4b_read;
   output  wire [63:0]                   DDR4b_byteenable;
@@ -143,8 +143,8 @@ t_if_ccip_Tx pck_af2cp_sTx_T0;
     // =================================================================
     
     nlb_lpbk # (
-		.DDR4_ADDR_WIDTH (26)
-	 ) nlb_lpbk(
+		.DDR4_ADDR_WIDTH (27)
+    ) nlb_lpbk(
         .Clk_400                        (pClk),
         .SoftReset                      (pck_cp2af_softReset_T1),
 `ifdef INCLUDE_DDR4

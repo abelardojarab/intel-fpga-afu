@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <deploy
- date="2017.08.05.22:22:10"
- outputDirectory="/ipd/dhw/user/lpchua/work/qshell/171/123/p4/platform/dcp_1.0-skx/design/afu/nlb_400/QSYS_IPs/FIFO/write_dc_fifo/">
+ date="2017.09.14.15:09:28"
+ outputDirectory="/data/jjones/dcp10_insp_new/p4/platform/dcp_1.0-skx/design/afu/nlb_400/QSYS_IPs/FIFO/write_dc_fifo/">
  <perimeter>
   <parameter
      name="AUTO_GENERATION_ID"
@@ -37,7 +37,7 @@
    <property name="associatedClock" value="" />
    <property name="associatedReset" value="" />
    <property name="prSafe" value="false" />
-   <port name="data" direction="input" role="datain" width="109" />
+   <port name="data" direction="input" role="datain" width="110" />
    <port name="wrreq" direction="input" role="wrreq" width="1" />
    <port name="rdreq" direction="input" role="rdreq" width="1" />
    <port name="wrclk" direction="input" role="wrclk" width="1" />
@@ -48,30 +48,30 @@
    <property name="associatedClock" value="" />
    <property name="associatedReset" value="" />
    <property name="prSafe" value="false" />
-   <port name="q" direction="output" role="dataout" width="109" />
+   <port name="q" direction="output" role="dataout" width="110" />
    <port name="rdempty" direction="output" role="rdempty" width="1" />
    <port name="wrfull" direction="output" role="wrfull" width="1" />
   </interface>
  </perimeter>
  <entity kind="write_dc_fifo" version="1.0" name="write_dc_fifo">
-  <parameter name="AUTO_GENERATION_ID" value="1501996930" />
+  <parameter name="AUTO_GENERATION_ID" value="1505426968" />
   <parameter name="AUTO_DEVICE" value="10AX115H3F34E2SG" />
   <parameter name="AUTO_DEVICE_FAMILY" value="Arria 10" />
   <parameter name="AUTO_UNIQUE_ID" value="" />
   <parameter name="AUTO_DEVICE_SPEEDGRADE" value="2" />
   <generatedFiles>
    <file
-       path="/ipd/dhw/user/lpchua/work/qshell/171/123/p4/platform/dcp_1.0-skx/design/afu/nlb_400/QSYS_IPs/FIFO/write_dc_fifo/synth/write_dc_fifo.v"
+       path="/data/jjones/dcp10_insp_new/p4/platform/dcp_1.0-skx/design/afu/nlb_400/QSYS_IPs/FIFO/write_dc_fifo/synth/write_dc_fifo.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="/ipd/dhw/user/lpchua/work/qshell/171/123/p4/platform/dcp_1.0-skx/design/afu/nlb_400/QSYS_IPs/FIFO/write_dc_fifo/synth/write_dc_fifo.v"
+       path="/data/jjones/dcp10_insp_new/p4/platform/dcp_1.0-skx/design/afu/nlb_400/QSYS_IPs/FIFO/write_dc_fifo/synth/write_dc_fifo.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </childGeneratedFiles>
   <sourceFiles>
    <file
-       path="/ipd/dhw/user/lpchua/work/qshell/171/123/p4/platform/dcp_1.0-skx/design/afu/nlb_400/QSYS_IPs/FIFO/write_dc_fifo.ip" />
+       path="/data/jjones/dcp10_insp_new/p4/platform/dcp_1.0-skx/design/afu/nlb_400/QSYS_IPs/FIFO/write_dc_fifo.ip" />
   </sourceFiles>
   <childSourceFiles>
    <file
@@ -79,10 +79,10 @@
   </childSourceFiles>
   <messages>
    <message level="Info" culprit="write_dc_fifo">"Generating: write_dc_fifo"</message>
-   <message level="Info" culprit="write_dc_fifo">"Generating: write_dc_fifo_fifo_170_bktbtyy"</message>
+   <message level="Info" culprit="write_dc_fifo">"Generating: write_dc_fifo_fifo_170_bhnb7cq"</message>
   </messages>
  </entity>
- <entity kind="fifo" version="17.0" name="write_dc_fifo_fifo_170_bktbtyy">
+ <entity kind="fifo" version="17.0" name="write_dc_fifo_fifo_170_bhnb7cq">
   <parameter name="GUI_Full" value="true" />
   <parameter name="GUI_RdUsedw_width" value="6" />
   <parameter name="GUI_AlmostFullThr" value="1" />
@@ -124,21 +124,21 @@
   <parameter name="GUI_write_aclr_synch" value="false" />
   <parameter name="GUI_sc_aclr" value="false" />
   <parameter name="GUI_DISABLE_DCFIFO_EMBEDDED_TIMING_CONSTRAINT" value="true" />
-  <parameter name="GUI_Width" value="109" />
+  <parameter name="GUI_Width" value="110" />
   <generatedFiles>
    <file
-       path="/ipd/dhw/user/lpchua/work/qshell/171/123/p4/platform/dcp_1.0-skx/design/afu/nlb_400/QSYS_IPs/FIFO/write_dc_fifo/fifo_170/synth/write_dc_fifo_fifo_170_bktbtyy.v"
+       path="/data/jjones/dcp10_insp_new/p4/platform/dcp_1.0-skx/design/afu/nlb_400/QSYS_IPs/FIFO/write_dc_fifo/fifo_170/synth/write_dc_fifo_fifo_170_bhnb7cq.v"
        attributes="" />
    <file
-       path="/ipd/dhw/user/lpchua/work/qshell/171/123/p4/platform/dcp_1.0-skx/design/afu/nlb_400/QSYS_IPs/FIFO/write_dc_fifo/fifo_170/synth/write_dc_fifo_fifo_170_bktbtyy.sdc"
+       path="/data/jjones/dcp10_insp_new/p4/platform/dcp_1.0-skx/design/afu/nlb_400/QSYS_IPs/FIFO/write_dc_fifo/fifo_170/synth/write_dc_fifo_fifo_170_bhnb7cq.sdc"
        attributes="" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="/ipd/dhw/user/lpchua/work/qshell/171/123/p4/platform/dcp_1.0-skx/design/afu/nlb_400/QSYS_IPs/FIFO/write_dc_fifo/fifo_170/synth/write_dc_fifo_fifo_170_bktbtyy.v"
+       path="/data/jjones/dcp10_insp_new/p4/platform/dcp_1.0-skx/design/afu/nlb_400/QSYS_IPs/FIFO/write_dc_fifo/fifo_170/synth/write_dc_fifo_fifo_170_bhnb7cq.v"
        attributes="" />
    <file
-       path="/ipd/dhw/user/lpchua/work/qshell/171/123/p4/platform/dcp_1.0-skx/design/afu/nlb_400/QSYS_IPs/FIFO/write_dc_fifo/fifo_170/synth/write_dc_fifo_fifo_170_bktbtyy.sdc"
+       path="/data/jjones/dcp10_insp_new/p4/platform/dcp_1.0-skx/design/afu/nlb_400/QSYS_IPs/FIFO/write_dc_fifo/fifo_170/synth/write_dc_fifo_fifo_170_bhnb7cq.sdc"
        attributes="" />
   </childGeneratedFiles>
   <sourceFiles>
@@ -148,7 +148,7 @@
   <childSourceFiles/>
   <instantiator instantiator="write_dc_fifo" as="fifo_0" />
   <messages>
-   <message level="Info" culprit="write_dc_fifo">"Generating: write_dc_fifo_fifo_170_bktbtyy"</message>
+   <message level="Info" culprit="write_dc_fifo">"Generating: write_dc_fifo_fifo_170_bhnb7cq"</message>
   </messages>
  </entity>
 </deploy>

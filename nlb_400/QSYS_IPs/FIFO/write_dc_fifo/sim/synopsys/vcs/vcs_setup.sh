@@ -12,7 +12,7 @@
 # or its authorized distributors. Please refer to the applicable 
 # agreement for further details.
 
-# ACDS 17.0 290 linux 2017.08.05.22:22:10
+# ACDS 17.0 290 linux 2017.09.14.15:09:28
 
 # ----------------------------------------
 # vcs - auto-generated simulation script
@@ -94,7 +94,7 @@
 # within the Quartus project, and generate a unified
 # script which supports all the Intel IP within the design.
 # ----------------------------------------
-# ACDS 17.0 290 linux 2017.08.05.22:22:10
+# ACDS 17.0 290 linux 2017.09.14.15:09:28
 # ----------------------------------------
 # initialize variables
 TOP_LEVEL_NAME="write_dc_fifo"
@@ -142,7 +142,7 @@ vcs -lca -timescale=1ps/1ps -sverilog +verilog2001ext+.v -ntb_opts dtm $ELAB_OPT
   -v $QUARTUS_INSTALL_DIR/eda/sim_lib/twentynm_hssi_atoms.v \
   -v $QUARTUS_INSTALL_DIR/eda/sim_lib/synopsys/twentynm_hip_atoms_ncrypt.v \
   -v $QUARTUS_INSTALL_DIR/eda/sim_lib/twentynm_hip_atoms.v \
-  $QSYS_SIMDIR/../fifo_170/sim/write_dc_fifo_fifo_170_bktbtyy.v \
+  $QSYS_SIMDIR/../fifo_170/sim/write_dc_fifo_fifo_170_bhnb7cq.v \
   $QSYS_SIMDIR/write_dc_fifo.v \
   -top $TOP_LEVEL_NAME
 # ----------------------------------------

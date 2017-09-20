@@ -395,7 +395,19 @@ module nlb_lpbk #(parameter TXHDR_WIDTH=61, RXHDR_WIDTH=18, DATA_WIDTH =512, DDR
        SoftReset_q <= SoftReset;
        SoftReset_mem <= SoftReset;
    end
-   
+
+`ifdef INCLUDE_REMOTE_STP
+   //Counter to test signaltap
+   (* noprune *) reg [15:0] out /* synthesis noprune */;
+   always @(posedge Clk_400) begin
+      if (SoftReset == 1'b1) begin
+         out <= 1'b0;
+      end else begin
+         out <= out + 1'b1;
+      end
+   end
+`endif
+
 requestor #(.PEND_THRESH(PEND_THRESH),
             .ADDR_LMT   (ADDR_LMT),
             .TXHDR_WIDTH(TXHDR_WIDTH),

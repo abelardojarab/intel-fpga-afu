@@ -19,4 +19,4 @@ QSYS_IPs/FIFO/write_dc_fifo.ip
 QSYS_IPs/FIFO/read_dc_fifo.ip
 include_files/common
 nlb_400.json
-stp2.stp
+stp_basic.stp

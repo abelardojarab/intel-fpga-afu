@@ -267,8 +267,6 @@ int main(int argc, char *argv[]) {
 out_dma_close:
    free(dma_buf_ptr);
    res = fpgaDmaClose(dma_h);
-   if(dma_h)
-       free((void*)dma_h);
    ON_ERR_GOTO(res, out_unmap, "fpgaDmaClose");
 
 out_unmap:

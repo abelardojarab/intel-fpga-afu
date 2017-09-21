@@ -1,10 +1,15 @@
 If not otherwise noted in the individual file header, the OPAE SDK source code,
 located in the directories
 
-  * BBB_cci_mpf,
-  * BBB_ccip_async,
-  * BBB_ccip_mux, and
-  * samples
+  * avlmm_config_afu
+  * common
+  * dma_afu
+  * hello_afu
+  * hello_intr_afu
+  * hello_mem_afu
+  * nlb_400
+  * opencl
+  * user_clock_test
 
 is distributed under the following license:
 

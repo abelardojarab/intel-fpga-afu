@@ -63,6 +63,7 @@
 
 #define FPGA_DMA_MASK_32_BIT 0xFFFFFFFF
 
+#define FPGA_DMA_CSR_BUSY (1<<0)
 #define FPGA_DMA_DESC_BUFFER_EMPTY 0x2
 #define FPGA_DMA_DESC_BUFFER_FULL 0x4
 
@@ -81,6 +82,8 @@
 #else
   #define debug_print(...)
 #endif
+
+#define MAX_BUF 4
 
 typedef union {
    uint64_t reg;
@@ -126,9 +129,9 @@ struct _dma_handle_t
    uint64_t mmio_offset;
    uint64_t dma_base;
    uint64_t dma_offset;
-   uint64_t *dma_buf_ptr;
-   uint64_t dma_buf_wsid;
-   uint64_t dma_buf_iova;
+   uint64_t *dma_buf_ptr[MAX_BUF];
+   uint64_t dma_buf_wsid[MAX_BUF];
+   uint64_t dma_buf_iova[MAX_BUF];
 };
 
 #endif // __FPGA_DMA_INT_H__

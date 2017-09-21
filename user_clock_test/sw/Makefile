@@ -2,7 +2,7 @@ LDFLAGS ?=
 CFLAGS = -g -O2 
 
 CFLAGS += -I$(prefix)/common/include 
-LDFLAGS += -L$(prefix)/my_build/lib -luuid 
+LDFLAGS += -L$(prefix)/build/lib -luuid 
 
 ifeq ($(USE_ASE),1)
 	LDFLAGS += -lopae-c-ASE
@@ -26,6 +26,6 @@ clean:
 
 
 run: all
-	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(prefix)/my_build/lib ./user_clock_test
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(prefix)/build/lib ./user_clock_test
 
 .PHONY:all clean

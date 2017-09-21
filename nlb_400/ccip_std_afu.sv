@@ -198,7 +198,9 @@ ccip_interface_reg inst_green_ccip_interface_reg  (
 // It also serves as a reference design
 // =================================================================
 
-nlb_lpbk nlb_lpbk(
+    nlb_lpbk # (
+		.DDR4_ADDR_WIDTH (27)
+    ) nlb_lpbk(
     .Clk_400                        (pClk),
     .SoftReset                      (pck_cp2af_softReset_T1),
 `ifdef INCLUDE_DDR4

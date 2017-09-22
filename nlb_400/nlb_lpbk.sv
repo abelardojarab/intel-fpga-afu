@@ -243,6 +243,9 @@ module nlb_lpbk #(parameter TXHDR_WIDTH=61, RXHDR_WIDTH=18, DATA_WIDTH =512, DDR
                 
        // ---------------------------global signals-------------------------------------------------
        Clk_400,                         //              in    std_logic;           Core clock. CCI interface is synchronous to this clock.
+`ifdef INCLUDE_REMOTE_STP       
+       Clk_100,
+`endif
        SoftReset,                        //              in    std_logic;           CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH
        // ---------------------------IF signals between CCI and AFU  --------------------------------
 `ifdef INCLUDE_DDR4
@@ -274,6 +277,9 @@ module nlb_lpbk #(parameter TXHDR_WIDTH=61, RXHDR_WIDTH=18, DATA_WIDTH =512, DDR
 
 
    input                        Clk_400;             //              in    std_logic;           Core clock. CCI interface is synchronous to this clock.
+`ifdef INCLUDE_REMOTE_STP       
+   input wire                   Clk_100;
+`endif   
    input                        SoftReset;            //              in    std_logic;           CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH
 `ifdef INCLUDE_DDR4
    input  wire                      DDR4a_USERCLK;
@@ -397,13 +403,27 @@ module nlb_lpbk #(parameter TXHDR_WIDTH=61, RXHDR_WIDTH=18, DATA_WIDTH =512, DDR
    end
 
 `ifdef INCLUDE_REMOTE_STP
+   wire Clk_100_SoftReset;
+
+   // Reset synchronizer
+   resync #(
+           .SYNC_CHAIN_LENGTH(2),
+           .WIDTH(1),		 
+           .INIT_VALUE(1)	 
+   ) Clk_100_reset_sync (
+           .clk(Clk_100),
+           .reset(SoftReset),
+           .d(1'b0),
+           .q(Clk_100_SoftReset)
+   );
+
    //Counter to test signaltap
    (* noprune *) reg [15:0] out /* synthesis noprune */;
-   always @(posedge Clk_400) begin
-      if (SoftReset == 1'b1) begin
-         out <= 1'b0;
+   always @(posedge Clk_100) begin
+      if (Clk_100_SoftReset == 1'b1) begin
+         out <= 16'd0;
       end else begin
-         out <= out + 1'b1;
+         out <= out + 16'd1;
       end
    end
 `endif

@@ -60,10 +60,12 @@ reg wr_fifo_data_valid;
 
 wire ddr_reset;
 wire [DATA_WIDTH-1:0] ddr_readdata_word;
-reg [READ_FIFO_WIDTH-1:0] ddr_res_din;
+wire [READ_FIFO_WIDTH-1:0] ddr_res_din;
+reg [READ_FIFO_WIDTH-1:0] ddr_res_din_T0, ddr_res_din_T1, ddr_res_din_T2;
 wire [READ_FIFO_WIDTH-1:0] ddr_res_dout;
 
-reg write_ddr_data;
+wire write_ddr_data;
+reg write_ddr_data_T0, write_ddr_data_T1, write_ddr_data_T2;
 wire ddr_res_empty, ddr_res_full;
 
 reg [READ_FIFO_WIDTH-1:0] ddr_res_q, ddr_res_q2, ddr_res_q3;
@@ -231,8 +233,23 @@ always @(*) begin
 	endcase
 end
 
-assign write_ddr_data = DDR_readdatavalid_d0 && ~ddr_res_full;
-assign ddr_res_din = {ddr_readdata_word};
+always @(posedge DDR_USERCLK) begin
+   if (ddr_reset) begin
+	   write_ddr_data_T0 <= 1'b0;
+	end else begin
+	   write_ddr_data_T0 <= DDR_readdatavalid_d0 && ~ddr_res_full;
+	end
+	   write_ddr_data_T1 <= write_ddr_data_T0;
+		write_ddr_data_T2 <= write_ddr_data_T1;
+end
+assign write_ddr_data = write_ddr_data_T2;
+
+always @(posedge DDR_USERCLK) begin  
+   ddr_res_din_T0 <= ddr_readdata_word;
+	ddr_res_din_T1 <= ddr_res_din_T0;
+	ddr_res_din_T2 <= ddr_res_din_T1;
+end
+assign ddr_res_din = ddr_res_din_T2;
 	
 write_dc_fifo afu_cmd_fifo (
 	.data(afu_cmd_din),

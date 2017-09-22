@@ -2,7 +2,7 @@
   <instance enabled="true" entity_name="sld_signaltap" is_auto_node="yes" is_expanded="true" name="auto_signaltap_0of6_9x0" source_file="sld_signaltap.vhd">
     <node_ip_info instance_id="0" mfg_id="110" node_id="0" version="6"/>
     <signal_set is_expanded="true" name="signal_set_0of6_9x0">
-      <clock name="inst_ccip_std_afu|nlb_lpbk|Clk_400" polarity="posedge"/>
+      <clock name="inst_ccip_std_afu|nlb_lpbk|Clk_100" polarity="posedge"/>
       <signal_vec>
         <trigger_input_vec>
           <wire alias="S0" name="inst_ccip_std_afu|nlb_lpbk|out[0]" tap_mode="classic" type="unknown"/>
@@ -1013,7 +1013,7 @@
   <instance enabled="true" entity_name="sld_signaltap" is_auto_node="yes" is_expanded="true" name="auto_signaltap_1of6_1x1024" source_file="sld_signaltap.vhd">
     <node_ip_info instance_id="1" mfg_id="110" node_id="0" version="6"/>
     <signal_set is_expanded="true" name="signal_set_1of6_1x1024">
-      <clock name="inst_ccip_std_afu|nlb_lpbk|Clk_400" polarity="posedge"/>
+      <clock name="inst_ccip_std_afu|nlb_lpbk|Clk_100" polarity="posedge"/>
       <signal_vec>
         <trigger_input_vec>
           <wire alias="S0" name="inst_ccip_std_afu|nlb_lpbk|out[0]" tap_mode="classic" type="unknown"/>
@@ -1776,7 +1776,7 @@
   <instance enabled="true" entity_name="sld_signaltap" is_auto_node="yes" is_expanded="true" name="auto_signaltap_2of6_2x512" source_file="sld_signaltap.vhd">
     <node_ip_info instance_id="2" mfg_id="110" node_id="0" version="6"/>
     <signal_set is_expanded="true" name="signal_set_2of6_2x512">
-      <clock name="inst_ccip_std_afu|nlb_lpbk|Clk_400" polarity="posedge"/>
+      <clock name="inst_ccip_std_afu|nlb_lpbk|Clk_100" polarity="posedge"/>
       <signal_vec>
         <trigger_input_vec>
           <wire alias="S0" name="inst_ccip_std_afu|nlb_lpbk|out[0]" tap_mode="classic" type="unknown"/>
@@ -2570,7 +2570,7 @@
   <instance enabled="true" entity_name="sld_signaltap" is_auto_node="yes" is_expanded="true" name="auto_signaltap_3of6_3x256" source_file="sld_signaltap.vhd">
     <node_ip_info instance_id="3" mfg_id="110" node_id="0" version="6"/>
     <signal_set is_expanded="true" name="signal_set_3of6_3x256">
-      <clock name="inst_ccip_std_afu|nlb_lpbk|Clk_400" polarity="posedge"/>
+      <clock name="inst_ccip_std_afu|nlb_lpbk|Clk_100" polarity="posedge"/>
       <signal_vec>
         <trigger_input_vec>
           <wire alias="S0" name="inst_ccip_std_afu|nlb_lpbk|out[0]" tap_mode="classic" type="unknown"/>
@@ -3395,7 +3395,7 @@
   <instance enabled="true" entity_name="sld_signaltap" is_auto_node="yes" is_expanded="true" name="auto_signaltap_4of6_5x128" source_file="sld_signaltap.vhd">
     <node_ip_info instance_id="4" mfg_id="110" node_id="0" version="6"/>
     <signal_set is_expanded="true" name="signal_set_4of6_5x128">
-      <clock name="inst_ccip_std_afu|nlb_lpbk|Clk_400" polarity="posedge"/>
+      <clock name="inst_ccip_std_afu|nlb_lpbk|Clk_100" polarity="posedge"/>
       <signal_vec>
         <trigger_input_vec>
           <wire alias="S0" name="inst_ccip_std_afu|nlb_lpbk|out[0]" tap_mode="classic" type="unknown"/>
@@ -4282,7 +4282,7 @@
   <instance enabled="true" entity_name="sld_signaltap" is_auto_node="yes" is_expanded="true" name="auto_signaltap_5of6_14x128" source_file="sld_signaltap.vhd">
     <node_ip_info instance_id="5" mfg_id="110" node_id="0" version="6"/>
     <signal_set is_expanded="true" name="signal_set_5of6_14x128">
-      <clock name="inst_ccip_std_afu|nlb_lpbk|Clk_400" polarity="posedge"/>
+      <clock name="inst_ccip_std_afu|nlb_lpbk|Clk_100" polarity="posedge"/>
       <signal_vec>
         <trigger_input_vec>
           <wire alias="S0" name="inst_ccip_std_afu|nlb_lpbk|out[0]" tap_mode="classic" type="unknown"/>
@@ -5473,7 +5473,7 @@
       <single attribute="setup horizontal scroll position" value="0"/>
     </position_info>
     <signal_set name="signal_set: 2017/09/19 10:29:16  #0">
-      <clock name="Clk_400" polarity="posedge" tap_mode="classic"/>
+      <clock name="Clk_100" polarity="posedge" tap_mode="classic"/>
       <config pipeline_level="0" ram_type="AUTO" reserved_data_nodes="0" reserved_storage_qualifier_nodes="0" reserved_trigger_nodes="0" sample_depth="4096" trigger_in_enable="no" trigger_out_enable="no"/>
       <top_entity/>
       <signal_vec>

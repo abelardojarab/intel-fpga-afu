@@ -146,6 +146,9 @@ t_if_ccip_Tx pck_af2cp_sTx_T0;
 		.DDR4_ADDR_WIDTH (27)
     ) nlb_lpbk(
         .Clk_400                        (pClk),
+`ifdef INCLUDE_REMOTE_STP
+        .Clk_100                        (pClkDiv4),
+`endif    
         .SoftReset                      (pck_cp2af_softReset_T1),
 `ifdef INCLUDE_DDR4
 	.DDR4a_USERCLK(DDR4a_USERCLK),       
@@ -202,6 +205,9 @@ ccip_interface_reg inst_green_ccip_interface_reg  (
 		.DDR4_ADDR_WIDTH (27)
     ) nlb_lpbk(
     .Clk_400                        (pClk),
+ `ifdef INCLUDE_REMOTE_STP
+    .Clk_100                        (pClkDiv4),
+`endif    
     .SoftReset                      (pck_cp2af_softReset_T1),
 `ifdef INCLUDE_DDR4
 	.DDR4a_USERCLK(DDR4a_USERCLK),       

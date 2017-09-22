@@ -963,10 +963,7 @@ fpga_result fpgaDmaTransferAsync(fpga_dma_handle dma, uint64_t dst, uint64_t src
 fpga_result fpgaDmaClose(fpga_dma_handle dma_h) {   
    fpga_result res = FPGA_OK;
    int i;
-   if(!dma_h)
-      res = FPGA_INVALID_PARAM;
-
-   if(!dma_h->fpga_h)
+   if(!dma_h || !dma_h->fpga_h)
       res = FPGA_INVALID_PARAM;
    
    if(res == FPGA_OK) {

@@ -216,7 +216,7 @@ int main(int argc, char *argv[]) {
 
    dma_buf_ptr = (uint64_t*)malloc(count);
 
-   if(dma_buf_ptr == NULL) {
+   if(dma_h == NULL || dma_buf_ptr == NULL) {
       res = FPGA_NO_MEMORY;
       ON_ERR_GOTO(res, out_dma_close, "Malloc failed: no memory");
    }
@@ -266,7 +266,8 @@ int main(int argc, char *argv[]) {
 
 out_dma_close:
    free(dma_buf_ptr);
-   res = fpgaDmaClose(dma_h);
+   if(dma_h)
+      res = fpgaDmaClose(dma_h);
    ON_ERR_GOTO(res, out_unmap, "fpgaDmaClose");
 
 out_unmap:

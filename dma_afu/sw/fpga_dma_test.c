@@ -207,7 +207,7 @@ int main(int argc, char *argv[]) {
    ON_ERR_GOTO(res, out_unmap, "fpgaReset");
 
    res = fpgaDmaOpen(afc_h, &dma_h);
-   ON_ERR_GOTO(res, out_unmap, "fpgaDmaOpen");
+   ON_ERR_GOTO(res, out_dma_close, "fpgaDmaOpen");
 
    if(use_ase)
       count = ASE_TEST_BUF_SIZE;

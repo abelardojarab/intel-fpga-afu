@@ -43,6 +43,7 @@ import ccip_if_pkg::*;
 module ccip_async_shim
   #(
     parameter DEBUG_ENABLE          = 0,
+    parameter ENABLE_EXTRA_RX_C0_PIPELINE = 1,
     parameter ENABLE_EXTRA_PIPELINE = 1,
     parameter C0TX_DEPTH_RADIX      = 8,
     parameter C1TX_DEPTH_RADIX      = 8,
@@ -376,6 +377,26 @@ module ccip_async_shim
    logic                        c0rx_rdempty;
    logic                        c0rx_fifo_wrfull;
 
+   t_if_ccip_c0_Rx bb_rx_q2_c0;
+   logic bb_rx_q2_c0_valid;
+   
+   // Extra pipeline register to ease timing pressure -- disable as needed
+   generate
+      if (ENABLE_EXTRA_RX_C0_PIPELINE == 1) begin
+         always @(posedge bb_clk) begin
+            bb_rx_q2_c0 <= bb_rx_q.c0;
+            //need to register this combined valid signal to help timing into the RAM block
+            bb_rx_q2_c0_valid <= bb_rx_q.c0.rspValid | bb_rx_q.c0.mmioRdValid | bb_rx_q.c0.mmioWrValid;
+         end
+      end
+      else begin
+         always @(*) begin
+            bb_rx_q2_c0 <= bb_rx_q.c0;
+            bb_rx_q2_c0_valid <= bb_rx_q.c0.rspValid | bb_rx_q.c0.mmioRdValid | bb_rx_q.c0.mmioWrValid;
+         end
+      end
+   endgenerate
+   
    ccip_afifo_channel
      #(
        .DATA_WIDTH  (C0RX_TOTAL_WIDTH),
@@ -383,8 +404,8 @@ module ccip_async_shim
        )
    c0rx_afifo
      (
-      .data    ( {bb_rx_q.c0.hdr, bb_rx_q.c0.data, bb_rx_q.c0.rspValid, bb_rx_q.c0.mmioRdValid, bb_rx_q.c0.mmioWrValid} ),
-      .wrreq   ( bb_rx_q.c0.rspValid | bb_rx_q.c0.mmioRdValid |  bb_rx_q.c0.mmioWrValid ),
+      .data    ( {bb_rx_q2_c0.hdr, bb_rx_q2_c0.data, bb_rx_q2_c0.rspValid, bb_rx_q2_c0.mmioRdValid, bb_rx_q2_c0.mmioWrValid} ),
+      .wrreq   ( bb_rx_q2_c0_valid ),
       .rdreq   ( c0rx_rdreq ),
       .wrclk   ( bb_clk ),
       .rdclk   ( afu_clk ),
@@ -483,7 +504,7 @@ module ccip_async_shim
          async_shim_error[0] <= c0tx_fifo_wrfull && afu_tx_q.c0.valid;
          async_shim_error[1] <= c1tx_fifo_wrfull && afu_tx_q.c1.valid;
          async_shim_error[2] <= c2tx_fifo_wrfull && afu_tx_q.c2.mmioRdValid;
-         async_shim_error[3] <= c0rx_fifo_wrfull && (bb_rx_q.c0.rspValid|bb_rx_q.c0.mmioRdValid|bb_rx_q.c0.mmioWrValid );
+         async_shim_error[3] <= c0rx_fifo_wrfull && bb_rx_q2_c0_valid;
          async_shim_error[4] <= c1rx_fifo_wrfull && bb_rx_q.c1.rspValid;
       end
    end
@@ -564,7 +585,7 @@ module ccip_async_shim
                  bb_c1tx_cnt <= bb_c1tx_cnt + 1;
                if (bb_tx_q.c2.mmioRdValid)
                  bb_c2tx_cnt <= bb_c2tx_cnt + 1;
-               if (bb_rx_q.c0.rspValid|bb_rx_q.c0.mmioRdValid|bb_rx_q.c0.mmioWrValid)
+               if (bb_rx_q2_c0_valid)
                  bb_c0rx_cnt <= bb_c0rx_cnt + 1;
                if (bb_rx_q.c1.rspValid)
                  bb_c1rx_cnt <= bb_c1rx_cnt + 1;

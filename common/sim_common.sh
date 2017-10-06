@@ -215,7 +215,7 @@ run_sim() {
       get_vcs_home
 
       # Else, try to auto-detect VCS_HOME
-      ./scripts/generate_ase_environment.py -t VCS -p dcp $sim_afu_path
+      ./scripts/generate_ase_environment.py -t VCS -p discrete $sim_afu_path
       echo "SNPS_VLOGAN_OPT+= +define+INCLUDE_DDR4 +define+DDR_ADDR_WIDTH=26" >> ase_sources.mk
 
       # add non-standard text macros (if any)

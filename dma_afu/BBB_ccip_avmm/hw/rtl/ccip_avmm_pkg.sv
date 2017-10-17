@@ -20,14 +20,4 @@ package ccip_avmm_pkg;
 	parameter CCIP_AVMM_REQUESTOR_BURST_WIDTH = 3;
 	parameter CCIP_AVMM_REQUESTOR_CONTROL_WIDTH = 1;
 
-	typedef struct packed { 
-		logic [CCIP_AVMM_REQUESTOR_ADDR_WIDTH-1:0] addr;
-		logic [CCIP_AVMM_REQUESTOR_DATA_WIDTH-1:0] write_data;
-		logic [CCIP_AVMM_REQUESTOR_BURST_WIDTH-1:0] burst;
-		logic [CCIP_AVMM_REQUESTOR_CONTROL_WIDTH-1:0] control;
-	} t_ccip_avmm_requestor_cmd;
-	
-	parameter CCIP_AVMM_REQUESTOR_CMD_WIDTH = $bits(t_ccip_avmm_requestor_cmd);
-
-
 endpackage // ccip_feature_list_pkg

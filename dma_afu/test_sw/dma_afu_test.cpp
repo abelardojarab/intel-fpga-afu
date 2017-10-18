@@ -494,6 +494,60 @@ int run_enumeration_test(fpga_handle afc_handle)
 	check_guid(afc_handle, 0xa9149a35bace01ea, 0xef82def7f6ec40fc, "msgdma_bbb");
 }
 
+int run_basic_interrupt_test(fpga_handle afc_handle)
+{
+	volatile uint64_t *dma_buf_ptr  = NULL;
+	uint64_t        dma_buf_wsid;
+	uint64_t dma_buf_iova;
+	
+	uint64_t data = 0;
+	fpga_result     res = FPGA_OK;
+
+	const int TEST_BUFFER_SIZE = 1024*16;
+
+	const int TEST_BUFFER_WORD_SIZE = TEST_BUFFER_SIZE/8;
+	char test_buffer[TEST_BUFFER_SIZE];
+	uint64_t *test_buffer_word_ptr = (uint64_t *)test_buffer;
+	char test_buffer_zero[TEST_BUFFER_SIZE];
+	int num_errors = 0;
+	const uint64_t DEST_PTR = 1024*1024;
+
+
+	res = fpgaPrepareBuffer(afc_handle, DMA_BUFFER_SIZE,
+		(void **)&dma_buf_ptr, &dma_buf_wsid, 0);
+	ON_ERR_GOTO(res, release_buf, "allocating dma buffer");
+	memset((void *)dma_buf_ptr,  0x0, DMA_BUFFER_SIZE);
+	
+	res = fpgaGetIOAddress(afc_handle, dma_buf_wsid, &dma_buf_iova);
+	ON_ERR_GOTO(res, release_buf, "getting dma DMA_BUF_IOVA");
+	
+	printf("TEST_BUFFER_SIZE = %d\n", TEST_BUFFER_SIZE);
+	printf("DMA_BUFFER_SIZE = %d\n", DMA_BUFFER_SIZE);
+	
+	memset(test_buffer_zero, 0, TEST_BUFFER_SIZE);
+	
+	
+	for(int i = 0; i < TEST_BUFFER_WORD_SIZE; i++)
+		test_buffer_word_ptr[i] = i;
+	
+	//this test just runs larger dma buffers to test dc fifo overflow in sim
+	
+	//test ddr to ddr transfers
+	copy_dev_to_dev_with_dma(afc_handle, 0, DEST_PTR, TEST_BUFFER_SIZE, true);
+	
+	//test ddr to host transfers
+	copy_dev_to_dev_with_dma(afc_handle, 0, dma_buf_iova | 0x1000000000000, TEST_BUFFER_SIZE, true);
+	
+	//test host to ddr transfers
+	copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | 0x1000000000000, DEST_PTR, TEST_BUFFER_SIZE, true);
+	
+	printf("num_errors = %d\n", num_errors);
+	s_error_count += num_errors;
+	
+release_buf:
+	res = fpgaReleaseBuffer(afc_handle, dma_buf_wsid);
+}
+
 int run_large_dma_test(fpga_handle afc_handle)
 {
 	volatile uint64_t *dma_buf_ptr  = NULL;
@@ -629,6 +683,7 @@ int main(int argc, char *argv[])
 	run_basic_tests_with_mmio(afc_handle);
 	run_basic_ddr_dma_test(afc_handle);
 	run_large_dma_test(afc_handle);
+	run_basic_interrupt_test(afc_handle);
 	run_basic_32bit_mmio(afc_handle);
 	run_enumeration_test(afc_handle);
 	check_host_read_from_mmio(afc_handle);

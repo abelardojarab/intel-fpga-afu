@@ -30,7 +30,7 @@ void copy_to_dev_with_mmio(fpga_handle afc_handle, uint64_t *host_src, uint64_t 
 void copy_from_dev_with_mmio(fpga_handle afc_handle, uint64_t *host_dst, uint64_t dev_src, int len);
 int compare_dev_and_host(fpga_handle afc_handle, uint64_t *host_dst, uint64_t dev_src, int len);
 void copy_dev_to_dev_with_mmio(fpga_handle afc_handle, uint64_t dev_src, uint64_t dev_dest, int len);
-void copy_dev_to_dev_with_dma(fpga_handle afc_handle, uint64_t dev_src, uint64_t dev_dest, int len);
+void copy_dev_to_dev_with_dma(fpga_handle afc_handle, uint64_t dev_src, uint64_t dev_dest, int len, bool intr=false);
 
 int dump_dfh_list(fpga_handle afc_handle);
 bool find_dfh_by_guid(fpga_handle afc_handle, 

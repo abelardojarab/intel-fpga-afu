@@ -160,6 +160,8 @@ module afu #(
 	wire mmio_avmm_read;
 	wire [(CCIP_AVMM_MMIO_DATA_WIDTH/8)-1:0]	mmio_avmm_byteenable;
 
+	wire dma_irq;
+	
 	dma_test_system u0 (
         .ddr4a_master_waitrequest   (DDR4a_waitrequest),   // dma_master.waitrequest
 		.ddr4a_master_readdata      (DDR4a_readdata),      //           .readdata
@@ -204,15 +206,21 @@ module afu #(
         .ccip_avmm_requestor_byteenable    (),    //                    .byteenable
         .ccip_avmm_requestor_debugaccess   (),   //                    .debugaccess
         
+        .dma_irq_irq(dma_irq),
+        
 		.ddr4a_clk_clk(DDR4a_USERCLK),
 		.ddr4b_clk_clk(DDR4b_USERCLK),
 		.host_clk_clk(pClkDiv2),
 		.reset_reset(reset)         // reset.reset
 	);
-	
-	avmm_ccip_host avmm_ccip_host_inst (
+
+	avmm_ccip_host #(
+		.ENABLE_INTR(1)
+	) avmm_ccip_host_inst (
 		.clk            (pClkDiv2),            //   clk.clk
 		.reset        (reset),         // reset.reset
+		
+		.irq({3'b000, dma_irq}),
 		
 		.avmm_waitrequest(requestor_avmm_waitrequest),
 		.avmm_readdata(requestor_avmm_readdata),

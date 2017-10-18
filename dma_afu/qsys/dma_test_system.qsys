@@ -258,27 +258,6 @@
  <parameter name="systemInfos"><![CDATA[<systemInfosDefinition>
     <connPtSystemInfos>
         <entry>
-            <key>ccip_avm_mmio</key>
-            <value>
-                <connectionPointName>ccip_avm_mmio</connectionPointName>
-                <suppliedSystemInfos/>
-                <consumedSystemInfos>
-                    <entry>
-                        <key>ADDRESS_MAP</key>
-                        <value>&lt;address-map&gt;&lt;slave name='dma_test_system_afu_id_avmm_slave_0.afu_cfg_slave' start='0x0' end='0x40' datawidth='64' /&gt;&lt;slave name='msgdma_bbb_inst.msgdma_bbb_afu_id_avmm_slave_0.afu_cfg_slave' start='0x20000' end='0x20040' datawidth='64' /&gt;&lt;slave name='msgdma_bbb_inst.modular_sgdma_dispatcher_0.CSR' start='0x20040' end='0x20060' datawidth='32' /&gt;&lt;slave name='msgdma_bbb_inst.modular_sgdma_dispatcher_0.Descriptor_Slave' start='0x20060' end='0x20080' datawidth='256' /&gt;&lt;slave name='msgdma_bbb_inst.address_span_extender_0.cntl' start='0x20200' end='0x20208' datawidth='64' /&gt;&lt;slave name='msgdma_bbb_inst.address_span_extender_0.windowed_slave' start='0x21000' end='0x22000' datawidth='512' /&gt;&lt;/address-map&gt;</value>
-                    </entry>
-                    <entry>
-                        <key>ADDRESS_WIDTH</key>
-                        <value>18</value>
-                    </entry>
-                    <entry>
-                        <key>MAX_SLAVE_DATA_WIDTH</key>
-                        <value>512</value>
-                    </entry>
-                </consumedSystemInfos>
-            </value>
-        </entry>
-        <entry>
             <key>ccip_avmm_mmio</key>
             <value>
                 <connectionPointName>ccip_avmm_mmio</connectionPointName>
@@ -352,6 +331,11 @@
    internal="ddr4b_mm_bridge.m0"
    type="avalon"
    dir="start" />
+ <interface
+   name="dma_irq"
+   internal="msgdma_bbb_inst.dma_irq"
+   type="interrupt"
+   dir="end" />
  <interface name="host_clk" internal="host_clk.in_clk" type="clock" dir="end" />
  <interface
    name="receive_stream_sink"

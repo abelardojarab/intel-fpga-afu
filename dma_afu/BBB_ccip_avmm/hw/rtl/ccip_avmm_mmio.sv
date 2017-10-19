@@ -58,14 +58,14 @@ module ccip_avmm_mmio #(
 
 
 	//
-    logic [CCIP_AVMM_MMIO_DATA_WIDTH-1:0] mmio_rsp_data;
-    logic mmio_rsp_valid;
-    logic mmio_rsp_ready;
-    
-    t_ccip_avmm_mmio_cmd mmio_cmd_data;
-    logic mmio_cmd_valid;
-    logic mmio_cmd_ready;
-    
+	logic [CCIP_AVMM_MMIO_DATA_WIDTH-1:0] mmio_rsp_data;
+	logic mmio_rsp_valid;
+	logic mmio_rsp_ready;
+	
+	t_ccip_avmm_mmio_cmd mmio_cmd_data;
+	logic mmio_cmd_valid;
+	logic mmio_cmd_ready;
+	
 	// cast c0 header into ReqMmioHdr
 	t_ccip_c0_ReqMmioHdr mmioHdr;
 	assign mmioHdr = t_ccip_c0_ReqMmioHdr'(c0rx.hdr);
@@ -101,18 +101,18 @@ module ccip_avmm_mmio #(
 		.full (),
 		.usedw ()
 	);
-    defparam
-        tid_fifo_inst.add_ram_output_register  = "ON",
-        tid_fifo_inst.enable_ecc  = "FALSE",
-        tid_fifo_inst.intended_device_family  = "Arria 10",
-        tid_fifo_inst.lpm_numwords  = 64,
-        tid_fifo_inst.lpm_showahead  = "OFF",
-        tid_fifo_inst.lpm_type  = "scfifo",
-        tid_fifo_inst.lpm_width  = TID_FIFO_WIDTH,
-        tid_fifo_inst.lpm_widthu  = 6,
-        tid_fifo_inst.overflow_checking  = "ON",
-        tid_fifo_inst.underflow_checking  = "ON",
-        tid_fifo_inst.use_eab  = "ON";
+	defparam
+		tid_fifo_inst.add_ram_output_register  = "ON",
+		tid_fifo_inst.enable_ecc  = "FALSE",
+		tid_fifo_inst.intended_device_family  = "Arria 10",
+		tid_fifo_inst.lpm_numwords  = 64,
+		tid_fifo_inst.lpm_showahead  = "OFF",
+		tid_fifo_inst.lpm_type  = "scfifo",
+		tid_fifo_inst.lpm_width  = TID_FIFO_WIDTH,
+		tid_fifo_inst.lpm_widthu  = 6,
+		tid_fifo_inst.overflow_checking  = "ON",
+		tid_fifo_inst.underflow_checking  = "ON",
+		tid_fifo_inst.use_eab  = "ON";
 
 	always_ff @(posedge clk)
 	begin
@@ -145,16 +145,16 @@ module ccip_avmm_mmio #(
 	
 	//handle avmm signals
 	assign avmm_byteenable = mmio_cmd_data.is_32bit ? 
-    	(mmio_cmd_data.addr[2] ? 8'b11110000 : 8'b00001111) : 8'b11111111;
+		(mmio_cmd_data.addr[2] ? 8'b11110000 : 8'b00001111) : 8'b11111111;
 
 	//read/write request
-    assign avmm_address = mmio_cmd_data.addr;
-    assign avmm_writedata = mmio_cmd_data.write_data;
+	assign avmm_address = mmio_cmd_data.addr;
+	assign avmm_writedata = mmio_cmd_data.write_data;
 
 	assign mmio_cmd_ready = !reset & !avmm_waitrequest;	
-    wire avmm_ready = !reset & (!avmm_waitrequest && mmio_cmd_valid);
-    assign avmm_write = avmm_ready & !mmio_cmd_data.is_read;
-    assign avmm_read = avmm_ready & mmio_cmd_data.is_read;
+	wire avmm_ready = !reset & (!avmm_waitrequest && mmio_cmd_valid);
+	assign avmm_write = avmm_ready & !mmio_cmd_data.is_read;
+	assign avmm_read = avmm_ready & mmio_cmd_data.is_read;
 
 	//handle read response
 	assign mmio_rsp_data = avmm_readdata;

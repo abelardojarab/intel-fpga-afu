@@ -45,7 +45,7 @@ module avmm_ccip_host (
 	
 	//not used right now
 	input 	[(CCIP_AVMM_REQUESTOR_DATA_WIDTH/8)-1:0]	avmm_byteenable,
-    
+	
 	// ---------------------------IF signals between CCI and AFU  --------------------------------
 	input c0TxAlmFull,
 	input c1TxAlmFull,
@@ -67,72 +67,72 @@ module avmm_ccip_host (
 	//write request
 	t_if_ccip_c1_Tx c1tx_next;
 
-    t_ccip_clLen burst_encoded;
-    
-    always @ (avmm_request.burst)
-    begin
-      case (avmm_request.burst)
-        3'b010:  burst_encoded = eCL_LEN_2;
-        3'b100:  burst_encoded = eCL_LEN_4;
-        default:  burst_encoded = eCL_LEN_1;
-      endcase
-    end
+	t_ccip_clLen burst_encoded;
+	
+	always @ (avmm_request.burst)
+	begin
+	  case (avmm_request.burst)
+		3'b010:  burst_encoded = eCL_LEN_2;
+		3'b100:  burst_encoded = eCL_LEN_4;
+		default:  burst_encoded = eCL_LEN_1;
+	  endcase
+	end
 
 
-    reg [1:0] burst_counter;
-    wire burst_counter_enable;
-    wire load_burst_counter;
-    wire write_sop;
-    reg [1:0] address_counter;
-    wire is_avmm_write;
-    wire is_avmm_read;
+	reg [1:0] burst_counter;
+	wire burst_counter_enable;
+	wire load_burst_counter;
+	wire write_sop;
+	reg [1:0] address_counter;
+	wire is_avmm_write;
+	wire is_avmm_read;
 
 	logic [CCIP_AVMM_REQUESTOR_DATA_WIDTH-1:0] avst_rd_rsp_data;
-    logic avst_rd_rsp_valid;
-    logic avst_rd_rsp_ready;
+	logic avst_rd_rsp_valid;
+	logic avst_rd_rsp_ready;
 
-    t_ccip_avmm_requestor_cmd avmm_request;
-    logic avst_avcmd_valid;
-    logic avst_avcmd_ready;
+	t_ccip_avmm_requestor_cmd avmm_request;
+	logic avst_avcmd_valid;
+	logic avst_avcmd_ready;
 
-    /* Timing counter for signalling the write channel SOP.
-       The incoming bursts are values of 0, 1, or 3.  The steady
-       state of the counter is 0 and when 0 we load the counter when
-       a new write burst arrives. If a burst of 1 or 3 arrives then
-       for each beat coming out of the command channel decrements the
-       counter by 1.  Every time the burst counter is set to 0 the
-       SOP is asserted.  For back to back bursts the counter hits 0
-       exactly at the same time the next burst arrives, and if there is
-       a gap between bursts the counter still hits 0 and SOP will be
-       asserted but the valid will remain deasserted until the next
-       burst arrives. The two address LSBs must increment during a burst
-       so on a 2nd, 3rd, or 4th beat the address_counter[1:0] will be
-       used for the address LSB for write commands. */
-    always @ (posedge clk or posedge reset)
-    begin
-      if (reset == 1'b1)
-      begin
-        burst_counter <= 2'b00;
-        address_counter <= 2'b00;
-      end
-      else
-      begin
-        if (load_burst_counter == 1'b1)
-        begin
-          burst_counter <= burst_encoded;
-          address_counter <= avmm_request.addr[7:6] + 1'b1;  // need to +1 because this counter is only used on beats 2-4
-        end
-        else if (burst_counter_enable == 1'b1)
-        begin
-          burst_counter <= burst_counter - 1'b1;
-          address_counter <= address_counter + 1'b1;
-        end
-      end
-    end
+	/* Timing counter for signalling the write channel SOP.
+	   The incoming bursts are values of 0, 1, or 3.  The steady
+	   state of the counter is 0 and when 0 we load the counter when
+	   a new write burst arrives. If a burst of 1 or 3 arrives then
+	   for each beat coming out of the command channel decrements the
+	   counter by 1.  Every time the burst counter is set to 0 the
+	   SOP is asserted.  For back to back bursts the counter hits 0
+	   exactly at the same time the next burst arrives, and if there is
+	   a gap between bursts the counter still hits 0 and SOP will be
+	   asserted but the valid will remain deasserted until the next
+	   burst arrives. The two address LSBs must increment during a burst
+	   so on a 2nd, 3rd, or 4th beat the address_counter[1:0] will be
+	   used for the address LSB for write commands. */
+	always @ (posedge clk or posedge reset)
+	begin
+	  if (reset == 1'b1)
+	  begin
+		burst_counter <= 2'b00;
+		address_counter <= 2'b00;
+	  end
+	  else
+	  begin
+		if (load_burst_counter == 1'b1)
+		begin
+		  burst_counter <= burst_encoded;
+		  address_counter <= avmm_request.addr[7:6] + 1'b1;  // need to +1 because this counter is only used on beats 2-4
+		end
+		else if (burst_counter_enable == 1'b1)
+		begin
+		  burst_counter <= burst_counter - 1'b1;
+		  address_counter <= address_counter + 1'b1;
+		end
+	  end
+	end
 
-    assign write_sop = (burst_counter == 2'b00);
-    assign load_burst_counter = (burst_counter == 2'b00) & (is_avmm_write == 1'b1) & (avst_avcmd_ready == 1'b1);
-    assign burst_counter_enable = (burst_counter != 2'b00) & (is_avmm_write == 1'b1) & (avst_avcmd_ready == 1'b1);
+	assign write_sop = (burst_counter == 2'b00);
+	assign load_burst_counter = (burst_counter == 2'b00) & (is_avmm_write == 1'b1) & (avst_avcmd_ready == 1'b1);
+	assign burst_counter_enable = (burst_counter != 2'b00) & (is_avmm_write == 1'b1) & (avst_avcmd_ready == 1'b1);
 	
 	//read request
 	assign is_avmm_read = avmm_request.control[0] & avst_avcmd_valid;
@@ -153,10 +153,10 @@ module avmm_ccip_host (
 	assign c1tx_next.hdr.cl_len = burst_encoded;
 	assign c1tx_next.hdr.req_type = eREQ_WRLINE_I;
 	assign c1tx_next.hdr.rsvd0 = '0;
-    assign c1tx_next.hdr.address = {avmm_request.addr[47:8], ((write_sop == 1'b1)? avmm_request.addr[7:6] : address_counter)};
+	assign c1tx_next.hdr.address = {avmm_request.addr[47:8], ((write_sop == 1'b1)? avmm_request.addr[7:6] : address_counter)};
 	assign c1tx_next.hdr.mdata = tx_mdata;
 	assign c1tx_next.data = avmm_request.write_data; 
-    assign c1tx_next.valid = reset ? 1'b0 : is_avmm_write;
+	assign c1tx_next.valid = reset ? 1'b0 : is_avmm_write;
  
 	wire avst_avcmd_ready_next = ~(c0TxAlmFull | c1TxAlmFull);
 
@@ -216,17 +216,17 @@ module avmm_ccip_host (
 
 	//convert to avalon mm
 	
-    //read/write request
-    assign avmm_request.addr = avmm_address;
+	//read/write request
+	assign avmm_request.addr = avmm_address;
 	assign avmm_request.write_data = avmm_writedata;
-    assign avmm_request.burst = avmm_burstcount;
+	assign avmm_request.burst = avmm_burstcount;
 	assign avmm_request.control[0] = avmm_read;
-    
-    assign avmm_waitrequest = ~avst_avcmd_ready;
+	
+	assign avmm_waitrequest = ~avst_avcmd_ready;
 	assign avst_avcmd_valid = reset ? 1'b0 : (avmm_read | avmm_write);
 		
 	//read resp
-    assign avmm_readdatavalid = reset ? 1'b0 : avst_rd_rsp_valid;
+	assign avmm_readdatavalid = reset ? 1'b0 : avst_rd_rsp_valid;
 	assign avmm_readdata = avst_rd_rsp_data;
 	assign avst_rd_rsp_ready = ~reset;
 endmodule

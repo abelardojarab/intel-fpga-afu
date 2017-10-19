@@ -8,16 +8,31 @@ COMMON_SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
 COMMON_SCRIPT_DIR_PATH="$(dirname $COMMON_SCRIPT_PATH)"
 
 usage_setup_sim() { 
-   echo "Usage: $0 [-a <afu>] [-s <vcs|modelsim|questa>] [-b <opae base dir>]" 1>&2; 
+   echo "Usage: $0 -a <afu> -r <rtl simulation dir> [-s <vcs|modelsim|questa>] [-b <opae base dir>]" 1>&2;
    exit 1;
 }
 
+find_default_sim() {
+   if [ -x "$(command -v vcs)" ] ; then
+      echo vcs
+   elif [ -x "$(command -v vsim)" ] ; then
+      echo questa
+   fi
+}
+
 menu_setup_sim() {
+   # Defaults
+   s=`find_default_sim`
+   b="${OPAE_BASEDIR}"
+
    local OPTIND
-   while getopts ":a:s:b:m:" o; do
+   while getopts ":a:r:s:b:m:" o; do
       case "${o}" in
          a)
             a=${OPTARG}
+            ;;
+         r)
+            r=${OPTARG}
             ;;
          s)
             s=${OPTARG}            
@@ -35,14 +50,15 @@ menu_setup_sim() {
    shift $((OPTIND-1))
 
    # mandatory args
-   if [ -z "${a}" ] || [ -z "${s}" ] || [ -z "${b}" ]; then
+   if [ -z "${a}" ] || [ -z "${r}" ] || [ -z "${s}" ] || [ -z "${b}" ]; then
       usage_setup_sim;
    fi
 
-   afu=${a};
-   sim=${s};
+   afu=${a}
+   rtl_sim_dir=${r}
+   sim=${s}
    opae_base=${b}
-   test_mode=${m};
+   test_mode=${m}
 
    if [[ "$sim" != "vcs" ]] && [[ "$sim" != "questa" ]] && [[ "$sim" != "modelsim" ]] ; then
       echo "Supported simulators are vcs, modelsim and questa. You requsted $sim"
@@ -51,16 +67,22 @@ menu_setup_sim() {
 }
 
 usage_run_app() { 
-   echo "Usage: $0 [-a <application source>] [-b <opae base dir>]" 1>&2; 
+   echo "Usage: $0 -a <application source> -r <rtl simulation dir> [-b <opae base dir>]" 1>&2;
    exit 1; 
 }
 
 menu_run_app() {
+   # Defaults
+   b="${OPAE_BASEDIR}"
+
    local OPTIND
-   while getopts ":a:b:" o; do
+   while getopts ":a:r:b:" o; do
       case "${o}" in
          a)
             a=${OPTARG}
+            ;;
+         r)
+            r=${OPTARG}
             ;;
          b)
             b=${OPTARG}
@@ -70,25 +92,33 @@ menu_run_app() {
    shift $((OPTIND-1))
 
    # mandatory args
-   if [ -z "${a}" ] || [ -z "${b}" ]; then
+   if [ -z "${a}" ] || [ -z "${r}" ] || [ -z "${b}" ]; then
       usage_run_app;
    fi
 
-   app_base=${a};
-   opae_base=${b};
+   app_base=${a}
+   rtl_sim_dir=${r}
+   opae_base=${b}
 }
 
 usage_regress() { 
-   echo "Usage: $0 [-f <afu source>] [-a <application source>] [-b <opae base dir>] [-s <vcs|modelsim|questa>]" 1>&2; 
+   echo "Usage: $0 -f <afu source> -a <application source> -r <rtl simulation dir> [-s <vcs|modelsim|questa>] [-b <opae base dir>]" 1>&2;
    exit 1; 
 }
 
 menu_regress() {
+   # Defaults
+   s=`find_default_sim`
+   b="${OPAE_BASEDIR}"
+
    local OPTIND
-   while getopts ":a:s:b:f:m:" o; do
+   while getopts ":a:r:s:b:f:m:" o; do
       case "${o}" in
          a)
             a=${OPTARG}
+            ;;
+         r)
+            r=${OPTARG}
             ;;
          s)
             s=${OPTARG}            
@@ -109,13 +139,14 @@ menu_regress() {
 
    afu=${f};
    app=${a};
+   rtl_sim_dir=${r}
    sim=${s};
    opae_base=${b}
    test_mode=${m};
 
    echo "afu=$afu, app=$app, sim=$sim, base=$opae_base"
    # mandatory args
-   if [ -z "${a}" ] || [ -z "${s}" ] || [ -z "${f}" ] || [ -z "${b}" ]; then
+   if [ -z "${a}" ] || [ -z "${r}" ] || [ -z "${s}" ] || [ -z "${f}" ] || [ -z "${b}" ]; then
       usage_regress;
    fi
 
@@ -187,7 +218,7 @@ get_vcs_home() {
 }
 
 get_mti_home() {
-	if [ -z "$MTI_HOME" ] ; then      
+   if [ -z "$MTI_HOME" ] ; then
       # env not found
       echo "Your environment did not set MTI_HOME. Trying to detect Modelsim SE.. "
       vsim_bin=`which vsim`
@@ -201,12 +232,14 @@ get_mti_home() {
       fi
    else
       echo "Detected MTI_HOME at $MTI_HOME"
-   fi	
+   fi
 }
 
-
-run_sim() {
-   pushd $opae_base/ase
+setup_ase() {
+   # Copy ASE source to RTL simulation build directory
+   rm -rf $rtl_sim_dir
+   rsync -a $opae_base/ase/ $rtl_sim_dir/
+   pushd $rtl_sim_dir
    rm -rf ase_sources.mk
    
    if [ "$sim" == "vcs" ] ; then
@@ -222,20 +255,7 @@ run_sim() {
       # specify them using add_text_macros  
       echo "SNPS_VLOGAN_OPT+= $add_macros" >> ase_sources.mk      
 
-   elif [ "$sim" == "modelsim" ] ; then
-      get_mti_home
-
-      echo "Info: MTI_ROOTDIR set to $MTI_HOME"
-      # ASE treats modelsim and questa similarly
-      ./scripts/generate_ase_environment.py -t QUESTA -p discrete $sim_afu_path
-      echo "MENT_VLOG_OPT += +define+INCLUDE_DDR4 +define+DDR_ADDR_WIDTH=26 -suppress 3485,3584" >> ase_sources.mk
-      echo "MENT_VLOG_OPT += $add_macros" >> ase_sources.mk
-      echo "MENT_VSIM_OPT += -suppress 3485,3584" >> ase_sources.mk
-
-      # add non-standard text macros (if any)
-      # specify them using add_text_macros      
-      echo "MENT_VSIM_OPT += $add_macros" >> ase_sources.mk
-   elif [ "$sim" == "questa" ] ; then
+   elif [ "$sim" == "modelsim" ] || [ "$sim" == "questa" ] ; then
       get_mti_home
 
       echo "Info: MTI_ROOTDIR set to $MTI_HOME"
@@ -253,14 +273,23 @@ run_sim() {
       exit 1;
    fi
 
+   popd
+}
+
+run_sim() {
+   # The contents of setup_ase used to be in run_sim. When scripts all invoke setup_ase
+   # explicitly we can remove this.
+   setup_ase
+
    # run ase make
+   pushd $rtl_sim_dir
    make platform=ASE_PLATFORM_DCP
    make sim
    popd
 }
 
 wait_for_sim_ready() {
-   ASE_READY_FILE=$opae_base/ase/work/.ase_ready.pid
+   ASE_READY_FILE=$rtl_sim_dir/work/.ase_ready.pid
    while [ ! -f $ASE_READY_FILE ]
    do
       echo "Waiting for simulation to start..."
@@ -271,9 +300,9 @@ wait_for_sim_ready() {
 
 setup_app_env() {
    # setup env variables
-   export LD_LIBRARY_PATH=$opae_base/build/lib
-   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$app_base
-   export ASE_WORKDIR=$opae_base/ase/work/
+   export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$opae_base/build/lib
+   export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$app_base
+   export ASE_WORKDIR=$rtl_sim_dir/work/
    echo "ASE workdir is $ASE_WORKDIR"
 
 }
@@ -306,7 +335,7 @@ run_app() {
 }
 
 kill_sim() {
-   ase_workdir=$opae_base/ase/work/
+   ase_workdir=$rtl_sim_dir/work/
    pid=`cat $ase_workdir/.ase_ready.pid | grep pid | cut -d "=" -s -f2-`
    echo "Killing pid = $pid"
    kill $pid

@@ -19,5 +19,8 @@ package ccip_avmm_pkg;
 	parameter CCIP_AVMM_REQUESTOR_ADDR_WIDTH = 48;
 	parameter CCIP_AVMM_REQUESTOR_BURST_WIDTH = 3;
 	parameter CCIP_AVMM_REQUESTOR_CONTROL_WIDTH = 1;
+	
+	parameter CCIP_AVMM_REQUESTOR_ID_BITS = 2;
+	parameter CCIP_AVMM_NUM_INTERRUPT_LINES = 4;
 
 endpackage // ccip_feature_list_pkg

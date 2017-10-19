@@ -30,10 +30,19 @@
 import ccip_if_pkg::*;
 import ccip_avmm_pkg::*;
 
-module avmm_ccip_host (
+module avmm_ccip_host #(
+	parameter ENABLE_INTR = 0
+	)
+	
+	(
+	//clock/reset
 	input clk,
 	input reset,
+	
+	//interrupts
+	input [CCIP_AVMM_NUM_INTERRUPT_LINES-1:0] irq,
 
+	//avmm master
 	output logic		avmm_waitrequest,
 	output logic	[CCIP_AVMM_REQUESTOR_DATA_WIDTH-1:0]	avmm_readdata,
 	output logic		avmm_readdatavalid,
@@ -87,6 +96,13 @@ module avmm_ccip_host (
 
 	logic avcmd_valid;
 	logic avcmd_ready;
+	
+	t_ccip_c1_ReqMemHdr ccip_intr_req_hdr;
+	t_ccip_c1_ReqMemHdr ccip_mem_req_hdr;
+	
+	logic ccip_pending_irq;
+	logic ccip_pending_irq_dly;
+	logic [CCIP_AVMM_REQUESTOR_ID_BITS-1:0] ccip_pending_irq_id;
 
 	/* Timing counter for signalling the write channel SOP.
 	   The incoming bursts are values of 0, 1, or 3.  The steady
@@ -137,24 +153,37 @@ module avmm_ccip_host (
 	assign c0tx_next.valid = reset ? 1'b0 : avmm_read;
 	
 	//write request
-	assign c1tx_next.hdr.rsvd2 = '0;
-	assign c1tx_next.hdr.vc_sel = eVC_VH0;
-	assign c1tx_next.hdr.sop = write_sop;
-	assign c1tx_next.hdr.rsvd1 = '0;
-	assign c1tx_next.hdr.cl_len = burst_encoded;
-	assign c1tx_next.hdr.req_type = eREQ_WRLINE_I;
-	assign c1tx_next.hdr.rsvd0 = '0;
-	assign c1tx_next.hdr.address = {avmm_address[47:8], ((write_sop == 1'b1)? avmm_address[7:6] : address_counter)};
-	assign c1tx_next.hdr.mdata = tx_mdata;
+	assign ccip_mem_req_hdr.rsvd2 = '0;
+	assign ccip_mem_req_hdr.vc_sel = eVC_VH0;
+	assign ccip_mem_req_hdr.sop = write_sop;
+	assign ccip_mem_req_hdr.rsvd1 = '0;
+	assign ccip_mem_req_hdr.cl_len = burst_encoded;
+	assign ccip_mem_req_hdr.req_type = eREQ_WRLINE_I;
+	assign ccip_mem_req_hdr.rsvd0 = '0;
+	assign ccip_mem_req_hdr.address = {avmm_address[47:8], ((write_sop == 1'b1)? avmm_address[7:6] : address_counter)};
+	assign ccip_mem_req_hdr.mdata = tx_mdata;
 	assign c1tx_next.data = avmm_writedata; 
-	assign c1tx_next.valid = reset ? 1'b0 : avmm_write;
 	
-	//read/write request
-	assign avmm_waitrequest = ~avcmd_ready;
+	//intr request
+	assign ccip_intr_req_hdr.rsvd2 = '0;
+	assign ccip_intr_req_hdr.vc_sel = eVC_VH0;
+	assign ccip_intr_req_hdr.sop = '0;
+	assign ccip_intr_req_hdr.rsvd1 = '0;
+	assign ccip_intr_req_hdr.cl_len = eCL_LEN_1;
+	assign ccip_intr_req_hdr.req_type = eREQ_INTR;
+	assign ccip_intr_req_hdr.rsvd0 = '0;
+	assign ccip_intr_req_hdr.address = '0;
+	assign ccip_intr_req_hdr.mdata[CCIP_MDATA_WIDTH-1:CCIP_AVMM_REQUESTOR_ID_BITS] = '0;
+	assign ccip_intr_req_hdr.mdata[CCIP_AVMM_REQUESTOR_ID_BITS-1:0] = ccip_pending_irq_id;
+	
+	//intr/write/read request
+	assign c1tx_next.hdr = ccip_pending_irq_dly ? ccip_intr_req_hdr : ccip_mem_req_hdr;
 	assign avcmd_valid = reset ? 1'b0 : (avmm_read | avmm_write);
-
-	wire avcmd_ready_next = ~(c0TxAlmFull | c1TxAlmFull);
-
+	
+	wire avcmd_ready_next = ~(c0TxAlmFull | c1TxAlmFull) && ~ccip_pending_irq;
+	assign avmm_waitrequest = ~avcmd_ready;
+	assign c1tx_next.valid = reset ? 1'b0 : avmm_write | ccip_pending_irq_dly;
+	
 	always @(posedge clk) begin
 		if (reset) begin // global reset
 			//wait request
@@ -168,8 +197,8 @@ module avmm_ccip_host (
 			//this can be registered because it is an almost full signal
 			//will driver avmm wait request
 			avcmd_ready <= avcmd_ready_next;
-
-			if(avcmd_ready) begin
+			
+			if(avcmd_ready | ccip_pending_irq_dly) begin
 				//read/write request
 				c0tx.valid <= c0tx_next.valid;
 				c1tx.valid <= c1tx_next.valid;
@@ -203,5 +232,77 @@ module avmm_ccip_host (
 		c1tx.hdr <= c1tx_next.hdr;
 		c1tx.data <= c1tx_next.data;
 	end
+	
+	//interrupts
+	//
+	//this block captures queues up N number of interrupt lines and sends the 
+	//them one by one to the ccip c1tx request line
+	//higher interupt lines are given priority
+	//
+	//handshaking between code above is done via signals
+	//	ccip_pending_irq
+	//  ccip_pending_irq_dly
+	//  ccip_pending_irq_id
+	//	
+	genvar i;
+	generate if(ENABLE_INTR == 1) begin
+		logic [CCIP_AVMM_NUM_INTERRUPT_LINES-1:0] prev_irq_state;
+		logic [CCIP_AVMM_NUM_INTERRUPT_LINES-1:0] irq_pending;
+		logic [CCIP_AVMM_REQUESTOR_ID_BITS-1:0] ccip_irq_id_sent;
+		logic ccip_irq_was_sent;
+		
+		assign ccip_irq_id_sent = ccip_intr_req_hdr.mdata[CCIP_AVMM_REQUESTOR_ID_BITS-1:0];
+		assign ccip_irq_was_sent = (c1tx_next.hdr.req_type == eREQ_INTR) && ccip_pending_irq_dly;
+		
+		logic ccip_pending_irq_next;
+		logic [CCIP_AVMM_REQUESTOR_ID_BITS-1:0] ccip_pending_irq_id_next;
+		always_comb begin
+			ccip_pending_irq_next = '0;
+			ccip_pending_irq_id_next = '0;
+			for (integer j=0; j<CCIP_AVMM_NUM_INTERRUPT_LINES; j++) begin
+				if(irq_pending[j] && ~ccip_irq_was_sent) begin
+					ccip_pending_irq_next = 1'b1;
+					ccip_pending_irq_id_next = j;
+				end
+			end
+		end
+		
+		always @(posedge clk) begin
+			if(reset) begin
+				ccip_pending_irq <= 1'b0;
+				ccip_pending_irq_dly <= 1'b0;
+				ccip_pending_irq_id <= '0;
+			end
+			else begin
+				ccip_pending_irq_dly <= ccip_pending_irq && ~c1TxAlmFull && ~ccip_irq_was_sent;
+				ccip_pending_irq <= ccip_pending_irq_next;
+				ccip_pending_irq_id <= ccip_pending_irq_id_next;
+			end
+		end
+		
+		for (i=0; i<CCIP_AVMM_NUM_INTERRUPT_LINES; i++) begin : intr_lines
+			always @(posedge clk) begin
+				if(reset) begin
+					prev_irq_state[i] <= '0;
+					irq_pending[i] <= '0;
+				end
+				else begin
+					prev_irq_state[i] <= irq[i];
+					//only set pending signal if there is a transition from low to high
+					if(irq[i] && ~prev_irq_state[i] && ~irq_pending[i])
+						irq_pending[i] <= 1'b1;
+					
+					if(ccip_irq_was_sent && ccip_irq_id_sent == i)
+						irq_pending[i] <= 1'b0;
+				end
+			end
+		end
+	end
+	else begin
+		assign ccip_pending_irq = 1'b0;
+		assign ccip_pending_irq_dly = 1'b0;
+		assign ccip_pending_irq_id = '0;
+	end
+	endgenerate
 
 endmodule

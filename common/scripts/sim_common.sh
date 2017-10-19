@@ -156,13 +156,24 @@ menu_regress() {
    fi
 }
 
+# Quiet pushd/popd
+pushd () {
+  command pushd "$@" > /dev/null
+}
+popd () {
+  command popd "$@" > /dev/null
+}
+
 setup_sim_dir() {
-   rm -rf $COMMON_SCRIPT_DIR_PATH/sim_afu
-   mkdir -p $COMMON_SCRIPT_DIR_PATH/sim_afu
+   # Copy ASE source to RTL simulation build directory
+   rm -rf $rtl_sim_dir
+   rsync -a $opae_base/ase/ $rtl_sim_dir/
+
    # get path of simulation afu dir
-   sim_afu_path=$COMMON_SCRIPT_DIR_PATH/sim_afu
+   sim_afu_path=$rtl_sim_dir/sim_afu
+   rm -rf $sim_afu_path
    # copy afu sources here (except ccip_if_pkg.sv which is already included in ASE RTL source)
-   rsync -av --progress $afu/* $sim_afu_path --exclude ccip_if_pkg.sv --exclude green_top.sv   
+   rsync -a $afu/ $sim_afu_path/ --exclude ccip_if_pkg.sv --exclude green_top.sv
 }
 
 setup_quartus_home() {
@@ -182,7 +193,7 @@ setup_quartus_home() {
 
 gen_qsys() {
    # generate qsys systems
-   pushd $COMMON_SCRIPT_DIR_PATH/sim_afu
+   pushd $rtl_sim_dir/sim_afu
 
    find . -name *.qsys -exec $QUARTUS_HOME/sopc_builder/bin/qsys-generate {} --simulation=VERILOG \;
    find . -name *.ip -exec $QUARTUS_HOME/sopc_builder/bin/qsys-generate {} --simulation=VERILOG \;
@@ -236,9 +247,6 @@ get_mti_home() {
 }
 
 setup_ase() {
-   # Copy ASE source to RTL simulation build directory
-   rm -rf $rtl_sim_dir
-   rsync -a $opae_base/ase/ $rtl_sim_dir/
    pushd $rtl_sim_dir
    rm -rf ase_sources.mk
    
@@ -248,7 +256,7 @@ setup_ase() {
       get_vcs_home
 
       # Else, try to auto-detect VCS_HOME
-      ./scripts/generate_ase_environment.py -t VCS -p discrete $sim_afu_path
+      ./scripts/generate_ase_environment.py -t VCS -p discrete sim_afu
       echo "SNPS_VLOGAN_OPT+= +define+INCLUDE_DDR4 +define+DDR_ADDR_WIDTH=26" >> ase_sources.mk
 
       # add non-standard text macros (if any)
@@ -260,7 +268,7 @@ setup_ase() {
 
       echo "Info: MTI_ROOTDIR set to $MTI_HOME"
       # ASE treats modelsim and questa similarly
-      ./scripts/generate_ase_environment.py -t QUESTA -p discrete $sim_afu_path
+      ./scripts/generate_ase_environment.py -t QUESTA -p discrete sim_afu
       echo "MENT_VLOG_OPT += +define+INCLUDE_DDR4 +define+DDR_ADDR_WIDTH=26 -suppress 3485,3584" >> ase_sources.mk
       echo "MENT_VLOG_OPT += $add_macros" >> ase_sources.mk
       echo "MENT_VSIM_OPT += -suppress 3485,3584" >> ase_sources.mk
@@ -272,6 +280,8 @@ setup_ase() {
       echo "Unknown Simulator $sim"
       exit 1;
    fi
+
+   echo "ASE configured in `pwd`"
 
    popd
 }
@@ -343,9 +353,9 @@ kill_sim() {
 }
 
 configure_ase_reg_mode() {
-   rm -f $COMMON_SCRIPT_DIR_PATH/ase.cfg
-   echo "ASE_MODE = 4" >> $COMMON_SCRIPT_DIR_PATH/ase.cfg
-   find $ASE_WORKDIR -name ase.cfg -exec cp $COMMON_SCRIPT_DIR_PATH/ase.cfg {} \;
+   rm -f $rtl_sim_dir/sim_afu/ase.cfg
+   echo "ASE_MODE = 4" >> $rtl_sim_dir/sim_afu/ase.cfg
+   find $ASE_WORKDIR -name ase.cfg -exec cp $rtl_sim_dir/sim_afu/ase.cfg {} \;
 }
 
 copy_qsys_ip_files () {

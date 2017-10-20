@@ -35,6 +35,6 @@ set -e
 . $SCRIPT_DIR_PATH/sim_common.sh
 # Run this script from Terminal 2
 menu_regress "$@"
-sh setup_sim.sh -a $afu -b $opae_base -s $sim &
-sh run_app.sh -a $app -b $opae_base
+sh setup_sim.sh -a $afu -b $opae_base -s $sim -r $rtl_sim_dir &
+sh run_app.sh -a $app -b $opae_base -r $rtl_sim_dir
 kill_sim

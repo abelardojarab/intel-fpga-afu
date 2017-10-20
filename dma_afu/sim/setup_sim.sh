@@ -43,7 +43,7 @@ mkdir -p $sim_afu_path/qsys_sim_files
 mkdir -p $sim_afu_path/dummy_rtl_dir
 
 # generate qsys systems
-pushd sim_afu/interfaces
+pushd $rtl_sim_dir/sim_afu/interfaces
 find . -name *.qsys -exec $QUARTUS_HOME/sopc_builder/bin/qsys-generate {} --simulation=VERILOG \;
 
 $QUARTUS_HOME/sopc_builder/bin/qsys-generate --synthesis=VERILOG $sim_afu_path/qsys/dma_test_system.qsys
@@ -61,7 +61,7 @@ popd
 
 cp -Rv sim.filelist $sim_afu_path
 
-pushd $opae_base/ase
+pushd $rtl_sim_dir
 rm -rf ase_sources.mk
 touch $sim_afu_path/dummy_rtl_dir/dummy_rtl.sv
 

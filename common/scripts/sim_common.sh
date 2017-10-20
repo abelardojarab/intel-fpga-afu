@@ -8,7 +8,7 @@ COMMON_SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
 COMMON_SCRIPT_DIR_PATH="$(dirname $COMMON_SCRIPT_PATH)"
 
 usage_setup_sim() { 
-   echo "Usage: $0 -a <afu> -r <rtl simulation dir> [-s <vcs|modelsim|questa>] [-b <opae base dir>]" 1>&2;
+   echo "Usage: $0 -a <afu> -s <vcs|modelsim|questa> -b <opae base dir> [-r <rtl simulation dir>]" 1>&2;
    exit 1;
 }
 
@@ -50,7 +50,7 @@ menu_setup_sim() {
    shift $((OPTIND-1))
 
    # mandatory args
-   if [ -z "${a}" ] || [ -z "${r}" ] || [ -z "${s}" ] || [ -z "${b}" ]; then
+   if [ -z "${a}" ] || [ -z "${s}" ] || [ -z "${b}" ]; then
       usage_setup_sim;
    fi
 
@@ -59,6 +59,11 @@ menu_setup_sim() {
    sim=${s}
    opae_base=${b}
    test_mode=${m}
+   if [ -z "$rtl_sim_dir" ]
+   then
+      # use default
+      rtl_sim_dir=$opae_base/rtl_sim
+   fi
 
    if [[ "$sim" != "vcs" ]] && [[ "$sim" != "questa" ]] && [[ "$sim" != "modelsim" ]] ; then
       echo "Supported simulators are vcs, modelsim and questa. You requsted $sim"
@@ -92,13 +97,18 @@ menu_run_app() {
    shift $((OPTIND-1))
 
    # mandatory args
-   if [ -z "${a}" ] || [ -z "${r}" ] || [ -z "${b}" ]; then
+   if [ -z "${a}" ] || [ -z "${b}" ]; then
       usage_run_app;
    fi
 
    app_base=${a}
    rtl_sim_dir=${r}
    opae_base=${b}
+   if [ -z "$rtl_sim_dir" ]
+   then
+      # use default
+      rtl_sim_dir=$opae_base/rtl_sim
+   fi
 }
 
 usage_regress() { 
@@ -143,10 +153,15 @@ menu_regress() {
    sim=${s};
    opae_base=${b}
    test_mode=${m};
+   if [ -z "$rtl_sim_dir" ]
+   then
+      # use default
+      rtl_sim_dir=$opae_base/rtl_sim
+   fi
 
    echo "afu=$afu, app=$app, sim=$sim, base=$opae_base"
    # mandatory args
-   if [ -z "${a}" ] || [ -z "${r}" ] || [ -z "${s}" ] || [ -z "${f}" ] || [ -z "${b}" ]; then
+   if [ -z "${a}" ] || [ -z "${s}" ] || [ -z "${f}" ] || [ -z "${b}" ]; then
       usage_regress;
    fi
 
@@ -262,7 +277,7 @@ setup_ase() {
       # add non-standard text macros (if any)
       # specify them using add_text_macros  
       echo "SNPS_VLOGAN_OPT+= $add_macros" >> ase_sources.mk      
-
+		echo "OPAE_BASEDIR=$opae_base" >> ase_sources.mk
    elif [ "$sim" == "modelsim" ] || [ "$sim" == "questa" ] ; then
       get_mti_home
 
@@ -276,6 +291,7 @@ setup_ase() {
       # add non-standard text macros (if any)
       # specify them using add_text_macros      
       echo "MENT_VSIM_OPT += $add_macros" >> ase_sources.mk
+		echo "OPAE_BASEDIR=$opae_base" >> ase_sources.mk
    else
       echo "Unknown Simulator $sim"
       exit 1;

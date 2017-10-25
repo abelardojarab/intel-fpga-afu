@@ -25,17 +25,22 @@
 ## ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  EVEN IF ADVISED OF THE
 ## POSSIBILITY OF SUCH DAMAGE.
 
-#get exact script path
-SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
-#get director of script path
-SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
-
-. $SCRIPT_DIR_PATH/sim_common.sh
+##
+## Run regressions of a HW/SW pair by simulating the RTL and running the
+## software.  The required scripts are assumed to be in a standard
+## location relative to the RTL's top-level directory. (<RTL dir>/../sim)
+##
 
 set -e
 
-menu_setup_sim "$@"
-setup_sim_dir
-setup_quartus_home
-gen_qsys
-run_sim
+# Get exact script path
+SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
+# Get directory of script path
+SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
+
+. ${SCRIPT_DIR_PATH}/sim_common.sh
+
+menu_regress "$@"
+${afu}/../sim/setup_sim.sh -a $afu -b $opae_base -s $sim -r $rtl_sim_dir &
+${afu}/../sim/run_app.sh -a $app -b $opae_base -r $rtl_sim_dir
+kill_sim

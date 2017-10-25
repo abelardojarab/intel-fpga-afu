@@ -1,5 +1,4 @@
 #!/bin/bash
-#!/bin/bash
 ## Copyright(c) 2013-2017, Intel Corporation
 ##
 ## Redistribution  and  use  in source  and  binary  forms,  with  or  without
@@ -26,15 +25,19 @@
 ## ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  EVEN IF ADVISED OF THE
 ## POSSIBILITY OF SUCH DAMAGE.
 
-#get exact script path
-SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
-#get director of script path
-SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
-
 set -e
-. $SCRIPT_DIR_PATH/sim_common.sh
-# Run this script from Terminal 2
-menu_regress "$@"
-sh setup_sim.sh -a $afu -b $opae_base -s $sim &
-sh run_app.sh -a $app -b $opae_base
-kill_sim
+
+# Get exact script path
+SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
+# Get directory of script path
+SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
+# Find shared script directory (first parent with a "common" directory)
+SCRIPT_COMMON_DIR=`${SCRIPT_DIR_PATH}/find_parent_dir.sh common`
+
+. ${SCRIPT_COMMON_DIR}/scripts/sim_common.sh
+
+menu_setup_sim "$@"
+setup_sim_dir
+setup_quartus_home
+gen_qsys
+run_sim

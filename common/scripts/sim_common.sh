@@ -8,7 +8,7 @@ COMMON_SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
 COMMON_SCRIPT_DIR_PATH="$(dirname $COMMON_SCRIPT_PATH)"
 
 usage_setup_sim() { 
-   echo "Usage: $0 -a <afu> -s <vcs|modelsim|questa> -b <opae base dir> [-r <rtl simulation dir>]" 1>&2;
+   echo "Usage: $0 -a <afu rtl dir> [-s <vcs|modelsim|questa>] [-b <opae base dir>] [-r <rtl simulation dir>]" 1>&2;
    exit 1;
 }
 
@@ -72,7 +72,7 @@ menu_setup_sim() {
 }
 
 usage_run_app() { 
-   echo "Usage: $0 -a <application source> -r <rtl simulation dir> [-b <opae base dir>]" 1>&2;
+   echo "Usage: $0 -a <application source> [-r <rtl simulation dir>] [-b <opae base dir>]" 1>&2;
    exit 1; 
 }
 
@@ -112,7 +112,7 @@ menu_run_app() {
 }
 
 usage_regress() { 
-   echo "Usage: $0 -f <afu source> -a <application source> -r <rtl simulation dir> [-s <vcs|modelsim|questa>] [-b <opae base dir>]" 1>&2;
+   echo "Usage: $0 -f <afu source> -a <application source> [-r <rtl simulation dir>] [-s <vcs|modelsim|questa>] [-b <opae base dir>]" 1>&2;
    exit 1; 
 }
 
@@ -277,7 +277,7 @@ setup_ase() {
       # add non-standard text macros (if any)
       # specify them using add_text_macros  
       echo "SNPS_VLOGAN_OPT+= $add_macros" >> ase_sources.mk      
-		echo "OPAE_BASEDIR=$opae_base" >> ase_sources.mk
+      echo "OPAE_BASEDIR=$opae_base" >> ase_sources.mk
    elif [ "$sim" == "modelsim" ] || [ "$sim" == "questa" ] ; then
       get_mti_home
 
@@ -291,7 +291,7 @@ setup_ase() {
       # add non-standard text macros (if any)
       # specify them using add_text_macros      
       echo "MENT_VSIM_OPT += $add_macros" >> ase_sources.mk
-		echo "OPAE_BASEDIR=$opae_base" >> ase_sources.mk
+      echo "OPAE_BASEDIR=$opae_base" >> ase_sources.mk
    else
       echo "Unknown Simulator $sim"
       exit 1;
@@ -319,7 +319,7 @@ wait_for_sim_ready() {
    while [ ! -f $ASE_READY_FILE ]
    do
       echo "Waiting for simulation to start..."
-      sleep 1
+      sleep 5
    done
    echo "simulation is ready!"
 }
@@ -328,7 +328,7 @@ setup_app_env() {
    # setup env variables
    export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$opae_base/build/lib
    export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$app_base
-   export ASE_WORKDIR=$rtl_sim_dir/work/
+   export ASE_WORKDIR=`readlink -m ${rtl_sim_dir}/work`
    echo "ASE workdir is $ASE_WORKDIR"
 
 }

@@ -1,4 +1,4 @@
-SUBDIRS := afus nlb_400 hello_afu user_clock_test dma_afu opencl
+SUBDIRS := hello
 CLEAN_SUBDIRS := $(addprefix clean-,$(SUBDIRS))
 
 .PHONY: all $(SUBDIRS)

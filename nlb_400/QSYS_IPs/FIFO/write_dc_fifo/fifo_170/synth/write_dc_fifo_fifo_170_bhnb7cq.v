@@ -15,7 +15,7 @@
 // synopsys translate_off
 `timescale 1 ps / 1 ps
 // synopsys translate_on
-module  write_dc_fifo_fifo_170_bktbtyy  (
+module  write_dc_fifo_fifo_170_bhnb7cq  (
     aclr,
     data,
     rdclk,
@@ -27,12 +27,12 @@ module  write_dc_fifo_fifo_170_bktbtyy  (
     wrfull);
 
     input    aclr;
-    input  [108:0]  data;
+    input  [109:0]  data;
     input    rdclk;
     input    rdreq;
     input    wrclk;
     input    wrreq;
-    output [108:0]  q;
+    output [109:0]  q;
     output   rdempty;
     output   wrfull;
 `ifndef ALTERA_RESERVED_QIS
@@ -43,10 +43,10 @@ module  write_dc_fifo_fifo_170_bktbtyy  (
 // synopsys translate_on
 `endif
 
-    wire [108:0] sub_wire0;
+    wire [109:0] sub_wire0;
     wire  sub_wire1;
     wire  sub_wire2;
-    wire [108:0] q = sub_wire0[108:0];
+    wire [109:0] q = sub_wire0[109:0];
     wire  rdempty = sub_wire1;
     wire  wrfull = sub_wire2;
 
@@ -72,7 +72,7 @@ module  write_dc_fifo_fifo_170_bktbtyy  (
         dcfifo_component.lpm_numwords  = 64,
         dcfifo_component.lpm_showahead  = "OFF",
         dcfifo_component.lpm_type  = "dcfifo",
-        dcfifo_component.lpm_width  = 109,
+        dcfifo_component.lpm_width  = 110,
         dcfifo_component.lpm_widthu  = 6,
         dcfifo_component.overflow_checking  = "ON",
         dcfifo_component.rdsync_delaypipe  = 4,

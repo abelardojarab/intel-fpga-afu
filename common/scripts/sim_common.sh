@@ -8,7 +8,7 @@ COMMON_SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
 COMMON_SCRIPT_DIR_PATH="$(dirname $COMMON_SCRIPT_PATH)"
 
 usage_setup_sim() { 
-   echo "Usage: $0 -a <afu rtl dir> [-s <vcs|modelsim|questa>] [-b <opae base dir>] [-r <rtl simulation dir>]" 1>&2;
+   echo "Usage: $0 -a <afu dir> [-s <vcs|modelsim|questa>] [-b <opae base dir>] [-r <rtl simulation dir>]" 1>&2;
    exit 1;
 }
 
@@ -55,6 +55,7 @@ menu_setup_sim() {
    fi
 
    afu=${a}
+   rtl=${afu}/hw/rtl
    rtl_sim_dir=${r}
    sim=${s}
    opae_base=${b}
@@ -72,7 +73,7 @@ menu_setup_sim() {
 }
 
 usage_run_app() { 
-   echo "Usage: $0 -a <application source> [-r <rtl simulation dir>] [-b <opae base dir>]" 1>&2;
+   echo "Usage: $0 -a <afu dir> [-r <rtl simulation dir>] [-b <opae base dir>]" 1>&2;
    exit 1; 
 }
 
@@ -101,7 +102,7 @@ menu_run_app() {
       usage_run_app;
    fi
 
-   app_base=${a}
+   app_base=${a}/sw
    rtl_sim_dir=${r}
    opae_base=${b}
    if [ -z "$rtl_sim_dir" ]
@@ -112,7 +113,7 @@ menu_run_app() {
 }
 
 usage_regress() { 
-   echo "Usage: $0 -f <afu source> -a <application source> [-r <rtl simulation dir>] [-s <vcs|modelsim|questa>] [-b <opae base dir>]" 1>&2;
+   echo "Usage: $0 -a <afu dir> [-r <rtl simulation dir>] [-s <vcs|modelsim|questa>] [-b <opae base dir>]" 1>&2;
    exit 1; 
 }
 
@@ -135,10 +136,7 @@ menu_regress() {
             ;;
          b)
             b=${OPTARG}            
-         ;;    
-         f)
-            f=${OPTARG}            
-         ;;    
+            ;;
          # optional mode argument for internal testing
          m)
             m=${OPTARG}            
@@ -147,21 +145,22 @@ menu_regress() {
    done
    shift $((OPTIND-1))
 
-   afu=${f};
-   app=${a};
+   afu=${a}
+   rtl=${a}/hw/rtl
+   app=${a}/sw
    rtl_sim_dir=${r}
    sim=${s};
    opae_base=${b}
-   test_mode=${m};
+   test_mode=${m}
    if [ -z "$rtl_sim_dir" ]
    then
       # use default
       rtl_sim_dir=$opae_base/rtl_sim
    fi
 
-   echo "afu=$afu, app=$app, sim=$sim, base=$opae_base"
+   echo "afu=$afu, rtl=$rtl, app=$app, sim=$sim, base=$opae_base"
    # mandatory args
-   if [ -z "${a}" ] || [ -z "${s}" ] || [ -z "${f}" ] || [ -z "${b}" ]; then
+   if [ -z "${a}" ] || [ -z "${s}" ] || [ -z "${b}" ]; then
       usage_regress;
    fi
 
@@ -188,7 +187,7 @@ setup_sim_dir() {
    sim_afu_path=$rtl_sim_dir/sim_afu
    rm -rf $sim_afu_path
    # copy afu sources here (except ccip_if_pkg.sv which is already included in ASE RTL source)
-   rsync -a $afu/ $sim_afu_path/ --exclude ccip_if_pkg.sv --exclude green_top.sv
+   rsync -a $rtl/ $sim_afu_path/ --exclude ccip_if_pkg.sv --exclude green_top.sv
 }
 
 setup_quartus_home() {

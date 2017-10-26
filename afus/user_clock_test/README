@@ -1,0 +1,3 @@
+Validate the frequencies of clocks passed in to the AFU's top-level.  Clock
+cycles are counted for each clock during a sampling window.  The counts are
+exported as CSRs, using MMIO reads.

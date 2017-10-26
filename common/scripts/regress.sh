@@ -41,6 +41,18 @@ SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
 . ${SCRIPT_DIR_PATH}/sim_common.sh
 
 menu_regress "$@"
-${afu}/hw/sim/setup_sim.sh -a $afu -b $opae_base -s $sim -r $rtl_sim_dir &
-${afu}/hw/sim/run_app.sh -a $afu -b $opae_base -r $rtl_sim_dir
+
+# First look in AFU's hw/sim directory for scripts.  If not there, use defaults.
+setup_sim="${SCRIPT_DIR_PATH}/std_setup_sim.sh"
+if [ -f "${afu}/hw/sim/setup_sim.sh" ]; then
+   setup_sim="${afu}/hw/sim/setup_sim.sh"
+fi
+run_app="${SCRIPT_DIR_PATH}/std_run_app.sh"
+if [ -f "${afu}/hw/sim/run_app.sh" ]; then
+   run_app="${afu}/hw/sim/run_app.sh"
+fi
+
+$setup_sim -a $afu -b $opae_base -s $sim -r $rtl_sim_dir &
+$run_app -a $afu -b $opae_base -r $rtl_sim_dir
+
 kill_sim

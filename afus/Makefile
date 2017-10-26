@@ -1,4 +1,4 @@
-SUBDIRS := hello_afu
+SUBDIRS := hello_afu user_clock_test
 CLEAN_SUBDIRS := $(addprefix clean-,$(SUBDIRS))
 
 .PHONY: all $(SUBDIRS)

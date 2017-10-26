@@ -27,12 +27,12 @@
 
 set -e
 
-if [ -z "${INTEL_FPGA_AFU}" ]; then
-   echo >&2 "INTEL_FPGA_AFU environment variable must point to root of intel-fpga-afu tree."
-   exit 1
-fi
+# Get exact script path
+SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
+# Get directory of script path
+SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
 
-. ${INTEL_FPGA_AFU}/common/scripts/sim_common.sh
+. ${SCRIPT_DIR_PATH}/sim_common.sh
 
 menu_setup_sim "$@"
 setup_sim_dir

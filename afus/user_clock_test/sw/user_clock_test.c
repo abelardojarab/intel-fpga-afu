@@ -146,9 +146,6 @@ int main(int argc, char *argv[])
 	res = fpgaOpen(afc_token, &afc_handle, 0);
 	ON_ERR_GOTO(res, out_destroy_tok, "opening AFC");
 
-	res = fpgaMapMMIO(afc_handle, 0, &mmio_ptr);
-	ON_ERR_GOTO(res, out_close, "mapping MMIO space");
-
 	printf("Running Test\n");
 
 	/* Reset AFC */

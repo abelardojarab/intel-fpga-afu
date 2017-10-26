@@ -27,14 +27,12 @@
 
 set -e
 
-# Get exact script path
-SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
-# Get directory of script path
-SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
-# Find shared script directory (first parent with a "common" directory)
-SCRIPT_COMMON_DIR=`${SCRIPT_DIR_PATH}/find_parent_dir.sh common`
+if [ -z "${INTEL_FPGA_AFU}" ]; then
+   echo >&2 "INTEL_FPGA_AFU environment variable must point to root of intel-fpga-afu tree."
+   exit 1
+fi
 
-. ${SCRIPT_COMMON_DIR}/scripts/sim_common.sh
+. ${INTEL_FPGA_AFU}/common/scripts/sim_common.sh
 
 menu_setup_sim "$@"
 setup_sim_dir

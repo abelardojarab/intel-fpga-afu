@@ -2,9 +2,9 @@
 # script to setup common variables
 set -e
 
-#get exact script path
+# Get exact script path
 COMMON_SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
-#get director of script path
+# Get directory of script path
 COMMON_SCRIPT_DIR_PATH="$(dirname $COMMON_SCRIPT_PATH)"
 
 usage_setup_sim() { 

@@ -12,6 +12,6 @@
 +define+INCLUDE_DDR4
 afu.sv
 ccip_std_afu.sv
-interfaces/ccip_interface_reg.sv
+ccip_interface_reg.sv
 
 -F qsys_sim_filelist.txt

@@ -25,14 +25,16 @@
 ## ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  EVEN IF ADVISED OF THE
 ## POSSIBILITY OF SUCH DAMAGE.
 
-#get exact script path
-SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
-#get director of script path
-SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
-
-. $SCRIPT_DIR_PATH/sim_common.sh
-
 set -e
+
+# Get exact script path
+SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
+# Get directory of script path
+SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
+# Find shared script directory (first parent with a "common" directory)
+SCRIPT_COMMON_DIR=`${SCRIPT_DIR_PATH}/find_parent_dir.sh common`
+
+. ${SCRIPT_COMMON_DIR}/scripts/sim_common.sh
 
 menu_setup_sim "$@"
 setup_sim_dir
@@ -43,8 +45,7 @@ mkdir -p $sim_afu_path/qsys_sim_files
 mkdir -p $sim_afu_path/dummy_rtl_dir
 
 # generate qsys systems
-pushd $rtl_sim_dir/sim_afu/interfaces
-find . -name *.qsys -exec $QUARTUS_HOME/sopc_builder/bin/qsys-generate {} --simulation=VERILOG \;
+pushd $sim_afu_path
 
 $QUARTUS_HOME/sopc_builder/bin/qsys-generate --synthesis=VERILOG $sim_afu_path/qsys/dma_test_system.qsys
 copy_qsys_ip_files dma_test_system
@@ -57,9 +58,10 @@ touch $sim_afu_path/dummy_rtl_dir/dummy_rtl_file.sv
 find $PWD -name *.vhd -exec rm -rf {} \;
 find $PWD -name '*_inst.v' -exec rm -rf {} \;
 find $PWD -name '*_bb.v' -exec rm -rf {} \;
+
 popd
 
-cp -Rv sim.filelist $sim_afu_path
+cp -Rv ${SCRIPT_DIR_PATH}/sim.filelist $sim_afu_path
 
 pushd $rtl_sim_dir
 rm -rf ase_sources.mk

@@ -35,8 +35,7 @@ quartus_tag_map = {
 
 # QSYS-only tags.
 qsys_tag_map = {
-    '.qsys': 'QSYS_FILE',
-    '.ip':   'IP_FILE'
+    '.qsys': 'QSYS_FILE'
 }
 
 # Suffixes to emit for simulation targets.  This is a subset of the Quartus map.
@@ -76,7 +75,10 @@ def emitCfg(opts, cfg):
         # First emit all preprocessor configuration
         for c in cfg:
             if ("+define+" == c[:8]):
-                print(c)
+                if (opts.sim):
+                    print(c)
+                else:
+                    print('set_global_assignment -name VERILOG_MACRO "' + c[8:] + '"')
 
         # Emit all include directives
         for c in cfg:
@@ -84,7 +86,7 @@ def emitCfg(opts, cfg):
                 if (opts.sim):
                     print(c)
                 else:
-                    print("set_global_assignment -name SEARCH_PATH " + c[8:])
+                    print('set_global_assignment -name SEARCH_PATH "' + c[8:] + '"')
 
     # Emit sources and Quartus/simulator includes
     for c in cfg:

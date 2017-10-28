@@ -6,11 +6,10 @@
 ##   source <path to BBBs>/BBB_cci_mpf/hw/par/qsf_cci_mpf_PAR_files.qsf
 ##
 
-#we will set CCI_MPF_SRC in the calling script
-### Find the MPF source tree relative to this script
-#set this_script [dict get [ info frame 0 ] file]
-## Pop 3 levels (including the script name) off the path to find the root
-#set CCI_MPF_SRC [file join {*}[lrange [file split $this_script] 0 end-3]]
+## Find the MPF source tree relative to this script
+set this_script [dict get [ info frame 0 ] file]
+# Pop 3 levels (including the script name) off the path to find the root
+set CCI_MPF_SRC [file join {*}[lrange [file split $this_script] 0 end-3]]
 
 ## MPF directories
 set_global_assignment -name SEARCH_PATH $CCI_MPF_SRC/hw/rtl

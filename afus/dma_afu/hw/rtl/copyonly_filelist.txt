@@ -1,3 +1,0 @@
-BBB_ccip_avmm/
-BBB_ccip_async/
-BBB_cci_mpf/

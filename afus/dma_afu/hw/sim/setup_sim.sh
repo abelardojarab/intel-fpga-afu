@@ -40,47 +40,48 @@ menu_setup_sim "$@"
 setup_sim_dir
 setup_quartus_home
 
+# Generate qsys systems
+for q in `${SCRIPT_COMMON_DIR}/scripts/rtl_src_config --qsys --abs ${sim_afu_path}/filelist.txt`; do
+  $QUARTUS_HOME/sopc_builder/bin/qsys-generate --synthesis=VERILOG $q
+done
+
+# Copy simulation Verilog files to a common directory
 rm -rf $sim_afu_path/qsys_sim_files
 mkdir -p $sim_afu_path/qsys_sim_files
-mkdir -p $sim_afu_path/dummy_rtl_dir
-
-# generate qsys systems
-pushd $sim_afu_path
-
-$QUARTUS_HOME/sopc_builder/bin/qsys-generate --synthesis=VERILOG $sim_afu_path/qsys/dma_test_system.qsys
 copy_qsys_ip_files dma_test_system
 copy_qsys_ip_files msgdma_bbb
+# afu_id_avmm_slave.sv was already named explicitly
+rm $sim_afu_path/qsys_sim_files/afu_id_avmm_slave.sv
 
-find $sim_afu_path/qsys_sim_files -type f > $sim_afu_path/qsys_sim_filelist.txt
-touch $sim_afu_path/dummy_rtl_dir/dummy_rtl_file.sv
-
-# remove _inst.v , _bb.v and *.vhd
-find $PWD -name *.vhd -exec rm -rf {} \;
-find $PWD -name '*_inst.v' -exec rm -rf {} \;
-find $PWD -name '*_bb.v' -exec rm -rf {} \;
-
-popd
-
-cp -Rv ${SCRIPT_DIR_PATH}/sim.filelist $sim_afu_path
+# Discover all simulation Verilog files, converting them to absolute paths
+find $sim_afu_path/qsys_sim_files -type f | xargs -n1 -IAAA readlink -f AAA > $sim_afu_path/qsys_sim_filelist.txt
 
 pushd $rtl_sim_dir
+
+# Make a dummy source file to keep generate_ase_environment happy
+mkdir -p dummy_rtl_dir
+touch dummy_rtl_dir/dummy_rtl.sv
 rm -rf ase_sources.mk
-touch $sim_afu_path/dummy_rtl_dir/dummy_rtl.sv
 
 if [ "$sim" == "vcs" ]; then
   get_vcs_home
-  ./scripts/generate_ase_environment.py -t VCS -p discrete $sim_afu_path/dummy_rtl_dir
-  echo "-F $sim_afu_path/sim.filelist" > vlog_files.list
+  ./scripts/generate_ase_environment.py -t VCS -p discrete dummy_rtl_dir
   echo "SNPS_VLOGAN_OPT+= +define+INCLUDE_DDR4" >> ase_sources.mk
   echo "SNPS_VLOGAN_OPT+= +define+INCLUDE_DDR4 +define+DDR_ADDR_WIDTH=26" >> ase_sources.mk
 else
   echo "Using Questa"
   get_mti_home
-  ./scripts/generate_ase_environment.py -t QUESTA -p discrete $sim_afu_path/dummy_rtl_dir
-  echo "-F $sim_afu_path/sim.filelist" > vlog_files.list
+  ./scripts/generate_ase_environment.py -t QUESTA -p discrete dummy_rtl_dir
   echo "MENT_VLOG_OPT += +define+INCLUDE_DDR4 +define+DDR_ADDR_WIDTH=26 -suppress 3485,3584" >> ase_sources.mk
   echo "MENT_VSIM_OPT += -suppress 3485,3584" >> ase_sources.mk
 fi
+
+rm -rf dummy_rtl_dir
+
+popd
+# Emit source file list
+${SCRIPT_COMMON_DIR}/scripts/rtl_src_config --abs --sim $sim_afu_path/filelist.txt > $rtl_sim_dir/vlog_files.list
+pushd $rtl_sim_dir
 
 # run ase make
 make platform=ASE_PLATFORM_DCP

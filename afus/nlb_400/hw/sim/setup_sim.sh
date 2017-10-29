@@ -25,18 +25,23 @@
 ## ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  EVEN IF ADVISED OF THE
 ## POSSIBILITY OF SUCH DAMAGE.
 
-#get exact script path
-SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
-#get director of script path
-SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
-
 set -e
-. $SCRIPT_DIR_PATH/sim_common.sh
-# Run this script from Terminal 2
-menu_run_app "$@"
 
-wait_for_sim_ready
-setup_app_env
-# nlb requires special build since app source isn't located with afu
-gcc -g -o $app_base/hello_fpga $app_base/hello_fpga.c -L $opae_base/build/lib/ -I $opae_base/common/include -luuid -lpthread -lopae-c-ase -std=c99
-exec_app
+# Get exact script path
+SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
+# Get directory of script path
+SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
+# Find shared script directory (first parent with a "common" directory)
+SCRIPT_COMMON_DIR=`${SCRIPT_DIR_PATH}/find_parent_dir.sh common`
+
+. ${SCRIPT_COMMON_DIR}/scripts/sim_common.sh
+
+menu_setup_sim "$@"
+setup_sim_dir
+setup_quartus_home
+gen_qsys
+
+# nlb needs additional user-defined macros
+add_text_macros +define+NLB400_MODE_0
+
+run_sim

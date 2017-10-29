@@ -6,6 +6,7 @@ nlb_lpbk.sv
 nlb_csr.sv
 nlb_C1Tx_fifo.sv
 ccip_std_afu.sv
+ccip_interface_reg.sv
 ccip_debug.sv
 arbiter.sv
 nlb_gram_sdp.v
@@ -19,5 +20,5 @@ QSYS_IPs/FIFO/write_dc_fifo.ip
 QSYS_IPs/FIFO/read_dc_fifo.ip
 include_files/common
 nlb_400.json
-stp_basic.stp
-nlb_400.sdc
+../par/nlb_400.sdc
+../par/stp_basic.stp

@@ -1,0 +1,9 @@
+altera_avalon_dc_fifo.v
+altera_avalon_mm_clock_crossing_bridge.v
+altera_dcfifo_synchronizer_bundle.v
+avalon_utilities_pkg.sv
+ccip_interface_reg.sv
+ccip_std_afu.sv
+hello_mem_afu.sv
+mem_csr.sv
+mem_fsm.sv

@@ -25,20 +25,21 @@
 ## ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  EVEN IF ADVISED OF THE
 ## POSSIBILITY OF SUCH DAMAGE.
 
-#get exact script path
-SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
-#get director of script path
-SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
-
 set -e
-. $SCRIPT_DIR_PATH/sim_common.sh
-# Run this script from Terminal 2
+
+# Get exact script path
+SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
+# Get directory of script path
+SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
+# Find shared script directory (first parent with a "common" directory)
+SCRIPT_COMMON_DIR=`${SCRIPT_DIR_PATH}/find_parent_dir.sh common`
+
+. ${SCRIPT_COMMON_DIR}/scripts/sim_common.sh
+
 menu_run_app "$@"
-setup_app_env
-pushd $app_base
-# Build the software application
-make prefix=$opae_base USE_ASE=1
 wait_for_sim_ready
-# usage: hello_mem_afu <bank#> <use_ase=1>
+setup_app_env
+build_app
+# Usage: hello_mem_afu <bank#> <use_ase=1>
 $app_base/hello_mem_afu 0 1
 popd

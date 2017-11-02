@@ -30,6 +30,8 @@
 #include <uuid/uuid.h>
 #include <opae/enum.h>
 #include <opae/access.h>
+#include <opae/mmio.h>
+#include <opae/properties.h>
 #include <opae/utils.h>
 
 int usleep(unsigned);

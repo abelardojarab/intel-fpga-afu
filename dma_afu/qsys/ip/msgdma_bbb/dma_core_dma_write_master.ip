@@ -628,7 +628,7 @@
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
             <spirit:left>0</spirit:left>
-            <spirit:right>48</spirit:right>
+            <spirit:right>49</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
@@ -849,7 +849,7 @@
         <spirit:parameter>
           <spirit:name>LENGTH_WIDTH</spirit:name>
           <spirit:displayName>Length Width</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="LENGTH_WIDTH">20</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="LENGTH_WIDTH">24</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>FIFO_DEPTH</spirit:name>
@@ -864,7 +864,7 @@
         <spirit:parameter>
           <spirit:name>FIX_ADDRESS_WIDTH</spirit:name>
           <spirit:displayName>Pre-determined master address width:</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="FIX_ADDRESS_WIDTH">49</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="FIX_ADDRESS_WIDTH">50</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>STRIDE_ENABLE</spirit:name>
@@ -929,12 +929,12 @@
         <spirit:parameter>
           <spirit:name>AUTO_ADDRESS_WIDTH</spirit:name>
           <spirit:displayName>AUTO_ADDRESS_WIDTH</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="AUTO_ADDRESS_WIDTH">49</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="AUTO_ADDRESS_WIDTH">50</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>ADDRESS_WIDTH</spirit:name>
           <spirit:displayName>ADDRESS_WIDTH</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="ADDRESS_WIDTH">49</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="ADDRESS_WIDTH">50</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>FIFO_DEPTH_LOG2</spirit:name>
@@ -1296,7 +1296,7 @@
                     <name>master_address</name>
                     <role>address</role>
                     <direction>Output</direction>
-                    <width>49</width>
+                    <width>50</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
@@ -1588,7 +1588,7 @@
                 <suppliedSystemInfos>
                     <entry>
                         <key>ADDRESS_WIDTH</key>
-                        <value>49</value>
+                        <value>50</value>
                     </entry>
                 </suppliedSystemInfos>
                 <consumedSystemInfos/>

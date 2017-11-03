@@ -16,7 +16,7 @@ package ccip_avmm_pkg;
 	} t_ccip_avmm_mmio_cmd;
 
 	parameter CCIP_AVMM_REQUESTOR_DATA_WIDTH = 512;
-	parameter CCIP_AVMM_REQUESTOR_ADDR_WIDTH = 48;
+	parameter CCIP_AVMM_REQUESTOR_ADDR_WIDTH = 49;
 	parameter CCIP_AVMM_REQUESTOR_BURST_WIDTH = 3;
 	parameter CCIP_AVMM_REQUESTOR_CONTROL_WIDTH = 1;
 	

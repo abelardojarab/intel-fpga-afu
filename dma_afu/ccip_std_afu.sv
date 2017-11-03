@@ -117,23 +117,23 @@ module ccip_std_afu(
     assign afu_clk = pClkDiv2 ;
    
     ccip_async_shim #(
-        //.C0TX_DEPTH_RADIX(8),
-    	//.C1TX_DEPTH_RADIX(8),
-    	//.C2TX_DEPTH_RADIX(8),
-    	//For DCP only 256 is needed.  going to 512 because m20k count wont be reduced
-    	.C0RX_DEPTH_RADIX(9),	//default was 10
-    	.C1RX_DEPTH_RADIX(9)	//default was 10
+	.C0TX_DEPTH_RADIX(7),   //default was 8
+	.C1TX_DEPTH_RADIX(7),   //default was 8
+	.C2TX_DEPTH_RADIX(7),   //default was 8
+	//For DCP only 256 is needed.  Using 512 so that the RX to TX depth ratio is 4:1 to ensure for each 4CL read there are 4 beats of space in the response
+	.C0RX_DEPTH_RADIX(9),	//default was 10
+	.C1RX_DEPTH_RADIX(9)	//default was 10
     )
     ccip_async_shim (
-				    .bb_softreset    (pck_cp2af_softReset),
-				    .bb_clk          (pClk),
-				    .bb_tx           (pck_af2cp_sTx),
-				    .bb_rx           (pck_cp2af_sRx),
-				    .afu_softreset   (async_shim_reset_out),
-				    .afu_clk         (afu_clk),
-				    .afu_tx          (async2af_sTxPort),
-				    .afu_rx          (async2af_sRxPort)
-				    );
+	.bb_softreset    (pck_cp2af_softReset),
+	.bb_clk          (pClk),
+	.bb_tx           (pck_af2cp_sTx),
+	.bb_rx           (pck_cp2af_sRx),
+	.afu_softreset   (async_shim_reset_out),
+	.afu_clk         (afu_clk),
+	.afu_tx          (async2af_sTxPort),
+	.afu_rx          (async2af_sRxPort)
+    );
 
     // ====================================================================
     //

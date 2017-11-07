@@ -180,6 +180,9 @@ popd () {
 }
 
 setup_sim_dir() {
+   # Ensure that the OPAE build is on the path during regression runs.
+   export PATH=${PATH}:${opae_base}/inst/bin:${opae_base}/build/bin
+
    # Copy ASE source to RTL simulation build directory
    rm -rf $rtl_sim_dir
    rsync -a $opae_base/ase/ $rtl_sim_dir/

@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
       ON_ERR_GOTO(res, out_unmap, "writing to INTR_REG MMIO");
    
       /* Poll event handle*/
-      pfd.fd = (int)ehandle[usr_intr_id];
+      pfd.fd = FILE_DESCRIPTOR(ehandle[usr_intr_id]);
       pfd.events = POLLIN;            
       res = poll(&pfd, 1, -1);
       if(res < 0) {

@@ -146,7 +146,7 @@ module avmm_ccip_host #(
 	end
 
 	assign write_sop = (burst_counter == 2'b00);
-	assign load_burst_counter = (burst_counter == 2'b00) & (avmm_write == 1'b1) & (avcmd_ready == 1'b1);
+	assign load_burst_counter = (burst_counter == 2'b00) & (avmm_write == 1'b1) & (avcmd_ready == 1'b1) & (ccip_write_fence_dly == 1'b0);
 	assign burst_counter_enable = (burst_counter != 2'b00) & (avmm_write == 1'b1) & (avcmd_ready == 1'b1);
 	
 	//read request, this block requires CCIP read re-ordering to be enabled in the MPF to ensure in-order read responses

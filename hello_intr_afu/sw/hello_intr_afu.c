@@ -8,8 +8,6 @@
 #include <poll.h>
 #include <errno.h>
 
-#include "types_int.h"
-
 #define MAX_USR_INTRS            4
 
 #define HELLO_AFU_ID              "850ADCC2-6CEB-4B22-9722-D43375B61C66"
@@ -102,7 +100,7 @@ int main(int argc, char *argv[])
    fpga_event_handle ehandle[MAX_USR_INTRS];
    for(uint64_t usr_intr_id = 0; usr_intr_id < MAX_USR_INTRS; usr_intr_id++) {
       res = fpgaCreateEventHandle(&ehandle[usr_intr_id]);
-      ON_ERR_GOTO(res, out_unmap, "error creating event handle`");
+      ON_ERR_GOTO(res, out_destroy_handles, "error creating event handle`");
 
       /* Register user interrupt with event handle */
       res = fpgaRegisterEvent(afc_handle, FPGA_EVENT_INTERRUPT, ehandle[usr_intr_id], usr_intr_id);
@@ -122,7 +120,9 @@ int main(int argc, char *argv[])
       ON_ERR_GOTO(res, out_destroy_handles, "writing to INTR_REG MMIO");
    
       /* Poll event handle*/
-      pfd.fd = FILE_DESCRIPTOR(ehandle[usr_intr_id]);
+      res = fpgaGetOSObjectFromEventHandle(ehandle[usr_intr_id], &pfd.fd);
+      ON_ERR_GOTO(res, out_destroy_handles, "getting file descriptor");
+
       pfd.events = POLLIN;            
       res = poll(&pfd, 1, -1);
       if(res < 0) {

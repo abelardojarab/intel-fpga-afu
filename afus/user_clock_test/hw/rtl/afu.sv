@@ -215,7 +215,8 @@ module clock_counter #(
 	reg sync_enable;
 	wire max_value_reached_wire;
 	
-	assign max_value_reached_wire = (max_value <= (count+1)) & (max_value != '0);
+	//assign max_value_reached_wire = (max_value <= (count+1)) & (max_value != '0);
+	assign max_value_reached_wire = !max_value ? 1'b0 : (count >= max_value);
 	
 	always @ ( posedge clk) begin
 		if (sync_reset) begin

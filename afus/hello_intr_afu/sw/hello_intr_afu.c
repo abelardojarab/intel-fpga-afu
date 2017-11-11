@@ -100,11 +100,11 @@ int main(int argc, char *argv[])
    fpga_event_handle ehandle[MAX_USR_INTRS];
    for(uint64_t usr_intr_id = 0; usr_intr_id < MAX_USR_INTRS; usr_intr_id++) {
       res = fpgaCreateEventHandle(&ehandle[usr_intr_id]);
-      ON_ERR_GOTO(res, out_unmap, "error creating event handle`");
+      ON_ERR_GOTO(res, out_destroy_handles, "error creating event handle`");
 
       /* Register user interrupt with event handle */
       res = fpgaRegisterEvent(afc_handle, FPGA_EVENT_INTERRUPT, ehandle[usr_intr_id], usr_intr_id);
-      ON_ERR_GOTO(res, out_unmap, "error registering event");
+      ON_ERR_GOTO(res, out_destroy_handles, "error registering event");
    }
    
    // Test if we can trigger an interrupt for each user interrupt ID
@@ -112,15 +112,17 @@ int main(int argc, char *argv[])
       /* Program the user interrupt id register */
       printf("Setting user interrupt id register (Byte Offset=%08x) = %08lx\n", USR_INTR_ID_REG, usr_intr_id);
       res = fpgaWriteMMIO64(afc_handle, 0, USR_INTR_ID_REG, usr_intr_id);
-      ON_ERR_GOTO(res, out_unmap, "writing to USR_INTR_ID_REG MMIO");
+      ON_ERR_GOTO(res, out_destroy_handles, "writing to USR_INTR_ID_REG MMIO");
 
       /* Trigger interrupt by writing to INTR_REG */
       printf("Setting Interrupt register (Byte Offset=%08x) = %08lx\n", INTR_REG, 1);
       res = fpgaWriteMMIO64(afc_handle, 0, INTR_REG, 1);
-      ON_ERR_GOTO(res, out_unmap, "writing to INTR_REG MMIO");
+      ON_ERR_GOTO(res, out_destroy_handles, "writing to INTR_REG MMIO");
    
       /* Poll event handle*/
-      pfd.fd = (int)ehandle[usr_intr_id];
+      res = fpgaGetOSObjectFromEventHandle(ehandle[usr_intr_id], &pfd.fd);
+      ON_ERR_GOTO(res, out_destroy_handles, "getting file descriptor");
+
       pfd.events = POLLIN;            
       res = poll(&pfd, 1, -1);
       if(res < 0) {
@@ -139,13 +141,17 @@ int main(int argc, char *argv[])
    /* cleanup */
    for(uint64_t usr_intr_id = 0; usr_intr_id < MAX_USR_INTRS; usr_intr_id++) {
       res = fpgaUnregisterEvent(afc_handle, FPGA_EVENT_INTERRUPT, ehandle[usr_intr_id]);   
-      ON_ERR_GOTO(res, out_unmap, "error fpgaUnregisterEvent");   
-
-      res = fpgaDestroyEventHandle(&ehandle[usr_intr_id]);
-      ON_ERR_GOTO(res, out_unmap, "error fpgaDestroyEventHandle");
+      ON_ERR_GOTO(res, out_destroy_handles, "error fpgaUnregisterEvent");
    }
 
    printf("Done Running Test\n");
+
+/*destroy event handles*/
+out_destroy_handles:
+   for(uint64_t usr_intr_id = 0; usr_intr_id < MAX_USR_INTRS; usr_intr_id++) {
+      res = fpgaDestroyEventHandle(&ehandle[usr_intr_id]);
+      ON_ERR_GOTO(res, out_unmap, "error fpgaDestroyEventHandle");
+   }
    
    /* Unmap MMIO space */
 out_unmap:

@@ -1,3 +1,4 @@
 ccip_std_afu.sv
 afu.sv
+user_clock_test.sdc
 user_clock_test.json

@@ -5,9 +5,10 @@
 #include <opae/fpga.h>
 #include <stdlib.h>
 
-#define MSGDMA_BBB_GUID		"d79c094c-7cf9-4cc1-94eb-7d79c7c01ca3"
+#define MSGDMA_BBB_GUID		"ef82def7-f6ec-40fc-a914-9a35bace01ea"
 #define MSGDMA_BBB_SIZE		8192
 
+#define MSGDMA_BBB_HOST_MASK	0x2000000000000
 
 #define ACL_DMA_INST_ACL_DMA_AFU_ID_AVMM_SLAVE_0_BASE 0x0
 #define ACL_DMA_INST_DMA_MODULAR_SGDMA_DISPATCHER_0_CSR_BASE 0x40

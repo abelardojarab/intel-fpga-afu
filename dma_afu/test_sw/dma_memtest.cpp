@@ -104,7 +104,7 @@ int dma_memory_checker(
 			rc4_obj.write_bytes((char *)dma_buf_ptr, (int)DMA_BUF_SIZE);
 			uint64_t dev_addr = i*DMA_BUF_SIZE;
 			
-			copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | 0x1000000000000, dev_addr, DMA_BUF_SIZE);
+			copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | MSGDMA_BBB_HOST_MASK, dev_addr, DMA_BUF_SIZE);
 		}
 		printf("Finished transfer from host to DDR\n");
 		
@@ -115,7 +115,7 @@ int dma_memory_checker(
 		for(long i = 0; i < NUM_DMA_TRANSFERS; i++)
 		{
 			uint64_t dev_addr = i*DMA_BUF_SIZE;
-			copy_dev_to_dev_with_dma(afc_handle, dev_addr, dma_buf_iova | 0x1000000000000, DMA_BUF_SIZE);
+			copy_dev_to_dev_with_dma(afc_handle, dev_addr, dma_buf_iova | MSGDMA_BBB_HOST_MASK, DMA_BUF_SIZE);
 			long errors = rc4_obj.check_bytes((char *)dma_buf_ptr, (int)DMA_BUF_SIZE);
 			if(errors)
 				page_errors++;
@@ -174,7 +174,7 @@ int dma_read_test_fast(
 		rc4_obj.write_bytes((char *)dma_buf_ptr, (int)DMA_BUF_SIZE);
 		uint64_t dev_addr = i*DMA_BUF_SIZE;
 		
-		//copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | 0x1000000000000, dev_addr, DMA_BUF_SIZE);
+		//copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | MSGDMA_BBB_HOST_MASK, dev_addr, DMA_BUF_SIZE);
 		copy_to_dev_with_mmio(afc_handle, (uint64_t *)dma_buf_ptr, dev_addr, DMA_BUF_SIZE);
 	}
 	printf("Finished transfer from host to DDR\n");
@@ -191,7 +191,7 @@ int dma_read_test_fast(
 		for(long i = 0; i < NUM_DMA_TRANSFERS; i++)
 		{
 			uint64_t dev_addr = i*DMA_BUF_SIZE;
-			copy_dev_to_dev_with_dma(afc_handle, dev_addr, dma_buf_iova | 0x1000000000000, DMA_BUF_SIZE);
+			copy_dev_to_dev_with_dma(afc_handle, dev_addr, dma_buf_iova | MSGDMA_BBB_HOST_MASK, DMA_BUF_SIZE);
 			//long errors = rc4_obj.check_bytes((char *)check_buffer, (int)DMA_BUF_SIZE);
 			if(memcmp((void *)dma_buf_ptr, (void *)check_buffer, DMA_BUF_SIZE) != 0)
 				page_errors++;
@@ -247,7 +247,7 @@ int dma_read_test(
 		rc4_obj.write_bytes((char *)dma_buf_ptr, (int)DMA_BUF_SIZE);
 		uint64_t dev_addr = i*DMA_BUF_SIZE;
 		
-		//copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | 0x1000000000000, dev_addr, DMA_BUF_SIZE);
+		//copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | MSGDMA_BBB_HOST_MASK, dev_addr, DMA_BUF_SIZE);
 		copy_to_dev_with_mmio(afc_handle, (uint64_t *)dma_buf_ptr, dev_addr, DMA_BUF_SIZE);
 	}
 	printf("Finished transfer from host to DDR\n");
@@ -264,7 +264,7 @@ int dma_read_test(
 		for(long i = 0; i < NUM_DMA_TRANSFERS; i++)
 		{
 			uint64_t dev_addr = i*DMA_BUF_SIZE;
-			copy_dev_to_dev_with_dma(afc_handle, dev_addr, dma_buf_iova | 0x1000000000000, DMA_BUF_SIZE);
+			copy_dev_to_dev_with_dma(afc_handle, dev_addr, dma_buf_iova | MSGDMA_BBB_HOST_MASK, DMA_BUF_SIZE);
 			long errors = rc4_obj.check_bytes((char *)dma_buf_ptr, (int)DMA_BUF_SIZE);
 			if(errors)
 				page_errors++;
@@ -324,7 +324,7 @@ int dma_write_test(
 		{
 			uint64_t dev_addr = i*DMA_BUF_SIZE;
 			
-			copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | 0x1000000000000, dev_addr, DMA_BUF_SIZE);
+			copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | MSGDMA_BBB_HOST_MASK, dev_addr, DMA_BUF_SIZE);
 		}
 		printf("Finished transfer from host to DDR\n");
 	}

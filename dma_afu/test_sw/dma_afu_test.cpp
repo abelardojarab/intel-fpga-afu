@@ -204,7 +204,7 @@ int run_basic_ddr_dma_test(fpga_handle afc_handle)
 	//test ddr to host transfers
 	//basic host ddr test
 	copy_to_dev_with_mmio(afc_handle, test_buffer_word_ptr, 0, TEST_BUFFER_SIZE);
-	copy_dev_to_dev_with_dma(afc_handle, 0, dma_buf_iova | 0x1000000000000, TEST_BUFFER_SIZE);
+	copy_dev_to_dev_with_dma(afc_handle, 0, dma_buf_iova | MSGDMA_BBB_HOST_MASK, TEST_BUFFER_SIZE);
 	/*for(int i = 0; i < TEST_BUFFER_WORD_SIZE; i++)
 		printf("%ld ", ((uint64_t *)dma_buf_ptr)[i]);
 	printf("\n");*/
@@ -217,7 +217,7 @@ int run_basic_ddr_dma_test(fpga_handle afc_handle)
 	
 	//test host to ddr transfers
 	copy_to_dev_with_mmio(afc_handle, (uint64_t *)test_buffer_zero, DEST_PTR, TEST_BUFFER_SIZE);
-	copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | 0x1000000000000, DEST_PTR, TEST_BUFFER_SIZE);
+	copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | MSGDMA_BBB_HOST_MASK, DEST_PTR, TEST_BUFFER_SIZE);
 	num_errors += compare_dev_and_host(afc_handle, test_buffer_word_ptr, DEST_PTR, TEST_BUFFER_SIZE);
 	
 	printf("num_errors = %d\n", num_errors);
@@ -233,7 +233,7 @@ int check_host_read_from_mmio(fpga_handle afc_handle)
 	
 	//using this address will crash ASE/host until we cut this path on the
 	//address span extender
-	uint64_t address = 0x1000 | 0x1000000000000;
+	uint64_t address = 0x1000 | MSGDMA_BBB_HOST_MASK;
 	
 	mmio_write64(afc_handle, MEM_WINDOW_CRTL(msgdma_bbb_dfh_offset), address, "addr_span");
 	mmio_read64(afc_handle, MEM_WINDOW_CRTL(msgdma_bbb_dfh_offset), &data, "addr_span");
@@ -477,7 +477,7 @@ int run_enumeration_test(fpga_handle afc_handle)
 	dump_dfh_list(afc_handle);
 	check_guid(afc_handle, 1, 2);
 	check_guid(afc_handle, 0xb383c70ace57bfe4, 0x4c9c96f465ba4dd8, "mpf_read_rsp_reorder");
-	check_guid(afc_handle, 0x94eb7d79c7c01ca3, 0xd79c094c7cf94cc1, "msgdma_bbb");
+	check_guid(afc_handle, 0xa9149a35bace01ea, 0xef82def7f6ec40fc, "msgdma_bbb");
 }
 
 int run_large_dma_test(fpga_handle afc_handle)
@@ -522,10 +522,10 @@ int run_large_dma_test(fpga_handle afc_handle)
 	copy_dev_to_dev_with_dma(afc_handle, 0, DEST_PTR, TEST_BUFFER_SIZE);
 	
 	//test ddr to host transfers
-	copy_dev_to_dev_with_dma(afc_handle, 0, dma_buf_iova | 0x1000000000000, TEST_BUFFER_SIZE);
+	copy_dev_to_dev_with_dma(afc_handle, 0, dma_buf_iova | MSGDMA_BBB_HOST_MASK, TEST_BUFFER_SIZE);
 	
 	//test host to ddr transfers
-	copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | 0x1000000000000, DEST_PTR, TEST_BUFFER_SIZE);
+	copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | MSGDMA_BBB_HOST_MASK, DEST_PTR, TEST_BUFFER_SIZE);
 	
 	printf("num_errors = %d\n", num_errors);
 	s_error_count += num_errors;

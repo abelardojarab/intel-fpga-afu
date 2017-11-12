@@ -137,7 +137,7 @@ int dma_memory_checker(
 		uint64_t dev_addr = i*DMA_BUF_SIZE + DMA_DEV_OFFSET;
 		
 		start = getCurrentTimestamp();
-		copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | 0x1000000000000, dev_addr, DMA_BUF_SIZE);
+		copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | MSGDMA_BBB_HOST_MASK, dev_addr, DMA_BUF_SIZE);
 		end = getCurrentTimestamp();
 		dma_write_time += (end - start);
 	}
@@ -148,7 +148,7 @@ int dma_memory_checker(
 	{
 		uint64_t dev_addr = i*DMA_BUF_SIZE + DMA_DEV_OFFSET;
 		start = getCurrentTimestamp();
-		copy_dev_to_dev_with_dma(afc_handle, dev_addr, dma_buf_iova | 0x1000000000000, DMA_BUF_SIZE);
+		copy_dev_to_dev_with_dma(afc_handle, dev_addr, dma_buf_iova | MSGDMA_BBB_HOST_MASK, DMA_BUF_SIZE);
 		end = getCurrentTimestamp();
 		dma_read_time += (end - start);
 		long errors = memtest_obj.check_bytes((char *)dma_buf_ptr, (int)DMA_BUF_SIZE);

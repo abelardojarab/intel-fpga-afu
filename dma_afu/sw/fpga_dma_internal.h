@@ -38,8 +38,10 @@
 #define IS_ALIGNED_DWORD(addr) (addr%4==0)
 #define IS_ALIGNED_QWORD(addr) (addr%8==0)
 
-#define FPGA_DMA_UUID_H 0xd79c094c7cf94cc1
-#define FPGA_DMA_UUID_L 0x94eb7d79c7c01ca3
+#define FPGA_DMA_UUID_H 0xef82def7f6ec40fc
+#define FPGA_DMA_UUID_L 0xa9149a35bace01ea
+#define FPGA_DMA_HOST_MASK		0x2000000000000
+
 
 #define AFU_DFH_REG 0x0
 #define AFU_DFH_NEXT_OFFSET 16

@@ -735,7 +735,7 @@ fpga_result transferHostToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
          res = _dma_write_fifo_status(dma_h, MAX_BUF-2);
          
       	 memcpy(dma_h->dma_buf_ptr[i%MAX_BUF], (void*)(src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);
-         res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova[i%MAX_BUF] | 0x1000000000000, FPGA_DMA_BUF_SIZE,0, type);
+         res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova[i%MAX_BUF] | FPGA_DMA_HOST_MASK, FPGA_DMA_BUF_SIZE,0, type);
       }
       res = _dma_desc_status(dma_h);
       ON_ERR_GOTO(res, out, "DMA DESC BUFFER Empty polling failed\n");
@@ -745,7 +745,7 @@ fpga_result transferHostToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
          {
             debug_print("dma_tx_bytes = %08lx  was transfered using DMA\n", dma_tx_bytes);
             memcpy(dma_h->dma_buf_ptr[0], (void*)(src+dma_chunks*FPGA_DMA_BUF_SIZE), dma_tx_bytes);
-            res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova[0] | 0x1000000000000, dma_tx_bytes,1, type);
+            res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova[0] | FPGA_DMA_HOST_MASK, dma_tx_bytes,1, type);
             ON_ERR_GOTO(res, out, "HOST_TO_FPGA_MM Transfer failed\n");
             res = _dma_desc_status(dma_h);
             ON_ERR_GOTO(res, out, "DMA DESC BUFFER Empty polling failed\n");
@@ -799,7 +799,7 @@ fpga_result transferFpgaToHost(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
       assert(MAX_BUF >= 4);  //3 buffers for dma + 1 for fence
       uint64_t pending_buf = 0;
       for(i=0; i<dma_chunks; i++) {
-         res = _do_dma(dma_h, dma_h->dma_buf_iova[i%(MAX_BUF-1)] | 0x1000000000000, (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE, 1, type);
+         res = _do_dma(dma_h, dma_h->dma_buf_iova[i%(MAX_BUF-1)] | FPGA_DMA_HOST_MASK, (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE, 1, type);
          ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
          
          const int num_pending = i-pending_buf+1;
@@ -819,7 +819,7 @@ fpga_result transferFpgaToHost(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
       }
 
       //sync up
-      const uint64_t FENCE_BUFFER = dma_h->dma_buf_iova[MAX_BUF-1] | 0x1000000000000;
+      const uint64_t FENCE_BUFFER = dma_h->dma_buf_iova[MAX_BUF-1] | FPGA_DMA_HOST_MASK;
       res = _dma_desc_status(dma_h);
       ON_ERR_GOTO(res, out, "DMA DESC BUFFER Empty polling failed\n");
       res = _do_dma(dma_h, FENCE_BUFFER, FENCE_BUFFER, 64, 1, type);
@@ -837,12 +837,12 @@ fpga_result transferFpgaToHost(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
          if(dma_tx_bytes != 0)
          {
             debug_print("dma_tx_bytes = %08lx  was transfered using DMA\n", dma_tx_bytes);
-            res = _do_dma(dma_h, dma_h->dma_buf_iova[0] | 0x1000000000000, (src+dma_chunks*FPGA_DMA_BUF_SIZE), dma_tx_bytes, 1, type);
+            res = _do_dma(dma_h, dma_h->dma_buf_iova[0] | FPGA_DMA_HOST_MASK, (src+dma_chunks*FPGA_DMA_BUF_SIZE), dma_tx_bytes, 1, type);
             ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
             res = _dma_desc_status(dma_h);
             ON_ERR_GOTO(res, out, "DMA DESC BUFFER Empty polling failed\n");
             // hack: extra read to fence host memory writes
-            res = _do_dma(dma_h, dma_h->dma_buf_iova[0] | 0x1000000000000, dma_h->dma_buf_iova[0] | 0x1000000000000, 64, 1, type);
+            res = _do_dma(dma_h, dma_h->dma_buf_iova[0] | FPGA_DMA_HOST_MASK, dma_h->dma_buf_iova[0] | FPGA_DMA_HOST_MASK, 64, 1, type);
             ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
             res = _dma_desc_status(dma_h);
             ON_ERR_GOTO(res, out, "DMA DESC BUFFER Empty polling failed\n");

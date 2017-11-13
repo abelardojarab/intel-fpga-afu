@@ -220,6 +220,20 @@ int run_basic_ddr_dma_test(fpga_handle afc_handle)
 	copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | MSGDMA_BBB_HOST_MASK, DEST_PTR, TEST_BUFFER_SIZE);
 	num_errors += compare_dev_and_host(afc_handle, test_buffer_word_ptr, DEST_PTR, TEST_BUFFER_SIZE);
 	
+	
+	//magic rom test
+	memset((void *)dma_buf_ptr, 0x55, TEST_BUFFER_SIZE);
+	copy_dev_to_dev_with_dma(afc_handle, MSGDMA_BBB_MAGIC_ROM_ADDR, dma_buf_iova | MSGDMA_BBB_HOST_MASK, 64);
+	printf("magic rom rading: ");
+	for(int i = 0; i < 2; i++)
+		printf("%.8x ", ((uint32_t *)dma_buf_ptr)[i]);
+	printf("\n");
+	if(((uint64_t *)dma_buf_ptr)[0] != 0x5772745F53796E63)
+	{
+		printf("ERROR: magic number doesn't match\n");
+		num_errors++;
+	}
+	
 	printf("num_errors = %d\n", num_errors);
 	s_error_count += num_errors;
 	

@@ -40,7 +40,10 @@
 
 #define FPGA_DMA_UUID_H 0xef82def7f6ec40fc
 #define FPGA_DMA_UUID_L 0xa9149a35bace01ea
-#define FPGA_DMA_HOST_MASK		0x2000000000000
+#define FPGA_DMA_WF_MAGIC_NO          0x5772745F53796E63ULL
+#define FPGA_DMA_HOST_MASK            0x2000000000000
+#define FPGA_DMA_WF_HOST_MASK         0x3000000000000
+#define FPGA_DMA_WF_ROM_MAGIC_NO_MASK 0x1000000000000
 
 
 #define AFU_DFH_REG 0x0
@@ -85,7 +88,7 @@
 	#define debug_print(...)
 #endif
 
-#define FPGA_DMA_MAX_BUF 4
+#define FPGA_DMA_MAX_BUF 8
 
 typedef union {
 	uint64_t reg;

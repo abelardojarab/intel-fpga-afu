@@ -10,7 +10,7 @@
             {
                "name": "dma_test_afu",
                "total-contexts": 1,
-               "accelerator-type-uuid": "ef82def7-f6ec-40fc-a914-9a35bace01ea"
+               "accelerator-type-uuid": "331DB30C-9885-41EA-9081-F88B8F655CAA"
             }
          ]
    }

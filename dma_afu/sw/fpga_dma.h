@@ -29,9 +29,6 @@
  * \brief FPGA DMA BBB API Header
  *
  * Known Limitations
- * - Driver does not support Address Span Extender
- * - Implementation is not optimized for performance.
- *   User buffer data is copied into a DMA-able buffer before the transfer
  * - Supports only synchronous (blocking) transfers
  */
 

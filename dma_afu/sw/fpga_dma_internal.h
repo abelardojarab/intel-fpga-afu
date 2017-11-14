@@ -79,61 +79,61 @@
 #define FPGA_DMA_BUF_ALIGN_SIZE FPGA_DMA_BUF_SIZE
 // Convenience macros
 #ifdef FPGA_DMA_DEBUG
-  #define debug_print(fmt, ...) \
-          do { if (FPGA_DMA_DEBUG) fprintf(stderr, fmt, ##__VA_ARGS__); } while (0)
+	#define debug_print(fmt, ...) \
+					do { if (FPGA_DMA_DEBUG) fprintf(stderr, fmt, ##__VA_ARGS__); } while (0)
 #else
-  #define debug_print(...)
+	#define debug_print(...)
 #endif
 
 #define MAX_BUF 4
 
 typedef union {
-   uint64_t reg;
-   struct {
-      uint64_t feature_type:4;
-      uint64_t reserved_8:8;
-      uint64_t afu_minor:4;
-      uint64_t reserved_7:7;
-      uint64_t end_dfh:1;
-      uint64_t next_dfh:24;
-      uint64_t afu_major:4;
-      uint64_t feature_id:12;
-   } bits;
+	uint64_t reg;
+	struct {
+		uint64_t feature_type:4;
+		uint64_t reserved_8:8;
+		uint64_t afu_minor:4;
+		uint64_t reserved_7:7;
+		uint64_t end_dfh:1;
+		uint64_t next_dfh:24;
+		uint64_t afu_major:4;
+		uint64_t feature_id:12;
+	} bits;
 } dfh_reg_t;
 
 typedef struct __attribute__((__packed__))
 {
-  //0x0
-  uint32_t rd_address;
-  //0x4
-  uint32_t wr_address;
-  //0x8
-  uint32_t len;
-  //0xC
-  uint16_t seq_num;
-  uint8_t rd_burst_count;
-  uint8_t wr_burst_count;
-  //0x10
-  uint16_t rd_stride;
-  uint16_t wr_stride;
-  //0x14
-  uint32_t rd_address_ext;
-  //0x18
-  uint32_t wr_address_ext;
-  //0x1c
-  uint32_t control;
+	//0x0
+	uint32_t rd_address;
+	//0x4
+	uint32_t wr_address;
+	//0x8
+	uint32_t len;
+	//0xC
+	uint16_t seq_num;
+	uint8_t rd_burst_count;
+	uint8_t wr_burst_count;
+	//0x10
+	uint16_t rd_stride;
+	uint16_t wr_stride;
+	//0x14
+	uint32_t rd_address_ext;
+	//0x18
+	uint32_t wr_address_ext;
+	//0x1c
+	uint32_t control;
 } msgdma_ext_descriptor_t;
 
 struct _dma_handle_t
 {
-   fpga_handle fpga_h;
-   uint32_t mmio_num;
-   uint64_t mmio_offset;
-   uint64_t dma_base;
-   uint64_t dma_offset;
-   uint64_t *dma_buf_ptr[MAX_BUF];
-   uint64_t dma_buf_wsid[MAX_BUF];
-   uint64_t dma_buf_iova[MAX_BUF];
+	fpga_handle fpga_h;
+	uint32_t mmio_num;
+	uint64_t mmio_offset;
+	uint64_t dma_base;
+	uint64_t dma_offset;
+	uint64_t *dma_buf_ptr[MAX_BUF];
+	uint64_t dma_buf_wsid[MAX_BUF];
+	uint64_t dma_buf_iova[MAX_BUF];
 };
 
 #endif // __FPGA_DMA_INT_H__

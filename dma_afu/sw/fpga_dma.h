@@ -30,7 +30,7 @@
  *
  * Known Limitations
  * - Driver does not support Address Span Extender
- * - Implementation is not optimized for performance. 
+ * - Implementation is not optimized for performance.
  *   User buffer data is copied into a DMA-able buffer before the transfer
  * - Supports only synchronous (blocking) transfers
  */
@@ -40,7 +40,7 @@
 
 #include <opae/fpga.h>
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -51,10 +51,10 @@ extern "C" {
 * supported.
 */
 typedef enum {
-   HOST_TO_FPGA_MM = 0, //Memory mapped FPGA interface
-   FPGA_TO_HOST_MM, //Memory mapped FPGA interface
-   FPGA_TO_FPGA_MM, //Memory mapped FPGA interface
-   FPGA_MAX_TRANSFER_TYPE,
+	HOST_TO_FPGA_MM = 0, //Memory mapped FPGA interface
+	FPGA_TO_HOST_MM, //Memory mapped FPGA interface
+	FPGA_TO_FPGA_MM, //Memory mapped FPGA interface
+	FPGA_MAX_TRANSFER_TYPE,
 }fpga_dma_transfer_t;
 
 typedef struct _dma_handle_t *fpga_dma_handle;
@@ -97,7 +97,7 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle *dma);
 *
 */
 fpga_result fpgaDmaTransferSync(fpga_dma_handle dma, uint64_t dst, uint64_t src, size_t count,
-                                fpga_dma_transfer_t type);
+										  fpga_dma_transfer_t type);
 
 /**
 * fpgaDmaTransferAsync (Not supported)
@@ -122,7 +122,7 @@ fpga_result fpgaDmaTransferSync(fpga_dma_handle dma, uint64_t dst, uint64_t src,
 *
 */
 fpga_result fpgaDmaTransferAsync(fpga_dma_handle dma, uint64_t dst, uint64_t src, size_t count,
-                                fpga_dma_transfer_t type, fpga_dma_transfer_cb cb, void *context);
+										fpga_dma_transfer_t type, fpga_dma_transfer_cb cb, void *context);
 
 /**
 * fpgaDmaClose
@@ -134,7 +134,7 @@ fpga_result fpgaDmaTransferAsync(fpga_dma_handle dma, uint64_t dst, uint64_t src
 */
 fpga_result fpgaDmaClose(fpga_dma_handle dma);
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 }
 #endif
 

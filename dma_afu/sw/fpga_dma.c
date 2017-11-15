@@ -76,7 +76,7 @@ static uint64_t _fpga_dma_feature_next(uint64_t dfh) {
 // copy bytes to MMIO
 static fpga_result _copy_to_mmio(fpga_handle afc_handle, uint64_t mmio_dst, uint64_t *host_src, int len) {
 	int i=0;
-	fpga_result res;
+	fpga_result res = FPGA_OK;
 	//mmio requires 8 byte alignment
 	if(len % QWORD_BYTES != 0) return FPGA_INVALID_PARAM;
 	if(mmio_dst % QWORD_BYTES != 0) return FPGA_INVALID_PARAM;
@@ -98,8 +98,8 @@ static fpga_result _copy_to_mmio(fpga_handle afc_handle, uint64_t mmio_dst, uint
 
 
 static fpga_result _send_descriptor(fpga_dma_handle dma_h, msgdma_ext_desc_t desc) {
-	fpga_result res;
-	msgdma_status_t status;
+	fpga_result res = FPGA_OK;
+	msgdma_status_t status = {0};
 
 	debug_print("desc.rd_address = %x\n",desc.rd_address);
 	debug_print("desc.wr_address = %x\n",desc.wr_address);
@@ -127,7 +127,7 @@ out:
 
 static fpga_result _dma_poll_busy(fpga_dma_handle dma_h) {
 	fpga_result res = FPGA_OK;
-	msgdma_status_t status;
+	msgdma_status_t status = {0};
 
 	do {
 		res = fpgaReadMMIO32(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_csr_base+offsetof(msgdma_csr_t, status), (uint32_t *)&status.reg);
@@ -141,7 +141,7 @@ out:
 // Block till h/w FIFO level drops below a set thershold
 static fpga_result _wait_wr_fifo(fpga_dma_handle dma_h, int fifo_level) {
 	fpga_result res = FPGA_OK;
-	msgdma_fill_level_t flevel;
+	msgdma_fill_level_t flevel = {0};
 
 	msgdma_csr_t *csr = (msgdma_csr_t*)(dma_h->dma_csr_base);
 
@@ -158,8 +158,8 @@ out:
 static fpga_result _do_dma(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, int count, int is_last_desc, fpga_dma_transfer_t type, bool intr_en) {
 	msgdma_ext_desc_t desc = {0};
 	fpga_result res = FPGA_OK;
-	int alignment_offset;
-	int segment_size;
+	int alignment_offset = 0;
+	int segment_size = 0;
 
 	// src, dst and count must be 64-byte aligned
 	if(dst%FPGA_DMA_ALIGN_BYTES  !=0 ||
@@ -283,8 +283,8 @@ out:
 // Public APIs
 fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle *dma_p) {
 	fpga_result res = FPGA_OK;
-	fpga_dma_handle dma_h;
-	int i;
+	fpga_dma_handle dma_h = NULL;
+	int i = 0;
 	if(!fpga) {
 		return FPGA_INVALID_PARAM;
 	}
@@ -370,7 +370,7 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle *dma_p) {
 	memset((void*)dma_h->magic_buf, 0, FPGA_DMA_ALIGN_BYTES);
 
 	// turn on global interrupts
-	msgdma_ctrl_t ctrl;
+	msgdma_ctrl_t ctrl = {0};
 	ctrl.ct.global_intr_en_mask = 1;
 	res = fpgaWriteMMIO32(dma_h->fpga_h, 0, dma_h->dma_csr_base+offsetof(msgdma_csr_t, ctrl), ctrl.reg);
 	ON_ERR_GOTO(res, rel_buf, "fpgaWriteMMIO32");
@@ -416,7 +416,7 @@ static fpga_result _read_memory_mmio_unaligned(fpga_dma_handle dma_h, uint64_t d
 
 	uint64_t dev_aligned_addr = dev_addr - shift;
 	//read data from device memory
-	uint64_t read_tmp;
+	uint64_t read_tmp = 0;
 	res = fpgaReadMMIO64(dma_h->fpga_h, 0, dma_h->dma_ase_data_base+(dev_aligned_addr&DMA_ADDR_SPAN_EXT_WINDOW_MASK), &read_tmp);
 	if(res != FPGA_OK)
 		return res;
@@ -445,7 +445,7 @@ static fpga_result _write_memory_mmio_unaligned(fpga_dma_handle dma_h, uint64_t 
 
 	uint64_t dev_aligned_addr = dev_addr - shift;
 	//read data from device memory
-	uint64_t read_tmp;
+	uint64_t read_tmp = 0;
 	res = fpgaReadMMIO64(dma_h->fpga_h, 0, dma_h->dma_ase_data_base+(dev_aligned_addr&DMA_ADDR_SPAN_EXT_WINDOW_MASK), &read_tmp);
 	if(res != FPGA_OK)
 		return res;
@@ -475,9 +475,9 @@ static fpga_result _write_memory_mmio(fpga_dma_handle dma_h, uint64_t *dst_ptr,u
 	uint64_t src = *src_ptr;
 	uint64_t dst = *dst_ptr;
 	uint64_t align_bytes = *count;
-	uint64_t cur_mem_page;
-	uint64_t offset;
-	uint64_t i;
+	uint64_t cur_mem_page = 0;
+	uint64_t offset = 0;
+	uint64_t i = 0;
 	uint64_t alignment=0;
 	if(IS_ALIGNED_QWORD(dst))
 		alignment = QWORD_BYTES;
@@ -528,8 +528,8 @@ static fpga_result _ase_host_to_fpga(fpga_dma_handle dma_h, uint64_t *dst_ptr,ui
 	uint64_t dst = *dst_ptr;
 	uint64_t src = *src_ptr;
 	uint64_t count_left = count;
-	uint64_t mmio_shift;
-	uint64_t unaligned_size;
+	uint64_t mmio_shift = 0;
+	uint64_t unaligned_size = 0;
 
 	do {
 		//Set the Address Span expander CTRL port to the required 4K window
@@ -605,10 +605,10 @@ static fpga_result _read_memory_mmio(fpga_dma_handle dma_h, uint64_t *src_ptr,ui
 	uint64_t src = *src_ptr;
 	uint64_t dst = *dst_ptr;
 	uint64_t align_bytes = *count;
-	uint64_t cur_mem_page;
-	uint64_t offset;
-	uint64_t i;
-	uint64_t alignment=0;
+	uint64_t cur_mem_page = 0;
+	uint64_t offset = 0;
+	uint64_t i = 0;
+	uint64_t alignment = 0;
 	if(IS_ALIGNED_QWORD(src))
 		alignment = QWORD_BYTES;
 	else if(IS_ALIGNED_DWORD(src))
@@ -658,8 +658,8 @@ static fpga_result _ase_fpga_to_host(fpga_dma_handle dma_h, uint64_t *src_ptr,ui
 	uint64_t src = *src_ptr;
 	uint64_t dst = *dst_ptr;
 	uint64_t count_left = count;
-	uint64_t mmio_shift;
-	uint64_t unaligned_size;
+	uint64_t mmio_shift = 0;
+	uint64_t unaligned_size = 0;
 
 	do {
 		//Set the Address Span expander CTRL port to the required 4K window
@@ -722,10 +722,10 @@ static fpga_result _ase_fpga_to_host(fpga_dma_handle dma_h, uint64_t *src_ptr,ui
 fpga_result transferHostToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, size_t count,
 										  fpga_dma_transfer_t type) {
 	fpga_result res = FPGA_OK;
-	uint64_t i;
+	uint64_t i = 0;
 	uint64_t count_left = count;
-	uint64_t aligned_addr;
-	uint64_t align_bytes;
+	uint64_t aligned_addr = 0;
+	uint64_t align_bytes = 0;
 	debug_print("Host To Fpga ----------- src = %08lx, dst = %08lx \n", src, dst);
 	if(!IS_DMA_ALIGNED(dst)) {
 		if(count_left < FPGA_DMA_ALIGN_BYTES) {
@@ -779,7 +779,7 @@ out:
 
 static fpga_result clear_interrupt(fpga_dma_handle dma_h) {
 	//clear interrupt by writing 1 to IRQ bit in status register
-	msgdma_status_t status;
+	msgdma_status_t status = {0};
 	status.st.irq = 1;
 
 	msgdma_csr_t *csr = (msgdma_csr_t*)(dma_h->dma_csr_base);
@@ -787,10 +787,10 @@ static fpga_result clear_interrupt(fpga_dma_handle dma_h) {
 }
 
 static fpga_result poll_interrupt(fpga_dma_handle dma_h) {
-	struct pollfd pfd;
-	fpga_result res;
+	struct pollfd pfd = {0};
+	fpga_result res = FPGA_OK;
 
-	pfd.fd = (int)dma_h->eh;
+	pfd.fd = (uintptr_t)(dma_h->eh);
 	pfd.events = POLLIN;
 	int poll_res = poll(&pfd, 1, -1);
 	if(poll_res < 0) {
@@ -802,9 +802,9 @@ static fpga_result poll_interrupt(fpga_dma_handle dma_h) {
 		fprintf( stderr, "Poll(interrupt) timeout \n");
 		res = FPGA_EXCEPTION;
 	} else {
-		uint64_t count;
+		uint64_t count = 0;
 		read(pfd.fd, &count, sizeof(count));
-		debug_print("Poll success. Return = %d, count = %d\n",poll_res, count);
+		debug_print("Poll success. Return = %d, count = %d\n",poll_res, (int)count);
 		res = FPGA_OK;
 	}
 
@@ -817,7 +817,7 @@ static fpga_result _issue_magic(fpga_dma_handle dma_h) {
 	fpga_result res = FPGA_OK;
 	*(dma_h->magic_buf) = 0x0ULL;
 
-	msgdma_status_t status;
+	msgdma_status_t status = {0};
 	msgdma_csr_t *csr = (msgdma_csr_t*)(dma_h->dma_csr_base);
 	res = fpgaReadMMIO32(dma_h->fpga_h, dma_h->mmio_num, (uint64_t)((char*)csr+offsetof(msgdma_csr_t, status)), &status.reg);
 
@@ -835,10 +835,11 @@ static void _wait_magic(fpga_dma_handle dma_h) {
 fpga_result transferFpgaToHost(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, size_t count,
 										fpga_dma_transfer_t type) {
 	fpga_result res = FPGA_OK;
-	uint64_t i, j;
+	uint64_t i = 0;
+	uint64_t j = 0;
 	uint64_t count_left = count;
-	uint64_t aligned_addr;
-	uint64_t align_bytes;
+	uint64_t aligned_addr = 0;
+	uint64_t align_bytes = 0;
 	int wf_issued = 0;
 
 	debug_print("FPGA To Host ----------- src = %08lx, dst = %08lx \n", src, dst);
@@ -921,7 +922,7 @@ out:
 fpga_result transferFpgaToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, size_t count,
 										  fpga_dma_transfer_t type) {
 	fpga_result res = FPGA_OK;
-	uint64_t i;
+	uint64_t i = 0;
 	uint64_t count_left = count;
 	uint64_t *tmp_buf = NULL;
 	if(IS_DMA_ALIGNED(dst) &&
@@ -1019,7 +1020,7 @@ fpga_result fpgaDmaTransferAsync(fpga_dma_handle dma, uint64_t dst, uint64_t src
 
 fpga_result fpgaDmaClose(fpga_dma_handle dma_h) {
 	fpga_result res = FPGA_OK;
-	int i;
+	int i = 0;
 	if(!dma_h || !dma_h->fpga_h)
 		res = FPGA_INVALID_PARAM;
 
@@ -1037,7 +1038,7 @@ fpga_result fpgaDmaClose(fpga_dma_handle dma_h) {
 	fpgaDestroyEventHandle(&dma_h->eh);
 
 	// turn off global interrupts
-	msgdma_ctrl_t ctrl;
+	msgdma_ctrl_t ctrl = {0};
 	ctrl.ct.global_intr_en_mask = 0;
 	res = fpgaWriteMMIO32(dma_h->fpga_h, 0, dma_h->dma_csr_base+offsetof(msgdma_csr_t, ctrl), ctrl.reg);
 

@@ -155,7 +155,7 @@ out:
 	return res;
 }
 
-static fpga_result _do_dma(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, int count, int is_last_desc, fpga_dma_transfer_t type) {
+static fpga_result _do_dma(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, int count, int is_last_desc, fpga_dma_transfer_t type, bool intr_en) {
 	msgdma_ext_desc_t desc = {0};
 	fpga_result res = FPGA_OK;
 	int alignment_offset;
@@ -174,6 +174,8 @@ static fpga_result _do_dma(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, in
 	desc.rd_stride = 1;
 
 	desc.control.go = 1;
+	if(intr_en)
+		desc.control.transfer_irq_en = 1;
 
 	// Enable "earlyreaddone" in the control field of the descriptor except the last.
 	// Setting early done causes the read logic to move to the next descriptor
@@ -366,7 +368,25 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle *dma_p) {
 	res = fpgaGetIOAddress(dma_h->fpga_h, dma_h->magic_wsid, &dma_h->magic_iova);
 	ON_ERR_GOTO(res, rel_buf, "fpgaGetIOAddress");
 	memset((void*)dma_h->magic_buf, 0, FPGA_DMA_ALIGN_BYTES);
+
+	// turn on global interrupts
+	msgdma_ctrl_t ctrl;
+	ctrl.ct.global_intr_en_mask = 1;
+	res = fpgaWriteMMIO32(dma_h->fpga_h, 0, dma_h->dma_csr_base+offsetof(msgdma_csr_t, ctrl), ctrl.reg);
+	ON_ERR_GOTO(res, rel_buf, "fpgaWriteMMIO32");
+
+	// register interrupt event handle
+	res = fpgaCreateEventHandle(&dma_h->eh);
+	ON_ERR_GOTO(res, rel_buf, "fpgaCreateEventHandle");
+
+	res = fpgaRegisterEvent(dma_h->fpga_h, FPGA_EVENT_INTERRUPT, dma_h->eh, 0/*vector id*/);
+	ON_ERR_GOTO(res, destroy_eh, "fpgaRegisterEvent");
+
 	return FPGA_OK;
+
+destroy_eh:
+	res = fpgaDestroyEventHandle(&dma_h->eh);
+	ON_ERR_GOTO(res, rel_buf, "fpgaRegisterEvent");
 
 rel_buf:
 	for(i=0; i< FPGA_DMA_MAX_BUF; i++) {
@@ -730,7 +750,7 @@ fpga_result transferHostToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 			ON_ERR_GOTO(res, out, "_wait_wr_fifo failed\n");
 
 			memcpy(dma_h->dma_buf_ptr[i%FPGA_DMA_MAX_BUF], (void*)(src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);
-			res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova[i%FPGA_DMA_MAX_BUF] | FPGA_DMA_HOST_MASK, FPGA_DMA_BUF_SIZE,0, type);
+			res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova[i%FPGA_DMA_MAX_BUF] | FPGA_DMA_HOST_MASK, FPGA_DMA_BUF_SIZE,0, type, false/*intr_en*/);
 		}
 		res = _dma_poll_busy(dma_h);
 		ON_ERR_GOTO(res, out, "DMA DESC BUFFER Empty polling failed\n");
@@ -739,7 +759,7 @@ fpga_result transferHostToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 			if(dma_tx_bytes != 0) {
 				debug_print("dma_tx_bytes = %08lx  was transfered using DMA\n", dma_tx_bytes);
 				memcpy(dma_h->dma_buf_ptr[0], (void*)(src+dma_chunks*FPGA_DMA_BUF_SIZE), dma_tx_bytes);
-				res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova[0] | FPGA_DMA_HOST_MASK, dma_tx_bytes,1, type);
+				res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova[0] | FPGA_DMA_HOST_MASK, dma_tx_bytes,1, type, false/*intr_en*/);
 				ON_ERR_GOTO(res, out, "HOST_TO_FPGA_MM Transfer failed\n");
 				res = _dma_poll_busy(dma_h);
 				ON_ERR_GOTO(res, out, "DMA DESC BUFFER Empty polling failed\n");
@@ -757,18 +777,61 @@ out:
 	return (fpga_result)err_cnt;
 }
 
+static fpga_result clear_interrupt(fpga_dma_handle dma_h) {
+	//clear interrupt by writing 1 to IRQ bit in status register
+	msgdma_status_t status;
+	status.st.irq = 1;
+
+	msgdma_csr_t *csr = (msgdma_csr_t*)(dma_h->dma_csr_base);
+	return fpgaWriteMMIO32(dma_h->fpga_h, dma_h->mmio_num, (uint64_t)((char*)csr+offsetof(msgdma_csr_t, status)), status.reg);	
+}
+
+static fpga_result poll_interrupt(fpga_dma_handle dma_h) {
+	struct pollfd pfd;
+	fpga_result res;
+
+	pfd.fd = (int)dma_h->eh;
+	pfd.events = POLLIN;
+	int poll_res = poll(&pfd, 1, -1);
+	if(poll_res < 0) {
+		fprintf( stderr, "Poll error errno = %s\n",strerror(errno));
+		res = FPGA_EXCEPTION;
+		goto out;
+	}
+	else if(poll_res == 0) {
+		fprintf( stderr, "Poll(interrupt) timeout \n");
+		res = FPGA_EXCEPTION;
+	} else {
+		uint64_t count;
+		read(pfd.fd, &count, sizeof(count));
+		debug_print("Poll success. Return = %d, count = %d\n",poll_res, count);
+		res = FPGA_OK;
+	}
+
+out:
+	clear_interrupt(dma_h);
+	return res;
+}
+
 static fpga_result _issue_magic(fpga_dma_handle dma_h) {
 	fpga_result res = FPGA_OK;
 	*(dma_h->magic_buf) = 0x0ULL;
+
+	msgdma_status_t status;
+	msgdma_csr_t *csr = (msgdma_csr_t*)(dma_h->dma_csr_base);
+	res = fpgaReadMMIO32(dma_h->fpga_h, dma_h->mmio_num, (uint64_t)((char*)csr+offsetof(msgdma_csr_t, status)), &status.reg);
+
 	// use HOST_MEM_BASE_ADDR instead of WF_HOST_MIRROR_BASE_ADDR until we understand why wrFence doesn't block writes
-	res = _do_dma(dma_h, dma_h->magic_iova | FPGA_DMA_HOST_MASK, FPGA_DMA_WF_ROM_MAGIC_NO_MASK, 64, 1, FPGA_TO_HOST_MM);
+	res = _do_dma(dma_h, dma_h->magic_iova | FPGA_DMA_HOST_MASK, FPGA_DMA_WF_ROM_MAGIC_NO_MASK, 64, 1, FPGA_TO_HOST_MM, true/*intr_en*/);
 	return res;
 }
 
 static void _wait_magic(fpga_dma_handle dma_h) {
-	 while (*(dma_h->magic_buf) != FPGA_DMA_WF_MAGIC_NO);
-	 *(dma_h->magic_buf) = 0x0ULL;
+	poll_interrupt(dma_h);
+	while (*(dma_h->magic_buf) != FPGA_DMA_WF_MAGIC_NO);
+	*(dma_h->magic_buf) = 0x0ULL;
 }
+
 fpga_result transferFpgaToHost(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, size_t count,
 										fpga_dma_transfer_t type) {
 	fpga_result res = FPGA_OK;
@@ -799,7 +862,7 @@ fpga_result transferFpgaToHost(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 		assert(FPGA_DMA_MAX_BUF >= 8);
 		uint64_t pending_buf = 0;
 		for(i=0; i<dma_chunks; i++) {
-			res = _do_dma(dma_h, dma_h->dma_buf_iova[i%(FPGA_DMA_MAX_BUF)] | FPGA_DMA_HOST_MASK, (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE, 1, type);
+			res = _do_dma(dma_h, dma_h->dma_buf_iova[i%(FPGA_DMA_MAX_BUF)] | FPGA_DMA_HOST_MASK, (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE, 1, type, false/*intr_en*/);
 			ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
 
 			const int num_pending = i-pending_buf+1;
@@ -835,7 +898,7 @@ fpga_result transferFpgaToHost(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 			uint64_t dma_tx_bytes = (count_left/FPGA_DMA_ALIGN_BYTES)*FPGA_DMA_ALIGN_BYTES;
 			if(dma_tx_bytes != 0) {
 				debug_print("dma_tx_bytes = %08lx  was transfered using DMA\n", dma_tx_bytes);
-				res = _do_dma(dma_h, dma_h->dma_buf_iova[0] | FPGA_DMA_HOST_MASK, (src+dma_chunks*FPGA_DMA_BUF_SIZE), dma_tx_bytes, 1, type);
+				res = _do_dma(dma_h, dma_h->dma_buf_iova[0] | FPGA_DMA_HOST_MASK, (src+dma_chunks*FPGA_DMA_BUF_SIZE), dma_tx_bytes, 1, type, false/*intr_en*/);
 				ON_ERR_GOTO(res, out, "FPGA_TO_HOST_MM Transfer failed");
 				res = _issue_magic(dma_h);
 				ON_ERR_GOTO(res, out, "Magic number issue failed");
@@ -870,14 +933,14 @@ fpga_result transferFpgaToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 
 		for(i=0; i<dma_chunks; i++) {
 			res = _wait_wr_fifo(dma_h, FPGA_DMA_MAX_BUF-2);
-			res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE, 0, type);
+			res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE, 0, type, false/*intr_en*/);
 			ON_ERR_GOTO(res, out, "FPGA_TO_FPGA_MM Transfer failed");
 		}
 		res = _dma_poll_busy(dma_h);
 		ON_ERR_GOTO(res, out, "DMA DESC BUFFER Empty polling failed\n");
 		if(count_left > 0) {
 			debug_print("Count_left = %08lx  was transfered using DMA\n", count_left);
-			res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), (src+dma_chunks*FPGA_DMA_BUF_SIZE), count_left, 1, type);
+			res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), (src+dma_chunks*FPGA_DMA_BUF_SIZE), count_left, 1, type, false/*intr_en*/);
 			ON_ERR_GOTO(res, out, "FPGA_TO_FPGA_MM Transfer failed");
 			res = _dma_poll_busy(dma_h);
 			ON_ERR_GOTO(res, out, "DMA DESC BUFFER Empty polling failed\n");
@@ -969,6 +1032,15 @@ fpga_result fpgaDmaClose(fpga_dma_handle dma_h) {
 
 	res = fpgaReleaseBuffer(dma_h->fpga_h, dma_h->magic_wsid);
 	ON_ERR_GOTO(res, out, "fpgaReleaseBuffer");
+
+	fpgaUnregisterEvent(dma_h->fpga_h, FPGA_EVENT_INTERRUPT, dma_h->eh);
+	fpgaDestroyEventHandle(&dma_h->eh);
+
+	// turn off global interrupts
+	msgdma_ctrl_t ctrl;
+	ctrl.ct.global_intr_en_mask = 0;
+	res = fpgaWriteMMIO32(dma_h->fpga_h, 0, dma_h->dma_csr_base+offsetof(msgdma_csr_t, ctrl), ctrl.reg);
+
 out:
 	free((void*)dma_h);
 	return res;

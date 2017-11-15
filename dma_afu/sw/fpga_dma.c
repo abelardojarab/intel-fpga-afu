@@ -796,7 +796,7 @@ fpga_result transferFpgaToHost(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 		uint32_t dma_chunks = count_left/FPGA_DMA_BUF_SIZE;
 		count_left -= (dma_chunks*FPGA_DMA_BUF_SIZE);
 		debug_print("DMA TX : dma chunks = %d, count_left = %08lx, dst = %08lx, src = %08lx \n", dma_chunks, count_left, dst, src);
-		assert(FPGA_DMA_MAX_BUF >= 8);  // 2 x (3 buffers for dma + 1 for fence)
+		assert(FPGA_DMA_MAX_BUF >= 8);
 		uint64_t pending_buf = 0;
 		for(i=0; i<dma_chunks; i++) {
 			res = _do_dma(dma_h, dma_h->dma_buf_iova[i%(FPGA_DMA_MAX_BUF)] | FPGA_DMA_HOST_MASK, (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE, 1, type);

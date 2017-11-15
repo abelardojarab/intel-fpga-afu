@@ -204,7 +204,7 @@ int run_basic_ddr_dma_test(fpga_handle afc_handle)
 	//test ddr to host transfers
 	//basic host ddr test
 	copy_to_dev_with_mmio(afc_handle, test_buffer_word_ptr, 0, TEST_BUFFER_SIZE);
-	copy_dev_to_dev_with_dma(afc_handle, 0, dma_buf_iova | 0x1000000000000, TEST_BUFFER_SIZE);
+	copy_dev_to_dev_with_dma(afc_handle, 0, dma_buf_iova | MSGDMA_BBB_HOST_MASK, TEST_BUFFER_SIZE);
 	/*for(int i = 0; i < TEST_BUFFER_WORD_SIZE; i++)
 		printf("%ld ", ((uint64_t *)dma_buf_ptr)[i]);
 	printf("\n");*/
@@ -217,8 +217,22 @@ int run_basic_ddr_dma_test(fpga_handle afc_handle)
 	
 	//test host to ddr transfers
 	copy_to_dev_with_mmio(afc_handle, (uint64_t *)test_buffer_zero, DEST_PTR, TEST_BUFFER_SIZE);
-	copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | 0x1000000000000, DEST_PTR, TEST_BUFFER_SIZE);
+	copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | MSGDMA_BBB_HOST_MASK, DEST_PTR, TEST_BUFFER_SIZE);
 	num_errors += compare_dev_and_host(afc_handle, test_buffer_word_ptr, DEST_PTR, TEST_BUFFER_SIZE);
+	
+	
+	//magic rom test
+	memset((void *)dma_buf_ptr, 0x55, TEST_BUFFER_SIZE);
+	copy_dev_to_dev_with_dma(afc_handle, MSGDMA_BBB_MAGIC_ROM_ADDR, dma_buf_iova | MSGDMA_BBB_HOST_MASK, 64);
+	printf("magic rom rading: ");
+	for(int i = 0; i < 2; i++)
+		printf("%.8x ", ((uint32_t *)dma_buf_ptr)[i]);
+	printf("\n");
+	if(((uint64_t *)dma_buf_ptr)[0] != 0x5772745F53796E63)
+	{
+		printf("ERROR: magic number doesn't match\n");
+		num_errors++;
+	}
 	
 	printf("num_errors = %d\n", num_errors);
 	s_error_count += num_errors;
@@ -233,7 +247,7 @@ int check_host_read_from_mmio(fpga_handle afc_handle)
 	
 	//using this address will crash ASE/host until we cut this path on the
 	//address span extender
-	uint64_t address = 0x1000 | 0x1000000000000;
+	uint64_t address = 0x1000 | MSGDMA_BBB_HOST_MASK;
 	
 	mmio_write64(afc_handle, MEM_WINDOW_CRTL(msgdma_bbb_dfh_offset), address, "addr_span");
 	mmio_read64(afc_handle, MEM_WINDOW_CRTL(msgdma_bbb_dfh_offset), &data, "addr_span");
@@ -477,7 +491,61 @@ int run_enumeration_test(fpga_handle afc_handle)
 	dump_dfh_list(afc_handle);
 	check_guid(afc_handle, 1, 2);
 	check_guid(afc_handle, 0xb383c70ace57bfe4, 0x4c9c96f465ba4dd8, "mpf_read_rsp_reorder");
-	check_guid(afc_handle, 0x94eb7d79c7c01ca3, 0xd79c094c7cf94cc1, "msgdma_bbb");
+	check_guid(afc_handle, 0xa9149a35bace01ea, 0xef82def7f6ec40fc, "msgdma_bbb");
+}
+
+int run_basic_interrupt_test(fpga_handle afc_handle)
+{
+	volatile uint64_t *dma_buf_ptr  = NULL;
+	uint64_t        dma_buf_wsid;
+	uint64_t dma_buf_iova;
+	
+	uint64_t data = 0;
+	fpga_result     res = FPGA_OK;
+
+	const int TEST_BUFFER_SIZE = 1024*16;
+
+	const int TEST_BUFFER_WORD_SIZE = TEST_BUFFER_SIZE/8;
+	char test_buffer[TEST_BUFFER_SIZE];
+	uint64_t *test_buffer_word_ptr = (uint64_t *)test_buffer;
+	char test_buffer_zero[TEST_BUFFER_SIZE];
+	int num_errors = 0;
+	const uint64_t DEST_PTR = 1024*1024;
+
+
+	res = fpgaPrepareBuffer(afc_handle, DMA_BUFFER_SIZE,
+		(void **)&dma_buf_ptr, &dma_buf_wsid, 0);
+	ON_ERR_GOTO(res, release_buf, "allocating dma buffer");
+	memset((void *)dma_buf_ptr,  0x0, DMA_BUFFER_SIZE);
+	
+	res = fpgaGetIOAddress(afc_handle, dma_buf_wsid, &dma_buf_iova);
+	ON_ERR_GOTO(res, release_buf, "getting dma DMA_BUF_IOVA");
+	
+	printf("TEST_BUFFER_SIZE = %d\n", TEST_BUFFER_SIZE);
+	printf("DMA_BUFFER_SIZE = %d\n", DMA_BUFFER_SIZE);
+	
+	memset(test_buffer_zero, 0, TEST_BUFFER_SIZE);
+	
+	
+	for(int i = 0; i < TEST_BUFFER_WORD_SIZE; i++)
+		test_buffer_word_ptr[i] = i;
+	
+	//this test just runs larger dma buffers to test dc fifo overflow in sim
+	
+	//test ddr to ddr transfers
+	copy_dev_to_dev_with_dma(afc_handle, 0, DEST_PTR, TEST_BUFFER_SIZE, true);
+	
+	//test ddr to host transfers
+	copy_dev_to_dev_with_dma(afc_handle, 0, dma_buf_iova | 0x1000000000000, TEST_BUFFER_SIZE, true);
+	
+	//test host to ddr transfers
+	copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | 0x1000000000000, DEST_PTR, TEST_BUFFER_SIZE, true);
+	
+	printf("num_errors = %d\n", num_errors);
+	s_error_count += num_errors;
+	
+release_buf:
+	res = fpgaReleaseBuffer(afc_handle, dma_buf_wsid);
 }
 
 int run_large_dma_test(fpga_handle afc_handle)
@@ -522,10 +590,10 @@ int run_large_dma_test(fpga_handle afc_handle)
 	copy_dev_to_dev_with_dma(afc_handle, 0, DEST_PTR, TEST_BUFFER_SIZE);
 	
 	//test ddr to host transfers
-	copy_dev_to_dev_with_dma(afc_handle, 0, dma_buf_iova | 0x1000000000000, TEST_BUFFER_SIZE);
+	copy_dev_to_dev_with_dma(afc_handle, 0, dma_buf_iova | MSGDMA_BBB_HOST_MASK, TEST_BUFFER_SIZE);
 	
 	//test host to ddr transfers
-	copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | 0x1000000000000, DEST_PTR, TEST_BUFFER_SIZE);
+	copy_dev_to_dev_with_dma(afc_handle, dma_buf_iova | MSGDMA_BBB_HOST_MASK, DEST_PTR, TEST_BUFFER_SIZE);
 	
 	printf("num_errors = %d\n", num_errors);
 	s_error_count += num_errors;
@@ -615,6 +683,7 @@ int main(int argc, char *argv[])
 	run_basic_tests_with_mmio(afc_handle);
 	run_basic_ddr_dma_test(afc_handle);
 	run_large_dma_test(afc_handle);
+	run_basic_interrupt_test(afc_handle);
 	run_basic_32bit_mmio(afc_handle);
 	run_enumeration_test(afc_handle);
 	check_host_read_from_mmio(afc_handle);

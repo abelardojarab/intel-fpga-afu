@@ -94,15 +94,21 @@ module avmm_ccip_host #(
 	wire write_sop;
 	reg [1:0] address_counter;
 
-	logic avcmd_valid;
 	logic avcmd_ready;
 	
 	t_ccip_c1_ReqMemHdr ccip_intr_req_hdr;
 	t_ccip_c1_ReqMemHdr ccip_mem_req_hdr;
+	t_ccip_c1_ReqMemHdr ccip_fence_req_hdr;
 	
 	logic ccip_pending_irq;
 	logic ccip_pending_irq_dly;
 	logic [CCIP_AVMM_REQUESTOR_ID_BITS-1:0] ccip_pending_irq_id;
+
+	logic ccip_write_fence_request;
+	logic ccip_write_fence_complete;
+	logic set_ccip_write_fence_complete;
+	logic clear_ccip_write_fence_complete;
+	logic ccip_write_fence_dly;
 
 	/* Timing counter for signalling the write channel SOP.
 	   The incoming bursts are values of 0, 1, or 3.  The steady
@@ -140,10 +146,10 @@ module avmm_ccip_host #(
 	end
 
 	assign write_sop = (burst_counter == 2'b00);
-	assign load_burst_counter = (burst_counter == 2'b00) & (avmm_write == 1'b1) & (avcmd_ready == 1'b1);
+	assign load_burst_counter = (burst_counter == 2'b00) & (avmm_write == 1'b1) & (avcmd_ready == 1'b1) & (ccip_write_fence_dly == 1'b0);
 	assign burst_counter_enable = (burst_counter != 2'b00) & (avmm_write == 1'b1) & (avcmd_ready == 1'b1);
 	
-	//read request
+	//read request, this block requires CCIP read re-ordering to be enabled in the MPF to ensure in-order read responses
 	assign c0tx_next.hdr.vc_sel = eVC_VH0;
 	assign c0tx_next.hdr.rsvd1 = '0;
 	assign c0tx_next.hdr.cl_len = burst_encoded;
@@ -175,14 +181,28 @@ module avmm_ccip_host #(
 	assign ccip_intr_req_hdr.address = '0;
 	assign ccip_intr_req_hdr.mdata[CCIP_MDATA_WIDTH-1:CCIP_AVMM_REQUESTOR_ID_BITS] = '0;
 	assign ccip_intr_req_hdr.mdata[CCIP_AVMM_REQUESTOR_ID_BITS-1:0] = ccip_pending_irq_id;
-	
-	//intr/write/read request
-	assign c1tx_next.hdr = ccip_pending_irq_dly ? ccip_intr_req_hdr : ccip_mem_req_hdr;
-	assign avcmd_valid = reset ? 1'b0 : (avmm_read | avmm_write);
-	
+
+	//write fence request
+	assign ccip_fence_req_hdr.rsvd2 = '0;
+	assign ccip_fence_req_hdr.vc_sel = eVC_VH0;
+	assign ccip_fence_req_hdr.sop = '0;
+	assign ccip_fence_req_hdr.rsvd1 = '0;
+	assign ccip_fence_req_hdr.cl_len = eCL_LEN_1;
+	assign ccip_fence_req_hdr.req_type = eREQ_WRFENCE;
+	assign ccip_fence_req_hdr.rsvd0 = '0;
+	assign ccip_fence_req_hdr.address = '0;
+	assign ccip_fence_req_hdr.mdata = tx_mdata;
+
+
+	//interupt/write fence/write/read request.  Priority is interrupts (highest) --> write fence --> read/write (lowest)
+	assign c1tx_next.hdr = ccip_pending_irq_dly ? ccip_intr_req_hdr :
+				ccip_write_fence_dly? ccip_fence_req_hdr : ccip_mem_req_hdr;
+
+	//while there are any pending IRQs no new write fences, reads, or writes are allowed through
 	wire avcmd_ready_next = ~(c0TxAlmFull | c1TxAlmFull) && ~ccip_pending_irq;
-	assign avmm_waitrequest = ~avcmd_ready;
-	assign c1tx_next.valid = reset ? 1'b0 : avmm_write | ccip_pending_irq_dly;
+	// when a write fence arrives this logic must backpressure immediately so that data accompanying the write fence is not lost
+	assign avmm_waitrequest = ~avcmd_ready | ccip_write_fence_dly;
+	assign c1tx_next.valid = reset ? 1'b0 : avmm_write | ccip_pending_irq_dly | ccip_write_fence_dly;
 	
 	always @(posedge clk) begin
 		if (reset) begin // global reset
@@ -198,7 +218,7 @@ module avmm_ccip_host #(
 			//will driver avmm wait request
 			avcmd_ready <= avcmd_ready_next;
 			
-			if(avcmd_ready | ccip_pending_irq_dly) begin
+			if(avcmd_ready | ccip_pending_irq_dly | ccip_write_fence_dly) begin
 				//read/write request
 				c0tx.valid <= c0tx_next.valid;
 				c1tx.valid <= c1tx_next.valid;
@@ -304,5 +324,36 @@ module avmm_ccip_host #(
 		assign ccip_pending_irq_id = '0;
 	end
 	endgenerate
+
+
+	/* When a write occurs with Avalon address[48] set ccip_write_fence_request is asserted.
+	The logic will issue a write fence followed by writing the incoming data within the host
+	48-bit address space (i.e. address MSB ignored).  Reads with Avalon address[48] set will
+	be treated as plain reads to the host space.  The only transaction that can take a higher
+	priority than a write fence is an interrupt which the write fence logic will allow to be
+	transferred to TX C1 first.  This logic does not wait for the fence response to return so
+	the host use query for the data that is sent immediately after the fence to determine when
+	all previous writes have arrived in host memory.
+	*/
+	always @ (posedge clk) begin
+		if (reset) begin
+			ccip_write_fence_complete <= 1'b0;
+		end
+		else if (set_ccip_write_fence_complete) begin
+			ccip_write_fence_complete <= 1'b1;
+		end
+		else if (clear_ccip_write_fence_complete) begin
+			ccip_write_fence_complete <= 1'b0;
+		end
+	end
+
+	// a write to the write fence mirrored host address space has arrived
+	assign ccip_write_fence_request = avmm_address[48] & avmm_write;
+	// need write fence to yeild to IRQ traffic as well as there being room in the downstream TX buffer
+	assign set_ccip_write_fence_complete = ccip_write_fence_request && avcmd_ready_next;
+	// the write fence completes the cycle after the write fence command has been sent to the next queue so complete is 1 cycle
+	assign clear_ccip_write_fence_complete = ccip_write_fence_complete && avcmd_ready_next;
+	// once the write fence is sent we immediately let the data that arrived with it to be sent to host memory
+	assign ccip_write_fence_dly = ccip_write_fence_request && ~ccip_write_fence_complete;
 
 endmodule

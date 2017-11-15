@@ -434,7 +434,7 @@
                         <name>m0_address</name>
                         <role>address</role>
                         <direction>Output</direction>
-                        <width>48</width>
+                        <width>49</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -693,7 +693,7 @@
                         <name>s0_address</name>
                         <role>address</role>
                         <direction>Input</direction>
-                        <width>48</width>
+                        <width>49</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
@@ -762,7 +762,7 @@
                         </entry>
                         <entry>
                             <key>addressSpan</key>
-                            <value>281474976710656</value>
+                            <value>562949953421312</value>
                         </entry>
                         <entry>
                             <key>addressUnits</key>
@@ -5934,8 +5934,8 @@
   <parameter name="AUTO_DEVICE_FAMILY" value="Arria 10" />
   <parameter name="AUTO_DEVICE_SPEEDGRADE" value="2" />
   <parameter name="AUTO_GENERATION_ID" value="0" />
-  <parameter name="AUTO_HOST_ADDRESS_MAP"><![CDATA[<address-map><slave name='ccip_host_bridge.s0' start='0x0' end='0x1000000000000' datawidth='512' /></address-map>]]></parameter>
-  <parameter name="AUTO_HOST_ADDRESS_WIDTH" value="48" />
+  <parameter name="AUTO_HOST_ADDRESS_MAP"><![CDATA[<address-map><slave name='ccip_host_bridge.s0' start='0x0' end='0x2000000000000' datawidth='512' /></address-map>]]></parameter>
+  <parameter name="AUTO_HOST_ADDRESS_WIDTH" value="49" />
   <parameter name="AUTO_MEM_ADDRESS_MAP"><![CDATA[<address-map><slave name='ddr4a_mm_bridge.s0' start='0x0' end='0x100000000' datawidth='512' /><slave name='ddr4b_mm_bridge.s0' start='0x100000000' end='0x200000000' datawidth='512' /></address-map>]]></parameter>
   <parameter name="AUTO_MEM_ADDRESS_WIDTH" value="33" />
   <parameter name="AUTO_UNIQUE_ID">dma_test_system_msgdma_bbb_inst</parameter>

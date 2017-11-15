@@ -2,6 +2,10 @@
 #include <uuid/uuid.h>
 #include <unistd.h>
 
+#include <poll.h>
+#include <errno.h>
+#include <string.h>
+
 #include "dma_test_common.h"
 
 static uint64_t msgdma_bbb_dfh_offset = -256*1024;
@@ -166,8 +170,11 @@ void copy_dev_to_dev_with_mmio(fpga_handle afc_handle, uint64_t dev_src, uint64_
 	free(tmp);
 }
 
-void copy_dev_to_dev_with_dma(fpga_handle afc_handle, uint64_t dev_src, uint64_t dev_dest, int len)
+void copy_dev_to_dev_with_dma(fpga_handle afc_handle, uint64_t dev_src, uint64_t dev_dest, int len, bool intr)
 {
+	fpga_result     res = FPGA_OK;
+	struct pollfd pfd;
+	
 	//dma requires 64 byte alignment
 	assert(len % 64 == 0);
 	assert(dev_src % 64 == 0);
@@ -189,21 +196,99 @@ void copy_dev_to_dev_with_dma(fpga_handle afc_handle, uint64_t dev_src, uint64_t
 	d.rd_address_ext = (dev_src >> 32) & MASK_FOR_32BIT_ADDR;
 	d.wr_address_ext = (dev_dest >> 32)& MASK_FOR_32BIT_ADDR;  
 	d.control = 0x80000000;
+	d.control |= (intr == true) ? (1 << 14) : 0; //enable interupts on completion of this descriptor
 	
 	const uint64_t SGDMA_CSR_BASE = msgdma_bbb_dfh_offset+ACL_DMA_INST_DMA_MODULAR_SGDMA_DISPATCHER_0_CSR_BASE;
 	const uint64_t SGDMA_DESC_BASE = msgdma_bbb_dfh_offset+ACL_DMA_INST_DMA_MODULAR_SGDMA_DISPATCHER_0_DESCRIPTOR_SLAVE_BASE;
-	uint64_t mmio_data;
+	uint64_t mmio_data = 0;
 	
-	copy_to_mmio(afc_handle, SGDMA_DESC_BASE, (uint64_t *)&d, sizeof(d));
-	mmio_read64_silent(afc_handle, SGDMA_CSR_BASE, &mmio_data);
-	while(mmio_data !=0x2)
+	fpga_event_handle ehandle;
+	if(intr)
 	{
-#ifdef USE_ASE
-		sleep(1);
-		mmio_read64(afc_handle, SGDMA_CSR_BASE, &mmio_data, "sgdma_csr_base");
-#else
+		res = fpgaCreateEventHandle(&ehandle);
+		if(FPGA_OK != res)
+		{
+			printf("error creating event handle\n");
+			exit(1);
+		}
+		
+		/* Register user interrupt with event handle */
+		res = fpgaRegisterEvent(afc_handle, FPGA_EVENT_INTERRUPT, ehandle, 0);
+		if(FPGA_OK != res)
+		{
+			printf("error registering event\n");
+			exit(1);
+		}
+	}
+	
+	//enable interrupts on sgdma
+	if(intr)
+		fpgaWriteMMIO32(afc_handle, 0, SGDMA_CSR_BASE+4, 0x10);
+	
+	//send descriptor
+	copy_to_mmio(afc_handle, SGDMA_DESC_BASE, (uint64_t *)&d, sizeof(d));
+	
+	if(intr)
+	{
+		/* Poll event handle*/
+		res = fpgaGetOSObjectFromEventHandle(ehandle, &pfd.fd);
+		if(res != FPGA_OK)
+		{
+			fprintf(stderr, "error getting event file handle");
+			exit(1);
+		}
+		pfd.events = POLLIN;            
+		int poll_res = poll(&pfd, 1, -1);
+		if(poll_res < 0) {
+		 fprintf( stderr, "Poll error errno = %s\n",strerror(errno));
+		 exit(1);
+		} 
+		else if(poll_res == 0) {
+		 fprintf( stderr, "Poll(interrupt) timeout \n");
+		 exit(1);
+		} else {
+		 uint64_t count;
+		 read(pfd.fd, &count, sizeof(count));
+		 printf("Poll success. Return = %d, count = %d\n",poll_res, count);
+		}
+		
+		//disable interrupts
+		fpgaWriteMMIO32(afc_handle, 0, SGDMA_CSR_BASE+4, 0x0);
+		
+		//clear interrupt
+		fpgaWriteMMIO32(afc_handle, 0, SGDMA_CSR_BASE, 0x200);
+	}
+	else
+	{
+		//TODO: the status register is only 32 bits.  Need to update this.
 		mmio_read64_silent(afc_handle, SGDMA_CSR_BASE, &mmio_data);
-#endif
+		while((mmio_data&0xFFFFFFFF) !=0x2)
+		{
+	#ifdef USE_ASE
+			sleep(1);
+			mmio_read64(afc_handle, SGDMA_CSR_BASE, &mmio_data, "sgdma_csr_base");
+	#else
+			mmio_read64_silent(afc_handle, SGDMA_CSR_BASE, &mmio_data);
+	#endif
+		}
+	}
+	
+	if(intr)
+	{
+		/* cleanup */
+		res = fpgaUnregisterEvent(afc_handle, FPGA_EVENT_INTERRUPT, ehandle);   
+		if(FPGA_OK != res)
+		{
+			printf("error fpgaUnregisterEvent\n");
+			exit(1);
+		}
+		
+		res = fpgaDestroyEventHandle(&ehandle);
+		if(FPGA_OK != res)
+		{
+			printf("error fpgaDestroyEventHandle\n");
+			exit(1);
+		}
 	}
 }
 

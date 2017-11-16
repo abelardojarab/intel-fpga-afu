@@ -1,10 +1,10 @@
 LDFLAGS ?=
-CFLAGS = -g -O2 -fPIC -std=gnu++11
+CFLAGS = -g -O2 -fPIC 
 
 CFLAGS += -I$(prefix)/common/include
 CFLAGS += -I$(prefix)/libopae/src
 CFLAGS += -D FPGA_DMA_DEBUG=0
-CFLAGS += -Wall -Wno-unknown-pragmas
+CFLAGS += -Wall -Werror -Wno-unknown-pragmas
 LDFLAGS += -L$(prefix)/build/lib -luuid
 LDFLAGS += -L/usr/lib/
 

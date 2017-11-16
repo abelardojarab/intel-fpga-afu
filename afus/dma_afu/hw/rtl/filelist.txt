@@ -23,7 +23,6 @@ ccip_std_afu.sv
 qsys/dma_test_system.qsys
 qsys/msgdma_bbb.qsys
 qsys/magic_number_rom/magic_number_rom_hw.tcl
-qsys/magic_number_rom/magic_number_rom.v
 qsys/ip/dma_test_system/ddr4a_mm_bridge.ip
 qsys/ip/dma_test_system/ddr4a_mm_bridge_0.ip
 qsys/ip/dma_test_system/dma_test_system_afu_id_avmm_slave_0.ip

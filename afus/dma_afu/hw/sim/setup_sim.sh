@@ -41,7 +41,7 @@ setup_sim_dir
 setup_quartus_home
 
 # Generate qsys systems
-for q in `${SCRIPT_COMMON_DIR}/scripts/rtl_src_config --qsys --abs ${sim_afu_path}/filelist.txt`; do
+for q in `rtl_src_config --qsys --abs ${sim_afu_path}/filelist.txt`; do
   $QUARTUS_HOME/sopc_builder/bin/qsys-generate --synthesis=VERILOG $q
 done
 
@@ -80,7 +80,7 @@ rm -rf dummy_rtl_dir
 
 popd
 # Emit source file list
-${SCRIPT_COMMON_DIR}/scripts/rtl_src_config --abs --sim $sim_afu_path/filelist.txt > $rtl_sim_dir/vlog_files.list
+rtl_src_config --abs --sim $sim_afu_path/filelist.txt | grep -v 'json$' > $rtl_sim_dir/vlog_files.list
 pushd $rtl_sim_dir
 
 # run ase make

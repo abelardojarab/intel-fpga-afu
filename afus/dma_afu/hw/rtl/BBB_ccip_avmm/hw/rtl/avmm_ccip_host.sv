@@ -349,8 +349,9 @@ module avmm_ccip_host #(
 
 	// a write to the write fence mirrored host address space has arrived
 	assign ccip_write_fence_request = avmm_address[48] & avmm_write;
-	// need write fence to yeild to IRQ traffic as well as there being room in the downstream TX buffer
-	assign set_ccip_write_fence_complete = ccip_write_fence_request && avcmd_ready_next;
+	// Need write fence to yield to IRQ traffic.  The write fence goes out even if
+	// almost full is asserted, since there will always be space for it.
+	assign set_ccip_write_fence_complete = ccip_write_fence_request && ~ccip_pending_irq_dly;
 	// the write fence completes the cycle after the write fence command has been sent to the next queue so complete is 1 cycle
 	assign clear_ccip_write_fence_complete = ccip_write_fence_complete && avcmd_ready_next;
 	// once the write fence is sent we immediately let the data that arrived with it to be sent to host memory

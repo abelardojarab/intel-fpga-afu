@@ -13,16 +13,16 @@ SI:BBB_ccip_async/hw/sim/ccip_async_sim_addenda.txt
 QI:BBB_cci_mpf/hw/par/qsf_cci_mpf_PAR_files.qsf
 SI:BBB_cci_mpf/hw/sim/cci_mpf_sim_addenda.txt
 
-qsys/afu_id_avmm_slave/afu_id_avmm_slave_hw.tcl
-qsys/afu_id_avmm_slave/afu_id_avmm_slave.sv
-
 afu.sv
 ccip_interface_reg.sv
 ccip_std_afu.sv
 
 qsys/dma_test_system.qsys
 qsys/msgdma_bbb.qsys
+qsys/afu_id_avmm_slave/afu_id_avmm_slave_hw.tcl
+qsys/afu_id_avmm_slave/afu_id_avmm_slave.sv
 qsys/magic_number_rom/magic_number_rom_hw.tcl
+#qsys/magic_number_rom/magic_number_rom.v
 qsys/ip/dma_test_system/ddr4a_mm_bridge.ip
 qsys/ip/dma_test_system/ddr4a_mm_bridge_0.ip
 qsys/ip/dma_test_system/dma_test_system_afu_id_avmm_slave_0.ip

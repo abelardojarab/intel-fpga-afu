@@ -15,7 +15,9 @@
 
 import ccip_if_pkg::*;
 
-module mem_csr (     
+module mem_csr #(
+   parameter DDR_ADDR_WIDTH=26
+) (
 	// ---------------------------global signals-------------------------------------------------
   input	Clk_400,	  // Core clock. CCI interface is synchronous to this clock.
   input	SoftReset,	// CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH

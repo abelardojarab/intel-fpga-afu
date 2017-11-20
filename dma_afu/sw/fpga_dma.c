@@ -733,8 +733,7 @@ static fpga_result _issue_magic(fpga_dma_handle dma_h) {
    msgdma_csr_t *csr = (msgdma_csr_t*)(dma_h->dma_csr_base);
    res = fpgaReadMMIO32(dma_h->fpga_h, dma_h->mmio_num, (uint64_t)((char*)csr+offsetof(msgdma_csr_t, status)), &status.reg);
 
-   // use HOST_MEM_BASE_ADDR instead of WF_HOST_MIRROR_BASE_ADDR until we understand why wrFence doesn't block writes
-   res = _do_dma(dma_h, dma_h->magic_iova | FPGA_DMA_HOST_MASK, FPGA_DMA_WF_ROM_MAGIC_NO_MASK, 64, 1, FPGA_TO_HOST_MM, true/*intr_en*/);
+   res = _do_dma(dma_h, dma_h->magic_iova | FPGA_DMA_WF_HOST_MASK, FPGA_DMA_WF_ROM_MAGIC_NO_MASK, 64, 1, FPGA_TO_HOST_MM, true/*intr_en*/);
    return res;
 }
 

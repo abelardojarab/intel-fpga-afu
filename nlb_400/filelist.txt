@@ -21,3 +21,4 @@ include_files/common
 nlb_400.json
 stp_basic.stp
 nlb_400.sdc
+nlb_0_stp.sdc

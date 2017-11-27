@@ -30,54 +30,39 @@
 import ccip_if_pkg::*;
 import ccip_avmm_pkg::*;
 
-module avmm_ccip_host #(
+module avmm_ccip_host_wr #(
 	parameter ENABLE_INTR = 0
 	)
-	
+
 	(
 	//clock/reset
 	input clk,
 	input reset,
-	
+
 	//interrupts
 	input [CCIP_AVMM_NUM_INTERRUPT_LINES-1:0] irq,
 
 	//avmm master
 	output logic		avmm_waitrequest,
-	output logic	[CCIP_AVMM_REQUESTOR_DATA_WIDTH-1:0]	avmm_readdata,
-	output logic		avmm_readdatavalid,
 	input 	[CCIP_AVMM_REQUESTOR_DATA_WIDTH-1:0]	avmm_writedata,
-	input 	[CCIP_AVMM_REQUESTOR_ADDR_WIDTH-1:0]	avmm_address,
+	input 	[CCIP_AVMM_REQUESTOR_WR_ADDR_WIDTH-1:0]	avmm_address,
 	input 		avmm_write,
-	input 		avmm_read,
 	input 	[CCIP_AVMM_REQUESTOR_BURST_WIDTH-1:0]	avmm_burstcount,
-	
-	//not used right now
-	input 	[(CCIP_AVMM_REQUESTOR_DATA_WIDTH/8)-1:0]	avmm_byteenable,
-	
+
 	// ---------------------------IF signals between CCI and AFU  --------------------------------
-	input c0TxAlmFull,
 	input c1TxAlmFull,
-	//for read response
-	input t_if_ccip_c0_Rx      c0rx,
 	//for write response.  don't need for now.  not using avmm write response
 	//input t_if_ccip_c1_Rx      c1rx,
-	
-	//read request
-	output t_if_ccip_c0_Tx c0tx,
-	
+
 	//write request
 	output t_if_ccip_c1_Tx c1tx
 );
 	t_ccip_mdata tx_mdata;
-	t_ccip_mdata rx_mdata;
-	//read request
-	t_if_ccip_c0_Tx c0tx_next;
 	//write request
 	t_if_ccip_c1_Tx c1tx_next;
 
 	t_ccip_clLen burst_encoded;
-	
+
 	always @ (avmm_burstcount)
 	begin
 	  case (avmm_burstcount)
@@ -95,11 +80,11 @@ module avmm_ccip_host #(
 	reg [1:0] address_counter;
 
 	logic avcmd_ready;
-	
+
 	t_ccip_c1_ReqMemHdr ccip_intr_req_hdr;
 	t_ccip_c1_ReqMemHdr ccip_mem_req_hdr;
 	t_ccip_c1_ReqMemHdr ccip_fence_req_hdr;
-	
+
 	logic ccip_pending_irq;
 	logic ccip_pending_irq_dly;
 	logic [CCIP_AVMM_REQUESTOR_ID_BITS-1:0] ccip_pending_irq_id;
@@ -148,16 +133,7 @@ module avmm_ccip_host #(
 	assign write_sop = (burst_counter == 2'b00);
 	assign load_burst_counter = (burst_counter == 2'b00) & (avmm_write == 1'b1) & (avcmd_ready == 1'b1) & (ccip_write_fence_dly == 1'b0);
 	assign burst_counter_enable = (burst_counter != 2'b00) & (avmm_write == 1'b1) & (avcmd_ready == 1'b1);
-	
-	//read request, this block requires CCIP read re-ordering to be enabled in the MPF to ensure in-order read responses
-	assign c0tx_next.hdr.vc_sel = eVC_VH0;
-	assign c0tx_next.hdr.rsvd1 = '0;
-	assign c0tx_next.hdr.cl_len = burst_encoded;
-	assign c0tx_next.hdr.req_type = eREQ_RDLINE_I;
-	assign c0tx_next.hdr.address = avmm_address[47:6];
-	assign c0tx_next.hdr.mdata = rx_mdata;
-	assign c0tx_next.valid = reset ? 1'b0 : avmm_read & ~(ccip_pending_irq_dly | ccip_write_fence_dly);
-	
+
 	//write request
 	assign ccip_mem_req_hdr.rsvd2 = '0;
 	assign ccip_mem_req_hdr.vc_sel = eVC_VH0;
@@ -168,8 +144,8 @@ module avmm_ccip_host #(
 	assign ccip_mem_req_hdr.rsvd0 = '0;
 	assign ccip_mem_req_hdr.address = {avmm_address[47:8], ((write_sop == 1'b1)? avmm_address[7:6] : address_counter)};
 	assign ccip_mem_req_hdr.mdata = tx_mdata;
-	assign c1tx_next.data = avmm_writedata; 
-	
+	assign c1tx_next.data = avmm_writedata;
+
 	//intr request
 	assign ccip_intr_req_hdr.rsvd2 = '0;
 	assign ccip_intr_req_hdr.vc_sel = eVC_VH0;
@@ -194,68 +170,56 @@ module avmm_ccip_host #(
 	assign ccip_fence_req_hdr.mdata = tx_mdata;
 
 
-	//interupt/write fence/write/read request.  Priority is interrupts (highest) --> write fence --> read/write (lowest)
+	//interupt/write fence/write request.  Priority is interrupts (highest) --> write fence --> read/write (lowest)
 	assign c1tx_next.hdr = ccip_pending_irq_dly ? ccip_intr_req_hdr :
 				ccip_write_fence_dly? ccip_fence_req_hdr : ccip_mem_req_hdr;
 
 	//while there are any pending IRQs no new write fences, reads, or writes are allowed through
-	wire avcmd_ready_next = ~(c0TxAlmFull | c1TxAlmFull) && ~ccip_pending_irq;
+	wire avcmd_ready_next = ~c1TxAlmFull && ~ccip_pending_irq;
 	// when a write fence arrives this logic must backpressure immediately so that data accompanying the write fence is not lost
 	assign avmm_waitrequest = ~avcmd_ready | ccip_write_fence_dly;
 	assign c1tx_next.valid = reset ? 1'b0 : avmm_write | ccip_pending_irq_dly | ccip_write_fence_dly;
-	
+
 	always @(posedge clk) begin
 		if (reset) begin // global reset
 			//wait request
 			avcmd_ready <= 1'b0;
-			
+
 			//mdata counter
 			tx_mdata <= '0;
-			rx_mdata <= '0;
 		end
 		else begin
 			//this can be registered because it is an almost full signal
 			//will driver avmm wait request
 			avcmd_ready <= avcmd_ready_next;
-			
+
 			if(avcmd_ready | ccip_pending_irq_dly | ccip_write_fence_dly) begin
-				//read/write request
-				c0tx.valid <= c0tx_next.valid;
+				//write request
 				c1tx.valid <= c1tx_next.valid;
-					
+
 				//mdata counter
 				if(c1tx_next.valid)
 					tx_mdata <= tx_mdata + 1;
-				if(c0tx_next.valid)
-					rx_mdata <= rx_mdata + 1;
 			end
 			else begin
-				//read/write request
-				c0tx.valid <= 1'b0;
+				//write request
 				c1tx.valid <= 1'b0;
-					
+
 				//mdata counter
 				tx_mdata <= tx_mdata;
-				rx_mdata <= rx_mdata;
 			end
 		end
 	end
-	
+
 	always @(posedge clk) begin
-		//read response
-		avmm_readdata <= c0rx.data;
-		avmm_readdatavalid <= reset ? 1'b0 : c0rx.rspValid & 
-			(c0rx.hdr.resp_type == eRSP_RDLINE);
-		
-		//read/write request
-		c0tx.hdr <= c0tx_next.hdr;
+		//write request
 		c1tx.hdr <= c1tx_next.hdr;
 		c1tx.data <= c1tx_next.data;
 	end
-	
+
 	//interrupts
 	//
-	//this block captures queues up N number of interrupt lines and sends the 
+	//this block captures queues up N number of interrupt lines and sends the
 	//them one by one to the ccip c1tx request line
 	//higher interupt lines are given priority
 	//
@@ -263,17 +227,17 @@ module avmm_ccip_host #(
 	//	ccip_pending_irq
 	//  ccip_pending_irq_dly
 	//  ccip_pending_irq_id
-	//	
+	//
 	genvar i;
 	generate if(ENABLE_INTR == 1) begin
 		logic [CCIP_AVMM_NUM_INTERRUPT_LINES-1:0] prev_irq_state;
 		logic [CCIP_AVMM_NUM_INTERRUPT_LINES-1:0] irq_pending;
 		logic [CCIP_AVMM_REQUESTOR_ID_BITS-1:0] ccip_irq_id_sent;
 		logic ccip_irq_was_sent;
-		
+
 		assign ccip_irq_id_sent = ccip_intr_req_hdr.mdata[CCIP_AVMM_REQUESTOR_ID_BITS-1:0];
 		assign ccip_irq_was_sent = (c1tx_next.hdr.req_type == eREQ_INTR) && ccip_pending_irq_dly;
-		
+
 		logic ccip_pending_irq_next;
 		logic [CCIP_AVMM_REQUESTOR_ID_BITS-1:0] ccip_pending_irq_id_next;
 		always_comb begin
@@ -286,7 +250,7 @@ module avmm_ccip_host #(
 				end
 			end
 		end
-		
+
 		always @(posedge clk) begin
 			if(reset) begin
 				ccip_pending_irq <= 1'b0;
@@ -299,7 +263,7 @@ module avmm_ccip_host #(
 				ccip_pending_irq_id <= ccip_pending_irq_id_next;
 			end
 		end
-		
+
 		for (i=0; i<CCIP_AVMM_NUM_INTERRUPT_LINES; i++) begin : intr_lines
 			always @(posedge clk) begin
 				if(reset) begin
@@ -311,7 +275,7 @@ module avmm_ccip_host #(
 					//only set pending signal if there is a transition from low to high
 					if(irq[i] && ~prev_irq_state[i] && ~irq_pending[i])
 						irq_pending[i] <= 1'b1;
-					
+
 					if(ccip_irq_was_sent && ccip_irq_id_sent == i)
 						irq_pending[i] <= 1'b0;
 				end

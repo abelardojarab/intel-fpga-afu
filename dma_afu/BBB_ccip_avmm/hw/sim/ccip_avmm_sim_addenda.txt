@@ -9,5 +9,6 @@
 
 ../rtl/ccip_avmm_pkg.sv
 
-../rtl/avmm_ccip_host.sv
+../rtl/avmm_ccip_host_wr.sv
+../rtl/avmm_ccip_host_rd.sv
 ../rtl/ccip_avmm_mmio.sv

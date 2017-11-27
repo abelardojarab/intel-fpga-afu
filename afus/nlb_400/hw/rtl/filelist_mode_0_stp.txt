@@ -1,0 +1,5 @@
++define+INCLUDE_REMOTE_STP
+C:filelist_mode_0.txt
+
+QI:../par/extra_tcl-0_stp.tcl
+../par/nlb_0_stp.sdc

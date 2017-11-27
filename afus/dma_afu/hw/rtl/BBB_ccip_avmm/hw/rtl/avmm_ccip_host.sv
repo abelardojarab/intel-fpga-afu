@@ -156,7 +156,7 @@ module avmm_ccip_host #(
 	assign c0tx_next.hdr.req_type = eREQ_RDLINE_I;
 	assign c0tx_next.hdr.address = avmm_address[47:6];
 	assign c0tx_next.hdr.mdata = rx_mdata;
-	assign c0tx_next.valid = reset ? 1'b0 : avmm_read;
+	assign c0tx_next.valid = reset ? 1'b0 : avmm_read & ~(ccip_pending_irq_dly | ccip_write_fence_dly);
 	
 	//write request
 	assign ccip_mem_req_hdr.rsvd2 = '0;

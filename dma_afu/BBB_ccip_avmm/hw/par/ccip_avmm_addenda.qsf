@@ -17,7 +17,8 @@ set_global_assignment -name SEARCH_PATH $CCIP_AVMM_SRC/hw/rtl
 set_global_assignment -name SYSTEMVERILOG_FILE $CCIP_AVMM_SRC/hw/rtl/ccip_avmm_pkg.sv
 
 ## Sources
-set_global_assignment -name SYSTEMVERILOG_FILE $CCIP_AVMM_SRC/hw/rtl/avmm_ccip_host.sv
+set_global_assignment -name SYSTEMVERILOG_FILE $CCIP_AVMM_SRC/hw/rtl/avmm_ccip_host_rd.sv
+set_global_assignment -name SYSTEMVERILOG_FILE $CCIP_AVMM_SRC/hw/rtl/avmm_ccip_host_wr.sv
 set_global_assignment -name SYSTEMVERILOG_FILE $CCIP_AVMM_SRC/hw/rtl/ccip_avmm_mmio.sv
 
 ## Constraints

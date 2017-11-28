@@ -423,7 +423,7 @@
         <spirit:parameter>
           <spirit:name>addressSpan</spirit:name>
           <spirit:displayName>Address span</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="addressSpan">1125899906842624</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="addressSpan">281474976710656</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>addressUnits</spirit:name>
@@ -754,7 +754,7 @@
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
             <spirit:left>0</spirit:left>
-            <spirit:right>49</spirit:right>
+            <spirit:right>47</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
@@ -894,7 +894,7 @@
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
             <spirit:left>0</spirit:left>
-            <spirit:right>49</spirit:right>
+            <spirit:right>47</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
@@ -980,12 +980,12 @@
         <spirit:parameter>
           <spirit:name>ADDRESS_WIDTH</spirit:name>
           <spirit:displayName>Address width</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="ADDRESS_WIDTH">50</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="ADDRESS_WIDTH">48</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>SYSINFO_ADDR_WIDTH</spirit:name>
           <spirit:displayName>SYSINFO_ADDR_WIDTH</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="SYSINFO_ADDR_WIDTH">50</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="SYSINFO_ADDR_WIDTH">10</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>USE_AUTO_ADDRESS_WIDTH</spirit:name>
@@ -995,12 +995,12 @@
         <spirit:parameter>
           <spirit:name>AUTO_ADDRESS_WIDTH</spirit:name>
           <spirit:displayName>Automatically-determined address width</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="AUTO_ADDRESS_WIDTH">50</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="AUTO_ADDRESS_WIDTH">10</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>HDL_ADDR_WIDTH</spirit:name>
           <spirit:displayName>HDL_ADDR_WIDTH</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="HDL_ADDR_WIDTH">50</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="HDL_ADDR_WIDTH">48</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>ADDRESS_UNITS</spirit:name>
@@ -1169,7 +1169,7 @@
                     <name>m0_address</name>
                     <role>address</role>
                     <direction>Output</direction>
-                    <width>50</width>
+                    <width>48</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
@@ -1428,7 +1428,7 @@
                     <name>s0_address</name>
                     <role>address</role>
                     <direction>Input</direction>
-                    <width>50</width>
+                    <width>48</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
@@ -1497,7 +1497,7 @@
                     </entry>
                     <entry>
                         <key>addressSpan</key>
-                        <value>1125899906842624</value>
+                        <value>281474976710656</value>
                     </entry>
                     <entry>
                         <key>addressUnits</key>
@@ -1669,7 +1669,7 @@
                 <suppliedSystemInfos>
                     <entry>
                         <key>ADDRESS_WIDTH</key>
-                        <value>50</value>
+                        <value>10</value>
                     </entry>
                 </suppliedSystemInfos>
                 <consumedSystemInfos/>

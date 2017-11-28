@@ -15,7 +15,6 @@
 ./qsys/ip/dma_test_system/dma_test_system_clock_bridge_2.ip
 ./qsys/ip/dma_test_system/dma_test_system_mm_bridge_0.ip
 ./qsys/ip/dma_test_system/dma_test_system_mm_bridge_1.ip
-./qsys/ip/dma_test_system/dma_test_system_mm_bridge_2.ip
 ./qsys/ip/dma_test_system/dma_test_system_mm_clock_crossing_bridge_1.ip
 ./qsys/ip/dma_test_system/dma_test_system_mm_clock_crossing_bridge_2.ip
 ./qsys/ip/dma_test_system/dma_test_system_reset_in.ip

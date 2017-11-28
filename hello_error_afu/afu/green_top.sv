@@ -128,5 +128,4 @@ begin
   pClkDiv2_q2     <= !pClkDiv2_q1;
 end
 
-
 endmodule

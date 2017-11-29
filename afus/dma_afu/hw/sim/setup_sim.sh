@@ -41,7 +41,7 @@ setup_sim_dir
 setup_quartus_home
 
 # Generate qsys systems
-for q in `rtl_src_config --qsys --abs ${sim_afu_path}/filelist.txt`; do
+for q in `rtl_src_config --qsys --abs ${sim_afu_path}/filelist.txt | grep .qsys$`; do
   $QUARTUS_HOME/sopc_builder/bin/qsys-generate --synthesis=VERILOG $q
 done
 

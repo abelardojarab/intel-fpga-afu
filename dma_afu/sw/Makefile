@@ -7,12 +7,12 @@ CFLAGS += -D FPGA_DMA_DEBUG=0
 CFLAGS += -Wall -Werror -Wno-unknown-pragmas
 LDFLAGS += -L$(prefix)/build/lib -luuid
 LDFLAGS += -L/usr/lib/
+LDFLAGS += $(prefix)/build/lib/libsafestr.a
 
 ifeq ($(USE_ASE),1)
 	LDFLAGS += -lopae-c-ase
 	CFLAGS += -DUSE_ASE
 else
-	LDFLAGS += -lpthread
 	LDFLAGS += -ljson-c
 	LDFLAGS += -lopae-c
 	LDFLAGS += -pthread

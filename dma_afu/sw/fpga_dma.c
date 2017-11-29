@@ -319,7 +319,7 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle *dma_p) {
 		res = FPGA_OK;
 	} else {
 		*dma_p = NULL;
-		res = FPGA_NOT_FOUND;
+		return FPGA_NOT_FOUND;
 	}
 
 	// Buffer size must be page aligned for prepareBuffer

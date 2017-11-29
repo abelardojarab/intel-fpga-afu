@@ -44,6 +44,8 @@ module ccip_async_shim
   #(
     parameter DEBUG_ENABLE          = 0,
     parameter ENABLE_EXTRA_RX_C0_PIPELINE = 1,
+    parameter ENABLE_SEPARATE_MMIO_FIFO = 0,
+    parameter C0RX_MMIO_DEPTH_RADIX = 9,
     parameter ENABLE_EXTRA_PIPELINE = 1,
     parameter C0TX_DEPTH_RADIX      = 8,
     parameter C1TX_DEPTH_RADIX      = 8,
@@ -66,10 +68,11 @@ module ccip_async_shim
     input logic        afu_clk,
     input              t_if_ccip_Tx afu_tx,
     output             t_if_ccip_Rx afu_rx,
+    output             t_if_ccip_c0_Rx afu_mmio_c0rx,
     // ---------------------------------- //
     // Error vector
     // ---------------------------------- //
-    output logic [4:0] async_shim_error
+    output logic [5:0] async_shim_error
     );
 
    localparam C0TX_TOTAL_WIDTH = 1 + $bits(t_ccip_c0_ReqMemHdr) ;
@@ -78,6 +81,7 @@ module ccip_async_shim
    localparam C0RX_TOTAL_WIDTH = 3 + $bits(t_ccip_c0_RspMemHdr) + CCIP_CLDATA_WIDTH;
    localparam C1RX_TOTAL_WIDTH = 1 + $bits(t_ccip_c1_RspMemHdr);
 
+   localparam C0RX_MMIO_TOTAL_WIDTH = 2 + $bits(t_ccip_c0_RspMemHdr) + CCIP_CLDATA_WIDTH;
 
    /*
     * Reset synchronizer
@@ -380,19 +384,38 @@ module ccip_async_shim
    t_if_ccip_c0_Rx bb_rx_q2_c0;
    logic bb_rx_q2_c0_valid;
    
+   /*
+    * C0Rx MMIO Channel
+    */
+   logic [C0RX_TOTAL_WIDTH-1:0] c0rx_mmio_dout;
+   logic                        c0rx_mmio_valid;
+   logic                        c0rx_mmio_rdreq;
+   logic                        c0rx_mmio_rdempty;
+   logic                        c0rx_mmio_fifo_wrfull;
+   
+   logic bb_rx_q2_c0_mmio_valid;
+   
    // Extra pipeline register to ease timing pressure -- disable as needed
    generate
       if (ENABLE_EXTRA_RX_C0_PIPELINE == 1) begin
          always @(posedge bb_clk) begin
             bb_rx_q2_c0 <= bb_rx_q.c0;
             //need to register this combined valid signal to help timing into the RAM block
-            bb_rx_q2_c0_valid <= bb_rx_q.c0.rspValid | bb_rx_q.c0.mmioRdValid | bb_rx_q.c0.mmioWrValid;
+            if(ENABLE_SEPARATE_MMIO_FIFO == 1)
+            	bb_rx_q2_c0_valid <= bb_rx_q.c0.rspValid;
+			else
+				bb_rx_q2_c0_valid <= bb_rx_q.c0.rspValid | bb_rx_q.c0.mmioRdValid | bb_rx_q.c0.mmioWrValid;
+			bb_rx_q2_c0_mmio_valid <= bb_rx_q.c0.mmioRdValid | bb_rx_q.c0.mmioWrValid;
          end
       end
       else begin
-         always @(*) begin
-            bb_rx_q2_c0 <= bb_rx_q.c0;
-            bb_rx_q2_c0_valid <= bb_rx_q.c0.rspValid | bb_rx_q.c0.mmioRdValid | bb_rx_q.c0.mmioWrValid;
+         always_comb begin
+            bb_rx_q2_c0 = bb_rx_q.c0;
+            if(ENABLE_SEPARATE_MMIO_FIFO == 1)
+            	bb_rx_q2_c0_valid = bb_rx_q.c0.rspValid;
+			else
+            	bb_rx_q2_c0_valid = bb_rx_q.c0.rspValid | bb_rx_q.c0.mmioRdValid | bb_rx_q.c0.mmioWrValid;
+			bb_rx_q2_c0_mmio_valid = bb_rx_q.c0.mmioRdValid | bb_rx_q.c0.mmioWrValid;
          end
       end
    endgenerate
@@ -404,7 +427,9 @@ module ccip_async_shim
        )
    c0rx_afifo
      (
-      .data    ( {bb_rx_q2_c0.hdr, bb_rx_q2_c0.data, bb_rx_q2_c0.rspValid, bb_rx_q2_c0.mmioRdValid, bb_rx_q2_c0.mmioWrValid} ),
+      .data    ( {bb_rx_q2_c0.hdr, bb_rx_q2_c0.data, bb_rx_q2_c0.rspValid, 
+                  ENABLE_SEPARATE_MMIO_FIFO ? 1'b0 : bb_rx_q2_c0.mmioRdValid, 
+                  ENABLE_SEPARATE_MMIO_FIFO ? 1'b0 : bb_rx_q2_c0.mmioWrValid} ),
       .wrreq   ( bb_rx_q2_c0_valid ),
       .rdreq   ( c0rx_rdreq ),
       .wrclk   ( bb_clk ),
@@ -419,12 +444,40 @@ module ccip_async_shim
       .wrempty ()
       );
 
+   generate
+      if (ENABLE_SEPARATE_MMIO_FIFO == 1) begin
+         ccip_afifo_channel
+           #(
+             .DATA_WIDTH  (C0RX_TOTAL_WIDTH),
+             .DEPTH_RADIX (C0RX_DEPTH_RADIX)
+             )
+         c0rx_mmio_afifo
+           (
+            .data    ( {bb_rx_q2_c0.hdr, bb_rx_q2_c0.data, 1'b0, bb_rx_q2_c0.mmioRdValid, bb_rx_q2_c0.mmioWrValid} ),
+            .wrreq   ( bb_rx_q2_c0_mmio_valid ),
+            .rdreq   ( c0rx_mmio_rdreq ),
+            .wrclk   ( bb_clk ),
+            .rdclk   ( afu_clk ),
+            .aclr    ( bb_softreset ),
+            .q       ( c0rx_mmio_dout ),
+            .rdusedw (),
+            .wrusedw (),
+            .rdfull  (),
+            .rdempty ( c0rx_mmio_rdempty ),
+            .wrfull  ( c0rx_mmio_fifo_wrfull ),
+            .wrempty ()
+            );
+      end
+  endgenerate
+      
    always @(posedge afu_clk) begin
       c0rx_valid <= c0rx_rdreq & ~c0rx_rdempty;
+      c0rx_mmio_valid <= c0rx_mmio_rdreq & ~c0rx_mmio_rdempty;
    end
 
    always @(posedge afu_clk) begin
       c0rx_rdreq <= ~c0rx_rdempty;
+      c0rx_mmio_rdreq <= ~c0rx_mmio_rdempty;
    end
 
    always @(posedge afu_clk) begin
@@ -432,7 +485,16 @@ module ccip_async_shim
          {afu_rx_q.c0.hdr, afu_rx_q.c0.data, afu_rx_q.c0.rspValid, afu_rx_q.c0.mmioRdValid, afu_rx_q.c0.mmioWrValid} <= c0rx_dout;
       end
       else begin
-         {afu_rx_q.c0.hdr, afu_rx_q.c0.data, afu_rx_q.c0.rspValid, afu_rx_q.c0.mmioRdValid, afu_rx_q.c0.mmioWrValid} <= 0;
+         {afu_rx_q.c0.hdr, afu_rx_q.c0.data, afu_rx_q.c0.rspValid, afu_rx_q.c0.mmioRdValid, afu_rx_q.c0.mmioWrValid} <= '0;
+      end
+   end
+
+   always @(posedge afu_clk) begin
+      if (c0rx_mmio_valid) begin
+         {afu_mmio_c0rx.hdr,afu_mmio_c0rx.data, afu_mmio_c0rx.rspValid, afu_mmio_c0rx.mmioRdValid, afu_mmio_c0rx.mmioWrValid} <= c0rx_mmio_dout;
+      end
+      else begin
+         {afu_mmio_c0rx.hdr, afu_mmio_c0rx.data, afu_mmio_c0rx.rspValid, afu_mmio_c0rx.mmioRdValid, afu_mmio_c0rx.mmioWrValid} <= '0;
       end
    end
 
@@ -495,10 +557,11 @@ module ccip_async_shim
     *   2 - C2Tx Write error
     *   3 - C0Rx Write error
     *   4 - C1Rx Write error
+    *   5 - C1Rx mmio Write error
     */
    always @(posedge afu_clk) begin
       if (bb_softreset) begin
-         async_shim_error <= 5'b0;
+         async_shim_error <= '0;
       end
       else begin
          async_shim_error[0] <= c0tx_fifo_wrfull && afu_tx_q.c0.valid;
@@ -506,6 +569,7 @@ module ccip_async_shim
          async_shim_error[2] <= c2tx_fifo_wrfull && afu_tx_q.c2.mmioRdValid;
          async_shim_error[3] <= c0rx_fifo_wrfull && bb_rx_q2_c0_valid;
          async_shim_error[4] <= c1rx_fifo_wrfull && bb_rx_q.c1.rspValid;
+         async_shim_error[5] <= c0rx_mmio_fifo_wrfull && bb_rx_q2_c0_mmio_valid;
       end
    end
 
@@ -524,6 +588,8 @@ module ccip_async_shim
         $warning("** ERROR ** C0Rx may have dropped transaction");
       if (async_shim_error[4])
         $warning("** ERROR ** C1Rx may have dropped transaction");
+      if (async_shim_error[5])
+        $warning("** ERROR ** C0Rx mmio may have dropped transaction");
    end
    // synthesis translate_on
 
@@ -539,6 +605,7 @@ module ccip_async_shim
          (* preserve *) logic [31:0] afu_c1tx_cnt;
          (* preserve *) logic [31:0] afu_c2tx_cnt;
          (* preserve *) logic [31:0] afu_c0rx_cnt;
+         (* preserve *) logic [31:0] afu_c0rx_mmio_cnt;
          (* preserve *) logic [31:0] afu_c1rx_cnt;
          (* preserve *) logic [31:0] bb_c0tx_cnt;
          (* preserve *) logic [31:0] bb_c1tx_cnt;
@@ -553,6 +620,7 @@ module ccip_async_shim
                afu_c1tx_cnt <= 0;
                afu_c2tx_cnt <= 0;
                afu_c0rx_cnt <= 0;
+               afu_c0rx_mmio_cnt <= 0;
                afu_c1rx_cnt <= 0;
             end
             else begin
@@ -562,8 +630,10 @@ module ccip_async_shim
                  afu_c1tx_cnt <= afu_c1tx_cnt + 1;
                if (afu_tx_q.c2.mmioRdValid)
                  afu_c2tx_cnt <= afu_c2tx_cnt + 1;
-               if (afu_rx_q.c0.rspValid|afu_rx_q.c0.mmioRdValid|afu_rx_q.c0.mmioWrValid)
+               if (afu_rx_q.c0.rspValid|(ENABLE_SEPARATE_MMIO_FIFO ? 1'b0 : (afu_rx_q.c0.mmioRdValid|afu_rx_q.c0.mmioWrValid)))
                  afu_c0rx_cnt <= afu_c0rx_cnt + 1;
+               if (afu_rx_q.c0.mmioRdValid|afu_rx_q.c0.mmioWrValid)
+                 afu_c0rx_mmio_cnt <= afu_c0rx_mmio_cnt + 1;
                if (afu_rx_q.c1.rspValid)
                  afu_c1rx_cnt <= afu_c1rx_cnt + 1;
             end

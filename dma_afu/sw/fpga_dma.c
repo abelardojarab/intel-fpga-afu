@@ -996,17 +996,20 @@ fpga_result fpgaDmaTransferAsync(fpga_dma_handle dma, uint64_t dst, uint64_t src
 fpga_result fpgaDmaClose(fpga_dma_handle dma_h) {
 	fpga_result res = FPGA_OK;
 	int i = 0;
-	if(!dma_h || !dma_h->fpga_h) {
+	if(!dma_h) { 
 		res = FPGA_INVALID_PARAM;
 		goto out;
 	}
 
-	if(res == FPGA_OK) {
-		for(i=0; i<FPGA_DMA_MAX_BUF; i++) {
-			res = fpgaReleaseBuffer(dma_h->fpga_h, dma_h->dma_buf_wsid[i]);
-			ON_ERR_GOTO(res, out, "fpgaReleaseBuffer failed");
-		}
+	if(!dma_h->fpga_h) {
+		res = FPGA_INVALID_PARAM;
+		goto out;
 	}
+
+   for(i=0; i<FPGA_DMA_MAX_BUF; i++) {
+      res = fpgaReleaseBuffer(dma_h->fpga_h, dma_h->dma_buf_wsid[i]);
+      ON_ERR_GOTO(res, out, "fpgaReleaseBuffer failed");
+   }
 
 	res = fpgaReleaseBuffer(dma_h->fpga_h, dma_h->magic_wsid);
 	ON_ERR_GOTO(res, out, "fpgaReleaseBuffer");

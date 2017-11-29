@@ -320,7 +320,8 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle *dma_p) {
 		res = FPGA_OK;
 	} else {
 		*dma_p = NULL;
-		return FPGA_NOT_FOUND;
+		res = FPGA_NOT_FOUND;
+		goto out;
 	}
 
 	// Buffer size must be page aligned for prepareBuffer
@@ -365,7 +366,9 @@ rel_buf:
 		ON_ERR_GOTO(res, out, "fpgaReleaseBuffer");
 	}
 out:
-	return (fpga_result)err_cnt;
+	if(!dma_found)
+		free(dma_h);
+	return res;
 }
 
 /**
@@ -800,7 +803,7 @@ fpga_result transferHostToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 		}
 	}
 out:
-	return (fpga_result)err_cnt;
+	return res;
 }
 
 
@@ -888,7 +891,7 @@ fpga_result transferFpgaToHost(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 		}
 	}
 out:
-	return (fpga_result)err_cnt;
+	return res;
 }
 
 fpga_result transferFpgaToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, size_t count,
@@ -947,10 +950,10 @@ fpga_result transferFpgaToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 		}
 	}
 out:
-	return (fpga_result)err_cnt;
+	return res;
 out_spl:
 	free(tmp_buf);
-	return (fpga_result)err_cnt;
+	return res;
 }
 
 fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, size_t count,

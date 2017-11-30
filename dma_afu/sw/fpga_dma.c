@@ -762,7 +762,6 @@ fpga_result transferHostToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 	uint64_t count_left = count;
 	uint64_t aligned_addr = 0;
 	uint64_t align_bytes = 0;
-	int wf_issued = 0;
 	int issued_intr = 0;
 	debug_print("Host To Fpga ----------- src = %08lx, dst = %08lx \n", src, dst);
 	if(!IS_DMA_ALIGNED(dst)) {
@@ -789,7 +788,7 @@ fpga_result transferHostToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 				if(i == (FPGA_DMA_MAX_BUF/2)-1) {
 					res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova[i%FPGA_DMA_MAX_BUF] | FPGA_DMA_HOST_MASK, FPGA_DMA_BUF_SIZE,0, type, true/*intr_en*/);
 				} else {
-					if(issued_intr == 1)
+					if(issued_intr)
 						poll_interrupt(dma_h);
 					res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova[i%FPGA_DMA_MAX_BUF] | FPGA_DMA_HOST_MASK, FPGA_DMA_BUF_SIZE,0, type, true/*intr_en*/);
 				}

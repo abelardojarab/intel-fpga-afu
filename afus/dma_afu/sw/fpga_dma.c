@@ -38,6 +38,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <assert.h>
+#include <safe_string/safe_string.h>
 #include "fpga_dma_internal.h"
 #include "fpga_dma.h"
 
@@ -320,6 +321,7 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle *dma_p) {
 	} else {
 		*dma_p = NULL;
 		res = FPGA_NOT_FOUND;
+		goto out;
 	}
 
 	// Buffer size must be page aligned for prepareBuffer
@@ -364,7 +366,9 @@ rel_buf:
 		ON_ERR_GOTO(res, out, "fpgaReleaseBuffer");
 	}
 out:
-	return (fpga_result)err_cnt;
+	if(!dma_found)
+		free(dma_h);
+	return res;
 }
 
 /**
@@ -391,7 +395,7 @@ static fpga_result _read_memory_mmio_unaligned(fpga_dma_handle dma_h, uint64_t d
 	if(res != FPGA_OK)
 		return res;
 	//overlay our data
-	memcpy((void *)host_addr, ((char *)(&read_tmp))+shift, count);
+	memcpy_s((void *)host_addr, count, ((char *)(&read_tmp))+shift, count);
 	return res;
 }
 
@@ -420,7 +424,7 @@ static fpga_result _write_memory_mmio_unaligned(fpga_dma_handle dma_h, uint64_t 
 	if(res != FPGA_OK)
 		return res;
 	//overlay our data
-	memcpy(((char *)(&read_tmp))+shift, (void *)host_addr, count);
+	memcpy_s(((char *)(&read_tmp))+shift, count, (void *)host_addr, count);
 	//write back to device
 	res = fpgaWriteMMIO64(dma_h->fpga_h, 0, dma_h->dma_ase_data_base+(dev_aligned_addr&DMA_ADDR_SPAN_EXT_WINDOW_MASK), read_tmp);
 	if(res != FPGA_OK)
@@ -770,7 +774,7 @@ fpga_result transferHostToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 		debug_print("DMA TX : dma chuncks = %d, count_left = %08lx, dst = %08lx, src = %08lx \n", dma_chunks, count_left, dst, src);
 
 		for(i=0; i<dma_chunks; i++) {
-			memcpy(dma_h->dma_buf_ptr[i%FPGA_DMA_MAX_BUF], (void*)(src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);
+			memcpy_s(dma_h->dma_buf_ptr[i%FPGA_DMA_MAX_BUF], FPGA_DMA_BUF_SIZE, (void*)(src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);
 			res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova[i%FPGA_DMA_MAX_BUF] | FPGA_DMA_HOST_MASK, FPGA_DMA_BUF_SIZE,0, type, false/*intr_en*/);
 			if( (i+1) % FPGA_DMA_MAX_BUF ==0 || i == (dma_chunks - 1)/*last descriptor*/) {
 				res = _issue_magic(dma_h);
@@ -782,7 +786,7 @@ fpga_result transferHostToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 			uint64_t dma_tx_bytes = (count_left/FPGA_DMA_ALIGN_BYTES)*FPGA_DMA_ALIGN_BYTES;
 			if(dma_tx_bytes != 0) {
 				debug_print("dma_tx_bytes = %08lx  was transfered using DMA\n", dma_tx_bytes);
-				memcpy(dma_h->dma_buf_ptr[0], (void*)(src+dma_chunks*FPGA_DMA_BUF_SIZE), dma_tx_bytes);
+				memcpy_s(dma_h->dma_buf_ptr[0], dma_tx_bytes, (void*)(src+dma_chunks*FPGA_DMA_BUF_SIZE), dma_tx_bytes);
 				res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova[0] | FPGA_DMA_HOST_MASK, dma_tx_bytes,1, type, false/*intr_en*/);
 				ON_ERR_GOTO(res, out, "HOST_TO_FPGA_MM Transfer failed\n");
 				res = _issue_magic(dma_h);
@@ -799,7 +803,7 @@ fpga_result transferHostToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 		}
 	}
 out:
-	return (fpga_result)err_cnt;
+	return res;
 }
 
 
@@ -847,7 +851,7 @@ fpga_result transferFpgaToHost(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 				if(wf_issued) {
 					_wait_magic(dma_h);
 					for(j=0; j<(FPGA_DMA_MAX_BUF/2); j++) {
-						memcpy((void*)(dst+pending_buf*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[pending_buf%(FPGA_DMA_MAX_BUF)], FPGA_DMA_BUF_SIZE);
+						memcpy_s((void*)(dst+pending_buf*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE, dma_h->dma_buf_ptr[pending_buf%(FPGA_DMA_MAX_BUF)], FPGA_DMA_BUF_SIZE);
 						pending_buf++;
 					}
 					wf_issued = 0;
@@ -863,7 +867,7 @@ fpga_result transferFpgaToHost(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 
 		//clear out final dma memcpy operations
 		while(pending_buf<dma_chunks) {
-			memcpy((void*)(dst+pending_buf*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[pending_buf%(FPGA_DMA_MAX_BUF)], FPGA_DMA_BUF_SIZE);
+			memcpy_s((void*)(dst+pending_buf*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE, dma_h->dma_buf_ptr[pending_buf%(FPGA_DMA_MAX_BUF)], FPGA_DMA_BUF_SIZE);
 			pending_buf++;
 		}
 		if(count_left > 0) {
@@ -875,7 +879,7 @@ fpga_result transferFpgaToHost(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 				res = _issue_magic(dma_h);
 				ON_ERR_GOTO(res, out, "Magic number issue failed");
 				_wait_magic(dma_h);
-				memcpy((void*)(dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[0], dma_tx_bytes);
+				memcpy_s((void*)(dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_tx_bytes, dma_h->dma_buf_ptr[0], dma_tx_bytes);
 			}
 			count_left -= dma_tx_bytes;
 			if(count_left) {
@@ -887,7 +891,7 @@ fpga_result transferFpgaToHost(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 		}
 	}
 out:
-	return (fpga_result)err_cnt;
+	return res;
 }
 
 fpga_result transferFpgaToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, size_t count,
@@ -946,10 +950,10 @@ fpga_result transferFpgaToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 		}
 	}
 out:
-	return (fpga_result)err_cnt;
+	return res;
 out_spl:
 	free(tmp_buf);
-	return (fpga_result)err_cnt;
+	return res;
 }
 
 fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, size_t count,
@@ -995,15 +999,20 @@ fpga_result fpgaDmaTransferAsync(fpga_dma_handle dma, uint64_t dst, uint64_t src
 fpga_result fpgaDmaClose(fpga_dma_handle dma_h) {
 	fpga_result res = FPGA_OK;
 	int i = 0;
-	if(!dma_h || !dma_h->fpga_h)
+	if(!dma_h) { 
 		res = FPGA_INVALID_PARAM;
-
-	if(res == FPGA_OK) {
-		for(i=0; i<FPGA_DMA_MAX_BUF; i++) {
-			res = fpgaReleaseBuffer(dma_h->fpga_h, dma_h->dma_buf_wsid[i]);
-			ON_ERR_GOTO(res, out, "fpgaReleaseBuffer failed");
-		}
+		goto out;
 	}
+
+	if(!dma_h->fpga_h) {
+		res = FPGA_INVALID_PARAM;
+		goto out;
+	}
+
+   for(i=0; i<FPGA_DMA_MAX_BUF; i++) {
+      res = fpgaReleaseBuffer(dma_h->fpga_h, dma_h->dma_buf_wsid[i]);
+      ON_ERR_GOTO(res, out, "fpgaReleaseBuffer failed");
+   }
 
 	res = fpgaReleaseBuffer(dma_h->fpga_h, dma_h->magic_wsid);
 	ON_ERR_GOTO(res, out, "fpgaReleaseBuffer");

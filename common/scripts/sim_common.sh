@@ -290,8 +290,6 @@ setup_ase() {
       # add non-standard text macros (if any)
       # specify them using add_text_macros  
       echo "SNPS_VLOGAN_OPT+= $add_macros" >> ase_sources.mk      
-		echo "OPAE_BASEDIR=$opae_base" >> ase_sources.mk
-      echo "ASE_DISCRETE_EMIF_MODEL=$mem_model" >> ase_sources.mk
    elif [ "$sim" == "modelsim" ] || [ "$sim" == "questa" ] ; then
       get_mti_home
 
@@ -305,13 +303,13 @@ setup_ase() {
       # add non-standard text macros (if any)
       # specify them using add_text_macros      
       echo "MENT_VSIM_OPT += $add_macros" >> ase_sources.mk
-		echo "OPAE_BASEDIR=$opae_base" >> ase_sources.mk
-      echo "ASE_DISCRETE_EMIF_MODEL=$mem_model" >> ase_sources.mk
    else
       echo "Unknown Simulator $sim"
       exit 1;
    fi
 
+   echo "ASE_DISCRETE_EMIF_MODEL=$mem_model" >> ase_sources.mk
+	echo "OPAE_BASEDIR=$opae_base" >> ase_sources.mk
    echo "ASE configured in `pwd`"
 
    popd

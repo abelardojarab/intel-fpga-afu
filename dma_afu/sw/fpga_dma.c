@@ -701,12 +701,12 @@ static fpga_result _ase_fpga_to_host(fpga_dma_handle dma_h, uint64_t *src_ptr,ui
 }
 
 static fpga_result clear_interrupt(fpga_dma_handle dma_h) {
-   //clear interrupt by writing 1 to IRQ bit in status register
+	//clear interrupt by writing 1 to IRQ bit in status register
 	msgdma_status_t status = {0};
-   status.st.irq = 1;
+	status.st.irq = 1;
 
-   msgdma_csr_t *csr = (msgdma_csr_t*)(dma_h->dma_csr_base);
-   return fpgaWriteMMIO32(dma_h->fpga_h, dma_h->mmio_num, (uint64_t)((char*)csr+offsetof(msgdma_csr_t, status)), status.reg);
+	msgdma_csr_t *csr = (msgdma_csr_t*)(dma_h->dma_csr_base);
+	return fpgaWriteMMIO32(dma_h->fpga_h, dma_h->mmio_num, (uint64_t)((char*)csr+offsetof(msgdma_csr_t, status)), status.reg);
 }
 
 static fpga_result poll_interrupt(fpga_dma_handle dma_h) {
@@ -716,26 +716,25 @@ static fpga_result poll_interrupt(fpga_dma_handle dma_h) {
 	res = fpgaGetOSObjectFromEventHandle(dma_h->eh, &pfd.fd);
 	ON_ERR_GOTO(res, out, "fpgaGetOSObjectFromEventHandle failed\n");
 
-   pfd.events = POLLIN;
-   int poll_res = poll(&pfd, 1, -1);
-   if(poll_res < 0) {
-      fprintf( stderr, "Poll error errno = %s\n",strerror(errno));
-      res = FPGA_EXCEPTION;
-      goto out;
-   }
-   else if(poll_res == 0) {
-      fprintf( stderr, "Poll(interrupt) timeout \n");
-      res = FPGA_EXCEPTION;
-   } else {
+	pfd.events = POLLIN;
+	int poll_res = poll(&pfd, 1, -1);
+	if(poll_res < 0) {
+		fprintf( stderr, "Poll error errno = %s\n",strerror(errno));
+		res = FPGA_EXCEPTION;
+		goto out;
+	} else if(poll_res == 0) {
+		fprintf( stderr, "Poll(interrupt) timeout \n");
+		res = FPGA_EXCEPTION;
+	} else {
 		uint64_t count = 0;
-      read(pfd.fd, &count, sizeof(count));
+		read(pfd.fd, &count, sizeof(count));
 		debug_print("Poll success. Return = %d, count = %d\n",poll_res, (int)count);
-      res = FPGA_OK;
-   }
+		res = FPGA_OK;
+	}
 
 out:
-   clear_interrupt(dma_h);
-   return res;
+	clear_interrupt(dma_h);
+	return res;
 }
 
 static fpga_result _issue_magic(fpga_dma_handle dma_h) {
@@ -751,9 +750,9 @@ static fpga_result _issue_magic(fpga_dma_handle dma_h) {
 }
 
 static void _wait_magic(fpga_dma_handle dma_h) {
-   poll_interrupt(dma_h);
-   while (*(dma_h->magic_buf) != FPGA_DMA_WF_MAGIC_NO);
-   *(dma_h->magic_buf) = 0x0ULL;
+	poll_interrupt(dma_h);
+	while (*(dma_h->magic_buf) != FPGA_DMA_WF_MAGIC_NO);
+	*(dma_h->magic_buf) = 0x0ULL;
 }
 
 fpga_result transferHostToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, size_t count,
@@ -786,8 +785,8 @@ fpga_result transferHostToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 
 		for(i=0; i<dma_chunks; i++) {
 			memcpy_s(dma_h->dma_buf_ptr[i%FPGA_DMA_MAX_BUF], FPGA_DMA_BUF_SIZE, (void*)(src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);
-      	if((i%(FPGA_DMA_MAX_BUF/2) == (FPGA_DMA_MAX_BUF/2)-1) || i == (dma_chunks - 1)/*last descriptor*/) {
-         	if(i == (FPGA_DMA_MAX_BUF/2)-1) {
+			if((i%(FPGA_DMA_MAX_BUF/2) == (FPGA_DMA_MAX_BUF/2)-1) || i == (dma_chunks - 1)/*last descriptor*/) {
+				if(i == (FPGA_DMA_MAX_BUF/2)-1) {
 					res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_iova[i%FPGA_DMA_MAX_BUF] | FPGA_DMA_HOST_MASK, FPGA_DMA_BUF_SIZE,0, type, true/*intr_en*/);
 				} else {
 					if(issued_intr == 1)
@@ -930,18 +929,18 @@ fpga_result transferFpgaToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 			res = _do_dma(dma_h, (dst+i*FPGA_DMA_BUF_SIZE), (src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE, 0, type, false/*intr_en*/);
 			ON_ERR_GOTO(res, out, "FPGA_TO_FPGA_MM Transfer failed");
 			if( (i+1) % FPGA_DMA_MAX_BUF ==0 || i == (dma_chunks - 1)/*last descriptor*/) {
-            res = _issue_magic(dma_h);
-            ON_ERR_GOTO(res, out, "Magic number issue failed");
-            _wait_magic(dma_h);
-         }
+				res = _issue_magic(dma_h);
+				ON_ERR_GOTO(res, out, "Magic number issue failed");
+				_wait_magic(dma_h);
+			}
 		}
 		if(count_left > 0) {
 			debug_print("Count_left = %08lx  was transfered using DMA\n", count_left);
 			res = _do_dma(dma_h, (dst+dma_chunks*FPGA_DMA_BUF_SIZE), (src+dma_chunks*FPGA_DMA_BUF_SIZE), count_left, 1, type, false/*intr_en*/);
 			ON_ERR_GOTO(res, out, "FPGA_TO_FPGA_MM Transfer failed");
 			res = _issue_magic(dma_h);
-         ON_ERR_GOTO(res, out, "Magic number issue failed");
-         _wait_magic(dma_h);
+			ON_ERR_GOTO(res, out, "Magic number issue failed");
+			_wait_magic(dma_h);
 		}
 	}else {
 		if((src < dst) && (src+count_left >= dst)) {

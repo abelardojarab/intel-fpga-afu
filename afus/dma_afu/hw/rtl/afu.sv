@@ -69,6 +69,7 @@ module afu #(
         
 	// ---------------------------IF signals between CCI and AFU  --------------------------------
 	input	t_if_ccip_Rx    cp2af_sRxPort,
+	input	t_if_ccip_c0_Rx cp2af_mmio_c0rx,
 	output	t_if_ccip_Tx	af2cp_sTxPort
 );
 
@@ -266,11 +267,7 @@ module afu #(
 		.c1tx(af2cp_sTxPort.c1)
 	);
 	
-	ccip_avmm_mmio #(
-		.MMIO_BYPASS_ADDRESS(MMIO_BYPASS_ADDRESS),
-		.MMIO_BYPASS_SIZE(MMIO_BYPASS_SIZE)
-	)
-	ccip_avmm_mmio_inst (
+	ccip_avmm_mmio ccip_avmm_mmio_inst (
 		.avmm_waitrequest(mmio_avmm_waitrequest),
 		.avmm_readdata(mmio_avmm_readdata),
 		.avmm_readdatavalid(mmio_avmm_readdatavalid),
@@ -283,7 +280,7 @@ module afu #(
 		.clk            (pClkDiv2),            //   clk.clk
 		.reset        (reset),         // reset.reset
 		
-		.c0rx(cp2af_sRxPort.c0),
+		.c0rx(cp2af_mmio_c0rx),
 		.c2tx(af2cp_sTxPort.c2)
 	);
 	

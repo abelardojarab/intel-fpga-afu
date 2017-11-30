@@ -34,8 +34,12 @@ SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
 
 . ${SCRIPT_DIR_PATH}/sim_common.sh
 
-menu_setup_sim "$@"
-setup_sim_dir
-setup_quartus_home
-gen_qsys
-run_sim
+menu_run_app "$@"
+
+# If the AFU provides a setup script then use it.
+if [ -f "${afu}/hw/sim/run_app.sh" ]; then
+   "${afu}/hw/sim/run_app.sh" -a "$afu" -b "$opae_base" -r "$rtl_sim_dir"
+else
+   # There is no AFU-specific script
+   run_app
+fi

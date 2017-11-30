@@ -102,6 +102,7 @@ menu_run_app() {
       usage_run_app;
    fi
 
+   afu=${a}
    app_base=${a}/sw
    rtl_sim_dir=${r}
    opae_base=${b}

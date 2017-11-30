@@ -6,7 +6,6 @@ CFLAGS += -I$(prefix)/libopae/src
 CFLAGS += -Wall -Werror -Wno-unknown-pragmas
 LDFLAGS += -L$(prefix)/build/lib -luuid
 LDFLAGS += -L/usr/lib/
-LDFLAGS += $(prefix)/build/lib/libsafestr.a
 
 ifeq ($(USE_ASE),1)
 	LDFLAGS += -lopae-c-ase

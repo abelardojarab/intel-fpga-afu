@@ -34,6 +34,16 @@ SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
 
 . ${SCRIPT_DIR_PATH}/sim_common.sh
 
-# Run this script from Terminal 2
-menu_run_app "$@"
-run_app
+menu_setup_sim "$@"
+
+# If the AFU provides a setup script then use it.
+setup_sim="${SCRIPT_DIR_PATH}/std_setup_sim.sh"
+if [ -f "${afu}/hw/sim/setup_sim.sh" ]; then
+   "${afu}/hw/sim/setup_sim.sh" -a "$afu" -b "$opae_base" -s "$sim" -r "$rtl_sim_dir"
+else
+   # There is no AFU-specific script
+   setup_sim_dir
+   setup_quartus_home
+   gen_qsys
+   run_sim
+fi

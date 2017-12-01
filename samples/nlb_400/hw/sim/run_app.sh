@@ -40,5 +40,6 @@ menu_run_app "$@"
 wait_for_sim_ready
 setup_app_env
 
-# nlb test software is shipped with OPAE
-env LD_PRELOAD=libopae-c-ase.so hello_fpga
+# nlb is driven by samples/hello_fpga.c from the OPAE SDK
+gcc -g -o $app_base/hello_fpga $opae_base/samples/hello_fpga.c -L $opae_base/build/lib/ -I $opae_base/common/include -luuid -lpthread -lopae-c-ase -std=c99
+exec_app

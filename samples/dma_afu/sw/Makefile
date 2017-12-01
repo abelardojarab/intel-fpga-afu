@@ -1,11 +1,18 @@
 LDFLAGS ?=
 CFLAGS = -g -O2 -fPIC 
 
-CFLAGS += -I$(prefix)/common/include
-CFLAGS += -I$(prefix)/libopae/src
+ifdef prefix
+CFLAGS += -I$(prefix)/include
+LDFLAGS += -L$(prefix)/lib
+LDFLAGS += $(prefix)/lib/libsafestr.a
+else
+LDFLAGS += libsafestr.a
+endif
+
+
 CFLAGS += -Wall -Werror -Wno-unknown-pragmas
-LDFLAGS += -L$(prefix)/build/lib -luuid
 LDFLAGS += -L/usr/lib/
+LDFLAGS += -luuid
 
 ifeq ($(USE_ASE),1)
 	LDFLAGS += -lopae-c-ase

@@ -7,6 +7,7 @@
 #include <opae/utils.h>
 #include <poll.h>
 #include <errno.h>
+#include <opae/fpga.h>
 
 #define MAX_USR_INTRS            4
 

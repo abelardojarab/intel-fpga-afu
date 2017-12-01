@@ -8,7 +8,7 @@ COMMON_SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
 COMMON_SCRIPT_DIR_PATH="$(dirname $COMMON_SCRIPT_PATH)"
 
 usage_setup_sim() { 
-   echo "Usage: $0 -a <afu dir> [-s <vcs|modelsim|questa>] [-b <opae base dir>] [-r <rtl simulation dir>]" 1>&2;
+   echo "Usage: $0 -a <afu dir> -s <vcs|modelsim|questa> -b <opae base dir> [-r <rtl simulation dir>] [-m <EMIF_MODEL_BASIC|EMIF_MODEL_ADVANCED> memory model]" 1>&2;
    exit 1;
 }
 
@@ -41,7 +41,6 @@ menu_setup_sim() {
             b=${OPTARG}            
          ;;    
         
-         # optional mode argument for internal testing
          m)
             m=${OPTARG}            
             ;;
@@ -59,7 +58,7 @@ menu_setup_sim() {
    rtl_sim_dir=${r}
    sim=${s}
    opae_base=${b}
-   test_mode=${m}
+   mem_model=${m}
    if [ -z "$rtl_sim_dir" ]
    then
       # use default
@@ -70,10 +69,15 @@ menu_setup_sim() {
       echo "Supported simulators are vcs, modelsim and questa. You requsted $sim"
       usage_setup_sim;
    fi
+
+   if [[ ! $mem_model ]]; then
+      # use default
+      mem_model=EMIF_MODEL_BASIC
+   fi
 }
 
 usage_run_app() { 
-   echo "Usage: $0 -a <afu dir> [-r <rtl simulation dir>] [-b <opae base dir>]" 1>&2;
+   echo "Usage: $0 -a <afu dir> -b <opae base dir> [-r <rtl simulation dir>]" 1>&2;
    exit 1; 
 }
 
@@ -114,7 +118,7 @@ menu_run_app() {
 }
 
 usage_regress() { 
-   echo "Usage: $0 -a <afu dir> [-r <rtl simulation dir>] [-s <vcs|modelsim|questa>] [-b <opae base dir>]" 1>&2;
+   echo "Usage: $0 -a <afu dir> -s <vcs|modelsim|questa> -b <opae base dir> [-r <rtl simulation dir>]" 1>&2;
    exit 1; 
 }
 
@@ -152,14 +156,14 @@ menu_regress() {
    rtl_sim_dir=${r}
    sim=${s};
    opae_base=${b}
-   test_mode=${m}
+   mem_model=${m};
    if [ -z "$rtl_sim_dir" ]
    then
       # use default
       rtl_sim_dir=$opae_base/rtl_sim
    fi
 
-   echo "afu=$afu, rtl=$rtl, app=$app, sim=$sim, base=$opae_base"
+   echo "afu=$afu, rtl=$rtl, app=$app, sim=$sim, base=$opae_base mem_model=$mem_model"
    # mandatory args
    if [ -z "${a}" ] || [ -z "${s}" ] || [ -z "${b}" ]; then
       usage_regress;
@@ -168,6 +172,11 @@ menu_regress() {
    if [[ "$sim" != "vcs" ]] && [[ "$sim" != "questa" ]] && [[ "$sim" != "modelsim" ]]   ; then
       echo "Supported simulators are VCS, Modelsim and Questa. You specified $sim"
       usage_regress;
+   fi
+
+   if [[ ! $mem_model ]]; then
+      # use default
+      mem_model=EMIF_MODEL_BASIC
    fi
 }
 
@@ -280,7 +289,6 @@ setup_ase() {
       # add non-standard text macros (if any)
       # specify them using add_text_macros  
       echo "SNPS_VLOGAN_OPT+= $add_macros" >> ase_sources.mk      
-      echo "OPAE_BASEDIR=$opae_base" >> ase_sources.mk
    elif [ "$sim" == "modelsim" ] || [ "$sim" == "questa" ] ; then
       get_mti_home
 
@@ -294,12 +302,13 @@ setup_ase() {
       # add non-standard text macros (if any)
       # specify them using add_text_macros      
       echo "MENT_VSIM_OPT += $add_macros" >> ase_sources.mk
-      echo "OPAE_BASEDIR=$opae_base" >> ase_sources.mk
    else
       echo "Unknown Simulator $sim"
       exit 1;
    fi
 
+   echo "ASE_DISCRETE_EMIF_MODEL=$mem_model" >> ase_sources.mk
+   echo "OPAE_BASEDIR=$opae_base" >> ase_sources.mk
    echo "ASE configured in `pwd`"
 
    popd

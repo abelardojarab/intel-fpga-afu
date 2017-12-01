@@ -42,4 +42,3 @@ setup_app_env
 build_app
 # Usage: hello_mem_afu <bank#> <use_ase=1>
 $app_base/hello_mem_afu 0 1
-popd

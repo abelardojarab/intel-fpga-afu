@@ -794,7 +794,7 @@ fpga_result transferHostToFpga(fpga_dma_handle dma_h, uint64_t dst, uint64_t src
 		debug_print("DMA TX : dma chuncks = %d, count_left = %08lx, dst = %08lx, src = %08lx \n", dma_chunks, count_left, dst, src);
 
 		for(i=0; i<dma_chunks; i++) {
-         // constant size transfer, no length check required for memcpy
+			// constant size transfer, no length check required for memcpy
 			memcpy(dma_h->dma_buf_ptr[i%FPGA_DMA_MAX_BUF], (void*)(src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);
 			if((i%(FPGA_DMA_MAX_BUF/2) == (FPGA_DMA_MAX_BUF/2)-1) || i == (dma_chunks - 1)/*last descriptor*/) {
 				if(i == (FPGA_DMA_MAX_BUF/2)-1) {
@@ -1049,10 +1049,10 @@ fpga_result fpgaDmaClose(fpga_dma_handle dma_h) {
 		goto out;
 	}
 
-   for(i=0; i<FPGA_DMA_MAX_BUF; i++) {
-      res = fpgaReleaseBuffer(dma_h->fpga_h, dma_h->dma_buf_wsid[i]);
-      ON_ERR_GOTO(res, out, "fpgaReleaseBuffer failed");
-   }
+	for(i=0; i<FPGA_DMA_MAX_BUF; i++) {
+		res = fpgaReleaseBuffer(dma_h->fpga_h, dma_h->dma_buf_wsid[i]);
+		ON_ERR_GOTO(res, out, "fpgaReleaseBuffer failed");
+	}
 
 	res = fpgaReleaseBuffer(dma_h->fpga_h, dma_h->magic_wsid);
 	ON_ERR_GOTO(res, out, "fpgaReleaseBuffer");

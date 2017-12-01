@@ -43,7 +43,7 @@ menu_setup_sim() {
         
          m)
             m=${OPTARG}            
-            ;;
+         ;;
       esac
    done
    shift $((OPTIND-1))
@@ -118,7 +118,7 @@ menu_run_app() {
 }
 
 usage_regress() { 
-   echo "Usage: $0 -a <afu dir> -s <vcs|modelsim|questa> -b <opae base dir> [-r <rtl simulation dir>]" 1>&2;
+   echo "Usage: $0 -a <afu dir> -s <vcs|modelsim|questa> -b <opae base dir> [-r <rtl simulation dir>] [-m <EMIF_MODEL_BASIC|EMIF_MODEL_ADVANCED> memory model]" 1>&2;
    exit 1; 
 }
 
@@ -142,7 +142,6 @@ menu_regress() {
          b)
             b=${OPTARG}            
             ;;
-         # optional mode argument for internal testing
          m)
             m=${OPTARG}            
             ;;

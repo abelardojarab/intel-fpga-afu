@@ -3,8 +3,7 @@ CFLAGS = -g -O2 -std=c99
 
 ifdef prefix
 CFLAGS += -I$(prefix)/include
-LDFLAGS += -L$(prefix)/lib -luuid
-LDFLAGS += $(prefix)/lib/libsafestr.a
+LDFLAGS += -L$(prefix)/lib
 endif
 LDFLAGS += -luuid
 

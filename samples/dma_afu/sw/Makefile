@@ -4,15 +4,11 @@ CFLAGS = -g -O2 -fPIC
 ifdef prefix
 CFLAGS += -I$(prefix)/include
 LDFLAGS += -L$(prefix)/lib
-LDFLAGS += $(prefix)/lib/libsafestr.a
-else
-LDFLAGS += libsafestr.a
 endif
 
-
 CFLAGS += -Wall -Werror -Wno-unknown-pragmas
-LDFLAGS += -L/usr/lib/
 LDFLAGS += -luuid
+LDFLAGS += -lsafestr
 
 ifeq ($(USE_ASE),1)
 	LDFLAGS += -lopae-c-ase

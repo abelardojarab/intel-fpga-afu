@@ -42,5 +42,5 @@ SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
 
 menu_regress "$@"
 ${SCRIPT_DIR_PATH}/setup_sim.sh -a $afu -b $opae_base -s $sim -r $rtl_sim_dir -m $mem_model &
-${SCRIPT_DIR_PATH}/run_app.sh -a $app -b $opae_base -r $rtl_sim_dir
+${SCRIPT_DIR_PATH}/run_app.sh -a $afu -b $opae_base -r $rtl_sim_dir
 kill_sim

@@ -1,4 +1,4 @@
-SUBDIRS := samples opencl
+SUBDIRS := samples opencl common
 CLEAN_SUBDIRS := $(addprefix clean-,$(SUBDIRS))
 
 .PHONY: all $(SUBDIRS)

@@ -77,7 +77,7 @@ menu_setup_sim() {
 }
 
 usage_run_app() { 
-   echo "Usage: $0 -a <afu dir> -b <opae base dir> [-r <rtl simulation dir>]" 1>&2;
+   echo "Usage: $0 -a <afu dir> -b <opae base dir> [-i <opae install path>] [-r <rtl simulation dir>]" 1>&2;
    exit 1; 
 }
 
@@ -86,13 +86,16 @@ menu_run_app() {
    b="${OPAE_BASEDIR}"
 
    local OPTIND
-   while getopts ":a:r:b:" o; do
+   while getopts ":a:r:i:b:" o; do
       case "${o}" in
          a)
             a=${OPTARG}
             ;;
          r)
             r=${OPTARG}
+            ;;
+         i)
+            i=${OPTARG}
             ;;
          b)
             b=${OPTARG}
@@ -110,6 +113,7 @@ menu_run_app() {
    app_base=${a}/sw
    rtl_sim_dir=${r}
    opae_base=${b}
+   opae_install=${i};
    if [ -z "$rtl_sim_dir" ]
    then
       # use default
@@ -118,7 +122,7 @@ menu_run_app() {
 }
 
 usage_regress() { 
-   echo "Usage: $0 -a <afu dir> -s <vcs|modelsim|questa> -b <opae base dir> [-r <rtl simulation dir>] [-m <EMIF_MODEL_BASIC|EMIF_MODEL_ADVANCED> memory model]" 1>&2;
+   echo "Usage: $0 -a <afu dir> -s <vcs|modelsim|questa> -b <opae base dir> [-i <opae install path>] [-r <rtl simulation dir>] [-m <EMIF_MODEL_BASIC|EMIF_MODEL_ADVANCED> memory model]" 1>&2;
    exit 1; 
 }
 
@@ -128,7 +132,7 @@ menu_regress() {
    b="${OPAE_BASEDIR}"
 
    local OPTIND
-   while getopts ":a:r:s:b:f:m:" o; do
+   while getopts ":a:r:s:b:f:i:m:" o; do
       case "${o}" in
          a)
             a=${OPTARG}
@@ -145,6 +149,9 @@ menu_regress() {
          m)
             m=${OPTARG}            
             ;;
+         i)
+            i=${OPTARG}
+            ;;
       esac
    done
    shift $((OPTIND-1))
@@ -156,13 +163,14 @@ menu_regress() {
    sim=${s};
    opae_base=${b}
    mem_model=${m};
+   opae_install=${i};
    if [ -z "$rtl_sim_dir" ]
    then
       # use default
       rtl_sim_dir=$opae_base/rtl_sim
    fi
 
-   echo "afu=$afu, rtl=$rtl, app=$app, sim=$sim, base=$opae_base mem_model=$mem_model"
+   echo "afu=$afu, rtl=$rtl, app=$app, sim=$sim, base=$opae_base mem_model=$mem_model opae_install=$opae_install"
    # mandatory args
    if [ -z "${a}" ] || [ -z "${s}" ] || [ -z "${b}" ]; then
       usage_regress;
@@ -345,9 +353,19 @@ setup_app_env() {
 }
 
 build_app() {
+   set -x
    pushd $app_base
    # Build the software application
-   make prefix=$opae_base USE_ASE=1
+   if [[ $opae_install ]]; then
+      # non-RPM flow
+      echo "Non-RPM Flow"
+      make prefix=$opae_install USE_ASE=1
+   else
+      # RPM flow
+      echo "RPM Flow"
+      make USE_ASE=1
+   fi
+
    popd
 }
 
@@ -364,7 +382,18 @@ run_app() {
    pushd $app_base
 
    # Build the software application
-   make prefix=$opae_base USE_ASE=1
+   # make prefix=$opae_base USE_ASE=1
+
+   # Build the software application
+   if [[ $opae_install ]]; then
+      # non-RPM flow
+      echo "Non-RPM Flow"
+      make prefix=$opae_install USE_ASE=1
+   else
+      # RPM flow
+      echo "RPM Flow"
+      make USE_ASE=1
+   fi
 
    # find the executable and run
    find . -type f -executable -exec {} \;

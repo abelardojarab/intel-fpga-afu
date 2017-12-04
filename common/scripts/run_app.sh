@@ -38,7 +38,7 @@ menu_run_app "$@"
 
 # If the AFU provides a setup script then use it.
 if [ -f "${afu}/hw/sim/run_app.sh" ]; then
-   "${afu}/hw/sim/run_app.sh" -a "$afu" -b "$opae_base" -r "$rtl_sim_dir"
+   "${afu}/hw/sim/run_app.sh" -a "$afu" -b "$opae_base" -r "$rtl_sim_dir" -i "$opae_install"
 else
    # There is no AFU-specific script
    run_app

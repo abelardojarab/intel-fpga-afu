@@ -2,17 +2,13 @@
 #include <string.h>
 #include <unistd.h>
 #include <uuid/uuid.h>
-#include <opae/enum.h>
-#include <opae/access.h>
-#include <opae/utils.h>
+#include <opae/fpga.h>
 #include <poll.h>
 #include <errno.h>
 
-#define MAX_USR_INTRS            4
+int usleep(unsigned);
 
 #define HELLO_ERROR_ID              "5C1EA3C4-2BFB-4E2A-ABF4-13C1E12541B0"
-#define INTR_REG                 0XA0 //0x28
-#define USR_INTR_ID_REG          0XC0 //0x30
 #define MMIO_RD_TIMEOUT_REG      0X100//0x40
 static int s_error_count = 0;
 
@@ -53,9 +49,15 @@ int main(int argc, char *argv[])
    fpga_token         afc_token;
    fpga_handle        afc_handle;
    fpga_guid          guid;
+   fpga_event_handle  port_ehandle;
+   fpga_result        res = FPGA_OK;
    uint32_t           num_matches;
-
-   fpga_result     res = FPGA_OK;
+   uint64_t           count;
+   uint64_t           val = 0;
+   pid_t              pid;
+   struct pollfd      pfd;
+   int timeout = 10000;
+   int poll_ret = 0;
 
    if (uuid_parse(HELLO_ERROR_ID, guid) < 0) {
       fprintf(stderr, "Error parsing guid '%s'\n", HELLO_ERROR_ID);
@@ -89,72 +91,61 @@ int main(int argc, char *argv[])
    ON_ERR_GOTO(res, out_close, "mapping MMIO space");
 
    printf("Running Test\n");
-
    /* Reset AFC */
    res = fpgaReset(afc_handle);
    ON_ERR_GOTO(res, out_unmap, "resetting AFC");
-      
-   struct pollfd pfd;
-   
-   /* Create event */
-   fpga_event_handle ehandle[MAX_USR_INTRS];
-   for(uint64_t usr_intr_id = 0; usr_intr_id < MAX_USR_INTRS; usr_intr_id++) {
-      res = fpgaCreateEventHandle(&ehandle[usr_intr_id]);
+ 
+   pid = fork();
+   if (pid == -1) {
+      printf("Could not create a thread to cause port error");
+      goto out_unmap;
+   } else if (pid == 0) {
+      usleep(5000000);
+      // Read from MMIO_RD_TIMEOUT register to trigger a Port Error -> Port Error IRQ
+      res = fpgaReadMMIO64(afc_handle, 0, MMIO_RD_TIMEOUT_REG, &val);
+      ON_ERR_GOTO(res, out_unmap, "doing MMIO read");
+
+      goto out_unmap;
+   } else {
+      /* Create event */
+      res = fpgaCreateEventHandle(&port_ehandle);
       ON_ERR_GOTO(res, out_destroy_handles, "error creating event handle`");
 
       /* Register user interrupt with event handle */
-      res = fpgaRegisterEvent(afc_handle, FPGA_EVENT_INTERRUPT, ehandle[usr_intr_id], usr_intr_id);
+      res = fpgaRegisterEvent(afc_handle, FPGA_EVENT_ERROR, port_ehandle, 0);
       ON_ERR_GOTO(res, out_destroy_handles, "error registering event");
-   }
-   
-   // Test if we can trigger an interrupt for each user interrupt ID
-   for(uint64_t usr_intr_id = 0; usr_intr_id < MAX_USR_INTRS; usr_intr_id++) {
-      /* Program the user interrupt id register */
-      printf("Setting user interrupt id register (Byte Offset=%08x) = %08lx\n", USR_INTR_ID_REG, usr_intr_id);
-      res = fpgaWriteMMIO64(afc_handle, 0, USR_INTR_ID_REG, usr_intr_id);
-      ON_ERR_GOTO(res, out_destroy_handles, "writing to USR_INTR_ID_REG MMIO");
-
-      /* Trigger interrupt by writing to INTR_REG */
-      printf("Setting Interrupt register (Byte Offset=%08x) = %08lx\n", INTR_REG, 1);
-      res = fpgaWriteMMIO64(afc_handle, 0, INTR_REG, 1);
-      ON_ERR_GOTO(res, out_destroy_handles, "writing to INTR_REG MMIO");
-   
+      
       /* Poll event handle*/
-      res = fpgaGetOSObjectFromEventHandle(ehandle[usr_intr_id], &pfd.fd);
+      res = fpgaGetOSObjectFromEventHandle(port_ehandle, &pfd.fd);
       ON_ERR_GOTO(res, out_destroy_handles, "getting file descriptor");
 
       pfd.events = POLLIN;            
-      res = poll(&pfd, 1, -1);
-      if(res < 0) {
+      poll_ret = poll(&pfd, 1, timeout);
+      if(poll_ret < 0) {
          fprintf( stderr, "Poll error errno = %s\n",strerror(errno));
          s_error_count += 1;
+         res = FPGA_EXCEPTION;
       } 
-      else if(res == 0) {
+      else if(poll_ret == 0) {
          fprintf( stderr, "Poll timeout \n");
          s_error_count += 1;
+         res = FPGA_EXCEPTION;
       } else {
-         printf("Poll success. Return = %d\n",res);
-         uint64_t count;
+         printf("Port interrupt occured. Return = %d\n",res);
          read(pfd.fd, &count, sizeof(count));          
       }
-   }
-   // Read from MMIO_RD_TIMEOUT register to trigger a Port Error -> Port Error IRQ
-   fpgaReadMMIO64(afc_handle, 0, MMIO_RD_TIMEOUT_REG);
 
-   /* cleanup */
-   for(uint64_t usr_intr_id = 0; usr_intr_id < MAX_USR_INTRS; usr_intr_id++) {
-      res = fpgaUnregisterEvent(afc_handle, FPGA_EVENT_INTERRUPT, ehandle[usr_intr_id]);   
+      /* cleanup */
+      res = fpgaUnregisterEvent(afc_handle, FPGA_EVENT_ERROR, port_ehandle);   
       ON_ERR_GOTO(res, out_destroy_handles, "error fpgaUnregisterEvent");
-   }
 
-   printf("Done Running Test\n");
+      printf("Done Running Test\n");
+   }
 
 /*destroy event handles*/
 out_destroy_handles:
-   for(uint64_t usr_intr_id = 0; usr_intr_id < MAX_USR_INTRS; usr_intr_id++) {
-      res = fpgaDestroyEventHandle(&ehandle[usr_intr_id]);
-      ON_ERR_GOTO(res, out_unmap, "error fpgaDestroyEventHandle");
-   }
+   res = fpgaDestroyEventHandle(&port_ehandle);
+   ON_ERR_GOTO(res, out_unmap, "error fpgaDestroyEventHandle");
    
    /* Unmap MMIO space */
 out_unmap:
@@ -183,5 +174,5 @@ out_exit:
       printf("Test FAILED!\n");
 
    return s_error_count;
-
 }
+

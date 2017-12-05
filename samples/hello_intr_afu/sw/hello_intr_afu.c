@@ -125,16 +125,17 @@ int main(int argc, char *argv[])
       ON_ERR_GOTO(res, out_destroy_handles, "getting file descriptor");
 
       pfd.events = POLLIN;            
-      res = poll(&pfd, 1, -1);
-      if(res < 0) {
+      int poll_res;
+      poll_res = poll(&pfd, 1, -1);
+      if(poll_res < 0) {
          fprintf( stderr, "Poll error errno = %s\n",strerror(errno));
          s_error_count += 1;
       } 
-      else if(res == 0) {
+      else if(poll_res == 0) {
          fprintf( stderr, "Poll timeout \n");
          s_error_count += 1;
       } else {
-         printf("Poll success. Return = %d\n",res);
+         printf("Poll success. Return = %d\n",poll_res);
          uint64_t count;
          read(pfd.fd, &count, sizeof(count));          
       }

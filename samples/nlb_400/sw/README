@@ -1,0 +1,2 @@
+This example uses samples/hello_fpga.c from the OPAE SDK to
+drive the FPGA.

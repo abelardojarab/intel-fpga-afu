@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
 	// Access AFU user scratch-pad register
 	res = fpgaReadMMIO64(afc_handle, 0, SCRATCH_REG, &data);
 	ON_ERR_GOTO(res, out_close, "reading from MMIO");
-	printf("Reading Scratch Register (Byte Offset=%08lx) = %08lx\n", SCRATCH_REG, data);
+	printf("Reading Scratch Register (Byte Offset=%08x) = %08lx\n", SCRATCH_REG, data);
 	
 	printf("MMIO Write to Scratch Register (Byte Offset=%08x) = %08lx\n", SCRATCH_REG, SCRATCH_VALUE);
 	res = fpgaWriteMMIO64(afc_handle, 0, SCRATCH_REG, SCRATCH_VALUE);
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 	ASSERT_GOTO(data == SCRATCH_VALUE, out_close, "MMIO mismatched expected result");
 	
 	// Set Scratch Register to 0
-	printf("Setting Scratch Register (Byte Offset=%08x) = %08lx\n", SCRATCH_REG, SCRATCH_RESET);
+	printf("Setting Scratch Register (Byte Offset=%08x) = %08x\n", SCRATCH_REG, SCRATCH_RESET);
 	res = fpgaWriteMMIO64(afc_handle, 0, SCRATCH_REG, SCRATCH_RESET);
 	ON_ERR_GOTO(res, out_close, "writing to MMIO");
 	res = fpgaReadMMIO64(afc_handle, 0, SCRATCH_REG, &data);
@@ -183,7 +183,6 @@ int main(int argc, char *argv[])
 	printf("Done Running Test\n");
 
 	/* Unmap MMIO space */
-out_unmap:
 	res = fpgaUnmapMMIO(afc_handle, 0);
 	ON_ERR_GOTO(res, out_close, "unmapping MMIO space");
 	

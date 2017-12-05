@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
       ON_ERR_GOTO(res, out_destroy_handles, "writing to USR_INTR_ID_REG MMIO");
 
       /* Trigger interrupt by writing to INTR_REG */
-      printf("Setting Interrupt register (Byte Offset=%08x) = %08lx\n", INTR_REG, 1);
+      printf("Setting Interrupt register (Byte Offset=%08x) = %08x\n", INTR_REG, 1);
       res = fpgaWriteMMIO64(afc_handle, 0, INTR_REG, 1);
       ON_ERR_GOTO(res, out_destroy_handles, "writing to INTR_REG MMIO");
    

@@ -8,9 +8,7 @@ endif
 
 LDFLAGS += -luuid
 
-CFLAGS += -Wall -Wno-unknown-pragmas
-#TODO: fix warnings
-#CFLAGS += -Werror
+CFLAGS += -Wall -Wno-unknown-pragmas -Werror
 
 ifeq ($(USE_ASE),1)
 	LDFLAGS += -lopae-c-ase

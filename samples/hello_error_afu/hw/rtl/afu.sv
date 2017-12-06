@@ -13,11 +13,13 @@
 // ***************************************************************************
 //
 // Module Name:         afu.sv
-// Project:             Interrupt AFU
+// Project:             Error AFU
 // Modified:            PSG - ADAPT
-// Description:         Simple AFU that demonstrates user-generated interrupt.
+// Description:         Error AFU to test violations in CCI-P and AVLMM and observe 
+//                      port errors and port irq generation.
 //                      Write to AFU CSR word address 0x28 (byte address 0xA0)
 //                      generates a CCIP interrupt request packet
+//                      Read from MMIO 0x40 to observe an MMIO RD Timeout Failure
 // 
 import ccip_if_pkg::*;
 

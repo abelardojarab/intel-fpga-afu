@@ -1,0 +1,4 @@
+ccip_std_afu.sv
+afu.sv
+../par/user_clock_test.sdc
+user_clock_test.json

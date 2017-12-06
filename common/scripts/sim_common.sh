@@ -2,13 +2,13 @@
 # script to setup common variables
 set -e
 
-#get exact script path
+# Get exact script path
 COMMON_SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
-#get director of script path
+# Get directory of script path
 COMMON_SCRIPT_DIR_PATH="$(dirname $COMMON_SCRIPT_PATH)"
 
 usage_setup_sim() { 
-   echo "Usage: $0 -a <afu> -s <vcs|modelsim|questa> -b <opae base dir> [-r <rtl simulation dir>]" 1>&2;
+   echo "Usage: $0 -a <afu dir> -s <vcs|modelsim|questa> -b <opae base dir> [-r <rtl simulation dir>] [-m <EMIF_MODEL_BASIC|EMIF_MODEL_ADVANCED> memory model]" 1>&2;
    exit 1;
 }
 
@@ -41,10 +41,9 @@ menu_setup_sim() {
             b=${OPTARG}            
          ;;    
         
-         # optional mode argument for internal testing
          m)
             m=${OPTARG}            
-            ;;
+         ;;
       esac
    done
    shift $((OPTIND-1))
@@ -55,10 +54,11 @@ menu_setup_sim() {
    fi
 
    afu=${a}
+   rtl=${afu}/hw/rtl
    rtl_sim_dir=${r}
    sim=${s}
    opae_base=${b}
-   test_mode=${m}
+   mem_model=${m}
    if [ -z "$rtl_sim_dir" ]
    then
       # use default
@@ -69,10 +69,15 @@ menu_setup_sim() {
       echo "Supported simulators are vcs, modelsim and questa. You requsted $sim"
       usage_setup_sim;
    fi
+
+   if [[ ! $mem_model ]]; then
+      # use default
+      mem_model=EMIF_MODEL_BASIC
+   fi
 }
 
 usage_run_app() { 
-   echo "Usage: $0 -a <application source> -r <rtl simulation dir> [-b <opae base dir>]" 1>&2;
+   echo "Usage: $0 -a <afu dir> -b <opae base dir> [-i <opae install path>] [-r <rtl simulation dir>]" 1>&2;
    exit 1; 
 }
 
@@ -81,13 +86,16 @@ menu_run_app() {
    b="${OPAE_BASEDIR}"
 
    local OPTIND
-   while getopts ":a:r:b:" o; do
+   while getopts ":a:r:i:b:" o; do
       case "${o}" in
          a)
             a=${OPTARG}
             ;;
          r)
             r=${OPTARG}
+            ;;
+         i)
+            i=${OPTARG}
             ;;
          b)
             b=${OPTARG}
@@ -101,9 +109,11 @@ menu_run_app() {
       usage_run_app;
    fi
 
-   app_base=${a}
+   afu=${a}
+   app_base=${a}/sw
    rtl_sim_dir=${r}
    opae_base=${b}
+   opae_install=${i};
    if [ -z "$rtl_sim_dir" ]
    then
       # use default
@@ -112,7 +122,7 @@ menu_run_app() {
 }
 
 usage_regress() { 
-   echo "Usage: $0 -f <afu source> -a <application source> -r <rtl simulation dir> [-s <vcs|modelsim|questa>] [-b <opae base dir>]" 1>&2;
+   echo "Usage: $0 -a <afu dir> -s <vcs|modelsim|questa> -b <opae base dir> [-i <opae install path>] [-r <rtl simulation dir>] [-m <EMIF_MODEL_BASIC|EMIF_MODEL_ADVANCED> memory model]" 1>&2;
    exit 1; 
 }
 
@@ -122,7 +132,7 @@ menu_regress() {
    b="${OPAE_BASEDIR}"
 
    local OPTIND
-   while getopts ":a:r:s:b:f:m:" o; do
+   while getopts ":a:r:s:b:f:i:m:" o; do
       case "${o}" in
          a)
             a=${OPTARG}
@@ -135,39 +145,45 @@ menu_regress() {
             ;;
          b)
             b=${OPTARG}            
-         ;;    
-         f)
-            f=${OPTARG}            
-         ;;    
-         # optional mode argument for internal testing
+            ;;
          m)
             m=${OPTARG}            
+            ;;
+         i)
+            i=${OPTARG}
             ;;
       esac
    done
    shift $((OPTIND-1))
 
-   afu=${f};
-   app=${a};
+   afu=${a}
+   rtl=${a}/hw/rtl
+   app=${a}/sw
    rtl_sim_dir=${r}
    sim=${s};
    opae_base=${b}
-   test_mode=${m};
+   mem_model=${m};
+   opae_install=${i};
    if [ -z "$rtl_sim_dir" ]
    then
       # use default
       rtl_sim_dir=$opae_base/rtl_sim
    fi
 
-   echo "afu=$afu, app=$app, sim=$sim, base=$opae_base"
+   echo "afu=$afu, rtl=$rtl, app=$app, sim=$sim, base=$opae_base mem_model=$mem_model opae_install=$opae_install"
    # mandatory args
-   if [ -z "${a}" ] || [ -z "${s}" ] || [ -z "${f}" ] || [ -z "${b}" ]; then
+   if [ -z "${a}" ] || [ -z "${s}" ] || [ -z "${b}" ]; then
       usage_regress;
    fi
 
    if [[ "$sim" != "vcs" ]] && [[ "$sim" != "questa" ]] && [[ "$sim" != "modelsim" ]]   ; then
       echo "Supported simulators are VCS, Modelsim and Questa. You specified $sim"
       usage_regress;
+   fi
+
+   if [[ ! $mem_model ]]; then
+      # use default
+      mem_model=EMIF_MODEL_BASIC
    fi
 }
 
@@ -191,7 +207,7 @@ setup_sim_dir() {
    sim_afu_path=$rtl_sim_dir/sim_afu
    rm -rf $sim_afu_path
    # copy afu sources here (except ccip_if_pkg.sv which is already included in ASE RTL source)
-   rsync -a $afu/ $sim_afu_path/ --exclude ccip_if_pkg.sv --exclude green_top.sv
+   rsync -a $rtl/ $sim_afu_path/ --exclude ccip_if_pkg.sv --exclude green_top.sv
 }
 
 setup_quartus_home() {
@@ -280,7 +296,6 @@ setup_ase() {
       # add non-standard text macros (if any)
       # specify them using add_text_macros  
       echo "SNPS_VLOGAN_OPT+= $add_macros" >> ase_sources.mk      
-		echo "OPAE_BASEDIR=$opae_base" >> ase_sources.mk
    elif [ "$sim" == "modelsim" ] || [ "$sim" == "questa" ] ; then
       get_mti_home
 
@@ -294,12 +309,13 @@ setup_ase() {
       # add non-standard text macros (if any)
       # specify them using add_text_macros      
       echo "MENT_VSIM_OPT += $add_macros" >> ase_sources.mk
-		echo "OPAE_BASEDIR=$opae_base" >> ase_sources.mk
    else
       echo "Unknown Simulator $sim"
       exit 1;
    fi
 
+   echo "ASE_DISCRETE_EMIF_MODEL=$mem_model" >> ase_sources.mk
+   echo "OPAE_BASEDIR=$opae_base" >> ase_sources.mk
    echo "ASE configured in `pwd`"
 
    popd
@@ -322,7 +338,7 @@ wait_for_sim_ready() {
    while [ ! -f $ASE_READY_FILE ]
    do
       echo "Waiting for simulation to start..."
-      sleep 1
+      sleep 5
    done
    echo "simulation is ready!"
 }
@@ -331,15 +347,25 @@ setup_app_env() {
    # setup env variables
    export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$opae_base/build/lib
    export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$app_base
-   export ASE_WORKDIR=$rtl_sim_dir/work/
+   export ASE_WORKDIR=`readlink -m ${rtl_sim_dir}/work`
    echo "ASE workdir is $ASE_WORKDIR"
 
 }
 
 build_app() {
+   set -x
    pushd $app_base
    # Build the software application
-   make prefix=$opae_base USE_ASE=1
+   if [[ $opae_install ]]; then
+      # non-RPM flow
+      echo "Non-RPM Flow"
+      make prefix=$opae_install USE_ASE=1
+   else
+      # RPM flow
+      echo "RPM Flow"
+      make USE_ASE=1
+   fi
+
    popd
 }
 
@@ -356,7 +382,18 @@ run_app() {
    pushd $app_base
 
    # Build the software application
-   make prefix=$opae_base USE_ASE=1
+   # make prefix=$opae_base USE_ASE=1
+
+   # Build the software application
+   if [[ $opae_install ]]; then
+      # non-RPM flow
+      echo "Non-RPM Flow"
+      make prefix=$opae_install USE_ASE=1
+   else
+      # RPM flow
+      echo "RPM Flow"
+      make USE_ASE=1
+   fi
 
    # find the executable and run
    find . -type f -executable -exec {} \;

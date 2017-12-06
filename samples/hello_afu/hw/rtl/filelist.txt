@@ -1,0 +1,4 @@
+afu.sv
+ccip_interface_reg.sv
+ccip_std_afu.sv
+hello_afu.json

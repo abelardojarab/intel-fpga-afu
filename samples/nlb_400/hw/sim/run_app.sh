@@ -41,5 +41,12 @@ wait_for_sim_ready
 setup_app_env
 
 # nlb is driven by samples/hello_fpga.c from the OPAE SDK
-gcc -g -o $app_base/hello_fpga $opae_base/samples/hello_fpga.c -L $opae_base/build/lib/ -I $opae_base/common/include -luuid -lpthread -lopae-c-ase -std=c99
+app_base=$(dirname $app_base)
+if [[ $opae_install ]]; then
+   # non-RPM flow
+   gcc -g -o $app_base/hello_fpga $opae_base/samples/hello_fpga.c -L $opae_base/build/lib/ -I $opae_base/common/include -luuid -lpthread -lopae-c-ase -std=c99
+else
+   # RPM flow
+   gcc -g -o $app_base/hello_fpga -rdynamic -ljson-c -luuid -lpthread -lopae-c-ase -std=gnu99 -lm -Wl -rtpath $opae_base/samples/hello_fpga.c
+fi
 exec_app

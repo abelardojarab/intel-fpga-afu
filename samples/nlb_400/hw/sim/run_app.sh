@@ -43,10 +43,10 @@ setup_app_env
 # nlb is driven by samples/hello_fpga.c from the OPAE SDK
 app_base=$(dirname $app_base)
 if [[ $opae_install ]]; then
-   #non rpm flow
+   # non rpm flow
    gcc -g -o $app_base/hello_fpga $opae_base/samples/hello_fpga.c -L $opae_install/lib/ -I $opae_install/include -luuid -lpthread -lopae-c-ase -std=gnu99
 else
-   #only for rpm flow, have to do a check for non rpm flow and have another gcc command.
+   # rpm flow
    gcc -o $app_base/hello_fpga -luuid -lpthread -lopae-c-ase -std=gnu99  $opae_base/samples/hello_fpga.c
 fi
 exec_app

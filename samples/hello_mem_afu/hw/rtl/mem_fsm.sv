@@ -12,6 +12,15 @@
 // express written permission.
 // ***************************************************************************
 // TODO future improvements move sticky registers to HSL module implmentation 
+
+typedef enum logic[2:0] { IDLE,
+                          TEST_WRITE,
+                          TEST_READ, 
+                          RD_REQ,
+                          RD_RSP,
+                          WR_REQ,
+                          WR_RSP } state_t;
+
 module mem_fsm #(
   parameter DDR_ADDR_WIDTH=26
 ) (     
@@ -20,7 +29,7 @@ module mem_fsm #(
   input	pck_cp2af_softReset, // CCI interface reset. ACTIVE HIGH
 
   // - AMM Master Signals signals 
-	output logic [63:0]     avs_writedata,
+  output logic [63:0]     avs_writedata,
   input	 logic [63:0]     avs_readdata,
   output logic [DDR_ADDR_WIDTH-1:0]     avs_address,
   input	 logic	          avs_waitrequest,
@@ -48,18 +57,15 @@ module mem_fsm #(
   output logic [1:0]     rdwr_done, 
   output logic [4:0]     rdwr_status, 
   input                  rdwr_reset,
+  output state_t         fsm_state,
   output logic           ready_for_sw_cmd
 );
-parameter ADDRESS_MAX_BIT = 6;
-typedef enum logic[2:0] { IDLE,
-                          TEST_WRITE,
-                          TEST_READ, 
-                          RD_REQ,
-                          RD_RSP,
-                          WR_REQ,
-                          WR_RSP } state_t;
 
-   state_t        state;
+parameter ADDRESS_MAX_BIT = 6;
+
+   state_t state;
+   assign fsm_state = state;
+
    logic [32:0] address;
    assign avs_burstcount = avm_burstcount;
 //   assign  avs_burstcount = burst_count;
@@ -67,13 +73,9 @@ typedef enum logic[2:0] { IDLE,
    logic [10:0] burstcount;
    logic avs_readdatavalid_1 = 0;
    logic [1:0] avs_response_1;
-`ifdef SIM_MODE
-  assign avs_address = mem_testmode[0]? {'0, address[ADDRESS_MAX_BIT-1:0]}: avm_address;
-  assign avs_writedata = (avm_burstcount >1)?burstcount : (mem_testmode[0])? {'0, address[ADDRESS_MAX_BIT-1:0]}: avm_writedata ;// avm_writedata; //{'0, address[ADDRESS_MAX_BIT-1:0]};
-`else
+
   assign avs_address = mem_testmode? {'0, address[ADDRESS_MAX_BIT-1:0]}: avm_address;
-  assign avs_writedata = avm_writedata;
-`endif
+  assign avs_writedata = {burstcount , 53'(avm_writedata)};
 
 assign avm_response = '0;
 always@(posedge pClk) begin
@@ -87,121 +89,132 @@ always@(posedge pClk) begin
     burstcount     <= 1;
     ready_for_sw_cmd <= 0;
   end
-  else begin 
+  else begin
     case(state)
-      IDLE: begin 
+      IDLE: begin
         ready_for_sw_cmd <= 1;
-        if (mem_testmode & ~addr_test_done)begin    
+        if (mem_testmode & ~addr_test_done)begin
           avs_write <= 1;
           state <= TEST_WRITE;
           ready_for_sw_cmd <= 0;
-        end else if (avm_write) begin 
+        end else if (avm_write) begin
           avs_write <= 1;
           state <= WR_REQ;
           ready_for_sw_cmd <= 0;
-        end else if (avm_read) begin 
+        end else if (avm_read) begin
           avs_read <= 1;
           state <= RD_REQ;
           ready_for_sw_cmd <= 0;
-        end 
-      end
-
-      TEST_WRITE: begin 
-        if (address == {ADDRESS_MAX_BIT{1'b1}}) begin  //) begin //[ADDRESS_MAX_BIT] == {ADDRESS_MAX_BIT-1{1'b1}}) begin 
-          state <= TEST_READ;
-          avs_write <= 0; 
-          avs_read <= 1;
-          address <= 0;
-        end 
-        else if (~avs_waitrequest) begin  
-          address <= address + 1;
-          avs_write <= 1;
-        end 
-        else 
-          avs_write <= 0;
         end
-
-      TEST_READ: begin 
-        if (address == {ADDRESS_MAX_BIT{1'b1}} & ~avs_waitrequest) begin 
-          state <= IDLE;
-          avs_read <= 0; 
-          addr_test_done <= 1;
-        end else if (avs_readdatavalid) begin 
-          address <= address + 1;
-          avs_read <= 1;
-        end else 
-          avs_read <= 0;
       end
 
-      WR_REQ: begin //AVL MM Posted Write 
-        if (avs_burstcount == burstcount ) begin 
-          state <= WR_RSP;
-          avs_write <= 0; 
-          burstcount <= 1;
-        end else
-          burstcount++;
+      TEST_WRITE: begin
+        if (~avs_waitrequest) begin
+          if (address == {ADDRESS_MAX_BIT{1'b1}}) begin  //) begin //[ADDRESS_MAX_BIT] == {ADDRESS_MAX_BIT-1{1'b1}}) begin
+            state <= TEST_READ;
+            avs_write <= 0;
+            avs_read <= 1;
+            address <= 0;
+          end
+          else begin
+            address <= address + 1;
+            avs_write <= 1;
+          end
+        end
       end
 
-      WR_RSP: begin // wait for write response  
-        state <= IDLE;
-      end 
-
-      RD_REQ: begin // AVL MM Read non-posted
-        state <= RD_RSP;
-        avs_read <= 0; 
-      end
-
-      RD_RSP: begin 
-        if (avs_readdatavalid) begin 
-          if (burstcount == avs_burstcount)
+      TEST_READ: begin
+        if (~avs_waitrequest) begin
+          if (address == {ADDRESS_MAX_BIT{1'b1}}) begin
             state <= IDLE;
-          else 
+            avs_read <= 0;
+            addr_test_done <= 1;
+          end else if (avs_readdatavalid) begin
+            address <= address + 1;
+            avs_read <= 1;
+          end
+          else begin
+            avs_read <= 0;
+          end
+        end
+      end
+
+      WR_REQ: begin //AVL MM Posted Write
+        if (~avs_waitrequest) begin
+          if (avs_burstcount == burstcount ) begin
+            state <= WR_RSP;
+            avs_write <= 0;
+            burstcount <= 1;
+          end else
             burstcount++;
         end
-      end 
+      end
+
+      WR_RSP: begin // wait for write response
+        state <= IDLE;
+      end
+
+      RD_REQ: begin // AVL MM Read non-posted
+        if (~avs_waitrequest) begin
+          state <= RD_RSP;
+          avs_read <= 0;
+        end
+      end
+
+      RD_RSP: begin
+        if (avs_readdatavalid) begin
+          if (burstcount == avs_burstcount) begin
+            state <= IDLE;
+            burstcount <= 1;
+          end
+          else begin
+            burstcount++;
+          end
+        end
+      end
     endcase
   end // end else pck_cp2af_softReset
 end // posedge pClk
-    
-always@(posedge pClk) begin 
-  avs_readdatavalid_1 <= avs_readdatavalid; 
+
+always@(posedge pClk) begin
+  avs_readdatavalid_1 <= avs_readdatavalid;
 
   if (avs_readdatavalid)
     avm_readdata <= avs_readdata;
 
-  if(pck_cp2af_softReset) 
+  if(pck_cp2af_softReset)
     addr_test_status <= 0;
-  else begin 
-    if (avs_readdatavalid & addr_test_done) 
+  else begin
+    if (avs_readdatavalid & addr_test_done)
       addr_test_status[1:0] <= 0;//avs_response;
     else if (avs_readdatavalid)
-      if (avs_readdatavalid_1 & avm_readdata == avm_writedata)
-        if (state == TEST_READ) 
+      if (avs_readdatavalid_1 & (avm_readdata == avm_writedata))
+        if (state == TEST_READ)
           addr_test_status[2] <= 1;
-        if (state == TEST_WRITE) 
+        if (state == TEST_WRITE)
           addr_test_status[2] <= 0;
-  end 
+  end
 end
 
-always@(posedge pClk) begin 
-  if (rdwr_reset & state != RD_RSP) begin 
-    rdwr_status <= '0; 
+always@(posedge pClk) begin
+  if (rdwr_reset & (state != RD_RSP)) begin
+    rdwr_status <= '0;
     rdwr_done   <= '0;
-  end 
-  else if (state == WR_RSP) begin 
+  end
+  else if (state == WR_RSP) begin
     rdwr_status[1:0] <= 0;//avs_response;
     rdwr_done[0] <= 1;
-  end 
-  else if (state == RD_RSP & avs_readdatavalid == 1) begin 
+  end
+  else if ((state == RD_RSP) & (avs_readdatavalid == 1)) begin
     if(avs_burstcount == burstcount)
       rdwr_done[1] <= 1;
       if (~rdwr_status[3])
         rdwr_status[3:2] <= 0;//avs_response;
-  end 
-end 
+  end
+end
 
 always@(posedge pClk) begin
-  if (pck_cp2af_softReset) 
+  if (pck_cp2af_softReset)
     max_reads <= 0;
   else  if (avs_read == 1 & avs_readdatavalid == 0 & ~avs_waitrequest)
     max_reads++;

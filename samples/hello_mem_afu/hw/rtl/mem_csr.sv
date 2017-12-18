@@ -42,6 +42,7 @@ module mem_csr #(
   input [1:0]            rdwr_done,  
   input [4:0]            rdwr_status, 
   output reg             rdwr_reset,
+  input [2:0]            fsm_state,
   output reg             mem_bank_select,
   input wire             ready_for_sw_cmd
 );
@@ -143,7 +144,13 @@ always@(posedge Clk_400) begin
           MEM_ADDR_TEST_STATUS: af2cp_sTxPort.c2.data <= {'d0, addr_test_done,3'd0, addr_test_status}; 
           READY_FOR_SW_CMD:     af2cp_sTxPort.c2.data <= ready_for_sw_cmd;
           MEM_RDWR_STATUS: begin 
-            af2cp_sTxPort.c2.data <= {49'd0, rdwr_done[1],rdwr_status[3:2],1'b0, rdwr_done[0],rdwr_status[1:0]};
+            af2cp_sTxPort.c2.data <= {54'd0,
+                                      fsm_state,         // 9:7
+                                      rdwr_done[1],      //   6
+                                      rdwr_status[3:2],  // 5:4
+                                      1'b0,              //   3
+                                      rdwr_done[0],	 //   2
+                                      rdwr_status[1:0]}; // 1:0
             rdwr_reset     <= 1;
           end 
 		      MEM_BANK_SELECT:  af2cp_sTxPort.c2.data <= mem_bank_select;

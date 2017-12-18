@@ -1,5 +1,5 @@
 LDFLAGS ?=
-CFLAGS = -g -O2 -std=c99 -fPIC
+CFLAGS = -g -O2 -fPIC
 
 ifdef prefix
 CFLAGS += -I$(prefix)/include

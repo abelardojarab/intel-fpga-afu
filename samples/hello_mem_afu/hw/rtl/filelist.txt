@@ -1,3 +1,5 @@
+hello_mem_afu.json
+
 altera_std_synchronizer_nocut.v
 altera_avalon_dc_fifo.v
 altera_avalon_mm_clock_crossing_bridge.v

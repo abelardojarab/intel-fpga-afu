@@ -1,7 +1,7 @@
 include ../../../bcommon/common.mk
 
 AFU.NAME := memspeed
-AFU.PLATFORMS := dcp_1.0-skx dcp_1.0-rc dcp_1.0-insp
+AFU.PLATFORMS := dcp_1.0-rc dcp_1.0-insp
 AFU.VARIANTS := skx_fpga_dcp_ddr
 
 AFU_AOC_OPTIONS ?=

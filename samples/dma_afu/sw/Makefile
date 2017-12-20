@@ -1,12 +1,14 @@
+include ../../sw_makefile.common
+
 LDFLAGS ?=
-CFLAGS = -g -O2 -fPIC 
+CFLAGS += -g -O2
 
 ifdef prefix
 CFLAGS += -I$(prefix)/include
 LDFLAGS += -L$(prefix)/lib
 endif
 
-CFLAGS += -Wall -Werror -Wno-unknown-pragmas
+#CFLAGS += -Wall -Werror -Wno-unknown-pragmas
 LDFLAGS += -luuid
 LDFLAGS += -lsafestr
 

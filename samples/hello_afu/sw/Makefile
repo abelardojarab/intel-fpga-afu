@@ -1,5 +1,7 @@
-LDFLAGS ?=
-CFLAGS = -g -O2 -std=c99
+include ../../sw_makefile.common
+
+#LDFLAGS ?=
+CFLAGS += -g -O2 -std=c99
 
 ifdef prefix
 CFLAGS += -I$(prefix)/include

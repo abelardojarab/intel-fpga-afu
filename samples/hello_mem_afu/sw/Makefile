@@ -1,5 +1,8 @@
+include ../../sw_makefile.common
+
+
 LDFLAGS ?=
-CFLAGS = -g -O2 -fPIC
+CFLAGS += -g -O2 -fPIC
 
 ifdef prefix
 CFLAGS += -I$(prefix)/include

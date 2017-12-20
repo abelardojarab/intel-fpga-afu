@@ -1,15 +1,27 @@
-SUBDIRS := nlb_400 hello_afu dma_afu user_clock_test
-CLEAN_SUBDIRS := $(addprefix clean-,$(SUBDIRS))
+############################################################
+# Makefile setting required to comply with SDL
+############################################################
 
-.PHONY: all $(SUBDIRS)
-all: $(SUBDIRS)
+# stack execution protection
+LDFLAGS +="-z noexecstack"
 
-$(SUBDIRS):
-	$(MAKE) -C $@
+# data relocation and projection
+LDFLAGS +="-z relro -z now"
 
-.PHONY: clean $(CLEAN_SUBDIRS)
-clean: $(CLEAN_SUBDIRS)
+# stack buffer overrun detection
+# Note that CentOS 7 has gcc 4.8 by default.  When we switch
+# to a system with gcc 4.9 or newer this should be changed to
+# CFLAGS="-fstack-protector-strong"
+CFLAGS +="-fstack-protector"
 
-$(CLEAN_SUBDIRS):
-	$(MAKE) -C $(subst clean-,,$@) clean
+# Position independent execution
+CFLAGS +="-fPIE -fPIC"
+LDFLAGS +="-pie"
 
+# fortify source
+CFLAGS="-O2 -D_FORTIFY_SOURCE=2"
+
+# format string vulnerabilities
+CFLAGS="-Wformat -Wformat-security"
+
+############################################################

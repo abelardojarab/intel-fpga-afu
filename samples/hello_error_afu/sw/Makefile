@@ -1,5 +1,6 @@
-LDFLAGS ?=
-CFLAGS = -g -O2 -std=c99
+include ../../common_sw.mk
+
+CFLAGS += -g -O2 -std=c99
 
 ifdef prefix
 CFLAGS += -I$(prefix)/include

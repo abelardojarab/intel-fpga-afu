@@ -132,7 +132,11 @@ int main(int argc, char *argv[])
          res = FPGA_EXCEPTION;
       } else {
          printf("Port interrupt occured. Return = %d\n",res);
-         read(pfd.fd, &count, sizeof(count));          
+         ssize_t bytes_read = read(pfd.fd, &count, sizeof(count));
+         if(bytes_read <= 0) {
+            fprintf( stderr, "read error: %s\n", bytes_read < 0 ?
+               strerror(errno) : "zero bytes read");
+         }
       }
 
       /* cleanup */

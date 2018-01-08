@@ -69,7 +69,7 @@ static int s_error_count = 0;
  */
 #define ASSERT_GOTO(condition, label, desc)                    \
 	do {                                       \
-		if (condition == 0) {            \
+		if ((condition) == 0) {            \
 			fprintf(stderr, "Error %s\n", desc); \
 			s_error_count += 1; \
 			goto label;                \

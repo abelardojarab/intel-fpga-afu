@@ -1,5 +1,6 @@
-LDFLAGS ?=
-CFLAGS = -g -O2 -std=c99
+include ../../common_sw.mk
+
+CFLAGS += -g -O2 -std=c99
 
 ifdef prefix
 CFLAGS += -I$(prefix)/include
@@ -9,8 +10,6 @@ endif
 LDFLAGS += -luuid
 
 CFLAGS += -Wall -Wno-unknown-pragmas
-#TODO: fix warnings
-#CFLAGS += -Werror
 
 ifeq ($(USE_ASE),1)
 	LDFLAGS += -lopae-c-ase

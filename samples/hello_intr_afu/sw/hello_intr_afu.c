@@ -137,7 +137,11 @@ int main(int argc, char *argv[])
       } else {
          printf("Poll success. Return = %d\n",poll_res);
          uint64_t count;
-         read(pfd.fd, &count, sizeof(count));          
+         ssize_t bytes_read = read(pfd.fd, &count, sizeof(count));          
+         if(bytes_read <= 0) {
+            fprintf( stderr, "read error: %s\n", bytes_read < 0 ?
+               strerror(errno) : "zero bytes read");
+         }
       }
    }
    /* cleanup */

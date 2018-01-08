@@ -1,4 +1,4 @@
-include ../../sw_makefile.common
+include ../../common_sw.mk
 
 LDFLAGS ?=
 CFLAGS += -g -O2
@@ -31,7 +31,7 @@ fpga_dma_test.o: fpga_dma_test.c
 	gcc $(CFLAGS) -o $@ -c $^ 
 
 fpga_dma.so: fpga_dma.o
-	gcc $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
+	gcc $(CFLAGS)  -o $@ $^ $(LDFLAGS) -shared
 
 fpga_dma.o: fpga_dma.c
 	gcc $(CFLAGS) -c -o $@ $^

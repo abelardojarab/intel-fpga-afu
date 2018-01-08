@@ -1,7 +1,5 @@
-include ../../sw_makefile.common
+include ../../common_sw.mk
 
-
-LDFLAGS ?=
 CFLAGS += -g -O2 -fPIC
 
 ifdef prefix

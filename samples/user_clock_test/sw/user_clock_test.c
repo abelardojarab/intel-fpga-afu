@@ -111,7 +111,6 @@ int main(int argc, char *argv[])
 	fpga_handle        afc_handle;
 	fpga_guid          guid;
 	uint32_t           num_matches;
-	uint64_t *mmio_ptr   = NULL;
 	uint64_t data = 0;
 
 	fpga_result     res = FPGA_OK;
@@ -205,7 +204,6 @@ int main(int argc, char *argv[])
 	printf("Done Running Test\n");
 
 	/* Unmap MMIO space */
-out_unmap:
 	res = fpgaUnmapMMIO(afc_handle, 0);
 	ON_ERR_GOTO(res, out_close, "unmapping MMIO space");
 	

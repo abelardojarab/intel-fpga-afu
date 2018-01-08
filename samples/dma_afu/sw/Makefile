@@ -1,6 +1,5 @@
 include ../../common_sw.mk
 
-LDFLAGS ?=
 CFLAGS += -g -O2
 
 ifdef prefix

@@ -84,7 +84,7 @@ rtl_src_config --abs --sim $sim_afu_path/filelist.txt | grep -v 'json$' > $rtl_s
 pushd $rtl_sim_dir
 
 # run ase make
-make platform=ASE_PLATFORM_DCP
+make platform=ASE_PLATFORM_DCP OPAE_BASEDIR=$opae_base
 make sim
 
 popd

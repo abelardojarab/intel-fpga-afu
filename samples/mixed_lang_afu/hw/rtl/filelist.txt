@@ -1,0 +1,5 @@
+reg_1x64.vhd
+afu.sv
+ccip_interface_reg.sv
+ccip_std_afu.sv
+mixed_lang_afu.json

@@ -28,25 +28,11 @@
 // ***************************************************************************
 //
 // Module Name:         afu.sv
-// Project:             Hello AFU
+// Project:             Mixed Language AFU
 // Modified:            PSG - ADAPT
-// Description:         Hello AFU supports MMIO Writes and Reads for the DCP 1.0 Release.
-//
-// Hello_AFU is provided as as starting point for developing AFUs with the dcp_1.0 release for MMIO
-// Writes and Reads.
-//
-// It is strongly recommended:
-// - register all AFU inputs and outputs
-// - output registers should be initialized with a reset
-// - Host Writes and Reads must be sent on Virtual Channel (VC): VH0 - PCIe0 link
-// - MMIO addressing must be QuardWord Aligned (Quadword = 8 bytes)
-// - AFU_ID must be re-generated for new AFUs.
-//
-// Please see the CCI-P specification for more information about the CCI-P interfaces.
-// AFU template provides 4 AFU CSR registers required by the CCI-P protocol(see
-// specification for more information) and a scratch register to issue MMIO Writes and Reads.
-//
-// Scratch_Reg[63:0] @ Byte Address 0x0080 is provided to test MMIO Reads and Writes to the AFU.
+// Description:         Mixed Language AFU illustrates the use of mixed-language design
+//                      involving Verilog and VHDL.
+//                      Supports MMIO Writes and Reads for the DCP 1.0 Release.
 //
 import ccip_if_pkg::*;
 
@@ -84,7 +70,6 @@ module afu (
         localparam MIXED_LANG_AFU_ID_H = 64'h850A_DCC2_6CEB_4B22;
         localparam MIXED_LANG_AFU_ID_L = 64'h9722_D433_75B6_1C66;
 
-//        logic  [63:0] scratch_reg = 0;
 	logic scratch_en;
 	wire [63:0] reg_out;
 
@@ -102,16 +87,9 @@ module afu (
                 af2cp_sTxPort.c2.hdr        <= '0;
                 af2cp_sTxPort.c2.data       <= '0;
                 af2cp_sTxPort.c2.mmioRdValid <= '0;
-                //scratch_reg    <= '0;
             end
             else begin
                 af2cp_sTxPort.c2.mmioRdValid <= 0;
-                // set the registers on MMIO write request
-                // these are user-defined AFU registers at offset 0x40 and 0x41
-                //if(cp2af_sRxPort.c0.mmioWrValid == 1)
-                  //  case(mmioHdr.address)
-                  //      16'h0020: scratch_reg <= cp2af_sRxPort.c0.data[63:0];
-                  //  endcase
               // serve MMIO read requests
               if(cp2af_sRxPort.c0.mmioRdValid == 1) begin
                   af2cp_sTxPort.c2.hdr.tid <= mmioHdr.tid; // copy TID
@@ -131,7 +109,6 @@ module afu (
                       16'h0004: af2cp_sTxPort.c2.data <= MIXED_LANG_AFU_ID_H; // afu id hi
                       16'h0006: af2cp_sTxPort.c2.data <= 64'h0; // next AFU
                       16'h0008: af2cp_sTxPort.c2.data <= 64'h0; // reserved
-                      //16'h0020: af2cp_sTxPort.c2.data <= scratch_reg; // Scratch Register
                       16'h0020: af2cp_sTxPort.c2.data <= reg_out; // Scratch Register
                       default:  af2cp_sTxPort.c2.data <= 64'h0;
                   endcase

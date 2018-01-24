@@ -36,11 +36,7 @@ module afu #(
 	)
 	(
 	// ---------------------------global signals-------------------------------------------------
-        input	Clk_400,	  //              in    std_logic;           Core clock. CCI interface is synchronous to this clock.
-		input pClkDiv2,
-		input pClkDiv4,
-		input uClk_usr,
-		input uClk_usrDiv2,
+        input	afu_clk,	  //              in    std_logic;           Core clock. CCI interface is synchronous to this clock.
         input	reset,	  //              in    std_logic;           CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH
         
         
@@ -228,12 +224,12 @@ module afu #(
         
 		.ddr4a_clk_clk(DDR4a_USERCLK),
 		.ddr4b_clk_clk(DDR4b_USERCLK),
-		.host_clk_clk(pClkDiv2),
+		.host_clk_clk(afu_clk),
 		.reset_reset(reset)         // reset.reset
 	);
 
 	avmm_ccip_host_rd avmm_ccip_host_rd_inst (
-		.clk            (pClkDiv2),            //   clk.clk
+		.clk            (afu_clk),            //   clk.clk
 		.reset        (reset),         // reset.reset
 		
 		.avmm_waitrequest(requestor_avmm_rd_waitrequest),
@@ -251,7 +247,7 @@ module afu #(
 	avmm_ccip_host_wr #(
 		.ENABLE_INTR(1)
 	) avmm_ccip_host_wr_inst (
-		.clk            (pClkDiv2),            //   clk.clk
+		.clk            (afu_clk),            //   clk.clk
 		.reset        (reset),         // reset.reset
 		
 		.irq({3'b000, dma_irq}),
@@ -277,7 +273,7 @@ module afu #(
 		.avmm_read(mmio_avmm_read),
 		.avmm_byteenable(mmio_avmm_byteenable),
 	
-		.clk            (pClkDiv2),            //   clk.clk
+		.clk            (afu_clk),            //   clk.clk
 		.reset        (reset),         // reset.reset
 		
 		.c0rx(cp2af_mmio_c0rx),

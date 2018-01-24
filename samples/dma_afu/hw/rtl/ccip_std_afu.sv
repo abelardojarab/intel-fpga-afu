@@ -107,38 +107,21 @@ module ccip_std_afu(
     input           t_if_ccip_Rx     pck_cp2af_sRx;           // CCI-P Rx Port
     output          t_if_ccip_Tx     pck_af2cp_sTx;           // CCI-P Tx Port
 
-    //ccip async shim
-    wire 	  async_shim_reset_out;   
-    wire 	  afu_clk;   
-
-    t_if_ccip_Tx async2af_sTxPort;
-    t_if_ccip_Rx async2af_sRxPort;
-   
-    assign afu_clk = pClkDiv2 ;
-
-    t_if_ccip_c0_Rx async2af_mmio_c0rx;
-
-    ccip_async_shim #(
-	.C0TX_DEPTH_RADIX(7),   //default was 8
-	.C1TX_DEPTH_RADIX(7),   //default was 8
-	.C2TX_DEPTH_RADIX(7),   //default was 8
-	.ENABLE_SEPARATE_MMIO_FIFO(1),
-	.C0RX_MMIO_DEPTH_RADIX(9), //default was 9
-	//For DCP only 256 is needed.  Using 512 so that the RX to TX depth ratio is 4:1 to ensure for each 4CL read there are 4 beats of space in the response
-	.C0RX_DEPTH_RADIX(9),	//default was 10
-	.C1RX_DEPTH_RADIX(9)	//default was 10
-    )
-    ccip_async_shim (
-	.bb_softreset    (pck_cp2af_softReset),
-	.bb_clk          (pClk),
-	.bb_tx           (pck_af2cp_sTx),
-	.bb_rx           (pck_cp2af_sRx),
-	.afu_softreset   (async_shim_reset_out),
-	.afu_clk         (afu_clk),
-	.afu_tx          (async2af_sTxPort),
-	.afu_rx          (async2af_sRxPort),
-	.afu_mmio_c0rx   (async2af_mmio_c0rx)
-    );
+	//split c0rx into host and mmio
+	wire afu_clk;
+    assign afu_clk = pClk ;
+    t_if_ccip_Rx pck_cp2af_mmio_sRx;
+    t_if_ccip_Rx pck_cp2af_host_sRx;
+	always_comb
+	begin
+		pck_cp2af_mmio_sRx = pck_cp2af_sRx;
+		pck_cp2af_host_sRx = pck_cp2af_sRx;
+		//disable rsp valid on mmio path
+		pck_cp2af_mmio_sRx.c0.rspValid = 0;
+		//disable mmio valid on host path
+		pck_cp2af_host_sRx.c0.mmioRdValid = 0;
+		pck_cp2af_host_sRx.c0.mmioWrValid = 0;
+	end
 
     // ====================================================================
     //
@@ -184,9 +167,9 @@ module ccip_std_afu(
       map_ifc
        (
         .pClk(afu_clk),
-        .pck_cp2af_softReset(async_shim_reset_out),
-        .pck_cp2af_sRx(async2af_sRxPort),
-        .pck_af2cp_sTx(async2af_sTxPort),
+        .pck_cp2af_softReset(pck_cp2af_softReset),
+        .pck_cp2af_sRx(pck_cp2af_host_sRx),
+        .pck_af2cp_sTx(pck_af2cp_sTx),
         .*
         );
 
@@ -353,11 +336,7 @@ afu #(
 		.MMIO_BYPASS_ADDRESS(MPF_DFH_MMIO_ADDR),
 		.MMIO_BYPASS_SIZE(CCI_MPF_MMIO_SIZE)
 	) afu_inst(
-    .Clk_400                        (pClk),
-	.pClkDiv2(pClkDiv2),
-    .pClkDiv4(pClkDiv4),
-    .uClk_usr(uClk_usr),
-    .uClk_usrDiv2(uClk_usrDiv2),
+    .afu_clk(afu_clk),
     
 `ifdef INCLUDE_DDR4
     .DDR4a_USERCLK(DDR4a_USERCLK),
@@ -384,7 +363,7 @@ afu #(
     
 	.reset           ( fiu.reset ) ,
 	.cp2af_sRxPort       ( mpf2af_sRxPort ) ,
-	.cp2af_mmio_c0rx     ( async2af_mmio_c0rx ) ,
+	.cp2af_mmio_c0rx     ( pck_cp2af_mmio_sRx.c0 ) ,
 	.af2cp_sTxPort       ( af2mpf_sTxPort ) 
 );
 

@@ -332,10 +332,7 @@ module ccip_std_afu(
 // User AFU goes here
 //===============================================================================================
 
-afu #(
-		.MMIO_BYPASS_ADDRESS(MPF_DFH_MMIO_ADDR),
-		.MMIO_BYPASS_SIZE(CCI_MPF_MMIO_SIZE)
-	) afu_inst(
+afu afu_inst(
     .afu_clk(afu_clk),
     
 `ifdef INCLUDE_DDR4

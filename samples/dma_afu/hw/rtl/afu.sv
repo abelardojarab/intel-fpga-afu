@@ -30,11 +30,7 @@
 import ccip_if_pkg::*;
 import ccip_avmm_pkg::*;
 
-module afu #(
-		parameter MMIO_BYPASS_ADDRESS = 0,
-		parameter MMIO_BYPASS_SIZE = 0
-	)
-	(
+module afu (
 	// ---------------------------global signals-------------------------------------------------
         input	afu_clk,	  //              in    std_logic;           Core clock. CCI interface is synchronous to this clock.
         input	reset,	  //              in    std_logic;           CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH

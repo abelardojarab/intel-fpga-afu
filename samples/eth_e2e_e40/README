@@ -1,0 +1,1 @@
+A 1x40G HSSI AFU template that instantiates a 1x40G Ethernet MAC for packet generation and checking.

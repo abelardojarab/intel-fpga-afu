@@ -1,0 +1,43 @@
+	component altera_eth_10g_mac is
+		port (
+			avalon_st_pause_data            : in  std_logic_vector(1 downto 0)  := (others => 'X'); -- data
+			avalon_st_rx_data               : out std_logic_vector(31 downto 0);                    -- data
+			avalon_st_rx_startofpacket      : out std_logic;                                        -- startofpacket
+			avalon_st_rx_valid              : out std_logic;                                        -- valid
+			avalon_st_rx_empty              : out std_logic_vector(1 downto 0);                     -- empty
+			avalon_st_rx_error              : out std_logic_vector(5 downto 0);                     -- error
+			avalon_st_rx_ready              : in  std_logic                     := 'X';             -- ready
+			avalon_st_rx_endofpacket        : out std_logic;                                        -- endofpacket
+			avalon_st_rxstatus_valid        : out std_logic;                                        -- valid
+			avalon_st_rxstatus_data         : out std_logic_vector(39 downto 0);                    -- data
+			avalon_st_rxstatus_error        : out std_logic_vector(6 downto 0);                     -- error
+			avalon_st_tx_startofpacket      : in  std_logic                     := 'X';             -- startofpacket
+			avalon_st_tx_endofpacket        : in  std_logic                     := 'X';             -- endofpacket
+			avalon_st_tx_valid              : in  std_logic                     := 'X';             -- valid
+			avalon_st_tx_data               : in  std_logic_vector(31 downto 0) := (others => 'X'); -- data
+			avalon_st_tx_empty              : in  std_logic_vector(1 downto 0)  := (others => 'X'); -- empty
+			avalon_st_tx_error              : in  std_logic                     := 'X';             -- error
+			avalon_st_tx_ready              : out std_logic;                                        -- ready
+			avalon_st_txstatus_valid        : out std_logic;                                        -- valid
+			avalon_st_txstatus_data         : out std_logic_vector(39 downto 0);                    -- data
+			avalon_st_txstatus_error        : out std_logic_vector(6 downto 0);                     -- error
+			csr_read                        : in  std_logic                     := 'X';             -- read
+			csr_write                       : in  std_logic                     := 'X';             -- write
+			csr_writedata                   : in  std_logic_vector(31 downto 0) := (others => 'X'); -- writedata
+			csr_readdata                    : out std_logic_vector(31 downto 0);                    -- readdata
+			csr_waitrequest                 : out std_logic;                                        -- waitrequest
+			csr_address                     : in  std_logic_vector(9 downto 0)  := (others => 'X'); -- address
+			csr_clk                         : in  std_logic                     := 'X';             -- clk
+			csr_rst_n                       : in  std_logic                     := 'X';             -- reset_n
+			link_fault_status_xgmii_rx_data : out std_logic_vector(1 downto 0);                     -- data
+			rx_156_25_clk                   : in  std_logic                     := 'X';             -- clk
+			rx_312_5_clk                    : in  std_logic                     := 'X';             -- clk
+			rx_rst_n                        : in  std_logic                     := 'X';             -- reset_n
+			tx_156_25_clk                   : in  std_logic                     := 'X';             -- clk
+			tx_312_5_clk                    : in  std_logic                     := 'X';             -- clk
+			tx_rst_n                        : in  std_logic                     := 'X';             -- reset_n
+			xgmii_rx                        : in  std_logic_vector(71 downto 0) := (others => 'X'); -- data
+			xgmii_tx                        : out std_logic_vector(71 downto 0)                     -- data
+		);
+	end component altera_eth_10g_mac;
+

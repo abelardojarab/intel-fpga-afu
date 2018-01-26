@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file
+   path="altera_xcvr_reset_control_170/sim/altera_xcvr_functions.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_reset_control_170" />
+ <file
+   path="altera_xcvr_reset_control_170/sim/mentor/altera_xcvr_functions.sv"
+   type="SYSTEM_VERILOG_ENCRYPT"
+   library="altera_xcvr_reset_control_170"
+   simulator="modelsim" />
+ <file
+   path="altera_xcvr_reset_control_170/sim/alt_xcvr_resync.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_reset_control_170" />
+ <file
+   path="altera_xcvr_reset_control_170/sim/mentor/alt_xcvr_resync.sv"
+   type="SYSTEM_VERILOG_ENCRYPT"
+   library="altera_xcvr_reset_control_170"
+   simulator="modelsim" />
+ <file
+   path="altera_xcvr_reset_control_170/sim/altera_xcvr_reset_control.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_reset_control_170" />
+ <file
+   path="altera_xcvr_reset_control_170/sim/alt_xcvr_reset_counter.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_reset_control_170" />
+ <file
+   path="altera_xcvr_reset_control_170/sim/mentor/altera_xcvr_reset_control.sv"
+   type="SYSTEM_VERILOG_ENCRYPT"
+   library="altera_xcvr_reset_control_170"
+   simulator="modelsim" />
+ <file
+   path="altera_xcvr_reset_control_170/sim/mentor/alt_xcvr_reset_counter.sv"
+   type="SYSTEM_VERILOG_ENCRYPT"
+   library="altera_xcvr_reset_control_170"
+   simulator="modelsim" />
+ <file
+   path="altera_xcvr_reset_control_170/sim/plain_files.txt"
+   type="OTHER"
+   library="altera_xcvr_reset_control_170" />
+ <file
+   path="altera_xcvr_reset_control_170/sim/mentor_files.txt"
+   type="OTHER"
+   library="altera_xcvr_reset_control_170" />
+ <file
+   path="altera_xcvr_reset_control_170/sim/cadence_files.txt"
+   type="OTHER"
+   library="altera_xcvr_reset_control_170" />
+ <file
+   path="altera_xcvr_reset_control_170/sim/synopsys_files.txt"
+   type="OTHER"
+   library="altera_xcvr_reset_control_170" />
+ <file
+   path="altera_xcvr_reset_control_170/sim/aldec_files.txt"
+   type="OTHER"
+   library="altera_xcvr_reset_control_170" />
+ <file
+   path="sim/reset_control.v"
+   type="VERILOG"
+   library="reset_control"
+   hasInlineConfiguration="true" />
+ <topLevel name="reset_control.reset_control" />
+ <deviceFamily name="arria10" />
+</simPackage>

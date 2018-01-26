@@ -1,0 +1,17 @@
+# system info dc_fifo on 2017.11.02.10:13:30
+system_info:
+name,value
+DEVICE,10AX115N3F40E2SG
+DEVICE_FAMILY,Arria 10
+GENERATION_ID,1509642810
+#
+#
+# Files generated for dc_fifo on 2017.11.02.10:13:30
+files:
+filepath,kind,attributes,module,is_top
+sim/dc_fifo.v,VERILOG,CONTAINS_INLINE_CONFIGURATION,dc_fifo,true
+#
+# Map from instance-path to kind of module
+instances:
+instancePath,module
+dc_fifo.dc_fifo_0,dc_fifo_0

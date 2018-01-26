@@ -1,0 +1,23 @@
+	component dc_fifo is
+		port (
+			dc_fifo_0_in_data               : in  std_logic_vector(31 downto 0) := (others => 'X'); -- data
+			dc_fifo_0_in_valid              : in  std_logic                     := 'X';             -- valid
+			dc_fifo_0_in_ready              : out std_logic;                                        -- ready
+			dc_fifo_0_in_startofpacket      : in  std_logic                     := 'X';             -- startofpacket
+			dc_fifo_0_in_endofpacket        : in  std_logic                     := 'X';             -- endofpacket
+			dc_fifo_0_in_empty              : in  std_logic_vector(1 downto 0)  := (others => 'X'); -- empty
+			dc_fifo_0_in_error              : in  std_logic_vector(0 downto 0)  := (others => 'X'); -- error
+			dc_fifo_0_in_clk_clk            : in  std_logic                     := 'X';             -- clk
+			dc_fifo_0_in_clk_reset_reset_n  : in  std_logic                     := 'X';             -- reset_n
+			dc_fifo_0_out_data              : out std_logic_vector(31 downto 0);                    -- data
+			dc_fifo_0_out_valid             : out std_logic;                                        -- valid
+			dc_fifo_0_out_ready             : in  std_logic                     := 'X';             -- ready
+			dc_fifo_0_out_startofpacket     : out std_logic;                                        -- startofpacket
+			dc_fifo_0_out_endofpacket       : out std_logic;                                        -- endofpacket
+			dc_fifo_0_out_empty             : out std_logic_vector(1 downto 0);                     -- empty
+			dc_fifo_0_out_error             : out std_logic_vector(0 downto 0);                     -- error
+			dc_fifo_0_out_clk_clk           : in  std_logic                     := 'X';             -- clk
+			dc_fifo_0_out_clk_reset_reset_n : in  std_logic                     := 'X'              -- reset_n
+		);
+	end component dc_fifo;
+

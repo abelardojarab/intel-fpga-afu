@@ -1,0 +1,47 @@
+	sc_fifo u0 (
+		.rx_sc_fifo_almost_empty_data (_connected_to_rx_sc_fifo_almost_empty_data_), // rx_sc_fifo_almost_empty.data
+		.rx_sc_fifo_almost_full_data  (_connected_to_rx_sc_fifo_almost_full_data_),  //  rx_sc_fifo_almost_full.data
+		.rx_sc_fifo_clk_clk           (_connected_to_rx_sc_fifo_clk_clk_),           //          rx_sc_fifo_clk.clk
+		.rx_sc_fifo_clk_reset_reset   (_connected_to_rx_sc_fifo_clk_reset_reset_),   //    rx_sc_fifo_clk_reset.reset
+		.rx_sc_fifo_csr_address       (_connected_to_rx_sc_fifo_csr_address_),       //          rx_sc_fifo_csr.address
+		.rx_sc_fifo_csr_read          (_connected_to_rx_sc_fifo_csr_read_),          //                        .read
+		.rx_sc_fifo_csr_write         (_connected_to_rx_sc_fifo_csr_write_),         //                        .write
+		.rx_sc_fifo_csr_readdata      (_connected_to_rx_sc_fifo_csr_readdata_),      //                        .readdata
+		.rx_sc_fifo_csr_writedata     (_connected_to_rx_sc_fifo_csr_writedata_),     //                        .writedata
+		.rx_sc_fifo_in_data           (_connected_to_rx_sc_fifo_in_data_),           //           rx_sc_fifo_in.data
+		.rx_sc_fifo_in_valid          (_connected_to_rx_sc_fifo_in_valid_),          //                        .valid
+		.rx_sc_fifo_in_ready          (_connected_to_rx_sc_fifo_in_ready_),          //                        .ready
+		.rx_sc_fifo_in_startofpacket  (_connected_to_rx_sc_fifo_in_startofpacket_),  //                        .startofpacket
+		.rx_sc_fifo_in_endofpacket    (_connected_to_rx_sc_fifo_in_endofpacket_),    //                        .endofpacket
+		.rx_sc_fifo_in_empty          (_connected_to_rx_sc_fifo_in_empty_),          //                        .empty
+		.rx_sc_fifo_in_error          (_connected_to_rx_sc_fifo_in_error_),          //                        .error
+		.rx_sc_fifo_out_data          (_connected_to_rx_sc_fifo_out_data_),          //          rx_sc_fifo_out.data
+		.rx_sc_fifo_out_valid         (_connected_to_rx_sc_fifo_out_valid_),         //                        .valid
+		.rx_sc_fifo_out_ready         (_connected_to_rx_sc_fifo_out_ready_),         //                        .ready
+		.rx_sc_fifo_out_startofpacket (_connected_to_rx_sc_fifo_out_startofpacket_), //                        .startofpacket
+		.rx_sc_fifo_out_endofpacket   (_connected_to_rx_sc_fifo_out_endofpacket_),   //                        .endofpacket
+		.rx_sc_fifo_out_empty         (_connected_to_rx_sc_fifo_out_empty_),         //                        .empty
+		.rx_sc_fifo_out_error         (_connected_to_rx_sc_fifo_out_error_),         //                        .error
+		.tx_sc_fifo_clk_clk           (_connected_to_tx_sc_fifo_clk_clk_),           //          tx_sc_fifo_clk.clk
+		.tx_sc_fifo_clk_reset_reset   (_connected_to_tx_sc_fifo_clk_reset_reset_),   //    tx_sc_fifo_clk_reset.reset
+		.tx_sc_fifo_csr_address       (_connected_to_tx_sc_fifo_csr_address_),       //          tx_sc_fifo_csr.address
+		.tx_sc_fifo_csr_read          (_connected_to_tx_sc_fifo_csr_read_),          //                        .read
+		.tx_sc_fifo_csr_write         (_connected_to_tx_sc_fifo_csr_write_),         //                        .write
+		.tx_sc_fifo_csr_readdata      (_connected_to_tx_sc_fifo_csr_readdata_),      //                        .readdata
+		.tx_sc_fifo_csr_writedata     (_connected_to_tx_sc_fifo_csr_writedata_),     //                        .writedata
+		.tx_sc_fifo_in_data           (_connected_to_tx_sc_fifo_in_data_),           //           tx_sc_fifo_in.data
+		.tx_sc_fifo_in_valid          (_connected_to_tx_sc_fifo_in_valid_),          //                        .valid
+		.tx_sc_fifo_in_ready          (_connected_to_tx_sc_fifo_in_ready_),          //                        .ready
+		.tx_sc_fifo_in_startofpacket  (_connected_to_tx_sc_fifo_in_startofpacket_),  //                        .startofpacket
+		.tx_sc_fifo_in_endofpacket    (_connected_to_tx_sc_fifo_in_endofpacket_),    //                        .endofpacket
+		.tx_sc_fifo_in_empty          (_connected_to_tx_sc_fifo_in_empty_),          //                        .empty
+		.tx_sc_fifo_in_error          (_connected_to_tx_sc_fifo_in_error_),          //                        .error
+		.tx_sc_fifo_out_data          (_connected_to_tx_sc_fifo_out_data_),          //          tx_sc_fifo_out.data
+		.tx_sc_fifo_out_valid         (_connected_to_tx_sc_fifo_out_valid_),         //                        .valid
+		.tx_sc_fifo_out_ready         (_connected_to_tx_sc_fifo_out_ready_),         //                        .ready
+		.tx_sc_fifo_out_startofpacket (_connected_to_tx_sc_fifo_out_startofpacket_), //                        .startofpacket
+		.tx_sc_fifo_out_endofpacket   (_connected_to_tx_sc_fifo_out_endofpacket_),   //                        .endofpacket
+		.tx_sc_fifo_out_empty         (_connected_to_tx_sc_fifo_out_empty_),         //                        .empty
+		.tx_sc_fifo_out_error         (_connected_to_tx_sc_fifo_out_error_)          //                        .error
+	);
+

@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system name="$${FILENAME}">
+ <component
+   name="$${FILENAME}"
+   displayName="$${FILENAME}"
+   version="1.0"
+   description=""
+   tags="INTERNAL_COMPONENT=true"
+   categories="System" />
+ <parameter name="bonusData"><![CDATA[bonusData 
+{
+   element alt_em10g32_0
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
+}
+]]></parameter>
+ <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
+ <parameter name="device" value="10AX115R3F40I2SGES" />
+ <parameter name="deviceFamily" value="Arria 10" />
+ <parameter name="deviceSpeedGrade" value="2" />
+ <parameter name="fabricMode" value="QSYS" />
+ <parameter name="generateLegacySim" value="false" />
+ <parameter name="generationId" value="0" />
+ <parameter name="globalResetBus" value="false" />
+ <parameter name="hdlLanguage" value="VERILOG" />
+ <parameter name="hideFromIPCatalog" value="true" />
+ <parameter name="lockedInterfaceDefinition" value="" />
+ <parameter name="maxAdditionalLatency" value="1" />
+ <parameter name="projectName" value="" />
+ <parameter name="sopcBorderPoints" value="false" />
+ <parameter name="systemHash" value="0" />
+ <parameter name="testBenchDutName" value="" />
+ <parameter name="timeStamp" value="0" />
+ <parameter name="useTestBenchNamingPattern" value="false" />
+ <instanceScript></instanceScript>
+ <interface
+   name="avalon_st_pause"
+   internal="alt_em10g32_0.avalon_st_pause"
+   type="avalon_streaming"
+   dir="end">
+  <port name="avalon_st_pause_data" internal="avalon_st_pause_data" />
+ </interface>
+ <interface
+   name="avalon_st_rx"
+   internal="alt_em10g32_0.avalon_st_rx"
+   type="avalon_streaming"
+   dir="start">
+  <port name="avalon_st_rx_data" internal="avalon_st_rx_data" />
+  <port
+     name="avalon_st_rx_startofpacket"
+     internal="avalon_st_rx_startofpacket" />
+  <port name="avalon_st_rx_valid" internal="avalon_st_rx_valid" />
+  <port name="avalon_st_rx_empty" internal="avalon_st_rx_empty" />
+  <port name="avalon_st_rx_error" internal="avalon_st_rx_error" />
+  <port name="avalon_st_rx_ready" internal="avalon_st_rx_ready" />
+  <port name="avalon_st_rx_endofpacket" internal="avalon_st_rx_endofpacket" />
+ </interface>
+ <interface
+   name="avalon_st_rxstatus"
+   internal="alt_em10g32_0.avalon_st_rxstatus"
+   type="avalon_streaming"
+   dir="start">
+  <port name="avalon_st_rxstatus_valid" internal="avalon_st_rxstatus_valid" />
+  <port name="avalon_st_rxstatus_data" internal="avalon_st_rxstatus_data" />
+  <port name="avalon_st_rxstatus_error" internal="avalon_st_rxstatus_error" />
+ </interface>
+ <interface
+   name="avalon_st_tx"
+   internal="alt_em10g32_0.avalon_st_tx"
+   type="avalon_streaming"
+   dir="end">
+  <port
+     name="avalon_st_tx_startofpacket"
+     internal="avalon_st_tx_startofpacket" />
+  <port name="avalon_st_tx_endofpacket" internal="avalon_st_tx_endofpacket" />
+  <port name="avalon_st_tx_valid" internal="avalon_st_tx_valid" />
+  <port name="avalon_st_tx_data" internal="avalon_st_tx_data" />
+  <port name="avalon_st_tx_empty" internal="avalon_st_tx_empty" />
+  <port name="avalon_st_tx_error" internal="avalon_st_tx_error" />
+  <port name="avalon_st_tx_ready" internal="avalon_st_tx_ready" />
+ </interface>
+ <interface
+   name="avalon_st_txstatus"
+   internal="alt_em10g32_0.avalon_st_txstatus"
+   type="avalon_streaming"
+   dir="start">
+  <port name="avalon_st_txstatus_valid" internal="avalon_st_txstatus_valid" />
+  <port name="avalon_st_txstatus_data" internal="avalon_st_txstatus_data" />
+  <port name="avalon_st_txstatus_error" internal="avalon_st_txstatus_error" />
+ </interface>
+ <interface name="csr" internal="alt_em10g32_0.csr" type="avalon" dir="end">
+  <port name="csr_read" internal="csr_read" />
+  <port name="csr_write" internal="csr_write" />
+  <port name="csr_writedata" internal="csr_writedata" />
+  <port name="csr_readdata" internal="csr_readdata" />
+  <port name="csr_waitrequest" internal="csr_waitrequest" />
+  <port name="csr_address" internal="csr_address" />
+ </interface>
+ <interface
+   name="csr_clk"
+   internal="alt_em10g32_0.csr_clk"
+   type="clock"
+   dir="end">
+  <port name="csr_clk" internal="csr_clk" />
+ </interface>
+ <interface
+   name="csr_rst_n"
+   internal="alt_em10g32_0.csr_rst_n"
+   type="reset"
+   dir="end">
+  <port name="csr_rst_n" internal="csr_rst_n" />
+ </interface>
+ <interface
+   name="link_fault_status_xgmii_rx"
+   internal="alt_em10g32_0.link_fault_status_xgmii_rx"
+   type="avalon_streaming"
+   dir="start">
+  <port
+     name="link_fault_status_xgmii_rx_data"
+     internal="link_fault_status_xgmii_rx_data" />
+ </interface>
+ <interface
+   name="rx_156_25_clk"
+   internal="alt_em10g32_0.rx_156_25_clk"
+   type="clock"
+   dir="end">
+  <port name="rx_156_25_clk" internal="rx_156_25_clk" />
+ </interface>
+ <interface
+   name="rx_312_5_clk"
+   internal="alt_em10g32_0.rx_312_5_clk"
+   type="clock"
+   dir="end">
+  <port name="rx_312_5_clk" internal="rx_312_5_clk" />
+ </interface>
+ <interface
+   name="rx_rst_n"
+   internal="alt_em10g32_0.rx_rst_n"
+   type="reset"
+   dir="end">
+  <port name="rx_rst_n" internal="rx_rst_n" />
+ </interface>
+ <interface name="rx_xcvr_clk" internal="alt_em10g32_0.rx_xcvr_clk" />
+ <interface
+   name="tx_156_25_clk"
+   internal="alt_em10g32_0.tx_156_25_clk"
+   type="clock"
+   dir="end">
+  <port name="tx_156_25_clk" internal="tx_156_25_clk" />
+ </interface>
+ <interface
+   name="tx_312_5_clk"
+   internal="alt_em10g32_0.tx_312_5_clk"
+   type="clock"
+   dir="end">
+  <port name="tx_312_5_clk" internal="tx_312_5_clk" />
+ </interface>
+ <interface
+   name="tx_rst_n"
+   internal="alt_em10g32_0.tx_rst_n"
+   type="reset"
+   dir="end">
+  <port name="tx_rst_n" internal="tx_rst_n" />
+ </interface>
+ <interface name="tx_xcvr_clk" internal="alt_em10g32_0.tx_xcvr_clk" />
+ <interface
+   name="xgmii_rx"
+   internal="alt_em10g32_0.xgmii_rx"
+   type="avalon_streaming"
+   dir="end">
+  <port name="xgmii_rx" internal="xgmii_rx" />
+ </interface>
+ <interface name="xgmii_rx_control" internal="alt_em10g32_0.xgmii_rx_control" />
+ <interface name="xgmii_rx_data" internal="alt_em10g32_0.xgmii_rx_data" />
+ <interface name="xgmii_rx_valid" internal="alt_em10g32_0.xgmii_rx_valid" />
+ <interface
+   name="xgmii_tx"
+   internal="alt_em10g32_0.xgmii_tx"
+   type="avalon_streaming"
+   dir="start">
+  <port name="xgmii_tx" internal="xgmii_tx" />
+ </interface>
+ <interface name="xgmii_tx_control" internal="alt_em10g32_0.xgmii_tx_control" />
+ <interface name="xgmii_tx_data" internal="alt_em10g32_0.xgmii_tx_data" />
+ <interface name="xgmii_tx_valid" internal="alt_em10g32_0.xgmii_tx_valid" />
+ <module
+   name="alt_em10g32_0"
+   kind="alt_em10g32"
+   version="16.0"
+   enabled="1"
+   autoexport="1">
+  <parameter name="DATAPATH_OPTION" value="3" />
+  <parameter name="DEVICE" value="10AX115R3F40I2SGES" />
+  <parameter name="DEVICE_FAMILY" value="Arria 10" />
+  <parameter name="ENABLE_10GBASER_REG_MODE" value="0" />
+  <parameter name="ENABLE_1G10G_MAC" value="0" />
+  <parameter name="ENABLE_ED_FILESET_SIM" value="1" />
+  <parameter name="ENABLE_ED_FILESET_SYNTHESIS" value="1" />
+  <parameter name="ENABLE_MEM_ECC" value="0" />
+  <parameter name="ENABLE_PFC" value="0" />
+  <parameter name="ENABLE_PTP_1STEP" value="0" />
+  <parameter name="ENABLE_SUPP_ADDR" value="1" />
+  <parameter name="ENABLE_TIMESTAMPING" value="0" />
+  <parameter name="ENABLE_UNIDIRECTIONAL" value="0" />
+  <parameter name="INSERT_CSR_ADAPTOR" value="0" />
+  <parameter name="INSERT_ST_ADAPTOR" value="0" />
+  <parameter name="INSERT_XGMII_ADAPTOR" value="1" />
+  <parameter name="INSTANTIATE_STATISTICS" value="1" />
+  <parameter name="PFC_PRIORITY_NUMBER" value="8" />
+  <parameter name="PREAMBLE_PASSTHROUGH" value="0" />
+  <parameter name="REGISTER_BASED_STATISTICS" value="0" />
+  <parameter name="SELECT_ED_FILESET" value="0" />
+  <parameter name="SELECT_NUMBER_OF_CHANNEL" value="1" />
+  <parameter name="SELECT_SUPPORTED_VARIANT" value="10" />
+  <parameter name="SELECT_TARGETED_DEVICE" value="0" />
+  <parameter name="SHOW_HIDDEN_OPTIONS" value="0" />
+  <parameter name="TIME_OF_DAY_FORMAT" value="2" />
+  <parameter name="TSTAMP_FP_WIDTH" value="4" />
+ </module>
+ <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
+ <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
+</system>
+
+

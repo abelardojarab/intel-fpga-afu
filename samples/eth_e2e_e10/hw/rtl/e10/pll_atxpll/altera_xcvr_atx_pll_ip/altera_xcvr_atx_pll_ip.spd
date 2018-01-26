@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/altera_xcvr_native_a10_functions_h.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_common_sv_packages"
+   systemVerilogPackageName="altera_xcvr_native_a10_functions_h" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/twentynm_xcvr_avmm.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_atx_pll_a10_170" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/mentor/twentynm_xcvr_avmm.sv"
+   type="SYSTEM_VERILOG_ENCRYPT"
+   library="altera_xcvr_atx_pll_a10_170"
+   simulator="modelsim" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/alt_xcvr_resync.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_atx_pll_a10_170" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/alt_xcvr_arbiter.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_atx_pll_a10_170" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/mentor/alt_xcvr_resync.sv"
+   type="SYSTEM_VERILOG_ENCRYPT"
+   library="altera_xcvr_atx_pll_a10_170"
+   simulator="modelsim" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/mentor/alt_xcvr_arbiter.sv"
+   type="SYSTEM_VERILOG_ENCRYPT"
+   library="altera_xcvr_atx_pll_a10_170"
+   simulator="modelsim" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/a10_avmm_h.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_atx_pll_a10_170" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/alt_xcvr_atx_pll_rcfg_arb.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_atx_pll_a10_170" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/a10_xcvr_atx_pll.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_atx_pll_a10_170" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/alt_xcvr_pll_embedded_debug.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_atx_pll_a10_170" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/alt_xcvr_pll_avmm_csr.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_atx_pll_a10_170" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/mentor/alt_xcvr_atx_pll_rcfg_arb.sv"
+   type="SYSTEM_VERILOG_ENCRYPT"
+   library="altera_xcvr_atx_pll_a10_170"
+   simulator="modelsim" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/mentor/a10_xcvr_atx_pll.sv"
+   type="SYSTEM_VERILOG_ENCRYPT"
+   library="altera_xcvr_atx_pll_a10_170"
+   simulator="modelsim" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/mentor/alt_xcvr_pll_embedded_debug.sv"
+   type="SYSTEM_VERILOG_ENCRYPT"
+   library="altera_xcvr_atx_pll_a10_170"
+   simulator="modelsim" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/mentor/alt_xcvr_pll_avmm_csr.sv"
+   type="SYSTEM_VERILOG_ENCRYPT"
+   library="altera_xcvr_atx_pll_a10_170"
+   simulator="modelsim" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/plain_files.txt"
+   type="OTHER"
+   library="altera_xcvr_atx_pll_a10_170" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/mentor_files.txt"
+   type="OTHER"
+   library="altera_xcvr_atx_pll_a10_170" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/cadence_files.txt"
+   type="OTHER"
+   library="altera_xcvr_atx_pll_a10_170" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/synopsys_files.txt"
+   type="OTHER"
+   library="altera_xcvr_atx_pll_a10_170" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/aldec_files.txt"
+   type="OTHER"
+   library="altera_xcvr_atx_pll_a10_170" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/docs/altera_xcvr_atx_pll_ip_altera_xcvr_atx_pll_a10_170_g2msdgi_parameters.csv"
+   type="OTHER"
+   library="altera_xcvr_atx_pll_a10_170" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/altera_xcvr_atx_pll_ip_altera_xcvr_atx_pll_a10_170_g2msdgi.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_atx_pll_a10_170" />
+ <file
+   path="altera_xcvr_atx_pll_a10_170/sim/alt_xcvr_atx_pll_rcfg_opt_logic_g2msdgi.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_atx_pll_a10_170" />
+ <file
+   path="sim/altera_xcvr_atx_pll_ip.v"
+   type="VERILOG"
+   library="altera_xcvr_atx_pll_ip"
+   hasInlineConfiguration="true" />
+ <topLevel name="altera_xcvr_atx_pll_ip.altera_xcvr_atx_pll_ip" />
+ <deviceFamily name="arria10" />
+</simPackage>

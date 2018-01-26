@@ -1,0 +1,14 @@
+
+WORK > DEFAULT
+DEFAULT:            ./libraries/work/              
+work:               ./libraries/work/              
+alt_em10g32_170:    ./libraries/alt_em10g32_170/   
+altera_eth_10g_mac: ./libraries/altera_eth_10g_mac/
+altera_ver:         ./libraries/altera_ver/        
+lpm_ver:            ./libraries/lpm_ver/           
+sgate_ver:          ./libraries/sgate_ver/         
+altera_mf_ver:      ./libraries/altera_mf_ver/     
+altera_lnsim_ver:   ./libraries/altera_lnsim_ver/  
+twentynm_ver:       ./libraries/twentynm_ver/      
+twentynm_hssi_ver:  ./libraries/twentynm_hssi_ver/ 
+twentynm_hip_ver:   ./libraries/twentynm_hip_ver/  

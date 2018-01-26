@@ -1,0 +1,91 @@
+Info: Starting: Create simulation model
+Info: qsys-generate E:\e10_4_pro\rtl\xcvr_reset_controller\reset_control.qsys --simulation=VERILOG --allow-mixed-language-simulation --output-directory=E:\e10_4_pro\rtl\xcvr_reset_controller\reset_control --family="Arria 10" --part=10AX115U1F45I1SG
+Progress: Loading xcvr_reset_controller/reset_control.qsys
+Progress: Reading input file
+Progress: Adding xcvr_reset_control_0 [altera_xcvr_reset_control 16.0]
+Progress: Parameterizing module xcvr_reset_control_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: reset_control: "Transforming system: reset_control"
+Info: reset_control: Running transform generation_view_transform
+Info: reset_control: Running transform generation_view_transform took 0.000s
+Info: xcvr_reset_control_0: Running transform generation_view_transform
+Info: xcvr_reset_control_0: Running transform generation_view_transform took 0.000s
+Info: reset_control: Running transform merlin_avalon_transform
+Info: reset_control: Running transform merlin_avalon_transform took 0.132s
+Info: reset_control: "Naming system components in system: reset_control"
+Info: reset_control: "Processing generation queue"
+Info: reset_control: "Generating: reset_control"
+Info: reset_control: "Generating: altera_xcvr_reset_control"
+Info: xcvr_reset_control_0: add_fileset_file ./altera_xcvr_functions.sv SYSTEM_VERILOG PATH ../../../altera_xcvr_generic/altera_xcvr_functions.sv
+Info: xcvr_reset_control_0: add_fileset_file ./mentor/altera_xcvr_functions.sv SYSTEM_VERILOG_ENCRYPT PATH ../../../altera_xcvr_generic/mentor/altera_xcvr_functions.sv MENTOR_SPECIFIC
+Info: xcvr_reset_control_0: add_fileset_file ./alt_xcvr_resync.sv SYSTEM_VERILOG PATH ../../../altera_xcvr_generic/ctrl/alt_xcvr_resync.sv
+Info: xcvr_reset_control_0: add_fileset_file ./mentor/alt_xcvr_resync.sv SYSTEM_VERILOG_ENCRYPT PATH ../../../altera_xcvr_generic/mentor/ctrl/alt_xcvr_resync.sv MENTOR_SPECIFIC
+Info: xcvr_reset_control_0: add_fileset_file ./altera_xcvr_reset_control.sv SYSTEM_VERILOG PATH ..//altera_xcvr_reset_control.sv
+Info: xcvr_reset_control_0: add_fileset_file ./alt_xcvr_reset_counter.sv SYSTEM_VERILOG PATH ..//alt_xcvr_reset_counter.sv
+Info: xcvr_reset_control_0: add_fileset_file ./mentor/altera_xcvr_reset_control.sv SYSTEM_VERILOG_ENCRYPT PATH ../mentor/altera_xcvr_reset_control.sv MENTOR_SPECIFIC
+Info: xcvr_reset_control_0: add_fileset_file ./mentor/alt_xcvr_reset_counter.sv SYSTEM_VERILOG_ENCRYPT PATH ../mentor/alt_xcvr_reset_counter.sv MENTOR_SPECIFIC
+Info: reset_control: Done "reset_control" with 2 modules, 14 files
+Info: qsys-generate succeeded.
+Info: Finished: Create simulation model
+Info: Starting: Create Modelsim Project.
+Info: sim-script-gen --spd=E:\e10_4_pro\rtl\xcvr_reset_controller\reset_control\reset_control.spd --output-directory=E:/e10_4_pro/rtl/xcvr_reset_controller/reset_control/sim/ --use-relative-paths=true
+Info: Doing: ip-make-simscript --spd=E:\e10_4_pro\rtl\xcvr_reset_controller\reset_control\reset_control.spd --output-directory=E:/e10_4_pro/rtl/xcvr_reset_controller/reset_control/sim/ --use-relative-paths=true
+Info: Generating the following file(s) for MODELSIM simulator in E:/e10_4_pro/rtl/xcvr_reset_controller/reset_control/sim/ directory:
+Info: 	mentor/msim_setup.tcl
+Info: Generating the following file(s) for VCS simulator in E:/e10_4_pro/rtl/xcvr_reset_controller/reset_control/sim/ directory:
+Info: 	synopsys/vcs/vcs_setup.sh
+Info: Generating the following file(s) for VCSMX simulator in E:/e10_4_pro/rtl/xcvr_reset_controller/reset_control/sim/ directory:
+Info: 	synopsys/vcsmx/synopsys_sim.setup
+Info: 	synopsys/vcsmx/vcsmx_setup.sh
+Info: Generating the following file(s) for NCSIM simulator in E:/e10_4_pro/rtl/xcvr_reset_controller/reset_control/sim/ directory:
+Info: 	cadence/cds.lib
+Info: 	cadence/hdl.var
+Info: 	cadence/ncsim_setup.sh
+Info: 	1 .cds.lib files in cadence/cds_libs/ directory
+Info: Generating the following file(s) for RIVIERA simulator in E:/e10_4_pro/rtl/xcvr_reset_controller/reset_control/sim/ directory:
+Info: 	aldec/rivierapro_setup.tcl
+Info: Finished: Create Modelsim Project.
+Info: Starting: Create block symbol file (.bsf)
+Info: qsys-generate E:\e10_4_pro\rtl\xcvr_reset_controller\reset_control.qsys --block-symbol-file --output-directory=E:\e10_4_pro\rtl\xcvr_reset_controller\reset_control --family="Arria 10" --part=10AX115U1F45I1SG
+Progress: Loading xcvr_reset_controller/reset_control.qsys
+Progress: Reading input file
+Progress: Adding xcvr_reset_control_0 [altera_xcvr_reset_control 16.0]
+Progress: Parameterizing module xcvr_reset_control_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: qsys-generate succeeded.
+Info: Finished: Create block symbol file (.bsf)
+Info: 
+Info: Starting: Create HDL design files for synthesis
+Info: qsys-generate E:\e10_4_pro\rtl\xcvr_reset_controller\reset_control.qsys --synthesis=VERILOG --output-directory=E:\e10_4_pro\rtl\xcvr_reset_controller\reset_control --family="Arria 10" --part=10AX115U1F45I1SG
+Progress: Loading xcvr_reset_controller/reset_control.qsys
+Progress: Reading input file
+Progress: Adding xcvr_reset_control_0 [altera_xcvr_reset_control 16.0]
+Progress: Parameterizing module xcvr_reset_control_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: reset_control: "Transforming system: reset_control"
+Info: reset_control: Running transform generation_view_transform
+Info: reset_control: Running transform generation_view_transform took 0.000s
+Info: xcvr_reset_control_0: Running transform generation_view_transform
+Info: xcvr_reset_control_0: Running transform generation_view_transform took 0.000s
+Info: reset_control: Running transform merlin_avalon_transform
+Info: reset_control: Running transform merlin_avalon_transform took 0.087s
+Info: reset_control: "Naming system components in system: reset_control"
+Info: reset_control: "Processing generation queue"
+Info: reset_control: "Generating: reset_control"
+Info: reset_control: "Generating: altera_xcvr_reset_control"
+Info: xcvr_reset_control_0: add_fileset_file ./altera_xcvr_functions.sv SYSTEM_VERILOG PATH ../../../altera_xcvr_generic/altera_xcvr_functions.sv
+Info: xcvr_reset_control_0: add_fileset_file ./alt_xcvr_resync.sv SYSTEM_VERILOG PATH ../../../altera_xcvr_generic/ctrl/alt_xcvr_resync.sv
+Info: xcvr_reset_control_0: add_fileset_file ./altera_xcvr_reset_control.sv SYSTEM_VERILOG PATH ..//altera_xcvr_reset_control.sv
+Info: xcvr_reset_control_0: add_fileset_file ./alt_xcvr_reset_counter.sv SYSTEM_VERILOG PATH ..//alt_xcvr_reset_counter.sv
+Info: reset_control: Done "reset_control" with 2 modules, 6 files
+Info: qsys-generate succeeded.
+Info: Finished: Create HDL design files for synthesis

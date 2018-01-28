@@ -1,3 +1,6 @@
+//needed for acl/17.1 compatibility
+#pragma OPENCL EXTENSION cl_intel_channels : enable
+
 // Read/write test - Make sure host and kernels can access global memory
 // $Header: $
 #define V 16

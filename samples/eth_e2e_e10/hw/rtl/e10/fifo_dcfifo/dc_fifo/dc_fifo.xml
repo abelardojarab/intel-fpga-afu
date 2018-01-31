@@ -1,0 +1,626 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deploy
+ date="2017.11.02.10:13:36"
+ outputDirectory="/data/ecustodi/workspaces/hssi/p4/platform/dcp_1.0-skx/design/hssi_eth/e10/fifo_dcfifo/dc_fifo/">
+ <perimeter>
+  <parameter
+     name="AUTO_GENERATION_ID"
+     type="Integer"
+     defaultValue="0"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_UNIQUE_ID"
+     type="String"
+     defaultValue=""
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE_FAMILY"
+     type="String"
+     defaultValue="Arria 10"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE"
+     type="String"
+     defaultValue="10AX115N3F40E2SG"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE_SPEEDGRADE"
+     type="String"
+     defaultValue="2"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DC_FIFO_0_IN_CLK_CLOCK_RATE"
+     type="Long"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DC_FIFO_0_IN_CLK_CLOCK_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DC_FIFO_0_IN_CLK_RESET_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DC_FIFO_0_OUT_CLK_CLOCK_RATE"
+     type="Long"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DC_FIFO_0_OUT_CLK_CLOCK_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DC_FIFO_0_OUT_CLK_RESET_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <interface name="dc_fifo_0_in" kind="avalon_streaming" start="0">
+   <property name="associatedClock" value="dc_fifo_0_in_clk" />
+   <property name="associatedReset" value="dc_fifo_0_in_clk_reset" />
+   <property name="beatsPerCycle" value="1" />
+   <property name="dataBitsPerSymbol" value="8" />
+   <property name="emptyWithinPacket" value="false" />
+   <property name="errorDescriptor" value="" />
+   <property name="firstSymbolInHighOrderBits" value="true" />
+   <property name="highOrderSymbolAtMSB" value="false" />
+   <property name="maxChannel" value="0" />
+   <property name="packetDescription" value="" />
+   <property name="prSafe" value="false" />
+   <property name="readyLatency" value="0" />
+   <property name="symbolsPerBeat" value="4" />
+   <port name="dc_fifo_0_in_data" direction="input" role="data" width="32" />
+   <port name="dc_fifo_0_in_valid" direction="input" role="valid" width="1" />
+   <port name="dc_fifo_0_in_ready" direction="output" role="ready" width="1" />
+   <port
+       name="dc_fifo_0_in_startofpacket"
+       direction="input"
+       role="startofpacket"
+       width="1" />
+   <port
+       name="dc_fifo_0_in_endofpacket"
+       direction="input"
+       role="endofpacket"
+       width="1" />
+   <port name="dc_fifo_0_in_empty" direction="input" role="empty" width="2" />
+   <port name="dc_fifo_0_in_error" direction="input" role="error" width="1" />
+  </interface>
+  <interface name="dc_fifo_0_in_clk" kind="clock" start="0">
+   <property name="clockRate" value="0" />
+   <property name="externallyDriven" value="false" />
+   <property name="ptfSchematicName" value="" />
+   <port name="dc_fifo_0_in_clk_clk" direction="input" role="clk" width="1" />
+  </interface>
+  <interface name="dc_fifo_0_in_clk_reset" kind="reset" start="0">
+   <property name="associatedClock" value="dc_fifo_0_in_clk" />
+   <property name="synchronousEdges" value="DEASSERT" />
+   <port
+       name="dc_fifo_0_in_clk_reset_reset_n"
+       direction="input"
+       role="reset_n"
+       width="1" />
+  </interface>
+  <interface name="dc_fifo_0_out" kind="avalon_streaming" start="1">
+   <property name="associatedClock" value="dc_fifo_0_out_clk" />
+   <property name="associatedReset" value="dc_fifo_0_out_clk_reset" />
+   <property name="beatsPerCycle" value="1" />
+   <property name="dataBitsPerSymbol" value="8" />
+   <property name="emptyWithinPacket" value="false" />
+   <property name="errorDescriptor" value="" />
+   <property name="firstSymbolInHighOrderBits" value="true" />
+   <property name="highOrderSymbolAtMSB" value="false" />
+   <property name="maxChannel" value="0" />
+   <property name="packetDescription" value="" />
+   <property name="prSafe" value="false" />
+   <property name="readyLatency" value="0" />
+   <property name="symbolsPerBeat" value="4" />
+   <port name="dc_fifo_0_out_data" direction="output" role="data" width="32" />
+   <port name="dc_fifo_0_out_valid" direction="output" role="valid" width="1" />
+   <port name="dc_fifo_0_out_ready" direction="input" role="ready" width="1" />
+   <port
+       name="dc_fifo_0_out_startofpacket"
+       direction="output"
+       role="startofpacket"
+       width="1" />
+   <port
+       name="dc_fifo_0_out_endofpacket"
+       direction="output"
+       role="endofpacket"
+       width="1" />
+   <port name="dc_fifo_0_out_empty" direction="output" role="empty" width="2" />
+   <port name="dc_fifo_0_out_error" direction="output" role="error" width="1" />
+  </interface>
+  <interface name="dc_fifo_0_out_clk" kind="clock" start="0">
+   <property name="clockRate" value="0" />
+   <property name="externallyDriven" value="false" />
+   <property name="ptfSchematicName" value="" />
+   <port name="dc_fifo_0_out_clk_clk" direction="input" role="clk" width="1" />
+  </interface>
+  <interface name="dc_fifo_0_out_clk_reset" kind="reset" start="0">
+   <property name="associatedClock" value="dc_fifo_0_out_clk" />
+   <property name="synchronousEdges" value="DEASSERT" />
+   <port
+       name="dc_fifo_0_out_clk_reset_reset_n"
+       direction="input"
+       role="reset_n"
+       width="1" />
+  </interface>
+ </perimeter>
+ <entity kind="dc_fifo" version="1.0" name="dc_fifo">
+  <parameter name="AUTO_DC_FIFO_0_OUT_CLK_CLOCK_RATE" value="-1" />
+  <parameter name="AUTO_GENERATION_ID" value="1509642816" />
+  <parameter name="AUTO_DEVICE" value="10AX115N3F40E2SG" />
+  <parameter name="AUTO_DC_FIFO_0_IN_CLK_CLOCK_DOMAIN" value="-1" />
+  <parameter name="AUTO_DEVICE_FAMILY" value="Arria 10" />
+  <parameter name="AUTO_DC_FIFO_0_IN_CLK_RESET_DOMAIN" value="-1" />
+  <parameter name="AUTO_UNIQUE_ID" value="" />
+  <parameter name="AUTO_DC_FIFO_0_IN_CLK_CLOCK_RATE" value="-1" />
+  <parameter name="AUTO_DC_FIFO_0_OUT_CLK_CLOCK_DOMAIN" value="-1" />
+  <parameter name="AUTO_DC_FIFO_0_OUT_CLK_RESET_DOMAIN" value="-1" />
+  <parameter name="AUTO_DEVICE_SPEEDGRADE" value="2" />
+  <generatedFiles>
+   <file
+       path="/data/ecustodi/workspaces/hssi/p4/platform/dcp_1.0-skx/design/hssi_eth/e10/fifo_dcfifo/dc_fifo/synth/dc_fifo.v"
+       attributes="CONTAINS_INLINE_CONFIGURATION" />
+  </generatedFiles>
+  <childGeneratedFiles>
+   <file
+       path="/data/ecustodi/workspaces/hssi/p4/platform/dcp_1.0-skx/design/hssi_eth/e10/fifo_dcfifo/dc_fifo/synth/dc_fifo.v"
+       attributes="CONTAINS_INLINE_CONFIGURATION" />
+  </childGeneratedFiles>
+  <sourceFiles>
+   <file
+       path="/data/ecustodi/workspaces/hssi/p4/platform/dcp_1.0-skx/design/hssi_eth/e10/fifo_dcfifo/dc_fifo.qsys" />
+  </sourceFiles>
+  <childSourceFiles/>
+  <messages>
+   <message level="Info" culprit="dc_fifo">"Generating: dc_fifo"</message>
+   <message level="Info" culprit="dc_fifo">"Generating: dc_fifo_0"</message>
+  </messages>
+ </entity>
+ <entity kind="altera_generic_component" version="1.0" name="dc_fifo_0">
+  <parameter name="hlsFile" value="" />
+  <parameter name="AUTO_DEVICE" value="10AX115N3F40E2SG" />
+  <parameter name="AUTO_DEVICE_FAMILY" value="Arria 10" />
+  <parameter
+     name="componentDefinition"
+     value="&lt;componentDefinition&gt;
+    &lt;boundary&gt;
+        &lt;interfaces&gt;
+            &lt;interface&gt;
+                &lt;name&gt;in&lt;/name&gt;
+                &lt;type&gt;avalon_streaming&lt;/type&gt;
+                &lt;isStart&gt;false&lt;/isStart&gt;
+                &lt;ports&gt;
+                    &lt;port&gt;
+                        &lt;name&gt;in_data&lt;/name&gt;
+                        &lt;role&gt;data&lt;/role&gt;
+                        &lt;direction&gt;Input&lt;/direction&gt;
+                        &lt;width&gt;32&lt;/width&gt;
+                        &lt;lowerBound&gt;0&lt;/lowerBound&gt;
+                        &lt;vhdlType&gt;STD_LOGIC_VECTOR&lt;/vhdlType&gt;
+                    &lt;/port&gt;
+                    &lt;port&gt;
+                        &lt;name&gt;in_valid&lt;/name&gt;
+                        &lt;role&gt;valid&lt;/role&gt;
+                        &lt;direction&gt;Input&lt;/direction&gt;
+                        &lt;width&gt;1&lt;/width&gt;
+                        &lt;lowerBound&gt;0&lt;/lowerBound&gt;
+                        &lt;vhdlType&gt;STD_LOGIC&lt;/vhdlType&gt;
+                    &lt;/port&gt;
+                    &lt;port&gt;
+                        &lt;name&gt;in_ready&lt;/name&gt;
+                        &lt;role&gt;ready&lt;/role&gt;
+                        &lt;direction&gt;Output&lt;/direction&gt;
+                        &lt;width&gt;1&lt;/width&gt;
+                        &lt;lowerBound&gt;0&lt;/lowerBound&gt;
+                        &lt;vhdlType&gt;STD_LOGIC&lt;/vhdlType&gt;
+                    &lt;/port&gt;
+                    &lt;port&gt;
+                        &lt;name&gt;in_startofpacket&lt;/name&gt;
+                        &lt;role&gt;startofpacket&lt;/role&gt;
+                        &lt;direction&gt;Input&lt;/direction&gt;
+                        &lt;width&gt;1&lt;/width&gt;
+                        &lt;lowerBound&gt;0&lt;/lowerBound&gt;
+                        &lt;vhdlType&gt;STD_LOGIC&lt;/vhdlType&gt;
+                    &lt;/port&gt;
+                    &lt;port&gt;
+                        &lt;name&gt;in_endofpacket&lt;/name&gt;
+                        &lt;role&gt;endofpacket&lt;/role&gt;
+                        &lt;direction&gt;Input&lt;/direction&gt;
+                        &lt;width&gt;1&lt;/width&gt;
+                        &lt;lowerBound&gt;0&lt;/lowerBound&gt;
+                        &lt;vhdlType&gt;STD_LOGIC&lt;/vhdlType&gt;
+                    &lt;/port&gt;
+                    &lt;port&gt;
+                        &lt;name&gt;in_empty&lt;/name&gt;
+                        &lt;role&gt;empty&lt;/role&gt;
+                        &lt;direction&gt;Input&lt;/direction&gt;
+                        &lt;width&gt;2&lt;/width&gt;
+                        &lt;lowerBound&gt;0&lt;/lowerBound&gt;
+                        &lt;vhdlType&gt;STD_LOGIC_VECTOR&lt;/vhdlType&gt;
+                    &lt;/port&gt;
+                    &lt;port&gt;
+                        &lt;name&gt;in_error&lt;/name&gt;
+                        &lt;role&gt;error&lt;/role&gt;
+                        &lt;direction&gt;Input&lt;/direction&gt;
+                        &lt;width&gt;1&lt;/width&gt;
+                        &lt;lowerBound&gt;0&lt;/lowerBound&gt;
+                        &lt;vhdlType&gt;STD_LOGIC_VECTOR&lt;/vhdlType&gt;
+                    &lt;/port&gt;
+                &lt;/ports&gt;
+                &lt;assignments&gt;
+                    &lt;assignmentValueMap/&gt;
+                &lt;/assignments&gt;
+                &lt;parameters&gt;
+                    &lt;parameterValueMap&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;associatedClock&lt;/key&gt;
+                            &lt;value&gt;in_clk&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;associatedReset&lt;/key&gt;
+                            &lt;value&gt;in_clk_reset&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;beatsPerCycle&lt;/key&gt;
+                            &lt;value&gt;1&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;dataBitsPerSymbol&lt;/key&gt;
+                            &lt;value&gt;8&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;emptyWithinPacket&lt;/key&gt;
+                            &lt;value&gt;false&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;errorDescriptor&lt;/key&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;firstSymbolInHighOrderBits&lt;/key&gt;
+                            &lt;value&gt;true&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;highOrderSymbolAtMSB&lt;/key&gt;
+                            &lt;value&gt;false&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;maxChannel&lt;/key&gt;
+                            &lt;value&gt;0&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;packetDescription&lt;/key&gt;
+                            &lt;value&gt;&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;prSafe&lt;/key&gt;
+                            &lt;value&gt;false&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;readyLatency&lt;/key&gt;
+                            &lt;value&gt;0&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;symbolsPerBeat&lt;/key&gt;
+                            &lt;value&gt;4&lt;/value&gt;
+                        &lt;/entry&gt;
+                    &lt;/parameterValueMap&gt;
+                &lt;/parameters&gt;
+            &lt;/interface&gt;
+            &lt;interface&gt;
+                &lt;name&gt;in_clk&lt;/name&gt;
+                &lt;type&gt;clock&lt;/type&gt;
+                &lt;isStart&gt;false&lt;/isStart&gt;
+                &lt;ports&gt;
+                    &lt;port&gt;
+                        &lt;name&gt;in_clk&lt;/name&gt;
+                        &lt;role&gt;clk&lt;/role&gt;
+                        &lt;direction&gt;Input&lt;/direction&gt;
+                        &lt;width&gt;1&lt;/width&gt;
+                        &lt;lowerBound&gt;0&lt;/lowerBound&gt;
+                        &lt;vhdlType&gt;STD_LOGIC&lt;/vhdlType&gt;
+                    &lt;/port&gt;
+                &lt;/ports&gt;
+                &lt;assignments&gt;
+                    &lt;assignmentValueMap/&gt;
+                &lt;/assignments&gt;
+                &lt;parameters&gt;
+                    &lt;parameterValueMap&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;clockRate&lt;/key&gt;
+                            &lt;value&gt;0&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;externallyDriven&lt;/key&gt;
+                            &lt;value&gt;false&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;ptfSchematicName&lt;/key&gt;
+                        &lt;/entry&gt;
+                    &lt;/parameterValueMap&gt;
+                &lt;/parameters&gt;
+            &lt;/interface&gt;
+            &lt;interface&gt;
+                &lt;name&gt;in_clk_reset&lt;/name&gt;
+                &lt;type&gt;reset&lt;/type&gt;
+                &lt;isStart&gt;false&lt;/isStart&gt;
+                &lt;ports&gt;
+                    &lt;port&gt;
+                        &lt;name&gt;in_reset_n&lt;/name&gt;
+                        &lt;role&gt;reset_n&lt;/role&gt;
+                        &lt;direction&gt;Input&lt;/direction&gt;
+                        &lt;width&gt;1&lt;/width&gt;
+                        &lt;lowerBound&gt;0&lt;/lowerBound&gt;
+                        &lt;vhdlType&gt;STD_LOGIC&lt;/vhdlType&gt;
+                    &lt;/port&gt;
+                &lt;/ports&gt;
+                &lt;assignments&gt;
+                    &lt;assignmentValueMap/&gt;
+                &lt;/assignments&gt;
+                &lt;parameters&gt;
+                    &lt;parameterValueMap&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;associatedClock&lt;/key&gt;
+                            &lt;value&gt;in_clk&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;synchronousEdges&lt;/key&gt;
+                            &lt;value&gt;DEASSERT&lt;/value&gt;
+                        &lt;/entry&gt;
+                    &lt;/parameterValueMap&gt;
+                &lt;/parameters&gt;
+            &lt;/interface&gt;
+            &lt;interface&gt;
+                &lt;name&gt;out&lt;/name&gt;
+                &lt;type&gt;avalon_streaming&lt;/type&gt;
+                &lt;isStart&gt;true&lt;/isStart&gt;
+                &lt;ports&gt;
+                    &lt;port&gt;
+                        &lt;name&gt;out_data&lt;/name&gt;
+                        &lt;role&gt;data&lt;/role&gt;
+                        &lt;direction&gt;Output&lt;/direction&gt;
+                        &lt;width&gt;32&lt;/width&gt;
+                        &lt;lowerBound&gt;0&lt;/lowerBound&gt;
+                        &lt;vhdlType&gt;STD_LOGIC_VECTOR&lt;/vhdlType&gt;
+                    &lt;/port&gt;
+                    &lt;port&gt;
+                        &lt;name&gt;out_valid&lt;/name&gt;
+                        &lt;role&gt;valid&lt;/role&gt;
+                        &lt;direction&gt;Output&lt;/direction&gt;
+                        &lt;width&gt;1&lt;/width&gt;
+                        &lt;lowerBound&gt;0&lt;/lowerBound&gt;
+                        &lt;vhdlType&gt;STD_LOGIC&lt;/vhdlType&gt;
+                    &lt;/port&gt;
+                    &lt;port&gt;
+                        &lt;name&gt;out_ready&lt;/name&gt;
+                        &lt;role&gt;ready&lt;/role&gt;
+                        &lt;direction&gt;Input&lt;/direction&gt;
+                        &lt;width&gt;1&lt;/width&gt;
+                        &lt;lowerBound&gt;0&lt;/lowerBound&gt;
+                        &lt;vhdlType&gt;STD_LOGIC&lt;/vhdlType&gt;
+                    &lt;/port&gt;
+                    &lt;port&gt;
+                        &lt;name&gt;out_startofpacket&lt;/name&gt;
+                        &lt;role&gt;startofpacket&lt;/role&gt;
+                        &lt;direction&gt;Output&lt;/direction&gt;
+                        &lt;width&gt;1&lt;/width&gt;
+                        &lt;lowerBound&gt;0&lt;/lowerBound&gt;
+                        &lt;vhdlType&gt;STD_LOGIC&lt;/vhdlType&gt;
+                    &lt;/port&gt;
+                    &lt;port&gt;
+                        &lt;name&gt;out_endofpacket&lt;/name&gt;
+                        &lt;role&gt;endofpacket&lt;/role&gt;
+                        &lt;direction&gt;Output&lt;/direction&gt;
+                        &lt;width&gt;1&lt;/width&gt;
+                        &lt;lowerBound&gt;0&lt;/lowerBound&gt;
+                        &lt;vhdlType&gt;STD_LOGIC&lt;/vhdlType&gt;
+                    &lt;/port&gt;
+                    &lt;port&gt;
+                        &lt;name&gt;out_empty&lt;/name&gt;
+                        &lt;role&gt;empty&lt;/role&gt;
+                        &lt;direction&gt;Output&lt;/direction&gt;
+                        &lt;width&gt;2&lt;/width&gt;
+                        &lt;lowerBound&gt;0&lt;/lowerBound&gt;
+                        &lt;vhdlType&gt;STD_LOGIC_VECTOR&lt;/vhdlType&gt;
+                    &lt;/port&gt;
+                    &lt;port&gt;
+                        &lt;name&gt;out_error&lt;/name&gt;
+                        &lt;role&gt;error&lt;/role&gt;
+                        &lt;direction&gt;Output&lt;/direction&gt;
+                        &lt;width&gt;1&lt;/width&gt;
+                        &lt;lowerBound&gt;0&lt;/lowerBound&gt;
+                        &lt;vhdlType&gt;STD_LOGIC_VECTOR&lt;/vhdlType&gt;
+                    &lt;/port&gt;
+                &lt;/ports&gt;
+                &lt;assignments&gt;
+                    &lt;assignmentValueMap/&gt;
+                &lt;/assignments&gt;
+                &lt;parameters&gt;
+                    &lt;parameterValueMap&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;associatedClock&lt;/key&gt;
+                            &lt;value&gt;out_clk&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;associatedReset&lt;/key&gt;
+                            &lt;value&gt;out_clk_reset&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;beatsPerCycle&lt;/key&gt;
+                            &lt;value&gt;1&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;dataBitsPerSymbol&lt;/key&gt;
+                            &lt;value&gt;8&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;emptyWithinPacket&lt;/key&gt;
+                            &lt;value&gt;false&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;errorDescriptor&lt;/key&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;firstSymbolInHighOrderBits&lt;/key&gt;
+                            &lt;value&gt;true&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;highOrderSymbolAtMSB&lt;/key&gt;
+                            &lt;value&gt;false&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;maxChannel&lt;/key&gt;
+                            &lt;value&gt;0&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;packetDescription&lt;/key&gt;
+                            &lt;value&gt;&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;prSafe&lt;/key&gt;
+                            &lt;value&gt;false&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;readyLatency&lt;/key&gt;
+                            &lt;value&gt;0&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;symbolsPerBeat&lt;/key&gt;
+                            &lt;value&gt;4&lt;/value&gt;
+                        &lt;/entry&gt;
+                    &lt;/parameterValueMap&gt;
+                &lt;/parameters&gt;
+            &lt;/interface&gt;
+            &lt;interface&gt;
+                &lt;name&gt;out_clk&lt;/name&gt;
+                &lt;type&gt;clock&lt;/type&gt;
+                &lt;isStart&gt;false&lt;/isStart&gt;
+                &lt;ports&gt;
+                    &lt;port&gt;
+                        &lt;name&gt;out_clk&lt;/name&gt;
+                        &lt;role&gt;clk&lt;/role&gt;
+                        &lt;direction&gt;Input&lt;/direction&gt;
+                        &lt;width&gt;1&lt;/width&gt;
+                        &lt;lowerBound&gt;0&lt;/lowerBound&gt;
+                        &lt;vhdlType&gt;STD_LOGIC&lt;/vhdlType&gt;
+                    &lt;/port&gt;
+                &lt;/ports&gt;
+                &lt;assignments&gt;
+                    &lt;assignmentValueMap/&gt;
+                &lt;/assignments&gt;
+                &lt;parameters&gt;
+                    &lt;parameterValueMap&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;clockRate&lt;/key&gt;
+                            &lt;value&gt;0&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;externallyDriven&lt;/key&gt;
+                            &lt;value&gt;false&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;ptfSchematicName&lt;/key&gt;
+                        &lt;/entry&gt;
+                    &lt;/parameterValueMap&gt;
+                &lt;/parameters&gt;
+            &lt;/interface&gt;
+            &lt;interface&gt;
+                &lt;name&gt;out_clk_reset&lt;/name&gt;
+                &lt;type&gt;reset&lt;/type&gt;
+                &lt;isStart&gt;false&lt;/isStart&gt;
+                &lt;ports&gt;
+                    &lt;port&gt;
+                        &lt;name&gt;out_reset_n&lt;/name&gt;
+                        &lt;role&gt;reset_n&lt;/role&gt;
+                        &lt;direction&gt;Input&lt;/direction&gt;
+                        &lt;width&gt;1&lt;/width&gt;
+                        &lt;lowerBound&gt;0&lt;/lowerBound&gt;
+                        &lt;vhdlType&gt;STD_LOGIC&lt;/vhdlType&gt;
+                    &lt;/port&gt;
+                &lt;/ports&gt;
+                &lt;assignments&gt;
+                    &lt;assignmentValueMap/&gt;
+                &lt;/assignments&gt;
+                &lt;parameters&gt;
+                    &lt;parameterValueMap&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;associatedClock&lt;/key&gt;
+                            &lt;value&gt;out_clk&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                            &lt;key&gt;synchronousEdges&lt;/key&gt;
+                            &lt;value&gt;DEASSERT&lt;/value&gt;
+                        &lt;/entry&gt;
+                    &lt;/parameterValueMap&gt;
+                &lt;/parameters&gt;
+            &lt;/interface&gt;
+        &lt;/interfaces&gt;
+    &lt;/boundary&gt;
+    &lt;originalModuleInfo&gt;
+        &lt;className&gt;altera_avalon_dc_fifo&lt;/className&gt;
+        &lt;version&gt;17.0&lt;/version&gt;
+        &lt;displayName&gt;Avalon-ST Dual Clock FIFO&lt;/displayName&gt;
+    &lt;/originalModuleInfo&gt;
+    &lt;systemInfoParameterDescriptors&gt;
+        &lt;descriptors/&gt;
+    &lt;/systemInfoParameterDescriptors&gt;
+    &lt;systemInfos&gt;
+        &lt;connPtSystemInfos/&gt;
+    &lt;/systemInfos&gt;
+&lt;/componentDefinition&gt;" />
+  <parameter
+     name="generationInfoDefinition"
+     value="&lt;generationInfoDefinition&gt;
+    &lt;hdlLibraryName&gt;dc_fifo_0&lt;/hdlLibraryName&gt;
+    &lt;fileSets&gt;
+        &lt;fileSet&gt;
+            &lt;fileSetName&gt;dc_fifo_0&lt;/fileSetName&gt;
+            &lt;fileSetFixedName&gt;dc_fifo_0&lt;/fileSetFixedName&gt;
+            &lt;fileSetKind&gt;QUARTUS_SYNTH&lt;/fileSetKind&gt;
+            &lt;fileSetFiles/&gt;
+        &lt;/fileSet&gt;
+        &lt;fileSet&gt;
+            &lt;fileSetName&gt;dc_fifo_0&lt;/fileSetName&gt;
+            &lt;fileSetFixedName&gt;dc_fifo_0&lt;/fileSetFixedName&gt;
+            &lt;fileSetKind&gt;SIM_VERILOG&lt;/fileSetKind&gt;
+            &lt;fileSetFiles/&gt;
+        &lt;/fileSet&gt;
+        &lt;fileSet&gt;
+            &lt;fileSetName&gt;dc_fifo_0&lt;/fileSetName&gt;
+            &lt;fileSetFixedName&gt;dc_fifo_0&lt;/fileSetFixedName&gt;
+            &lt;fileSetKind&gt;SIM_VHDL&lt;/fileSetKind&gt;
+            &lt;fileSetFiles/&gt;
+        &lt;/fileSet&gt;
+    &lt;/fileSets&gt;
+&lt;/generationInfoDefinition&gt;" />
+  <parameter name="logicalView" value="ip/dc_fifo/dc_fifo_0.ip" />
+  <parameter
+     name="moduleAssignmentDefinition"
+     value="&lt;assignmentDefinition&gt;
+    &lt;assignmentValueMap/&gt;
+&lt;/assignmentDefinition&gt;" />
+  <generatedFiles/>
+  <childGeneratedFiles/>
+  <sourceFiles/>
+  <childSourceFiles/>
+  <instantiator instantiator="dc_fifo" as="dc_fifo_0" />
+  <messages>
+   <message level="Info" culprit="dc_fifo">"Generating: dc_fifo_0"</message>
+  </messages>
+ </entity>
+</deploy>

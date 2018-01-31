@@ -1,0 +1,82 @@
+Info: Starting: Create simulation model
+Info: qsys-generate E:\e10_4_pro\rtl\pll_mpll\pll.qsys --simulation=VERILOG --allow-mixed-language-simulation --output-directory=E:\e10_4_pro\rtl\pll_mpll\pll --family="Arria 10" --part=10AX115U1F45I1SG
+Progress: Loading pll_mpll/pll.qsys
+Progress: Reading input file
+Progress: Adding iopll_0 [altera_iopll 16.0]
+Progress: Parameterizing module iopll_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: pll.iopll_0: Able to implement PLL with user settings
+Info: pll: "Transforming system: pll"
+Info: pll: Running transform generation_view_transform
+Info: pll: Running transform generation_view_transform took 0.000s
+Info: iopll_0: Running transform generation_view_transform
+Info: iopll_0: Running transform generation_view_transform took 0.000s
+Info: pll: Running transform merlin_avalon_transform
+Info: pll: Running transform merlin_avalon_transform took 0.116s
+Info: pll: "Naming system components in system: pll"
+Info: pll: "Processing generation queue"
+Info: pll: "Generating: pll"
+Info: pll: "Generating: pll_altera_iopll_160_w5ozlyi"
+Info: pll: Done "pll" with 2 modules, 2 files
+Info: qsys-generate succeeded.
+Info: Finished: Create simulation model
+Info: Starting: Create Modelsim Project.
+Info: sim-script-gen --spd=E:\e10_4_pro\rtl\pll_mpll\pll\pll.spd --output-directory=E:/e10_4_pro/rtl/pll_mpll/pll/sim/ --use-relative-paths=true
+Info: Doing: ip-make-simscript --spd=E:\e10_4_pro\rtl\pll_mpll\pll\pll.spd --output-directory=E:/e10_4_pro/rtl/pll_mpll/pll/sim/ --use-relative-paths=true
+Info: Generating the following file(s) for MODELSIM simulator in E:/e10_4_pro/rtl/pll_mpll/pll/sim/ directory:
+Info: 	mentor/msim_setup.tcl
+Info: Generating the following file(s) for VCS simulator in E:/e10_4_pro/rtl/pll_mpll/pll/sim/ directory:
+Info: 	synopsys/vcs/vcs_setup.sh
+Info: Generating the following file(s) for VCSMX simulator in E:/e10_4_pro/rtl/pll_mpll/pll/sim/ directory:
+Info: 	synopsys/vcsmx/synopsys_sim.setup
+Info: 	synopsys/vcsmx/vcsmx_setup.sh
+Info: Generating the following file(s) for NCSIM simulator in E:/e10_4_pro/rtl/pll_mpll/pll/sim/ directory:
+Info: 	cadence/cds.lib
+Info: 	cadence/hdl.var
+Info: 	cadence/ncsim_setup.sh
+Info: 	1 .cds.lib files in cadence/cds_libs/ directory
+Info: Generating the following file(s) for RIVIERA simulator in E:/e10_4_pro/rtl/pll_mpll/pll/sim/ directory:
+Info: 	aldec/rivierapro_setup.tcl
+Info: Finished: Create Modelsim Project.
+Info: Starting: Create block symbol file (.bsf)
+Info: qsys-generate E:\e10_4_pro\rtl\pll_mpll\pll.qsys --block-symbol-file --output-directory=E:\e10_4_pro\rtl\pll_mpll\pll --family="Arria 10" --part=10AX115U1F45I1SG
+Progress: Loading pll_mpll/pll.qsys
+Progress: Reading input file
+Progress: Adding iopll_0 [altera_iopll 16.0]
+Progress: Parameterizing module iopll_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: pll.iopll_0: Able to implement PLL with user settings
+Info: qsys-generate succeeded.
+Info: Finished: Create block symbol file (.bsf)
+Info: 
+Info: Starting: Create HDL design files for synthesis
+Info: qsys-generate E:\e10_4_pro\rtl\pll_mpll\pll.qsys --synthesis=VERILOG --output-directory=E:\e10_4_pro\rtl\pll_mpll\pll --family="Arria 10" --part=10AX115U1F45I1SG
+Progress: Loading pll_mpll/pll.qsys
+Progress: Reading input file
+Progress: Adding iopll_0 [altera_iopll 16.0]
+Progress: Parameterizing module iopll_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: pll.iopll_0: Able to implement PLL with user settings
+Info: pll: "Transforming system: pll"
+Info: pll: Running transform generation_view_transform
+Info: pll: Running transform generation_view_transform took 0.000s
+Info: iopll_0: Running transform generation_view_transform
+Info: iopll_0: Running transform generation_view_transform took 0.000s
+Info: pll: Running transform merlin_avalon_transform
+Info: pll: Running transform merlin_avalon_transform took 0.087s
+Info: pll: "Naming system components in system: pll"
+Info: pll: "Processing generation queue"
+Info: pll: "Generating: pll"
+Info: pll: "Generating: pll_altera_iopll_160_w5ozlyi"
+Info: pll: Done "pll" with 2 modules, 2 files
+Info: qsys-generate succeeded.
+Info: Finished: Create HDL design files for synthesis

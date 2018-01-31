@@ -1,0 +1,107 @@
+Info: Starting: Create simulation model
+Info: qsys-generate E:\e10_4_pro\rtl\pll_atxpll\altera_xcvr_atx_pll_ip.qsys --simulation=VERILOG --allow-mixed-language-simulation --output-directory=E:\e10_4_pro\rtl\pll_atxpll\altera_xcvr_atx_pll_ip --family="Arria 10" --part=10AX115U1F45I1SG
+Progress: Loading pll_atxpll/altera_xcvr_atx_pll_ip.qsys
+Progress: Reading input file
+Progress: Adding altera_xcvr_atx_pll_ip_inst [altera_xcvr_atx_pll_a10 16.0]
+Progress: Parameterizing module altera_xcvr_atx_pll_ip_inst
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: altera_xcvr_atx_pll_ip.altera_xcvr_atx_pll_ip_inst: For the selected device(10AX115U1F45I1SG), PLL speed grade is 1.
+Info: altera_xcvr_atx_pll_ip: "Transforming system: altera_xcvr_atx_pll_ip"
+Info: altera_xcvr_atx_pll_ip: Running transform generation_view_transform
+Info: altera_xcvr_atx_pll_ip: Running transform generation_view_transform took 0.000s
+Info: altera_xcvr_atx_pll_ip_inst: Running transform generation_view_transform
+Info: altera_xcvr_atx_pll_ip_inst: Running transform generation_view_transform took 0.000s
+Info: altera_xcvr_atx_pll_ip: Running transform merlin_avalon_transform
+Info: altera_xcvr_atx_pll_ip: Running transform merlin_avalon_transform took 0.132s
+Info: altera_xcvr_atx_pll_ip: "Naming system components in system: altera_xcvr_atx_pll_ip"
+Info: altera_xcvr_atx_pll_ip: "Processing generation queue"
+Info: altera_xcvr_atx_pll_ip: "Generating: altera_xcvr_atx_pll_ip"
+Info: altera_xcvr_atx_pll_ip: "Generating: altera_xcvr_atx_pll_ip_altera_xcvr_atx_pll_a10_160_l4medzq"
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./twentynm_xcvr_avmm.sv SYSTEM_VERILOG PATH ../../../alt_xcvr_core/nf/twentynm_xcvr_avmm.sv
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./mentor/twentynm_xcvr_avmm.sv SYSTEM_VERILOG_ENCRYPT PATH ../../../alt_xcvr_core/nf/mentor/twentynm_xcvr_avmm.sv MENTOR_SPECIFIC
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./alt_xcvr_resync.sv SYSTEM_VERILOG PATH ../../../../altera_xcvr_generic/ctrl/alt_xcvr_resync.sv
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./alt_xcvr_arbiter.sv SYSTEM_VERILOG PATH ../../../../altera_xcvr_generic/ctrl/alt_xcvr_arbiter.sv
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./mentor/alt_xcvr_resync.sv SYSTEM_VERILOG_ENCRYPT PATH ../../../../altera_xcvr_generic/mentor/ctrl/alt_xcvr_resync.sv MENTOR_SPECIFIC
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./mentor/alt_xcvr_arbiter.sv SYSTEM_VERILOG_ENCRYPT PATH ../../../../altera_xcvr_generic/mentor/ctrl/alt_xcvr_arbiter.sv MENTOR_SPECIFIC
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./a10_avmm_h.sv SYSTEM_VERILOG PATH ../../../altera_xcvr_native_phy/altera_xcvr_native_vi/a10_avmm_h.sv
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./altera_xcvr_native_a10_functions_h.sv SYSTEM_VERILOG PATH ../../../altera_xcvr_native_phy/altera_xcvr_native_vi/altera_xcvr_native_a10_functions_h.sv
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./alt_xcvr_atx_pll_rcfg_arb.sv SYSTEM_VERILOG PATH ../source/alt_xcvr_atx_pll_rcfg_arb.sv
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./a10_xcvr_atx_pll.sv SYSTEM_VERILOG PATH ../source/a10_xcvr_atx_pll.sv
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./alt_xcvr_pll_embedded_debug.sv SYSTEM_VERILOG PATH ../source/alt_xcvr_pll_embedded_debug.sv
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./alt_xcvr_pll_avmm_csr.sv SYSTEM_VERILOG PATH ../source/alt_xcvr_pll_avmm_csr.sv
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./mentor/alt_xcvr_atx_pll_rcfg_arb.sv SYSTEM_VERILOG_ENCRYPT PATH ../mentor/source/alt_xcvr_atx_pll_rcfg_arb.sv MENTOR_SPECIFIC
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./mentor/a10_xcvr_atx_pll.sv SYSTEM_VERILOG_ENCRYPT PATH ../mentor/source/a10_xcvr_atx_pll.sv MENTOR_SPECIFIC
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./mentor/alt_xcvr_pll_embedded_debug.sv SYSTEM_VERILOG_ENCRYPT PATH ../mentor/source/alt_xcvr_pll_embedded_debug.sv MENTOR_SPECIFIC
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./mentor/alt_xcvr_pll_avmm_csr.sv SYSTEM_VERILOG_ENCRYPT PATH ../mentor/source/alt_xcvr_pll_avmm_csr.sv MENTOR_SPECIFIC
+Info: altera_xcvr_atx_pll_ip: Done "altera_xcvr_atx_pll_ip" with 2 modules, 25 files
+Info: qsys-generate succeeded.
+Info: Finished: Create simulation model
+Info: Starting: Create Modelsim Project.
+Info: sim-script-gen --spd=E:\e10_4_pro\rtl\pll_atxpll\altera_xcvr_atx_pll_ip\altera_xcvr_atx_pll_ip.spd --output-directory=E:/e10_4_pro/rtl/pll_atxpll/altera_xcvr_atx_pll_ip/sim/ --use-relative-paths=true
+Info: Doing: ip-make-simscript --spd=E:\e10_4_pro\rtl\pll_atxpll\altera_xcvr_atx_pll_ip\altera_xcvr_atx_pll_ip.spd --output-directory=E:/e10_4_pro/rtl/pll_atxpll/altera_xcvr_atx_pll_ip/sim/ --use-relative-paths=true
+Info: Generating the following file(s) for MODELSIM simulator in E:/e10_4_pro/rtl/pll_atxpll/altera_xcvr_atx_pll_ip/sim/ directory:
+Info: 	mentor/msim_setup.tcl
+Info: Generating the following file(s) for VCS simulator in E:/e10_4_pro/rtl/pll_atxpll/altera_xcvr_atx_pll_ip/sim/ directory:
+Info: 	synopsys/vcs/vcs_setup.sh
+Info: Generating the following file(s) for VCSMX simulator in E:/e10_4_pro/rtl/pll_atxpll/altera_xcvr_atx_pll_ip/sim/ directory:
+Info: 	synopsys/vcsmx/synopsys_sim.setup
+Info: 	synopsys/vcsmx/vcsmx_setup.sh
+Info: Generating the following file(s) for NCSIM simulator in E:/e10_4_pro/rtl/pll_atxpll/altera_xcvr_atx_pll_ip/sim/ directory:
+Info: 	cadence/cds.lib
+Info: 	cadence/hdl.var
+Info: 	cadence/ncsim_setup.sh
+Info: 	2 .cds.lib files in cadence/cds_libs/ directory
+Info: Generating the following file(s) for RIVIERA simulator in E:/e10_4_pro/rtl/pll_atxpll/altera_xcvr_atx_pll_ip/sim/ directory:
+Info: 	aldec/rivierapro_setup.tcl
+Info: Finished: Create Modelsim Project.
+Info: Starting: Create block symbol file (.bsf)
+Info: qsys-generate E:\e10_4_pro\rtl\pll_atxpll\altera_xcvr_atx_pll_ip.qsys --block-symbol-file --output-directory=E:\e10_4_pro\rtl\pll_atxpll\altera_xcvr_atx_pll_ip --family="Arria 10" --part=10AX115U1F45I1SG
+Progress: Loading pll_atxpll/altera_xcvr_atx_pll_ip.qsys
+Progress: Reading input file
+Progress: Adding altera_xcvr_atx_pll_ip_inst [altera_xcvr_atx_pll_a10 16.0]
+Progress: Parameterizing module altera_xcvr_atx_pll_ip_inst
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: altera_xcvr_atx_pll_ip.altera_xcvr_atx_pll_ip_inst: For the selected device(10AX115U1F45I1SG), PLL speed grade is 1.
+Info: qsys-generate succeeded.
+Info: Finished: Create block symbol file (.bsf)
+Info: 
+Info: Starting: Create HDL design files for synthesis
+Info: qsys-generate E:\e10_4_pro\rtl\pll_atxpll\altera_xcvr_atx_pll_ip.qsys --synthesis=VERILOG --output-directory=E:\e10_4_pro\rtl\pll_atxpll\altera_xcvr_atx_pll_ip --family="Arria 10" --part=10AX115U1F45I1SG
+Progress: Loading pll_atxpll/altera_xcvr_atx_pll_ip.qsys
+Progress: Reading input file
+Progress: Adding altera_xcvr_atx_pll_ip_inst [altera_xcvr_atx_pll_a10 16.0]
+Progress: Parameterizing module altera_xcvr_atx_pll_ip_inst
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: altera_xcvr_atx_pll_ip.altera_xcvr_atx_pll_ip_inst: For the selected device(10AX115U1F45I1SG), PLL speed grade is 1.
+Info: altera_xcvr_atx_pll_ip: "Transforming system: altera_xcvr_atx_pll_ip"
+Info: altera_xcvr_atx_pll_ip: Running transform generation_view_transform
+Info: altera_xcvr_atx_pll_ip: Running transform generation_view_transform took 0.000s
+Info: altera_xcvr_atx_pll_ip_inst: Running transform generation_view_transform
+Info: altera_xcvr_atx_pll_ip_inst: Running transform generation_view_transform took 0.000s
+Info: altera_xcvr_atx_pll_ip: Running transform merlin_avalon_transform
+Info: altera_xcvr_atx_pll_ip: Running transform merlin_avalon_transform took 0.007s
+Info: altera_xcvr_atx_pll_ip: "Naming system components in system: altera_xcvr_atx_pll_ip"
+Info: altera_xcvr_atx_pll_ip: "Processing generation queue"
+Info: altera_xcvr_atx_pll_ip: "Generating: altera_xcvr_atx_pll_ip"
+Info: altera_xcvr_atx_pll_ip: "Generating: altera_xcvr_atx_pll_ip_altera_xcvr_atx_pll_a10_160_l4medzq"
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./twentynm_xcvr_avmm.sv SYSTEM_VERILOG PATH ../../../alt_xcvr_core/nf/twentynm_xcvr_avmm.sv
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./alt_xcvr_resync.sv SYSTEM_VERILOG PATH ../../../../altera_xcvr_generic/ctrl/alt_xcvr_resync.sv
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./alt_xcvr_arbiter.sv SYSTEM_VERILOG PATH ../../../../altera_xcvr_generic/ctrl/alt_xcvr_arbiter.sv
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./a10_avmm_h.sv SYSTEM_VERILOG PATH ../../../altera_xcvr_native_phy/altera_xcvr_native_vi/a10_avmm_h.sv
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./altera_xcvr_native_a10_functions_h.sv SYSTEM_VERILOG PATH ../../../altera_xcvr_native_phy/altera_xcvr_native_vi/altera_xcvr_native_a10_functions_h.sv
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./alt_xcvr_atx_pll_rcfg_arb.sv SYSTEM_VERILOG PATH ../source/alt_xcvr_atx_pll_rcfg_arb.sv
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./a10_xcvr_atx_pll.sv SYSTEM_VERILOG PATH ../source/a10_xcvr_atx_pll.sv
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./alt_xcvr_pll_embedded_debug.sv SYSTEM_VERILOG PATH ../source/alt_xcvr_pll_embedded_debug.sv
+Info: altera_xcvr_atx_pll_ip_inst: add_fileset_file ./alt_xcvr_pll_avmm_csr.sv SYSTEM_VERILOG PATH ../source/alt_xcvr_pll_avmm_csr.sv
+Info: altera_xcvr_atx_pll_ip: Done "altera_xcvr_atx_pll_ip" with 2 modules, 14 files
+Info: qsys-generate succeeded.
+Info: Finished: Create HDL design files for synthesis

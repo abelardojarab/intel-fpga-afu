@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file
+   path="altera_avalon_dc_fifo_170/sim/altera_avalon_dc_fifo.v"
+   type="VERILOG"
+   library="altera_avalon_dc_fifo_170" />
+ <file
+   path="altera_avalon_dc_fifo_170/sim/altera_dcfifo_synchronizer_bundle.v"
+   type="VERILOG"
+   library="altera_avalon_dc_fifo_170" />
+ <file
+   path="altera_avalon_dc_fifo_170/sim/altera_std_synchronizer_nocut.v"
+   type="VERILOG"
+   library="altera_avalon_dc_fifo_170" />
+ <file
+   path="sim/dc_fifo_0.v"
+   type="VERILOG"
+   library="dc_fifo_0"
+   hasInlineConfiguration="true" />
+ <topLevel name="dc_fifo_0.dc_fifo_0" />
+ <deviceFamily name="arria10" />
+</simPackage>

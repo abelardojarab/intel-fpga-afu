@@ -1,0 +1,37 @@
+Info: Starting: Create block symbol file (.bsf)
+Info: qsys-generate E:\e10_4_pro\rtl\mac\altera_eth_10g_mac.qsys --block-symbol-file --output-directory=E:\e10_4_pro\rtl\mac\altera_eth_10g_mac --family="Arria 10" --part=10AX115U1F45I1SG
+Progress: Loading mac/altera_eth_10g_mac.qsys
+Progress: Reading input file
+Progress: Adding alt_em10g32_0 [alt_em10g32 16.0]
+Progress: Parameterizing module alt_em10g32_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: qsys-generate succeeded.
+Info: Finished: Create block symbol file (.bsf)
+Info: 
+Info: Starting: Create HDL design files for synthesis
+Info: qsys-generate E:\e10_4_pro\rtl\mac\altera_eth_10g_mac.qsys --synthesis=VERILOG --output-directory=E:\e10_4_pro\rtl\mac\altera_eth_10g_mac --family="Arria 10" --part=10AX115U1F45I1SG
+Progress: Loading mac/altera_eth_10g_mac.qsys
+Progress: Reading input file
+Progress: Adding alt_em10g32_0 [alt_em10g32 16.0]
+Progress: Parameterizing module alt_em10g32_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: altera_eth_10g_mac: "Transforming system: altera_eth_10g_mac"
+Info: altera_eth_10g_mac: Running transform generation_view_transform
+Info: altera_eth_10g_mac: Running transform generation_view_transform took 0.000s
+Info: alt_em10g32_0: Running transform generation_view_transform
+Info: alt_em10g32_0: Running transform generation_view_transform took 0.000s
+Info: altera_eth_10g_mac: Running transform merlin_avalon_transform
+Info: altera_eth_10g_mac: Running transform merlin_avalon_transform took 0.101s
+Info: altera_eth_10g_mac: "Naming system components in system: altera_eth_10g_mac"
+Info: altera_eth_10g_mac: "Processing generation queue"
+Info: altera_eth_10g_mac: "Generating: altera_eth_10g_mac"
+Info: altera_eth_10g_mac: "Generating: alt_em10g32"
+Info: altera_eth_10g_mac: Done "altera_eth_10g_mac" with 2 modules, 96 files
+Info: qsys-generate succeeded.
+Info: Finished: Create HDL design files for synthesis

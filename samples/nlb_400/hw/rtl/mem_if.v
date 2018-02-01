@@ -1,4 +1,9 @@
-import ccip_if_pkg::*;
+//
+// The AFU JSON adds a clock crossing of local_memory to pClk, making the majority of
+// this module unnecessary. It should be rewritten. For now, we just replace DCFIFOs
+// with SCFIFOs.
+//
+`define NO_CLOCK_CROSSING
 
 module mem_if # (
 	DATA_WIDTH = 64,
@@ -6,7 +11,7 @@ module mem_if # (
 	BYTEEN_WIDTH = 8,
 	BURSTCOUNT_WIDTH = 7
 )(
-	input wire Clk_400,
+	input wire pClk,
 	input wire DDR_USERCLK,
 	input wire SoftReset,
 	
@@ -98,7 +103,7 @@ always @(posedge DDR_USERCLK) begin
    DDR_readdatavalid_d0 <= DDR_readdatavalid;
 end
 
-always @(posedge Clk_400) begin
+always @(posedge pClk) begin
 	if (SoftReset) begin
 		afu_write <= 1'd0;
 	end else begin
@@ -108,6 +113,9 @@ always @(posedge Clk_400) begin
 end
 
 // Reset synchronizer
+`ifdef NO_CLOCK_CROSSING
+assign ddr_reset = SoftReset;
+`else
 resync #(
 	 .SYNC_CHAIN_LENGTH(2),
 	 .WIDTH(1),		 
@@ -118,6 +126,7 @@ resync #(
 	 .d(1'b0),
 	 .q(ddr_reset)
 );
+`endif
 
 assign {ddr_cmd, DDR_address, DDR_writedata, DDR_byteenable, DDR_burstcount, ddr_readdata_sel} = afu_cmd_dout_q;
 
@@ -137,7 +146,7 @@ always @(posedge DDR_USERCLK) begin
 	end
 end
 
-always @(posedge Clk_400) begin
+always @(posedge pClk) begin
 	ddr_res_q <= ddr_res_dout;
 	ddr_res_q2 <= ddr_res_q;
 	ddr_res_q3 <= ddr_res_q2;
@@ -173,7 +182,7 @@ resync #(
 	 .INIT_VALUE(0),
 	 .NO_CUT(0)
 ) timeout_sync (
-	 .clk(Clk_400),
+	 .clk(pClk),
 	 .reset(1'b0),
 	 .d({read_timeout, write_timeout}),
 	 .q({ddr_read_timeout, ddr_write_timeout})
@@ -255,7 +264,7 @@ write_dc_fifo afu_cmd_fifo (
 	.data(afu_cmd_din),
 	.wrreq(afu_write),
 	.rdreq(afu_read),
-	.wrclk(Clk_400),
+	.wrclk(pClk),
 	.rdclk(DDR_USERCLK),
 	.aclr(SoftReset),
 	.q(afu_cmd_dout),
@@ -268,7 +277,7 @@ read_dc_fifo afu_res_fifo (
 	.wrreq(write_ddr_data),
 	.rdreq(read_ddr_data),
 	.wrclk(DDR_USERCLK),
-	.rdclk(Clk_400),
+	.rdclk(pClk),
 	.aclr(SoftReset),
 	.q(ddr_res_dout),
 	.rdempty(ddr_res_empty),

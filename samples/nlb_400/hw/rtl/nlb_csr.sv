@@ -33,14 +33,15 @@
 // ***************************************************************************
 `default_nettype none
 `include "vendor_defines.vh"
-import ccip_if_pkg::*;
+`include "platform_if.vh"
+
 module nlb_csr #(parameter CCIP_VERSION_NUMBER=0)
 (
     Clk_400,                       //                              clk_pll:    16UI clock
     SoftReset,                      //                              rst:        ACTIVE HIGH soft reset
     re2cr_wrlock_n,
 
-`ifdef INCLUDE_DDR4  
+`ifdef PLATFORM_PROVIDES_LOCAL_MEMORY
     mem2cr_readdata,
     mem2cr_status,
     cr2mem_ctrl,
@@ -80,7 +81,7 @@ input  wire          Clk_400;               // 400MHz clock
 input  wire          SoftReset;
 input  wire          re2cr_wrlock_n;
 
-`ifdef INCLUDE_DDR4
+`ifdef PLATFORM_PROVIDES_LOCAL_MEMORY
 (* `KEEP_WIRE *) input wire [63:0]  mem2cr_readdata;
 (* `KEEP_WIRE *) input wire [63:0]  mem2cr_status;
 (* `KEEP_WIRE *) output wire [63:0]  cr2mem_ctrl;
@@ -160,7 +161,7 @@ localparam      CSR_STATUS1          = 16'h168;    // 32b                RO   nu
 localparam      CSR_ERROR            = 16'h170;    // 32b                RO   error
 localparam      CSR_STRIDE           = 16'h178;    // 32b           //  stride value  
 
-`ifdef INCLUDE_DDR4
+`ifdef PLATFORM_PROVIDES_LOCAL_MEMORY
 localparam      CSR_DDR4_WD          = 16'h180;		// 64b RW
 localparam      CSR_DDR4_RD          = 16'h188;		// 64b RW
 localparam      CSR_DDR4_ADDR        = 16'h190;		// 64b RW
@@ -246,7 +247,7 @@ assign     cr2re_num_lines       = func_csr_connect_4B(CSR_NUM_LINES, csr_reg[CS
 assign     cr2re_inact_thresh    = func_csr_connect_4B(CSR_INACT_THRESH,csr_reg[CSR_INACT_THRESH>>3]);
 assign     cr2re_cfg             = csr_reg[CSR_CFG>>3];
 
-`ifdef INCLUDE_DDR4  
+`ifdef PLATFORM_PROVIDES_LOCAL_MEMORY
 assign     cr2mem_ctrl           = csr_reg[CSR_DDR4_CTRL>>3];
 assign     cr2mem_address        = csr_reg[CSR_DDR4_ADDR>>3];
 assign     cr2mem_writedata      = csr_reg[CSR_DDR4_WD>>3];
@@ -529,7 +530,7 @@ begin
                   {32'h0, re2cr_error},
 		  64'h0
                  );
-`ifdef INCLUDE_DDR4
+`ifdef PLATFORM_PROVIDES_LOCAL_MEMORY
          set_attr(CSR_DDR4_WD,
                   NO_STAGED_CSR,
                   1'b1,

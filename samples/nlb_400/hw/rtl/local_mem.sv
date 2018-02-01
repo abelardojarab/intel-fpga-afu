@@ -1,36 +1,22 @@
-module local_mem #(
-   DATA_WIDTH = 64,
-	ADDR_WIDTH = 27,
-	BYTEEN_WIDTH = 8,
-	BURSTCOUNT_WIDTH = 7
-)(
-  input  wire          Clk_400,
+module local_mem
+  #(
+    parameter DATA_WIDTH = 64,
+    parameter NUM_LOCAL_MEM_BANKS=2,
+    parameter ADDR_WIDTH = local_mem_cfg_pkg::LOCAL_MEM_ADDR_WIDTH,
+    parameter BYTEEN_WIDTH = local_mem_cfg_pkg::LOCAL_MEM_DATA_N_BYTES,
+    parameter BURSTCOUNT_WIDTH = local_mem_cfg_pkg::LOCAL_MEM_BURST_CNT_WIDTH
+    )
+(
+  input  wire          pClk,
   input  wire          SoftReset,
   output wire [DATA_WIDTH-1:0]   mem2cr_readdata,
   output wire [DATA_WIDTH-1:0]   mem2cr_status,
   input wire [DATA_WIDTH-1:0]    cr2mem_ctrl,
   input wire [DATA_WIDTH-1:0]    cr2mem_address,
   input wire [DATA_WIDTH-1:0]    cr2mem_writedata,
-  input  wire          DDR4a_USERCLK,
-  input  wire          DDR4a_waitrequest,
-  input  wire [8*DATA_WIDTH-1:0]  DDR4a_readdata,
-  input  wire          DDR4a_readdatavalid,
-  output reg  [BURSTCOUNT_WIDTH-1:0]    DDR4a_burstcount /* synthesis preserve */,
-  output reg  [8*DATA_WIDTH-1:0]  DDR4a_writedata,
-  output reg  [ADDR_WIDTH-1:0]   DDR4a_address,
-  output reg           DDR4a_write,
-  output reg           DDR4a_read,
-  output reg  [DATA_WIDTH-1:0]   DDR4a_byteenable /* synthesis preserve */,
-  input  wire          DDR4b_USERCLK,
-  input  wire          DDR4b_waitrequest,
-  input  wire [8*DATA_WIDTH-1:0]  DDR4b_readdata,
-  input  wire          DDR4b_readdatavalid,
-  output reg  [BURSTCOUNT_WIDTH-1:0]    DDR4b_burstcount /* synthesis preserve */,
-  output reg  [8*DATA_WIDTH-1:0]  DDR4b_writedata,
-  output reg  [ADDR_WIDTH-1:0]   DDR4b_address,
-  output reg           DDR4b_write,
-  output reg           DDR4b_read,
-  output reg  [DATA_WIDTH-1:0]   DDR4b_byteenable /* synthesis preserve */
+
+  // Local memory interface
+  avalon_mem_if.to_fiu local_mem[NUM_LOCAL_MEM_BANKS]
 );
 
 reg [DATA_WIDTH-1:0]    cr2mem_ctrl_d0, cr2mem_ctrl_d1;
@@ -85,7 +71,7 @@ assign mem2cr_readdata = DDR4_readdata;
 /****************/
 /* Read csr reg */
 /****************/
-always @(posedge Clk_400) begin
+always @(posedge pClk) begin
 	cr2mem_ctrl_d0 <= cr2mem_ctrl;
 	cr2mem_address_d0 <= cr2mem_address;
 	cr2mem_writedata_d0 <= cr2mem_writedata;
@@ -103,8 +89,8 @@ assign csr_ddr4a_word_select = cr2mem_ctrl_d1[18:16];
 assign csr_ddr4a_burstcount  = cr2mem_ctrl_d1[26:20];	
 assign csr_ddr4a_address     = cr2mem_address_d1[ADDR_WIDTH-1:0];
 assign csr_ddr4a_writedata   = cr2mem_writedata_d1;
-assign DDR4a_writedata       = {8{temp_ddr4a_writedata}};	
-assign DDR4a_byteenable      = {8{temp_ddr4a_byteenable}};
+assign local_mem[0].writedata  = {8{temp_ddr4a_writedata}};	
+assign local_mem[0].byteenable = {8{temp_ddr4a_byteenable}};
 // DDR4b
 assign csr_ddr4b_write       = cr2mem_ctrl_d1[2];
 assign csr_ddr4b_read        = cr2mem_ctrl_d1[3];
@@ -113,21 +99,21 @@ assign csr_ddr4b_word_select = cr2mem_ctrl_d1[18:16];
 assign csr_ddr4b_burstcount  = cr2mem_ctrl_d1[26:20];
 assign csr_ddr4b_address     = cr2mem_address_d1[ADDR_WIDTH-1:0];
 assign csr_ddr4b_writedata   = cr2mem_writedata_d1;
-assign DDR4b_writedata       = {8{temp_ddr4b_writedata}};
-assign DDR4b_byteenable      = {8{temp_ddr4b_byteenable}};
-        
+assign local_mem[1].writedata  = {8{temp_ddr4b_writedata}};
+assign local_mem[1].byteenable = {8{temp_ddr4b_byteenable}};
+
 assign DDR4_readdata = ddr4b_data_select ? temp_ddr4b_readdata : temp_ddr4a_readdata;
 
 // Data is available 3 cycles after start_ddr4a_read|start_ddr4b_read is asserted
-always @(posedge Clk_400) begin
+always @(posedge pClk) begin
         if (SoftReset) begin			
-                data_valid_buf <= 3'b0;  
+                data_valid_buf <= 3'b0;
         end else begin
                 data_valid_buf <= {data_valid_buf[1:0], (start_ddr4a_read | start_ddr4b_read)};
         end
 end
 
-always @(posedge Clk_400) begin
+always @(posedge pClk) begin
         if (SoftReset) begin			
                 DDR_data_valid <= 1'b0;			
         end else if (csr_ddr4a_read | csr_ddr4b_read) begin
@@ -136,8 +122,8 @@ always @(posedge Clk_400) begin
                 DDR_data_valid <= 1'b1;
         end		
 end
-        
-always @(posedge Clk_400) begin
+
+always @(posedge pClk) begin
         if (SoftReset) begin
                 ddr4b_data_select <= 1'b0;
         end else if (csr_ddr4a_read | csr_ddr4b_read) begin			
@@ -149,7 +135,7 @@ end
 /* Wait for read */
 /*****************/
 // DDR4a
-always @(posedge Clk_400) begin
+always @(posedge pClk) begin
         if (SoftReset) begin			
                 read_ddr4a_data <= 1'b0;
                 start_ddr4a_read <= 1'b0;
@@ -167,7 +153,7 @@ always @(posedge Clk_400) begin
 end
 
 // DDR4b
-always @(posedge Clk_400) begin
+always @(posedge pClk) begin
         if (SoftReset) begin
                 start_ddr4b_read <= 1'b0;
                 read_ddr4b_data <= 1'b0;
@@ -183,7 +169,7 @@ always @(posedge Clk_400) begin
                 read_ddr4b_data <= 1'b0;
         end
 end
-        
+
 /****************************/
 /* Clock crossing interface */
 /****************************/
@@ -194,8 +180,8 @@ mem_if #(
 	.BYTEEN_WIDTH(BYTEEN_WIDTH),
 	.BURSTCOUNT_WIDTH(BURSTCOUNT_WIDTH)
 ) ddr4a_mem_if (
-        .Clk_400(Clk_400),
-        .DDR_USERCLK(DDR4a_USERCLK),
+        .pClk(pClk),
+        .DDR_USERCLK(local_mem[0].clk),
         .SoftReset(SoftReset),
         .write(csr_ddr4a_write),
         .read(csr_ddr4a_read),
@@ -210,15 +196,15 @@ mem_if #(
         .cmd_fifo_full(DDR4a_cmd_fifo_full),
         .ddr_write_timeout(DDR4a_write_timeout),
         .ddr_read_timeout(DDR4a_read_timeout),
-        
-        .DDR_waitrequest(DDR4a_waitrequest),	
-        .DDR_readdatavalid(DDR4a_readdatavalid),
-        .DDR_readdata(DDR4a_readdata),
-        .DDR_read(DDR4a_read),
-        .DDR_write(DDR4a_write),
-        .DDR_address(DDR4a_address),
+
+        .DDR_waitrequest(local_mem[0].waitrequest),	
+        .DDR_readdatavalid(local_mem[0].readdatavalid),
+        .DDR_readdata(local_mem[0].readdata),
+        .DDR_read(local_mem[0].read),
+        .DDR_write(local_mem[0].write),
+        .DDR_address(local_mem[0].address),
         .DDR_writedata(temp_ddr4a_writedata),
-        .DDR_burstcount(DDR4a_burstcount),
+        .DDR_burstcount(local_mem[0].burstcount),
         .DDR_byteenable(temp_ddr4a_byteenable)
 );		
 
@@ -229,8 +215,8 @@ mem_if # (
 	.BYTEEN_WIDTH(BYTEEN_WIDTH),
 	.BURSTCOUNT_WIDTH(BURSTCOUNT_WIDTH)
 ) ddr4b_mem_if (
-        .Clk_400(Clk_400),
-        .DDR_USERCLK(DDR4b_USERCLK),
+        .pClk(pClk),
+        .DDR_USERCLK(local_mem[0].clk),
         .SoftReset(SoftReset),
         .write(csr_ddr4b_write),
         .read(csr_ddr4b_read),
@@ -245,15 +231,15 @@ mem_if # (
         .cmd_fifo_full(DDR4b_cmd_fifo_full),
         .ddr_write_timeout(DDR4b_write_timeout),
         .ddr_read_timeout(DDR4b_read_timeout),
-        
-        .DDR_waitrequest(DDR4b_waitrequest),	
-        .DDR_readdatavalid(DDR4b_readdatavalid),
-        .DDR_readdata(DDR4b_readdata),
-        .DDR_read(DDR4b_read),
-        .DDR_write(DDR4b_write),
-        .DDR_address(DDR4b_address),
+
+        .DDR_waitrequest(local_mem[1].waitrequest),	
+        .DDR_readdatavalid(local_mem[1].readdatavalid),
+        .DDR_readdata(local_mem[1].readdata),
+        .DDR_read(local_mem[1].read),
+        .DDR_write(local_mem[1].write),
+        .DDR_address(local_mem[1].address),
         .DDR_writedata(temp_ddr4b_writedata),
-        .DDR_burstcount(DDR4b_burstcount),
+        .DDR_burstcount(local_mem[1].burstcount),
         .DDR_byteenable(temp_ddr4b_byteenable)
 );			
 

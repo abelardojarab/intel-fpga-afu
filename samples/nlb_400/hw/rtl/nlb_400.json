@@ -6,7 +6,25 @@
       "power": 0,
       "afu-top-interface":
          {
-            "name": "ccip_std_afu_avalon_mm_legacy_wires"
+            "name": "ccip_std_afu_avalon_mm",
+            "module-arguments" :
+               [
+                  {
+                     "class": "cci-p",
+                     "params":
+                        {
+                           "add-extra-timing-reg-stages": "auto"
+                        }
+                  },
+                  {
+                     "class": "local-memory",
+                     "optional": true,
+                     "params":
+                        {
+                           "clock": "pClk"
+                        }
+                  }
+               ]
          },
       "accelerator-clusters":
          [

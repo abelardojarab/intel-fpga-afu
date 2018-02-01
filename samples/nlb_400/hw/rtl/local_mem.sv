@@ -20,7 +20,7 @@ module local_mem
     input  logic [DATA_WIDTH-1:0] cr2mem_address,
     input  logic [DATA_WIDTH-1:0] cr2mem_writedata,
 
-    // Local memory interface
+    // Local memory interface, already moved to domain clk using the AFU JSON configuration
     avalon_mem_if.to_fiu local_mem[NUM_LOCAL_MEM_BANKS]
     );
 
@@ -96,7 +96,7 @@ module local_mem
             mem_wr_en <= 1'b0;
         end
 
-        // Bit 0 indicates writes
+        // Bit 0 indicates reads
         if (cr2mem_ctrl_d1[0])
         begin
             mem_rd_en <= 1'b1;
@@ -147,7 +147,7 @@ module local_mem
     begin
         mem2cr_status = t_data'(0);
         mem2cr_status[0] = mem_readdatavalid;
-        // Number of banks in the high 8 bits
+        // Tell the host the number of memory banks
         mem2cr_status[63:56] = NUM_LOCAL_MEM_BANKS;
 
         mem2cr_readdata = mem_readdata;
@@ -155,6 +155,8 @@ module local_mem
 
     always_ff @(posedge clk)
     begin
+        // Indicate a read response arrived. The flag is sticky and will remain
+        // set until the next read request.
         if (mem_readdatavalid_vec[mem_rd_bank_idx])
         begin
             mem_readdatavalid <= 1'b1;

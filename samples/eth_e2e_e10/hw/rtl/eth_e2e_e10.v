@@ -27,7 +27,7 @@
 //          - Edited for ETH E2E validation project
 
 module eth_e2e_e10 #(
-    parameter NUM_LN = 16   // no override
+    parameter NUM_LN = 4   // no override
 )(
 	pr_hssi_if.to_fiu hssi,
     // ETH CSR ports

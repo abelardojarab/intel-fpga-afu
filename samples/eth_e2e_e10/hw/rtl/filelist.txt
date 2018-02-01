@@ -64,8 +64,6 @@ trans_bit.v
 ./e10/fifo_dcfifo/dc_fifo/dc_fifo.qip
 ./e10/fifo_scfifo/sc_fifo/sc_fifo.qip
 ./e10/mac/altera_eth_10g_mac/altera_eth_10g_mac.qip
-./e10/phy/altera_eth_10gbaser_phy/altera_eth_10gbaser_phy.qip
-./e10/pll_atxpll/altera_xcvr_atx_pll_ip/altera_xcvr_atx_pll_ip.qip
 ./e10/pll_mpll/pll/pll.qip
 ./e10/xcvr_reset_controller/reset_control/reset_control.qip
 ./e10/altera_eth_10g_mac_base_r.v

@@ -557,7 +557,7 @@ begin
                   1'b1,
                   {64{RW}},
                   64'b0,
-		  64'h0000_0000_0000_000F
+		  64'h0000_0000_0000_0003
                  );
 	set_attr(CSR_DDR4_STATUS,
                   NO_STAGED_CSR,

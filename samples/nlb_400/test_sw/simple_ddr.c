@@ -91,15 +91,7 @@ fpga_result ddr_write
 )
 {
   fpga_result res = FPGA_OK;
-  uint32_t write_cmd = (byte_enable<<4) | (burst_count<<20);
-  if (ddr == DDRA) 
-  {
-    write_cmd |= 0x1;
-  }
-  else
-  {
-    write_cmd |= 0x4;
-  }
+  uint32_t write_cmd = 0x2 | (ddr << 2) | (byte_enable<<4) | (burst_count<<20);
 
   printf("MMIO Write to DDR Write Data Register\n");
   res = fpgaWriteMMIO64(*afc_handle, 0, CSR_DDR4_WD, data);
@@ -132,16 +124,7 @@ fpga_result ddr_read
   fpga_result res = FPGA_OK;
   uint64_t read_data = 0;
   // Although byte_enable is not used for reading from EMIF, we still set it for consistency purpose
-  uint32_t read_cmd = (byte_enable << 4) | (data_sel<<16) | (burst_count<<20);
-  
-  if (ddr == DDRA)
-  {
-    read_cmd |= 0x2;
-  }
-  else
-  {
-    read_cmd |= 0x8;
-  }
+  uint32_t read_cmd = 0x1 | (ddr << 2) | (byte_enable << 4) | (data_sel<<16) | (burst_count<<20);
 
   printf("MMIO Write to DDR Address Register\n");
   res = fpgaWriteMMIO64(*afc_handle, 0, CSR_DDR4_ADDR, address);

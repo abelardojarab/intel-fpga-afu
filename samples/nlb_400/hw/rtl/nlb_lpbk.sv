@@ -529,17 +529,16 @@ inst_arbiter (
 `ifdef PLATFORM_PROVIDES_LOCAL_MEMORY
 local_mem #(
 	.DATA_WIDTH(64),
-	.NUM_LOCAL_MEM_BANKS(NUM_LOCAL_MEM_BANKS),
-	.BYTEEN_WIDTH(8)
+	.NUM_LOCAL_MEM_BANKS(NUM_LOCAL_MEM_BANKS)
 ) inst_local_mem(
-  .pClk(Clk_400),
+  .clk(Clk_400),
   .SoftReset(SoftReset_mem),
-  .mem2cr_readdata(mem2cr_readdata),
-  .mem2cr_status(mem2cr_status),
-  .cr2mem_ctrl(cr2mem_ctrl),
-  .cr2mem_address(cr2mem_address),
-  .cr2mem_writedata(cr2mem_writedata),
-  .local_mem(local_mem)
+  .mem2cr_readdata,
+  .mem2cr_status,
+  .cr2mem_ctrl,
+  .cr2mem_address,
+  .cr2mem_writedata,
+  .local_mem
 );
 `endif
 

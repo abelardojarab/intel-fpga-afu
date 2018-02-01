@@ -35,8 +35,9 @@ module local_mem
 
 
     // Pick a 64 bit word from a memory line
-    typedef logic [local_mem_cfg_pkg::LOCAL_MEM_DATA_WIDTH / 64][63:0] t_mem_data64_vec;
-    function automatic t_data selectWord(t_local_mem_data d, t_word_idx w);
+    typedef logic [(local_mem_cfg_pkg::LOCAL_MEM_DATA_WIDTH / 64)-1:0][63:0] t_mem_data64_vec;
+    function automatic t_data selectWord(local_mem_cfg_pkg::t_local_mem_data d,
+                                         t_word_idx w);
         t_mem_data64_vec v;
         v = d;
         return t_data'(v[w]);

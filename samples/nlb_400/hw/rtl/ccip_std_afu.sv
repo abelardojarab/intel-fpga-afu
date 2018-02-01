@@ -96,6 +96,15 @@ ccip_interface_reg
 // It also serves as a reference design
 // =================================================================
 
+// Need a 100 MHz clock
+logic clk_100;
+generate
+    if (ccip_cfg_pkg::PCLK_FREQ == 400)
+        assign clk_100 = pClkDiv4;
+    else if (ccip_cfg_pkg::PCLK_FREQ == 200)
+        assign clk_100 = pClkDiv2;
+endgenerate
+
 nlb_lpbk
   #(
     .NUM_LOCAL_MEM_BANKS(NUM_LOCAL_MEM_BANKS)
@@ -104,7 +113,7 @@ nlb_lpbk
    (
     .Clk_400                    (pClk),
 `ifdef INCLUDE_REMOTE_STP
-    .Clk_100                    (pClkDiv4),
+    .Clk_100                    (clk_100),
 `endif
     .SoftReset                  (pck_cp2af_softReset_T1),
 

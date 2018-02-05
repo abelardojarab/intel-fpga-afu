@@ -8,8 +8,11 @@ COMMON_SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
 COMMON_SCRIPT_DIR_PATH="$(dirname $COMMON_SCRIPT_PATH)"
 
 usage_setup_sim() { 
-   echo "Usage: $0 -a <afu dir> -s <vcs|modelsim|questa> -b <opae base dir> [-r <rtl simulation dir>] [-m <EMIF_MODEL_BASIC|EMIF_MODEL_ADVANCED> memory model]" 1>&2;
-   exit 1;
+   echo "Usage: $0 -a <afu dir> -s <vcs|modelsim|questa> -b <opae base dir> [-p <platform>] [-v <variant>] [-r <rtl simulation dir>] [-m <EMIF_MODEL_BASIC|EMIF_MODEL_ADVANCED> memory model]" 1>&2
+   echo "" 1>&2
+   echo "Sources are normally found in <afu dir>/hw/rtl/filelist.txt.  When -v is" 1>&2
+   echo "set, the sources file becomes <afu dir>/hw/rtl/filelist_<variant>.txt." 1>&2
+   exit 1
 }
 
 find_default_sim() {
@@ -24,9 +27,11 @@ menu_setup_sim() {
    # Defaults
    s=`find_default_sim`
    b="${OPAE_BASEDIR}"
+   v=""
+   p="discrete"
 
    local OPTIND
-   while getopts ":a:r:s:b:m:" o; do
+   while getopts ":a:r:s:b:p:v:m:" o; do
       case "${o}" in
          a)
             a=${OPTARG}
@@ -39,11 +44,16 @@ menu_setup_sim() {
             ;;
          b)
             b=${OPTARG}            
-         ;;    
-        
+            ;;
+         p)
+            p=${OPTARG}
+            ;;
+         v)
+            v=${OPTARG}
+            ;;
          m)
             m=${OPTARG}            
-         ;;
+            ;;
       esac
    done
    shift $((OPTIND-1))
@@ -55,10 +65,18 @@ menu_setup_sim() {
 
    afu=${a}
    rtl=${afu}/hw/rtl
+   variant=${v}
+   platform=${p}
    rtl_sim_dir=${r}
    sim=${s}
    opae_base=${b}
    mem_model=${m}
+
+   rtl_filelist="${rtl}/filelist.txt"
+   if [ "${v}" != "" ]; then
+      rtl_filelist="${rtl}/filelist_${variant}.txt"
+   fi
+
    if [ -z "$rtl_sim_dir" ]
    then
       # use default
@@ -122,17 +140,21 @@ menu_run_app() {
 }
 
 usage_regress() { 
-   echo "Usage: $0 -a <afu dir> -s <vcs|modelsim|questa> -b <opae base dir> [-i <opae install path>] [-r <rtl simulation dir>] [-m <EMIF_MODEL_BASIC|EMIF_MODEL_ADVANCED> memory model]" 1>&2;
-   exit 1; 
+   echo "Usage: $0 -a <afu dir> -s <vcs|modelsim|questa> -b <opae base dir> [-p <platform>] [-v <variant>]" 1>&2
+   echo "                       [-i <opae install path>] [-r <rtl simulation dir>]" 1>&2
+   echo "                       [-m <EMIF_MODEL_BASIC|EMIF_MODEL_ADVANCED> memory model]" 1>&2
+   exit 1
 }
 
 menu_regress() {
    # Defaults
    s=`find_default_sim`
    b="${OPAE_BASEDIR}"
+   v=""
+   p="discrete"
 
    local OPTIND
-   while getopts ":a:r:s:b:f:i:m:" o; do
+   while getopts ":a:r:s:b:p:v:f:i:m:" o; do
       case "${o}" in
          a)
             a=${OPTARG}
@@ -145,6 +167,12 @@ menu_regress() {
             ;;
          b)
             b=${OPTARG}            
+            ;;
+         p)
+            p=${OPTARG}
+            ;;
+         v)
+            v=${OPTARG}
             ;;
          m)
             m=${OPTARG}            
@@ -159,6 +187,8 @@ menu_regress() {
    afu=${a}
    rtl=${a}/hw/rtl
    app=${a}/sw
+   variant=${v}
+   platform=${p}
    rtl_sim_dir=${r}
    sim=${s};
    opae_base=${b}
@@ -171,6 +201,8 @@ menu_regress() {
    fi
 
    echo "afu=$afu, rtl=$rtl, app=$app, sim=$sim, base=$opae_base mem_model=$mem_model opae_install=$opae_install"
+   echo "variant=$variant"
+   echo "platform=$platform"
    # mandatory args
    if [ -z "${a}" ] || [ -z "${s}" ] || [ -z "${b}" ]; then
       usage_regress;
@@ -199,15 +231,38 @@ setup_sim_dir() {
    # Ensure that the OPAE build is on the path during regression runs.
    export PATH=${PATH}:${opae_base}/inst/bin:${opae_base}/build/bin
 
-   # Copy ASE source to RTL simulation build directory
-   rm -rf $rtl_sim_dir
-   rsync -a $opae_base/ase/ $rtl_sim_dir/
+   echo "Configuring ASE in ${rtl_sim_dir}"
+   afu_sim_setup --source "${rtl_filelist}" --platform ${platform} --tool ${sim} --force \
+                 --ase-mode 1 --ase-verbose \
+                 "${rtl_sim_dir}"
 
-   # get path of simulation afu dir
-   sim_afu_path=$rtl_sim_dir/sim_afu
-   rm -rf $sim_afu_path
-   # copy afu sources here (except ccip_if_pkg.sv which is already included in ASE RTL source)
-   rsync -a $rtl/ $sim_afu_path/ --exclude ccip_if_pkg.sv --exclude green_top.sv
+   pushd "$rtl_sim_dir"
+
+   # Add a place holder for QSYS generated Verilog
+   touch vlog_files.list qsys_sim_files.list
+   echo "-F qsys_sim_files.list" >> vlog_files.list
+
+   # AFUs should be getting these from platform_if.vh.  Once legacy AFUs are
+   # gone, we can remove these.
+   echo "SNPS_VLOGAN_OPT += +define+INCLUDE_DDR4" >> ase_sources.mk
+   echo "MENT_VLOG_OPT += +define+INCLUDE_DDR4" >> ase_sources.mk
+
+   # Suppress some ModelSim warnings
+   echo "MENT_VLOG_OPT += -suppress 3485,3584" >> ase_sources.mk
+   echo "MENT_VSIM_OPT += -suppress 3485,3584" >> ase_sources.mk
+
+   # add non-standard text macros (if any)
+   # specify them using add_text_macros
+   if [ "${add_macros}" != "" ]; then
+      echo "SNPS_VLOGAN_OPT += $add_macros" >> ase_sources.mk
+      echo "MENT_VLOG_OPT += $add_macros" >> ase_sources.mk
+      echo "MENT_VSIM_OPT += $add_macros" >> ase_sources.mk
+   fi
+
+   echo "ASE_DISCRETE_EMIF_MODEL=$mem_model" >> ase_sources.mk
+   echo "OPAE_BASEDIR=$opae_base" >> ase_sources.mk
+
+   popd
 }
 
 setup_quartus_home() {
@@ -226,16 +281,51 @@ setup_quartus_home() {
 }
 
 gen_qsys() {
-   # generate qsys systems
-   pushd $rtl_sim_dir/sim_afu
+   # Copy the source tree to the RTL simulator tree in order to avoid
+   # polluting the source tree with Qsys-generated files.  Qsys doesn't
+   # have a mode in which files are written outside the tree.
+   rm -rf "$rtl_sim_dir/qsys_sim_src"
+   rsync -a "$rtl/" "$rtl_sim_dir/qsys_sim_src/"
 
-   find . -name *.qsys -exec $QUARTUS_HOME/sopc_builder/bin/qsys-generate {} --simulation=VERILOG \;
-   find . -name *.ip -exec $QUARTUS_HOME/sopc_builder/bin/qsys-generate {} --simulation=VERILOG \;
+   pushd "$rtl_sim_dir"
+
+   # Use the copied file list
+   qsys_sim_filelist=qsys_sim_src/`basename ${rtl_filelist}`
+
+   # Generate Qsys
+   for q in `rtl_src_config --abs --qsys "${qsys_sim_filelist}" | grep .qsys$`; do
+      $QUARTUS_HOME/sopc_builder/bin/qsys-generate "${q}" --synthesis=VERILOG
+   done
 
    # remove _inst.v , _bb.v and *.vhd
-   find $PWD -name *.vhd -exec rm -rf {} \;
-   find $PWD -name '*_inst.v' -exec rm -rf {} \;
-   find $PWD -name '*_bb.v' -exec rm -rf {} \;
+   find qsys_sim_src -name *.vhd -exec rm -rf {} \;
+   find qsys_sim_src -name '*_inst.v' -exec rm -rf {} \;
+   find qsys_sim_src -name '*_bb.v' -exec rm -rf {} \;
+
+   # There are duplicate generated files in the Qsys tree.  Copy all generated
+   # Verilog to a single directory, forcing the base names to be unique.
+   rm -rf qsys_sim_files
+   mkdir qsys_sim_files
+   for q in `rtl_src_config --abs --qsys "${qsys_sim_filelist}"`; do
+      # Search in directories with the same names as Qsys files
+      find "${q%.*}/" -name synth -type d | \
+         xargs -n1 -IAAA find AAA -name "*.*v" | \
+         xargs -n1 -IAAA cp -f AAA qsys_sim_files/
+   done
+
+   # One final hack: remove files with names matching base names already listed
+   # as sources, assuming they are duplicates.
+   for q in `rtl_src_config --sim "${qsys_sim_filelist}" | grep '.*v$'`; do
+      b=`basename "$q"`
+      if [ -f "qsys_sim_files/${b}" ]; then
+         echo "Removing duplicate Qsys ${b} already named in source list"
+         rm qsys_sim_files/${b}
+      fi
+   done
+
+   # Add generated Verilog to the list of sources
+   find qsys_sim_files -type f > qsys_sim_files.list
+
    popd
 }
 
@@ -281,44 +371,16 @@ get_mti_home() {
 }
 
 setup_ase() {
-   pushd $rtl_sim_dir
-   rm -rf ase_sources.mk
-   
+   echo "Using ${sim} simulator"
+
    if [ "$sim" == "vcs" ] ; then
-      echo "Using VCS"
-
       get_vcs_home
-
-      # Else, try to auto-detect VCS_HOME
-      ./scripts/generate_ase_environment.py -t VCS -p discrete sim_afu
-      echo "SNPS_VLOGAN_OPT+= +define+INCLUDE_DDR4 +define+DDR_ADDR_WIDTH=26" >> ase_sources.mk
-
-      # add non-standard text macros (if any)
-      # specify them using add_text_macros  
-      echo "SNPS_VLOGAN_OPT+= $add_macros" >> ase_sources.mk      
    elif [ "$sim" == "modelsim" ] || [ "$sim" == "questa" ] ; then
       get_mti_home
-
-      echo "Info: MTI_ROOTDIR set to $MTI_HOME"
-      # ASE treats modelsim and questa similarly
-      ./scripts/generate_ase_environment.py -t QUESTA -p discrete sim_afu
-      echo "MENT_VLOG_OPT += +define+INCLUDE_DDR4 +define+DDR_ADDR_WIDTH=26 -suppress 3485,3584" >> ase_sources.mk
-      echo "MENT_VLOG_OPT += $add_macros" >> ase_sources.mk
-      echo "MENT_VSIM_OPT += -suppress 3485,3584" >> ase_sources.mk
-
-      # add non-standard text macros (if any)
-      # specify them using add_text_macros      
-      echo "MENT_VSIM_OPT += $add_macros" >> ase_sources.mk
    else
-      echo "Unknown Simulator $sim"
-      exit 1;
+      echo "Unknown simulator"
+      exit 1
    fi
-
-   echo "ASE_DISCRETE_EMIF_MODEL=$mem_model" >> ase_sources.mk
-   echo "OPAE_BASEDIR=$opae_base" >> ase_sources.mk
-   echo "ASE configured in `pwd`"
-
-   popd
 }
 
 run_sim() {
@@ -418,11 +480,6 @@ configure_ase_reg_mode() {
 }
 
 copy_qsys_ip_files () {
-    QSYS_NAME=$1
-    find $sim_afu_path/qsys/$QSYS_NAME/ \
-    $sim_afu_path/qsys/ip/$QSYS_NAME/ \
-    -name synth -type d | \
-    \
-    xargs -n1 -IAAA find AAA -name "*.*v" | \
-    xargs -n1 -IAAA cp -f AAA $sim_afu_path/qsys_sim_files
+   # No longer needed
+   return 0
 }

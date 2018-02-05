@@ -44,6 +44,3 @@ qsys/ip/msgdma_bbb/msgdma_bbb_mm_bridge_1.ip
 qsys/ip/msgdma_bbb/msgdma_bbb_pipe_stage_0.ip
 qsys/ip/msgdma_bbb/msgdma_bbb_pipe_stage_m.ip
 qsys/ip/msgdma_bbb/msgdma_bbb_magic_number_rom_0.ip
-
-# This will be generated during simulator configuration
-SI:qsys_sim_filelist.txt

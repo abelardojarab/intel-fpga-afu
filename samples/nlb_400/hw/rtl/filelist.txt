@@ -1,0 +1,2 @@
+# Default build when no variant is specified
+C:filelist_mode_0.txt

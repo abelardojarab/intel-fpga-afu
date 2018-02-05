@@ -39,7 +39,7 @@ menu_setup_sim "$@"
 # If the AFU provides a setup script then use it.
 setup_sim="${SCRIPT_DIR_PATH}/std_setup_sim.sh"
 if [ -f "${afu}/hw/sim/setup_sim.sh" ]; then
-   "${afu}/hw/sim/setup_sim.sh" -a "$afu" -b "$opae_base" -s "$sim" -r "$rtl_sim_dir"
+   "${afu}/hw/sim/setup_sim.sh" "$@"
 else
    # There is no AFU-specific script
    setup_sim_dir

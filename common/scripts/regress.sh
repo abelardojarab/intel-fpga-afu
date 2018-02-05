@@ -39,8 +39,16 @@ SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
 SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
 
 . ${SCRIPT_DIR_PATH}/sim_common.sh
-
 menu_regress "$@"
-${SCRIPT_DIR_PATH}/setup_sim.sh -a $afu -b $opae_base -s $sim -r $rtl_sim_dir -m $mem_model &
-${SCRIPT_DIR_PATH}/run_app.sh -a $afu -b $opae_base -r $rtl_sim_dir -i $opae_install
+
+sim_args="-a $afu -b $opae_base -s $sim -p $platform -r $rtl_sim_dir -m $mem_model"
+if [ "$variant" != "" ]; then
+    sim_args="${sim_args} -v $variant"
+fi
+
+run_args="-a $afu -b $opae_base -r $rtl_sim_dir -i $opae_install"
+
+rm -rf "${rtl_sim_dir}"
+${SCRIPT_DIR_PATH}/setup_sim.sh ${sim_args} &
+${SCRIPT_DIR_PATH}/run_app.sh ${run_args}
 kill_sim

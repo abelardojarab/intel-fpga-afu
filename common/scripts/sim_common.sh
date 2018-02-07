@@ -7,151 +7,27 @@ COMMON_SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
 # Get directory of script path
 COMMON_SCRIPT_DIR_PATH="$(dirname $COMMON_SCRIPT_PATH)"
 
-usage_setup_sim() { 
-   echo "Usage: $0 -a <afu dir> -s <vcs|modelsim|questa> -b <opae base dir> [-p <platform>] [-v <variant>] [-r <rtl simulation dir>] [-m <EMIF_MODEL_BASIC|EMIF_MODEL_ADVANCED> memory model]" 1>&2
-   echo "" 1>&2
-   echo "Sources are normally found in <afu dir>/hw/rtl/filelist.txt.  When -v is" 1>&2
-   echo "set, the sources file becomes <afu dir>/hw/rtl/filelist_<variant>.txt." 1>&2
-   exit 1
-}
-
-find_default_sim() {
-   if [ -x "$(command -v vcs)" ] ; then
-      echo vcs
-   elif [ -x "$(command -v vsim)" ] ; then
-      echo questa
-   fi
-}
-
-menu_setup_sim() {
-   # Defaults
-   s=`find_default_sim`
-   b="${OPAE_BASEDIR}"
-   v=""
-   p="discrete"
-
-   local OPTIND
-   while getopts ":a:r:s:b:p:v:m:" o; do
-      case "${o}" in
-         a)
-            a=${OPTARG}
-            ;;
-         r)
-            r=${OPTARG}
-            ;;
-         s)
-            s=${OPTARG}            
-            ;;
-         b)
-            b=${OPTARG}            
-            ;;
-         p)
-            p=${OPTARG}
-            ;;
-         v)
-            v=${OPTARG}
-            ;;
-         m)
-            m=${OPTARG}            
-            ;;
-      esac
-   done
-   shift $((OPTIND-1))
-
-   # mandatory args
-   if [ -z "${a}" ] || [ -z "${s}" ] || [ -z "${b}" ]; then
-      usage_setup_sim;
-   fi
-
-   afu=${a}
-   rtl=${afu}/hw/rtl
-   variant=${v}
-   platform=${p}
-   rtl_sim_dir=${r}
-   sim=${s}
-   opae_base=${b}
-   mem_model=${m}
-
-   rtl_filelist="${rtl}/filelist.txt"
-   if [ "${v}" != "" ]; then
-      rtl_filelist="${rtl}/filelist_${variant}.txt"
-   fi
-
-   if [ -z "$rtl_sim_dir" ]
-   then
-      # use default
-      rtl_sim_dir=$opae_base/rtl_sim
-   fi
-
-   if [[ "$sim" != "vcs" ]] && [[ "$sim" != "questa" ]] && [[ "$sim" != "modelsim" ]] ; then
-      echo "Supported simulators are vcs, modelsim and questa. You requsted $sim"
-      usage_setup_sim;
-   fi
-
-   if [[ ! $mem_model ]]; then
-      # use default
-      mem_model=EMIF_MODEL_BASIC
-   fi
-}
-
-usage_run_app() { 
-   echo "Usage: $0 -a <afu dir> -b <opae base dir> [-i <opae install path>] [-r <rtl simulation dir>]" 1>&2;
-   exit 1; 
-}
-
-menu_run_app() {
-   # Defaults
-   b="${OPAE_BASEDIR}"
-
-   local OPTIND
-   while getopts ":a:r:i:b:" o; do
-      case "${o}" in
-         a)
-            a=${OPTARG}
-            ;;
-         r)
-            r=${OPTARG}
-            ;;
-         i)
-            i=${OPTARG}
-            ;;
-         b)
-            b=${OPTARG}
-            ;;
-      esac
-   done
-   shift $((OPTIND-1))
-
-   # mandatory args
-   if [ -z "${a}" ] || [ -z "${b}" ]; then
-      usage_run_app;
-   fi
-
-   afu=${a}
-   app_base=${a}/sw
-   rtl_sim_dir=${r}
-   opae_base=${b}
-   opae_install=${i};
-   if [ -z "$rtl_sim_dir" ]
-   then
-      # use default
-      rtl_sim_dir=$opae_base/rtl_sim
-   fi
-}
-
-usage_regress() { 
-   echo "Usage: $0 -a <afu dir> -s <vcs|modelsim|questa> -b <opae base dir> [-p <platform>] [-v <variant>]" 1>&2
-   echo "                       [-i <opae install path>] [-r <rtl simulation dir>]" 1>&2
+usage() {
+   echo "Usage: $0 -a <afu dir> -r <rtl simulation dir>" 1>&2
+   echo "                       [-s <vcs|modelsim|questa>] [-p <platform>] [-v <variant>]" 1>&2
+   echo "                       [-b <opae base dir>] [-i <opae install path>]" 1>&2
    echo "                       [-m <EMIF_MODEL_BASIC|EMIF_MODEL_ADVANCED> memory model]" 1>&2
    exit 1
 }
 
-menu_regress() {
+parse_args() {
    # Defaults
-   s=`find_default_sim`
-   b="${OPAE_BASEDIR}"
    v=""
+   r=""
    p="discrete"
+   b="${OPAE_BASEDIR}"
+   i=""
+
+   if [ -x "$(command -v vcs)" ] ; then
+      s="vcs"
+   elif [ -x "$(command -v vsim)" ] ; then
+      s="questa"
+   fi
 
    local OPTIND
    while getopts ":a:r:s:b:p:v:f:i:m:" o; do
@@ -186,37 +62,41 @@ menu_regress() {
 
    afu=${a}
    rtl=${a}/hw/rtl
-   app=${a}/sw
+   app_base=${a}/sw
    variant=${v}
    platform=${p}
    rtl_sim_dir=${r}
-   sim=${s};
+   sim=${s}
+   mem_model=${m}
    opae_base=${b}
-   mem_model=${m};
-   opae_install=${i};
-   if [ -z "$rtl_sim_dir" ]
-   then
-      # use default
-      rtl_sim_dir=$opae_base/rtl_sim
+   opae_install=${i}
+
+   rtl_filelist="${rtl}/filelist.txt"
+   if [ "${v}" != "" ]; then
+      rtl_filelist="${rtl}/filelist_${variant}.txt"
    fi
 
-   echo "afu=$afu, rtl=$rtl, app=$app, sim=$sim, base=$opae_base mem_model=$mem_model opae_install=$opae_install"
-   echo "variant=$variant"
-   echo "platform=$platform"
    # mandatory args
-   if [ -z "${a}" ] || [ -z "${s}" ] || [ -z "${b}" ]; then
-      usage_regress;
+   if [ -z "${a}" ] || [ -z "${s}" ] || [ -z "${r}" ]; then
+      usage;
    fi
 
    if [[ "$sim" != "vcs" ]] && [[ "$sim" != "questa" ]] && [[ "$sim" != "modelsim" ]]   ; then
       echo "Supported simulators are VCS, Modelsim and Questa. You specified $sim"
-      usage_regress;
+      usage;
    fi
 
    if [[ ! $mem_model ]]; then
       # use default
       mem_model=EMIF_MODEL_BASIC
    fi
+
+   echo "afu=$afu, rtl=$rtl, app_base=$app_base, sim=$sim, mem_model=$mem_model, variant=$variant, platform=$platform"
+   echo "rtl_sim_dir=$rtl_sim_dir"
+}
+
+menu_run_app() {
+   parse_args "$@"
 }
 
 # Quiet pushd/popd
@@ -228,9 +108,6 @@ popd () {
 }
 
 setup_sim_dir() {
-   # Ensure that the OPAE build is on the path during regression runs.
-   export PATH=${PATH}:${opae_base}/inst/bin:${opae_base}/build/bin
-
    echo "Configuring ASE in ${rtl_sim_dir}"
    afu_sim_setup --source "${rtl_filelist}" --platform ${platform} --tool ${sim} --force \
                  --ase-mode 1 --ase-verbose \
@@ -260,14 +137,12 @@ setup_sim_dir() {
    fi
 
    echo "ASE_DISCRETE_EMIF_MODEL=$mem_model" >> ase_sources.mk
-   echo "OPAE_BASEDIR=$opae_base" >> ase_sources.mk
 
    popd
 }
 
 setup_quartus_home() {
    # use QUARTUS_HOME (from env)
-   # QSYS_HOME=$QUARTUS_HOME/sopc_builder/bin 
    if [ -z "$QUARTUS_HOME" ] ; then      
       # env not found
       echo "Your environment did not set QUARTUS_HOME. Trying to detect QUARTUS_HOME.. "
@@ -381,16 +256,24 @@ setup_ase() {
       echo "Unknown simulator"
       exit 1
    fi
+
+   setup_quartus_home
+}
+
+build_sim() {
+   setup_ase
+
+   pushd $rtl_sim_dir
+   # run ase make
+   make platform=ASE_PLATFORM_DCP
+   popd
 }
 
 run_sim() {
-   # The contents of setup_ase used to be in run_sim. When scripts all invoke setup_ase
-   # explicitly we can remove this.
    setup_ase
 
-   # run ase make
    pushd $rtl_sim_dir
-   make platform=ASE_PLATFORM_DCP
+   # build_sim must already have been called
    make sim
    popd
 }
@@ -407,10 +290,6 @@ wait_for_sim_ready() {
 
 setup_app_env() {
    # setup env variables
-   if [[ $opae_install ]]; then
-      # non-RPM flow
-      export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$opae_install/lib
-	fi
    export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$app_base
    export ASE_WORKDIR=`readlink -m ${rtl_sim_dir}/work`
    echo "ASE workdir is $ASE_WORKDIR"
@@ -444,25 +323,8 @@ exec_app() {
 run_app() {
    setup_app_env
    wait_for_sim_ready
-   pushd $app_base
-
-   # Build the software application
-   # make prefix=$opae_base USE_ASE=1
-
-   # Build the software application
-   if [[ $opae_install ]]; then
-      # non-RPM flow
-      echo "Non-RPM Flow"
-      make prefix=$opae_install USE_ASE=1
-   else
-      # RPM flow
-      echo "RPM Flow"
-      make USE_ASE=1
-   fi
-
-   # find the executable and run
-   find . -type f -executable -exec {} \;
-   popd
+   build_app
+   exec_app
 }
 
 kill_sim() {
@@ -477,9 +339,4 @@ configure_ase_reg_mode() {
    rm -f $rtl_sim_dir/sim_afu/ase.cfg
    echo "ASE_MODE = 4" >> $rtl_sim_dir/sim_afu/ase.cfg
    find $ASE_WORKDIR -name ase.cfg -exec cp $rtl_sim_dir/sim_afu/ase.cfg {} \;
-}
-
-copy_qsys_ip_files () {
-   # No longer needed
-   return 0
 }

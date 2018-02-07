@@ -39,16 +39,20 @@ SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
 SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
 
 . ${SCRIPT_DIR_PATH}/sim_common.sh
-menu_regress "$@"
+parse_args "$@"
 
-sim_args="-a $afu -b $opae_base -s $sim -p $platform -r $rtl_sim_dir -m $mem_model"
+sim_args="-a $afu -s $sim -p $platform -r $rtl_sim_dir -m $mem_model"
 if [ "$variant" != "" ]; then
     sim_args="${sim_args} -v $variant"
 fi
 
-run_args="-a $afu -b $opae_base -r $rtl_sim_dir -i $opae_install"
-
 rm -rf "${rtl_sim_dir}"
-${SCRIPT_DIR_PATH}/setup_sim.sh ${sim_args} &
-${SCRIPT_DIR_PATH}/run_app.sh ${run_args}
+# Construct and compile the ASE simulator instance
+${SCRIPT_DIR_PATH}/setup_sim.sh ${sim_args}
+# Run ASE in the background
+run_sim &
+# Run the connected software in the foreground
+${SCRIPT_DIR_PATH}/run_app.sh "$@"
+
+# Done.  Force ASE to exit.
 kill_sim

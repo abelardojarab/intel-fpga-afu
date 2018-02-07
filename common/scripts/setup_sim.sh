@@ -33,8 +33,7 @@ SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
 SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
 
 . ${SCRIPT_DIR_PATH}/sim_common.sh
-
-menu_setup_sim "$@"
+parse_args "$@"
 
 # If the AFU provides a setup script then use it.
 setup_sim="${SCRIPT_DIR_PATH}/std_setup_sim.sh"
@@ -45,5 +44,5 @@ else
    setup_sim_dir
    setup_quartus_home
    gen_qsys
-   run_sim
+   build_sim
 fi

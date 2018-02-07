@@ -33,12 +33,11 @@ SCRIPT_PATH=`readlink -f ${BASH_SOURCE[0]}`
 SCRIPT_DIR_PATH="$(dirname $SCRIPT_PATH)"
 
 . ${SCRIPT_DIR_PATH}/sim_common.sh
-
-menu_run_app "$@"
+parse_args "$@"
 
 # If the AFU provides a setup script then use it.
 if [ -f "${afu}/hw/sim/run_app.sh" ]; then
-   "${afu}/hw/sim/run_app.sh" -a "$afu" -b "$opae_base" -r "$rtl_sim_dir" -i "$opae_install"
+   "${afu}/hw/sim/run_app.sh" "$@"
 else
    # There is no AFU-specific script
    run_app

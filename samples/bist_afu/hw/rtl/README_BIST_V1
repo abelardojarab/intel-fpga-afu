@@ -1,0 +1,48 @@
+// ***************************************************************************
+//
+//        Copyright (C) 2008-2013 Intel Corporation All Rights Reserved.
+//
+// Create Date:         10/29/2017
+// Modified:            01/24/2018
+// 
+// ***************************************************************************
+// BIST updated to run at 400MHz in A10.
+// Removed arbitration logic, only support LPBK1 mode
+//
+//
+// BIST v1.0 is a reference CCI attached Accelerator Function Unit (CAFU) designed for CCI v2.0
+// 
+//  BIST Revision and feature tracking
+//-------------------------------------------------------------------------------------------
+//      Rev     CCI spec        Comments
+//-------------------------------------------------------------------------------------------
+//      1.0     0.9             Tests DDR4 for stuck bits, avalon byte enable, and random read/writes
+//-------------------------------------------------------------------------------------------
+//
+// File structure-
+// .
+// |-- README_BIST_V1.1                                             // That is me
+// |-- include_files                                               // all include packages are under here
+// |   |-- altr                                                    // For Altera project- Add this dir to library path
+// |   |   |-- bist_cfg_pkg.vh
+// |   |   `-- vendor_defines.vh
+// |   |-- common
+// |   |   |-- bist_cfg_pkg_altr.vh
+// |   |   |-- bist_cfg_pkg_xlnx.vh
+// |   |   `-- vendor_defines.vh
+// |   `-- xlnx                                                    // For Xilinx project- Add this dir to library path
+// |       |-- bist_cfg_pkg.vh
+// |       `-- vendor_defines.vh
+// |-- arbiter.v                                                   // All the test modules
+// |-- bist_gfifo.v
+// |-- bist_gram_sdp.v
+// |-- bist_lpbk.v                                                  // -Micro Architecture Spec is contained in this file-
+// |-- bist_sb_gfifo.v
+// |-- bist_top.sv
+// |-- requestor.v
+// |-- test_lpbk1.v
+// |-- test_lpbk2.v
+// |-- test_lpbk3.v
+// |-- test_rdwr.v
+// `-- test_sw1.v
+// 

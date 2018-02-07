@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<preferences>
+ <debug showDebugMenu="0" />
+ <library expandedCategories="Existing IP Variants,Project,Library" />
+ <window width="1100" height="800" x="0" y="25" />
+ <systemtable filter="All Interfaces">
+  <columns>
+   <connections preferredWidth="31" />
+  </columns>
+ </systemtable>
+</preferences>

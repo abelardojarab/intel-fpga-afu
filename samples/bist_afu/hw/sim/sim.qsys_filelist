@@ -1,0 +1,4 @@
+QSYS_IPs/RAM/req_C1TxRAM2PORT.qsys
+QSYS_IPs/RAM/lpbk1_RdRspRAM2PORT.qsys
+QSYS_IPs/FIFO/read_dc_fifo.ip
+QSYS_IPs/FIFO/write_dc_fifo.ip

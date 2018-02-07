@@ -19,7 +19,7 @@ module mem_csr #(
    parameter DDR_ADDR_WIDTH=26
 ) (
 	// ---------------------------global signals-------------------------------------------------
-  input	Clk_400,	  // Core clock. CCI interface is synchronous to this clock.
+  input	clk,
   input	SoftReset,	// CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH
 
 	// ---------------------------IF signals between CCI and AFU  --------------------------------
@@ -70,7 +70,7 @@ assign mmioHdr = t_ccip_c0_ReqMmioHdr'(cp2af_sRxPort.c0.hdr);
 logic [63:0] scratch_reg = '0;
 logic [2:0]  mem_RDWR = '0;
 
-always@(posedge Clk_400) begin
+always@(posedge clk) begin
   if(SoftReset) begin
     af2cp_sTxPort.c1.hdr        <= '0;
     af2cp_sTxPort.c1.valid      <= '0;

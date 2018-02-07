@@ -42,29 +42,6 @@ module ccip_std_afu(
   pck_cp2af_softReset,       // CCI-P ACTIVE HIGH Soft Reset
   pck_cp2af_pwrState,        // CCI-P AFU Power State
   pck_cp2af_error,           // CCI-P Protocol Error Detected
-  
-`ifdef INCLUDE_DDR4
-  DDR4a_USERCLK,
-  DDR4a_waitrequest,
-  DDR4a_readdata,
-  DDR4a_readdatavalid,
-  DDR4a_burstcount,
-  DDR4a_writedata,
-  DDR4a_address,
-  DDR4a_write,
-  DDR4a_read,
-  DDR4a_byteenable,
-  DDR4b_USERCLK,
-  DDR4b_waitrequest,
-  DDR4b_readdata,
-  DDR4b_readdatavalid,
-  DDR4b_burstcount,
-  DDR4b_writedata,
-  DDR4b_address,
-  DDR4b_write,
-  DDR4b_read,
-  DDR4b_byteenable,
-`endif
 
   // Interface structures
   pck_cp2af_sRx,             // CCI-P Rx Port
@@ -78,28 +55,7 @@ module ccip_std_afu(
   input           wire             pck_cp2af_softReset;      // CCI-P ACTIVE HIGH Soft Reset
   input           wire [1:0]       pck_cp2af_pwrState;       // CCI-P AFU Power State
   input           wire             pck_cp2af_error;          // CCI-P Protocol Error Detected
-`ifdef INCLUDE_DDR4 
-  input   wire                          DDR4a_USERCLK;
-  input   wire                          DDR4a_waitrequest;
-  input   wire [511:0]                  DDR4a_readdata;
-  input   wire                          DDR4a_readdatavalid;
-  output  wire [6:0]                    DDR4a_burstcount;
-  output  wire [511:0]                  DDR4a_writedata;
-  output  wire [25:0]                   DDR4a_address;
-  output  wire                          DDR4a_write;
-  output  wire                          DDR4a_read;
-  output  wire [63:0]                   DDR4a_byteenable;
-  input   wire                          DDR4b_USERCLK;
-  input   wire                          DDR4b_waitrequest;
-  input   wire [511:0]                  DDR4b_readdata;
-  input   wire                          DDR4b_readdatavalid;
-  output  wire [6:0]                    DDR4b_burstcount;
-  output  wire [511:0]                  DDR4b_writedata;
-  output  wire [25:0]                   DDR4b_address;
-  output  wire                          DDR4b_write;
-  output  wire                          DDR4b_read;
-  output  wire [63:0]                   DDR4b_byteenable;
-`endif
+
   // Interface structures
   input           t_if_ccip_Rx     pck_cp2af_sRx;           // CCI-P Rx Port
   output          t_if_ccip_Tx     pck_af2cp_sTx;           // CCI-P Tx Port

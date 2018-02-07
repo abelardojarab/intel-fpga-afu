@@ -1,0 +1,8 @@
+hello_mem_afu is an AFU that builds a simple state machine capable of a few access
+patterns to local memory.  The state machine is controlled by CSRs (MMIO requests)
+written and read by the host.
+
+Despite CCI-P and each local memory bank being on different clocks, hello_mem_afu
+has no internal clock management.  All interfaces are transformed to a common clock
+by the AFU configuration in hello_mem_afu.json.  The OPAE platform manager
+instantiates clock-cross automatically.

@@ -55,27 +55,7 @@ module afu (
         input	Clk_400,	  //              in    std_logic;           Core clock. CCI interface is synchronous to this clock.
         input	SoftReset,	  //              in    std_logic;           CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH
         // ---------------------------IF signals between CCI and AFU  --------------------------------
-`ifdef INCLUDE_DDR4
-        input	wire		DDR4_USERCLK,
-        input	wire		DDR4a_waitrequest,
-        input	wire [511:0]	DDR4a_readdata,
-        input	wire		DDR4a_readdatavalid,
-        output	wire [6:0]	DDR4a_burstcount,
-        output	reg  [511:0]	DDR4a_writedata,
-        output	reg  [25:0]	DDR4a_address,
-        output	reg		DDR4a_write,
-        output	reg		DDR4a_read,
-        output	wire [63:0]	DDR4a_byteenable,
-        input	wire		DDR4b_waitrequest,
-        input	wire [511:0]	DDR4b_readdata,
-        input	wire		DDR4b_readdatavalid,
-        output	wire [6:0]	DDR4b_burstcount,
-        output	reg  [511:0]	DDR4b_writedata,
-        output	reg  [25:0]	DDR4b_address,
-        output	reg		DDR4b_write,
-        output	reg		DDR4b_read,
-        output	wire [63:0]	DDR4b_byteenable,
-`endif
+
         input	t_if_ccip_Rx	cp2af_sRxPort,
         output	t_if_ccip_Tx	af2cp_sTxPort
 );
@@ -136,19 +116,4 @@ module afu (
               end
           end
       end
-`ifdef INCLUDE_DDR4
-        always @(posedge DDR4_USERCLK) begin
-            if(SoftReset) begin
-                DDR4a_write <= 1'b0;
-                DDR4a_read  <= 1'b0;
-                DDR4b_write <= 1'b0;
-                DDR4b_read  <= 1'b0;
-            end
-        end
-
-assign DDR4a_burstcount = 7'b1;
-assign DDR4a_byteenable = 64'hFFFF_FFFF_FFFF_FFFF;
-assign DDR4b_burstcount = 7'b1;
-assign DDR4b_byteenable = 64'hFFFF_FFFF_FFFF_FFFF;
-`endif
 endmodule

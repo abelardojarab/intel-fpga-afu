@@ -25,8 +25,8 @@ module mem_fsm #(
   parameter DDR_ADDR_WIDTH=26
 ) (     
 	// ---------------------------global signals-------------------------------------------------
-  input	pClk,	// Core clock. CCI interface is synchronous to this clock.
-  input	pck_cp2af_softReset, // CCI interface reset. ACTIVE HIGH
+  input	clk,
+  input	reset,
 
   // - AMM Master Signals signals 
   output logic [63:0]     avs_writedata,
@@ -78,8 +78,8 @@ parameter ADDRESS_MAX_BIT = 6;
   assign avs_writedata = {burstcount , 53'(avm_writedata)};
 
 assign avm_response = '0;
-always@(posedge pClk) begin
-  if(pck_cp2af_softReset) begin
+always@(posedge clk) begin
+  if(reset) begin
     address        <= '0;
     avs_write      <= '0;
     avs_read       <= 0;
@@ -173,16 +173,16 @@ always@(posedge pClk) begin
         end
       end
     endcase
-  end // end else pck_cp2af_softReset
-end // posedge pClk
+  end // end else reset
+end // posedge clk
 
-always@(posedge pClk) begin
+always@(posedge clk) begin
   avs_readdatavalid_1 <= avs_readdatavalid;
 
   if (avs_readdatavalid)
     avm_readdata <= avs_readdata;
 
-  if(pck_cp2af_softReset)
+  if(reset)
     addr_test_status <= 0;
   else begin
     if (avs_readdatavalid & addr_test_done)
@@ -196,7 +196,7 @@ always@(posedge pClk) begin
   end
 end
 
-always@(posedge pClk) begin
+always@(posedge clk) begin
   if (rdwr_reset & (state != RD_RSP)) begin
     rdwr_status <= '0;
     rdwr_done   <= '0;
@@ -213,8 +213,8 @@ always@(posedge pClk) begin
   end
 end
 
-always@(posedge pClk) begin
-  if (pck_cp2af_softReset)
+always@(posedge clk) begin
+  if (reset)
     max_reads <= 0;
   else  if (avs_read == 1 & avs_readdatavalid == 0 & ~avs_waitrequest)
     max_reads++;

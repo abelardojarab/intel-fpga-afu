@@ -43,7 +43,7 @@ module hello_mem_afu #(
    parameter DDR_ADDR_WIDTH=26
 ) (
 	// ---------------------------global signals-------------------------------------------------
-  input	Clk_400,	  //Core clock. CCI interface is synchronous to this clock.
+  input	clk,
   input	SoftReset,	//CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH
 
 	// ---------------------------IF signals between CCI and AFU  --------------------------------
@@ -88,7 +88,7 @@ module hello_mem_afu #(
   mem_csr #(
     .DDR_ADDR_WIDTH         (DDR_ADDR_WIDTH)
   ) csr(
-    .Clk_400                (Clk_400),
+    .clk                    (clk),
     .SoftReset              (SoftReset ),
 
     .cp2af_sRxPort          (cp2af_sRxPort),
@@ -116,8 +116,8 @@ module hello_mem_afu #(
   mem_fsm #(
     .DDR_ADDR_WIDTH         (DDR_ADDR_WIDTH)
   ) fsm (
-    .pClk                   (Clk_400 ),
-    .pck_cp2af_softReset    (SoftReset ),
+    .clk                    (clk ),
+    .reset                  (SoftReset ),
 
      // AVL MM CSR Control Signals
     .avm_address            (avm_address),

@@ -2,14 +2,26 @@
    "version": 1,
    "afu-image": {
       "power": 0,
+      "clock-frequency-high": 310,
+      "clock-frequency-low": 155,
       "afu-top-interface":
          {
-            "name": "ccip_std_afu_avalon_mm_legacy_wires"
+            "name": "ccip_std_afu",
+            "module-arguments" :
+               [
+                  {
+                     "class": "cci-p",
+                     "params":
+                        {
+                           "add-extra-timing-reg-stages": "auto"
+                        }
+                  }
+               ]
          },
       "accelerator-clusters":
          [
             {
-               "name": "user_clock",
+               "name": "user_clock_test",
                "total-contexts": 1,
                "accelerator-type-uuid": "bd9ccef3-0b2c-4bb2-901f-6c7486821188"
             }

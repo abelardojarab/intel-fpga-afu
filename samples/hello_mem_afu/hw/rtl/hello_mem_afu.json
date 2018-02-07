@@ -2,9 +2,30 @@
    "version": 1,
    "afu-image": {
       "power": 0,
+      "clock-frequency-high": "auto",
+      "clock-frequency-low": "auto",
       "afu-top-interface":
          {
-            "name": "ccip_std_afu_avalon_mm_legacy_wires"
+            "name": "ccip_std_afu_avalon_mm",
+            "module-arguments" :
+               [
+                  {
+                     "class": "cci-p",
+                     "params":
+                        {
+                           "add-extra-timing-reg-stages": "auto",
+                           "clock": "uClk_usr"
+                        }
+                  },
+                  {
+                     "class": "local-memory",
+                     "params":
+                        {
+                           "add-extra-timing-reg-stages": "auto",
+                           "clock": "uClk_usr"
+                        }
+                  }
+               ]
          },
       "accelerator-clusters":
          [

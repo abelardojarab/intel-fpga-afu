@@ -25,267 +25,177 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
-// Module Name :    ccip_std_afu
-// Project :        ccip afu top
-// Description :    This module instantiates CCI-P compliant AFU
 
 // ***************************************************************************
-`default_nettype none
+
 import ccip_if_pkg::*;
-module ccip_std_afu #(
-  parameter DDR_ADDR_WIDTH = 26
-) (
-  // CCI-P Clocks and Resets
-  pClk,                      // 400MHz - CCI-P clock domain. Primary interface clock
-  pClkDiv2,                  // 200MHz - CCI-P clock domain.
-  pClkDiv4,                  // 100MHz - CCI-P clock domain.
-  uClk_usr,                  // User clock domain. Refer to clock programming guide  ** Currently provides fixed 300MHz clock **
-  uClk_usrDiv2,              // User clock domain. Half the programmed frequency  ** Currently provides fixed 150MHz clock **
-  pck_cp2af_softReset,       // CCI-P ACTIVE HIGH Soft Reset
-  pck_cp2af_pwrState,        // CCI-P AFU Power State
-  pck_cp2af_error,           // CCI-P Protocol Error Detected
-  
-  // DCP EMIF Interface
-  // shared clock
-  DDR4a_USERCLK,
 
-  // bank A
-  DDR4a_waitrequest,
-  DDR4a_readdata,
-  DDR4a_readdatavalid,
-  DDR4a_burstcount,
-  DDR4a_writedata,
-  DDR4a_address,
-  DDR4a_write,
-  DDR4a_read,
-  DDR4a_byteenable,
+module ccip_std_afu
+  #(
+    parameter NUM_LOCAL_MEM_BANKS = 2
+    )
+   (
+    // CCI-P Clocks and Resets
+    input  logic        pClk,                 // Primary CCI-P interface clock.
+    input  logic        pClkDiv2,             // Aligned, pClk divided by 2.
+    input  logic        pClkDiv4,             // Aligned, pClk divided by 4.
+    input  logic        uClk_usr,             // User clock domain. Refer to clock programming guide.
+    input  logic        uClk_usrDiv2,         // Aligned, user clock divided by 2.
+    input  logic        pck_cp2af_softReset,  // CCI-P ACTIVE HIGH Soft Reset
 
-  // bank B
-  DDR4b_USERCLK,
-  DDR4b_waitrequest,
-  DDR4b_readdata,
-  DDR4b_readdatavalid,
-  DDR4b_burstcount,
-  DDR4b_writedata,
-  DDR4b_address,
-  DDR4b_write,
-  DDR4b_read,
-  DDR4b_byteenable,
+    input  logic [1:0]  pck_cp2af_pwrState,   // CCI-P AFU Power State
+    input  logic        pck_cp2af_error,      // CCI-P Protocol Error Detected
 
-  // Interface structures
-  pck_cp2af_sRx,             // CCI-P Rx Port
-  pck_af2cp_sTx              // CCI-P Tx Port
-);
-  input           wire             pClk;                     // 400MHz - CCI-P clock domain. Primary interface clock
-  input           wire             pClkDiv2;                 // 200MHz - CCI-P clock domain.
-  input           wire             pClkDiv4;                 // 100MHz - CCI-P clock domain.
-  input           wire             uClk_usr;                 // User clock domain. Refer to clock programming guide  ** Currently provides fixed 300MHz clock **
-  input           wire             uClk_usrDiv2;             // User clock domain. Half the programmed frequency  ** Currently provides fixed 150MHz clock **
-  input           wire             pck_cp2af_softReset;      // CCI-P ACTIVE HIGH Soft Reset
-  input           wire [1:0]       pck_cp2af_pwrState;       // CCI-P AFU Power State
-  input           wire             pck_cp2af_error;          // CCI-P Protocol Error Detected
-  
-  // DCP EMIF Interface
-  // shared clock
-  input   wire                          DDR4a_USERCLK;
+    // CCI-P structures
+    input  t_if_ccip_Rx pck_cp2af_sRx,        // CCI-P Rx Port
+    output t_if_ccip_Tx pck_af2cp_sTx,        // CCI-P Tx Port
 
-  // bank A
-  input   wire                          DDR4a_waitrequest;
-  input   wire [511:0]                  DDR4a_readdata;
-  input   wire                          DDR4a_readdatavalid;
-  output  wire [6:0]                    DDR4a_burstcount;
-  output  wire [511:0]                  DDR4a_writedata;
-  output  wire [DDR_ADDR_WIDTH-1:0]     DDR4a_address;
-  output  wire                          DDR4a_write;
-  output  wire                          DDR4a_read;
-  output  wire [63:0]                   DDR4a_byteenable;
-
-  // bank B
-  input   wire                          DDR4b_USERCLK;
-  input   wire                          DDR4b_waitrequest;
-  input   wire [511:0]                  DDR4b_readdata;
-  input   wire                          DDR4b_readdatavalid;
-  output  wire [6:0]                    DDR4b_burstcount;
-  output  wire [511:0]                  DDR4b_writedata;
-  output  wire [DDR_ADDR_WIDTH-1:0]     DDR4b_address;
-  output  wire                          DDR4b_write;
-  output  wire                          DDR4b_read;
-  output  wire [63:0]                   DDR4b_byteenable;
-  
-  // Interface structures
-  input           t_if_ccip_Rx     pck_cp2af_sRx;           // CCI-P Rx Port
-  output          t_if_ccip_Tx     pck_af2cp_sTx;           // CCI-P Tx Port
-
-  wire [63:0]                   avs_byteenable;
-  wire                          avs_waitrequest;
-  wire [511:0]                  avs_readdata;
-  wire                          avs_readdatavalid;
-  wire [6:0]                    avs_burstcount;
-  wire [511:0]                  avs_writedata;
-  wire [DDR_ADDR_WIDTH-1:0]     avs_address;
-  wire                          avs_write;
-  wire                          avs_read;
-
-  // bank A
-  wire                avs_waitrequest_a; 
-  wire [511:0]        avs_readdata_a;     
-  wire                avs_readdatavalid_a;
-  wire                avs_write_a;
-  wire                avs_read_a;
-
-  // bank B
-  wire                avs_waitrequest_b; 
-  wire [511:0]        avs_readdata_b;     
-  wire                avs_readdatavalid_b;
-  wire                avs_write_b;
-  wire                avs_read_b;
-
-  // choose which memory bank to test
-  wire                mem_bank_select;
-
-// =============================================================
-// Register SR <--> PR signals at interface before consuming it
-// =============================================================
-
-(* noprune *) logic [1:0]  pck_cp2af_pwrState_T1;
-(* noprune *) logic        pck_cp2af_error_T1;
-
-logic        pck_cp2af_softReset_T1;
-t_if_ccip_Rx pck_cp2af_sRx_T1;
-t_if_ccip_Tx pck_af2cp_sTx_T0;
-
-// =============================================================
-// Register PR <--> PR signals near interface before consuming it
-// =============================================================
-
-ccip_interface_reg inst_green_ccip_interface_reg  (
-    .pClk                           (pClk),
-    .pck_cp2af_softReset_T0         (pck_cp2af_softReset),
-    .pck_cp2af_pwrState_T0          (pck_cp2af_pwrState),
-    .pck_cp2af_error_T0             (pck_cp2af_error),
-    .pck_cp2af_sRx_T0               (pck_cp2af_sRx),
-    .pck_af2cp_sTx_T0               (pck_af2cp_sTx_T0),
-
-    .pck_cp2af_softReset_T1         (pck_cp2af_softReset_T1),
-    .pck_cp2af_pwrState_T1          (pck_cp2af_pwrState_T1),
-    .pck_cp2af_error_T1             (pck_cp2af_error_T1),
-    .pck_cp2af_sRx_T1               (pck_cp2af_sRx_T1),
-    .pck_af2cp_sTx_T1               (pck_af2cp_sTx)
+    // Local memory interface
+    avalon_mem_if.to_fiu local_mem[NUM_LOCAL_MEM_BANKS]
 );
 
-//===============================================================================================
-// User AFU goes here
-//===============================================================================================
+    logic [63:0]                avs_byteenable;
+    logic                       avs_waitrequest;
+    logic [511:0]               avs_readdata;
+    logic                       avs_readdatavalid;
+    logic [6:0]                 avs_burstcount;
+    logic [511:0]               avs_writedata;
+    local_mem_cfg_pkg::t_local_mem_addr  avs_address;
+    logic                       avs_write;
+    logic                       avs_read;
+
+    // bank A
+    logic                avs_waitrequest_a;
+    logic [511:0]        avs_readdata_a;
+    logic                avs_readdatavalid_a;
+    logic                avs_write_a;
+    logic                avs_read_a;
+
+    // bank B
+    logic                avs_waitrequest_b;
+    logic [511:0]        avs_readdata_b;
+    logic                avs_readdatavalid_b;
+    logic                avs_write_b;
+    logic                avs_read_b;
+
+    // choose which memory bank to test
+    logic                mem_bank_select;
+
+    // ====================================================================
+    // Pick the proper clk and reset, as chosen by the AFU's JSON file
+    // ====================================================================
+
+    // The platform may transform the CCI-P clock from pClk to a clock
+    // chosen in the AFU's JSON file.  ccip_if_clock() is provided to
+    // return the chosen clock so that the AFU code here can connect
+    // to the proper clock without the possibility of a mismatch with
+    // the JSON.
+
+    logic clk;
+    logic reset;
+
+    // Use .* to avoid naming any clocks or resets.  They will match
+    // from top-level interface names.
+    ccip_if_clock pick_clk(.*, .clk(clk), .reset(reset));
 
 
-hello_mem_afu #(
-   .DDR_ADDR_WIDTH     (DDR_ADDR_WIDTH)
-) hello_mem_afu_inst (
-  .Clk_400             ( pClk ) ,
-  .SoftReset           ( pck_cp2af_softReset_T1 ) ,
+    // ====================================================================
+    // Register signals at interface before consuming them
+    // ====================================================================
 
-  .avs_writedata       ( avs_writedata ),			
-  .avs_readdata        ( avs_readdata[63:0] ),
-  .avs_address         ( avs_address ),				
-  .avs_waitrequest     ( avs_waitrequest ),		
-  .avs_write           ( avs_write ),					
-  .avs_read	           ( avs_read ),					
-  .avs_byteenable      ( avs_byteenable ),		
-  .avs_burstcount      ( avs_burstcount ),   
-  .avs_readdatavalid   ( avs_readdatavalid ),	 
-  .mem_bank_select     ( mem_bank_select ),
+    (* noprune *) logic [1:0]  cp2af_pwrState_T1;
+    (* noprune *) logic        cp2af_error_T1;
 
-  .cp2af_sRxPort       ( pck_cp2af_sRx_T1 ) ,
-  .af2cp_sTxPort       ( pck_af2cp_sTx_T0 )
- 
-);
+    logic        reset_T1;
+    t_if_ccip_Rx cp2af_sRx_T1;
+    t_if_ccip_Tx af2cp_sTx_T0;
 
-// Mux banks
-assign avs_waitrequest   = (mem_bank_select)?avs_waitrequest_b:avs_waitrequest_a;
-assign avs_readdata      = (mem_bank_select)?avs_readdata_b:avs_readdata_a;
-assign avs_readdatavalid = (mem_bank_select)?avs_readdatavalid_b:avs_readdatavalid_a;
-assign avs_write_a       = (mem_bank_select)?1'b0:avs_write;
-assign avs_write_b       = (mem_bank_select)?avs_write:1'b0;
-assign avs_read_a        = (mem_bank_select)?1'b0:avs_read;
-assign avs_read_b        = (mem_bank_select)?avs_read:1'b0;
+    ccip_interface_reg inst_green_ccip_interface_reg
+       (
+        .pClk                    (clk),
+        .pck_cp2af_softReset_T0  (reset),
+        .pck_cp2af_pwrState_T0   (pck_cp2af_pwrState),
+        .pck_cp2af_error_T0      (pck_cp2af_error),
+        .pck_cp2af_sRx_T0        (pck_cp2af_sRx),
+        .pck_af2cp_sTx_T0        (af2cp_sTx_T0),
 
-altera_avalon_mm_clock_crossing_bridge #(
-  .DATA_WIDTH          (512),
-  .SYMBOL_WIDTH        (8),
-  .HDL_ADDR_WIDTH      (DDR_ADDR_WIDTH),
-  .BURSTCOUNT_WIDTH    (7),
-  .COMMAND_FIFO_DEPTH  (128),
-  .RESPONSE_FIFO_DEPTH (128),
-  .MASTER_SYNC_DEPTH   (2),
-  .SLAVE_SYNC_DEPTH    (2)
-) clock_crossing_bridge_0 (
-  .m0_clk           (DDR4a_USERCLK),                                
-  .m0_reset         (pck_cp2af_softReset_T1),                       
-  .s0_clk           (pClk),                             
-  .s0_reset         (pck_cp2af_softReset_T1),       
-
-  // slave i/f
-  .s0_waitrequest   (avs_waitrequest_a),  
-  .s0_readdata      (avs_readdata_a),      
-  .s0_readdatavalid (avs_readdatavalid_a), 
-  .s0_burstcount    (avs_burstcount),   
-  .s0_writedata     (avs_writedata),     
-  .s0_address       (avs_address),       
-  .s0_write         (avs_write_a),        
-  .s0_read          (avs_read_a),         
-  .s0_byteenable    (avs_byteenable),   
-  .s0_debugaccess   (0),  
-  
-  // master i/f
-  .m0_waitrequest   (DDR4a_waitrequest),  
-  .m0_readdata      (DDR4a_readdata),    
-  .m0_readdatavalid (DDR4a_readdatavalid), 
-  .m0_burstcount    (DDR4a_burstcount),   
-  .m0_writedata     (DDR4a_writedata),    
-  .m0_address       (DDR4a_address),      
-  .m0_write         (DDR4a_write),      
-  .m0_read          (DDR4a_read),        
-  .m0_byteenable    (DDR4a_byteenable)
-);
+        .pck_cp2af_softReset_T1  (reset_T1),
+        .pck_cp2af_pwrState_T1   (cp2af_pwrState_T1),
+        .pck_cp2af_error_T1      (cp2af_error_T1),
+        .pck_cp2af_sRx_T1        (cp2af_sRx_T1),
+        .pck_af2cp_sTx_T1        (pck_af2cp_sTx)
+        );
 
 
-altera_avalon_mm_clock_crossing_bridge #(
-  .DATA_WIDTH          (512),
-  .SYMBOL_WIDTH        (8),
-  .HDL_ADDR_WIDTH      (DDR_ADDR_WIDTH),
-  .BURSTCOUNT_WIDTH    (7),
-  .COMMAND_FIFO_DEPTH  (128),
-  .RESPONSE_FIFO_DEPTH (128),
-  .MASTER_SYNC_DEPTH   (2),
-  .SLAVE_SYNC_DEPTH    (2)
-) clock_crossing_bridge_1 (
-  .m0_clk           (DDR4b_USERCLK),                                
-  .m0_reset         (pck_cp2af_softReset_T1),                       
-  .s0_clk           (pClk),                             
-  .s0_reset         (pck_cp2af_softReset_T1),       
+    // ====================================================================
+    // User AFU goes here
+    // ====================================================================
 
-  // slave i/f
-  .s0_waitrequest   (avs_waitrequest_b),  
-  .s0_readdata      (avs_readdata_b),      
-  .s0_readdatavalid (avs_readdatavalid_b), 
-  .s0_burstcount    (avs_burstcount),   
-  .s0_writedata     (avs_writedata),     
-  .s0_address       (avs_address),       
-  .s0_write         (avs_write_b),        
-  .s0_read          (avs_read_b),         
-  .s0_byteenable    (avs_byteenable),   
-  .s0_debugaccess   (0),  
-  
-  // master i/f
-  .m0_waitrequest   (DDR4b_waitrequest),  
-  .m0_readdata      (DDR4b_readdata),    
-  .m0_readdatavalid (DDR4b_readdatavalid), 
-  .m0_burstcount    (DDR4b_burstcount),   
-  .m0_writedata     (DDR4b_writedata),    
-  .m0_address       (DDR4b_address),      
-  .m0_write         (DDR4b_write),      
-  .m0_read          (DDR4b_read),        
-  .m0_byteenable    (DDR4b_byteenable)
-);
+    //
+    // hello_mem_afu depends on CCI-P and local memory being in the same
+    // clock domain.  This is accomplished by choosing a common clock
+    // in the AFU's JSON description.  The platform instantiates clock-
+    // crossing shims automatically, as needed.
+    //
+
+    hello_mem_afu
+      #(
+        .DDR_ADDR_WIDTH(local_mem_cfg_pkg::LOCAL_MEM_ADDR_WIDTH)
+        ) hello_mem_afu_inst
+       (
+        .clk                 (clk),
+        .SoftReset           (reset_T1),
+
+        .avs_writedata       (avs_writedata),
+        .avs_readdata        (avs_readdata[63:0]),
+        .avs_address         (avs_address),
+        .avs_waitrequest     (avs_waitrequest),
+        .avs_write           (avs_write),
+        .avs_read	     (avs_read),
+        .avs_byteenable      (avs_byteenable),
+        .avs_burstcount      (avs_burstcount),
+        .avs_readdatavalid   (avs_readdatavalid),
+        .mem_bank_select     (mem_bank_select),
+
+        .cp2af_sRxPort       (cp2af_sRx_T1),
+        .af2cp_sTxPort       (af2cp_sTx_T0)
+        );
+
+    //
+    // Map Avalon MM requests from hello_mem_afu to memory banks.
+    //
+    assign avs_waitrequest   = (mem_bank_select)?avs_waitrequest_b:avs_waitrequest_a;
+    assign avs_readdata      = (mem_bank_select)?avs_readdata_b:avs_readdata_a;
+    assign avs_readdatavalid = (mem_bank_select)?avs_readdatavalid_b:avs_readdatavalid_a;
+    assign avs_write_a       = (mem_bank_select)?1'b0:avs_write;
+    assign avs_write_b       = (mem_bank_select)?avs_write:1'b0;
+    assign avs_read_a        = (mem_bank_select)?1'b0:avs_read;
+    assign avs_read_b        = (mem_bank_select)?avs_read:1'b0;
+
+    always_comb
+    begin
+        avs_waitrequest_a = local_mem[0].waitrequest;
+        avs_readdata_a = local_mem[0].readdata;
+        avs_readdatavalid_a = local_mem[0].readdatavalid;
+        local_mem[0].burstcount = avs_burstcount;
+        local_mem[0].writedata = avs_writedata;
+        local_mem[0].address = avs_address;
+        local_mem[0].write = avs_write_a;
+        local_mem[0].read = avs_read_a;
+        local_mem[0].byteenable = avs_byteenable;
+    end
+
+    always_comb
+    begin
+        avs_waitrequest_b = local_mem[1].waitrequest;
+        avs_readdata_b = local_mem[1].readdata;
+        avs_readdatavalid_b = local_mem[1].readdatavalid;
+        local_mem[1].burstcount = avs_burstcount;
+        local_mem[1].writedata = avs_writedata;
+        local_mem[1].address = avs_address;
+        local_mem[1].write = avs_write_b;
+        local_mem[1].read = avs_read_b;
+        local_mem[1].byteenable = avs_byteenable;
+    end
 
 endmodule

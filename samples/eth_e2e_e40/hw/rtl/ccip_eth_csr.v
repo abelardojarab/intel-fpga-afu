@@ -91,11 +91,11 @@ reg  [63:0] afu_init;
 localparam AFU_DFH       = 16'h0000;
 localparam AFU_ID_L      = 16'h0008;
 localparam AFU_ID_H      = 16'h0010;
-localparam AFU_INIT      = 16'h0018;
-localparam ETH_CTRL_ADDR = 16'h0020;
-localparam ETH_WR_DATA   = 16'h0028;
-localparam ETH_RD_DATA   = 16'h0030;
-localparam AFU_SCRATCH   = 16'h0038;
+localparam AFU_INIT      = 16'h0028;
+localparam ETH_CTRL_ADDR = 16'h0030;
+localparam ETH_WR_DATA   = 16'h0038;
+localparam ETH_RD_DATA   = 16'h0040;
+localparam AFU_SCRATCH   = 16'h0048;
 
 //------------------------------------------------------------------------------
 // Register PR <--> PR signals near interface before consuming it
@@ -150,35 +150,32 @@ begin
     pck_af2cp_sTx_T0.c2.mmioRdValid   = csr2cp_MmioDout_v;
 end
 
-//------------------------------------------------------------------------------
-// logic to capture eth_rd_data (coming from 100MHz domain)
-//------------------------------------------------------------------------------
 
-reg        read_d1;
-
-always @(posedge pClkDiv4)
-begin
-    eth_ctrl_addr <= ctrl_addr;
-    eth_wr_data   <= wr_data;
-    init_start    <= afu_init[0];
-    init_done_r   <= init_done;
-    read_d1 <= eth_ctrl_addr[17];
-    // RD command
-    if (read_d1)
-        rd_data <= eth_rd_data;
-end
 
 //------------------------------------------------------------------------------
 // CSR registers 
 //------------------------------------------------------------------------------
 
-reg  [ 1:0] wr_extend;
-reg  [ 1:0] rd_extend;
+reg  [ 2:0] wr_extend;
+reg  [ 2:0] rd_extend;
 
 wire [15:0] csr_addr_4B = cp2csr_MmioHdr.address;
 wire [14:0] csr_addr_8B = cp2csr_MmioHdr.address[15:1];
 
 t_ccip_mmioData csr_rd_data;
+
+//------------------------------------------------------------------------------
+// logic to capture eth_rd_data (coming from 100MHz domain)
+//------------------------------------------------------------------------------
+
+always @(posedge pClk)
+begin
+    eth_ctrl_addr <= ctrl_addr;
+    eth_wr_data   <= wr_data;
+    init_start    <= afu_init[0];
+    init_done_r   <= init_done;
+    if (rd_extend == 3'b110) rd_data <= eth_rd_data;
+end
 
 always @(posedge pClk or posedge pck_cp2af_softReset_T1)
 begin
@@ -192,11 +189,11 @@ begin
     else
     begin
         if (cp2csr_MmioWrEn)
-            case (csr_addr_8B[2:0])
-                AFU_INIT     [5:3]: afu_init    <= cp2csr_MmioDin;
-                ETH_CTRL_ADDR[5:3]: ctrl_addr   <= cp2csr_MmioDin[31:0];
-                ETH_WR_DATA  [5:3]: wr_data     <= cp2csr_MmioDin[31:0];
-                AFU_SCRATCH  [5:3]: afu_scratch <= cp2csr_MmioDin;           
+            case (csr_addr_8B[3:0])
+                AFU_INIT     [6:3]: afu_init    <= cp2csr_MmioDin;
+                ETH_CTRL_ADDR[6:3]: ctrl_addr   <= cp2csr_MmioDin[31:0];
+                ETH_WR_DATA  [6:3]: wr_data     <= cp2csr_MmioDin[31:0];
+                AFU_SCRATCH  [6:3]: afu_scratch <= cp2csr_MmioDin;           
                 default: ;
             endcase
         if (&wr_extend) ctrl_addr[16] <= 1'b0;
@@ -206,27 +203,27 @@ end
 
 always @(posedge pClk)
 begin
-    case (csr_addr_8B[2:0])
-        AFU_DFH	     [5:3]: csr_rd_data <= 'h1000000000000001;	
+    case (csr_addr_8B[3:0])
+        AFU_DFH	     [6:3]: csr_rd_data <= 'h1000000000000001;	
 // For E2E e10
 `ifdef E2E_E10
-        AFU_ID_L     [5:3]: csr_rd_data <= 'hB74F291AF34E1783;
-        AFU_ID_H     [5:3]: csr_rd_data <= 'h05189FE40676DD24;
+        AFU_ID_L     [6:3]: csr_rd_data <= 'hB74F291AF34E1783;
+        AFU_ID_H     [6:3]: csr_rd_data <= 'h05189FE40676DD24;
 `endif
 // For E2E e40
 `ifdef E2E_E40
-        AFU_ID_L     [5:3]: csr_rd_data <= 'hB3C151A1B62ED6C2;
-        AFU_ID_H     [5:3]: csr_rd_data <= 'h26B40788034B4389;
+        AFU_ID_L     [6:3]: csr_rd_data <= 'hB3C151A1B62ED6C2;
+        AFU_ID_H     [6:3]: csr_rd_data <= 'h26B40788034B4389;
 `endif
-        AFU_INIT     [5:3]: begin
+        AFU_INIT     [6:3]: begin
                             csr_rd_data    <= afu_init;
                             csr_rd_data[1] <= init_done_r;
                             end
-        ETH_CTRL_ADDR[5:3]: csr_rd_data <= 64'b0 | ctrl_addr;
-        ETH_WR_DATA  [5:3]: csr_rd_data <= 64'b0 | wr_data;
-        ETH_RD_DATA  [5:3]: csr_rd_data <= 64'b0 | rd_data;
-        AFU_SCRATCH  [5:3]: csr_rd_data <= afu_scratch;
-        default:            csr_rd_data <= 'h0000deadc0de0000;
+        ETH_CTRL_ADDR[6:3]: csr_rd_data <= 64'b0 | ctrl_addr;
+        ETH_WR_DATA  [6:3]: csr_rd_data <= 64'b0 | wr_data;
+        ETH_RD_DATA  [6:3]: csr_rd_data <= 64'b0 | rd_data;
+        AFU_SCRATCH  [6:3]: csr_rd_data <= afu_scratch;
+        default:            csr_rd_data <= 64'b0;
     endcase
 end
 

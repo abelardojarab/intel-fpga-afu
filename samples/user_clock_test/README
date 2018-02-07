@@ -1,3 +1,9 @@
 Validate the frequencies of clocks passed in to the AFU's top-level.  Clock
 cycles are counted for each clock during a sampling window.  The counts are
 exported as CSRs, using MMIO reads.
+
+The frequency of uClk is specified as "auto" in the AFU's JSON file
+(hw/rtl/user_clock_test.json), causing the uClk frequency to be chosen
+based on the timing achieved following placement and routing.  This mode is
+similar to OpenCL's clock management, in which frequency may vary
+with different seeds.

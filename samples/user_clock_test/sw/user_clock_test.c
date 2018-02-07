@@ -75,7 +75,7 @@ void mmio_write64(fpga_handle afc_handle, uint64_t addr, uint64_t data, const ch
 void read_counters(fpga_handle afc_handle)
 {
 	uint64_t data = 0;
-	mmio_read64(afc_handle, 0x28*4, &data, "counter_400_value");
+	mmio_read64(afc_handle, 0x28*4, &data, "counter_pclk_value");
 	mmio_read64(afc_handle, 0x2a*4, &data, "counter_pclk_div2_value");
 	mmio_read64(afc_handle, 0x2c*4, &data, "counter_pclk_div4_value");
 	mmio_read64(afc_handle, 0x2e*4, &data, "counter_clkusr_value");
@@ -84,8 +84,8 @@ void read_counters(fpga_handle afc_handle)
 
 void read_final_counters(fpga_handle afc_handle)
 {
-	uint64_t counter_400_value = 0;
-	mmio_read64(afc_handle, 0x28*4, &counter_400_value, "counter_400_value");
+	uint64_t counter_pclk_value = 0;
+	mmio_read64(afc_handle, 0x28*4, &counter_pclk_value, "counter_pclk_value");
 	uint64_t counter_pclk_div2_value = 0;
 	mmio_read64(afc_handle, 0x2a*4, &counter_pclk_div2_value, "counter_pclk_div2_value");
 	uint64_t counter_pclk_div4_value = 0;
@@ -95,13 +95,15 @@ void read_final_counters(fpga_handle afc_handle)
 	uint64_t counter_clkusr_div2_value = 0;
 	mmio_read64(afc_handle, 0x30*4, &counter_clkusr_div2_value, "counter_clkusr_div2_value");
 
-	float PCLK_FREQUENCY = 400.0;
+	uint64_t pclk_freq_value = 0;
+	mmio_read64(afc_handle, 0x32*4, &pclk_freq_value, "pclk_freq_value");
+	float PCLK_FREQUENCY = (float)pclk_freq_value;
 
 	printf("Pclk frequency: %f\n", PCLK_FREQUENCY);
-	printf("Pclk div2 frequency: %f\n", PCLK_FREQUENCY*(float)counter_pclk_div2_value/(float)counter_400_value);
-	printf("Pclk div4 frequency: %f\n", PCLK_FREQUENCY*(float)counter_pclk_div4_value/(float)counter_400_value);
-	printf("user clk frequency: %f\n", PCLK_FREQUENCY*(float)counter_clkusr_value/(float)counter_400_value);
-	printf("user clk div2 frequency: %f\n", PCLK_FREQUENCY*(float)counter_clkusr_div2_value/(float)counter_400_value);
+	printf("Pclk div2 frequency: %f\n", PCLK_FREQUENCY*(float)counter_pclk_div2_value/(float)counter_pclk_value);
+	printf("Pclk div4 frequency: %f\n", PCLK_FREQUENCY*(float)counter_pclk_div4_value/(float)counter_pclk_value);
+	printf("user clk frequency: %f\n", PCLK_FREQUENCY*(float)counter_clkusr_value/(float)counter_pclk_value);
+	printf("user clk div2 frequency: %f\n", PCLK_FREQUENCY*(float)counter_clkusr_div2_value/(float)counter_pclk_value);
 }
 
 int main(int argc, char *argv[])
@@ -180,7 +182,7 @@ int main(int argc, char *argv[])
 	mmio_read64(afc_handle, 0x22*4, &data, "reset_counter");	//reset_counter
 	mmio_read64(afc_handle, 0x24*4, &data, "enable_counter");	//enable_counter
 	mmio_read64(afc_handle, 0x26*4, &data, "counter_max");	//counter_max
-	mmio_read64(afc_handle, 0x28*4, &data, "counter_400_value");	//counter_400_value
+	mmio_read64(afc_handle, 0x28*4, &data, "counter_pclk_value");	//counter_pclk_value
 	
 	mmio_write64(afc_handle, 0x26*4, 0x1000, "counter_max");	//counter_max
 	mmio_write64(afc_handle, 0x24*4, 1, "enable_counter");	//enable_counter

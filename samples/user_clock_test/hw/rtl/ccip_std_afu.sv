@@ -80,7 +80,7 @@ begin
 end
 
 afu afu(
-  .Clk_400             ( pClk ) ,
+  .pClk(pClk) ,
   .pClkDiv2(pClkDiv2),
   .pClkDiv4(pClkDiv4),
   .uClk_usr(uClk_usr),
@@ -92,4 +92,3 @@ afu afu(
 );
 
 endmodule
-

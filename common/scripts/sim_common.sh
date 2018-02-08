@@ -169,6 +169,8 @@ gen_qsys() {
 
    # Generate Qsys
    for q in `rtl_src_config --abs --qsys "${qsys_sim_filelist}" | grep .qsys$`; do
+      # Delete old generated content
+      rm -rf ${q%.*}
       $QUARTUS_HOME/sopc_builder/bin/qsys-generate "${q}" --synthesis=VERILOG
    done
 

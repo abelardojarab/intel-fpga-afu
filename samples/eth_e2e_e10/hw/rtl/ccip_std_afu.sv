@@ -29,47 +29,31 @@
 
 // ***************************************************************************
 
-//`default_nettype none
-import ccip_if_pkg::*;
+`include "platform_if.vh"
 
-module ccip_eth_csr (
+module ccip_std_afu
+  #(
+    parameter NUM_LOCAL_MEM_BANKS = 2
+    )
+   (
     // CCI-P Clocks and Resets
-    pClk,                   // 400MHz - CCI-P clock domain. Primary clock
-    pClkDiv2,               // 200MHz - CCI-P clock domain.
-    pClkDiv4,               // 100MHz - CCI-P clock domain.
-    uClk_usr,               // User clock domain. Refer to clock programming guide
-    uClk_usrDiv2,           // User clock domain. Half the programmed frequency
-    pck_cp2af_softReset,    // CCI-P ACTIVE HIGH Soft Reset
-    pck_cp2af_pwrState,     // CCI-P AFU Power State
-    pck_cp2af_error,        // CCI-P Protocol Error Detected
-    // Interface structures
-    pck_cp2af_sRx,          // CCI-P Rx Port
-    pck_af2cp_sTx,          // CCI-P Tx Port
-    // Register input/outputs (100 MHz)
-    eth_ctrl_addr,          // control/address
-    eth_wr_data,            // write data
-    eth_rd_data,            // read data
-    init_start,             // AFU init start
-    init_done               // AFU init done
-);
+    input  logic        pClk,                 // Primary CCI-P interface clock.
+    input  logic        pClkDiv2,             // Aligned, pClk divided by 2.
+    input  logic        pClkDiv4,             // Aligned, pClk divided by 4.
+    input  logic        uClk_usr,             // User clock domain. Refer to clock programming guide.
+    input  logic        uClk_usrDiv2,         // Aligned, user clock divided by 2.
+    input  logic        pck_cp2af_softReset,  // CCI-P ACTIVE HIGH Soft Reset
 
-input           pClk;                
-input           pClkDiv2;            
-input           pClkDiv4;            
-input           uClk_usr;            
-input           uClk_usrDiv2;        
-input           pck_cp2af_softReset; 
-input     [1:0] pck_cp2af_pwrState;  
-input           pck_cp2af_error;     
+    input  logic [1:0]  pck_cp2af_pwrState,   // CCI-P AFU Power State
+    input  logic        pck_cp2af_error,      // CCI-P Protocol Error Detected
 
-input  t_if_ccip_Rx pck_cp2af_sRx;
-output t_if_ccip_Tx pck_af2cp_sTx;
+    // Raw HSSI interface
+    pr_hssi_if.to_fiu   hssi,
 
-output reg  [31:0] eth_ctrl_addr;
-output reg  [31:0] eth_wr_data;
-input       [31:0] eth_rd_data;
-output reg         init_start;
-input              init_done;
+    // CCI-P structures
+    input  t_if_ccip_Rx pck_cp2af_sRx,        // CCI-P Rx Port
+    output t_if_ccip_Tx pck_af2cp_sTx         // CCI-P Tx Port
+    );
 
 //------------------------------------------------------------------------------
 // Internal signals
@@ -151,7 +135,6 @@ begin
 end
 
 
-
 //------------------------------------------------------------------------------
 // CSR registers 
 //------------------------------------------------------------------------------
@@ -163,6 +146,37 @@ wire [15:0] csr_addr_4B = cp2csr_MmioHdr.address;
 wire [14:0] csr_addr_8B = cp2csr_MmioHdr.address[15:1];
 
 t_ccip_mmioData csr_rd_data;
+
+
+//------------------------------------------------------------------------------
+// Instantiate an Ethernet MAC
+//------------------------------------------------------------------------------
+
+logic [31:0] eth_ctrl_addr;
+logic [31:0] eth_wr_data;
+logic [31:0] eth_rd_data;
+logic init_start;
+logic init_done;
+
+`ifdef E2E_E40
+ eth_e2e_e40
+`endif
+`ifdef E2E_E10
+ eth_e2e_e10
+`endif
+  prz0
+   (
+    // ETH CSR ports
+    .eth_ctrl_addr(eth_ctrl_addr),
+    .eth_wr_data(eth_wr_data),
+    .eth_rd_data(eth_rd_data),
+    .csr_init_start(csr_init_start),
+    .csr_init_done(csr_init_done),
+
+    // Connection to BBS
+    .hssi(hssi)
+    );
+
 
 //------------------------------------------------------------------------------
 // logic to capture eth_rd_data (coming from 100MHz domain)

@@ -1,7 +1,6 @@
-+define+ETH_E2E
 +define+E2E_E40
 
-ccip_eth_csr.v
+ccip_std_afu.sv
 ccip_interface_reg.sv
 e2e_e40.sdc
 eth_e2e_e40.v

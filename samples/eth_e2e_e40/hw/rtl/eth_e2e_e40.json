@@ -4,14 +4,28 @@
       "power": 0,
       "afu-top-interface":
          {
-            "name": "ccip_std_afu_avalon_mm_legacy_wires"
+            "name": "ccip_std_afu",
+            "module-ports" :
+               [
+                  {
+                     "class": "cci-p",
+                     "params":
+                        {
+                           "add-extra-timing-reg-stages": "auto"
+                        }
+                  },
+                  {
+                     "class": "hssi",
+                     "interface": "raw_pr"
+                  }
+               ]
          },
       "accelerator-clusters":
          [
             {
                "name": "eth_e2e_e40",
                "total-contexts": 1,
-               "accelerator-type-uuid": "850adcc2-6ceb-4b22-9722-d43375b61c66"
+               "accelerator-type-uuid": "26b40788-034b-4389-b3c1-51a1b62ed6c2"
             }
          ]
    }

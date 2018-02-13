@@ -18,14 +18,16 @@ ccip_interface_reg.sv
 ccip_std_afu.sv
 
 qsys/streaming_dma_test_system.qsys
-qsys/streaming_dma_bbb.qsys
+qsys/memory_to_stream_dma_bbb.qsys
+qsys/stream_to_memory_dma_bbb.qsys
+
 qsys/afu_id_avmm_slave/afu_id_avmm_slave_hw.tcl
 qsys/afu_id_avmm_slave/afu_id_avmm_slave.sv
 qsys/write_master/dcp_write_master_hw.tcl
 qsys/write_master/dcp_byte_enable_generator.v
 qsys/write_master/dcp_write_burst_control.v
 qsys/write_master/dcp_write_master.v
-qsys/write_master/dcp_ST_to_MM_Adapter.v       
+qsys/write_master/dcp_ST_to_MM_Adapter.v
 
 qsys/ip/streaming_dma_test_system/dma_clock.ip
 qsys/ip/streaming_dma_test_system/emif_B_clock.ip
@@ -37,19 +39,24 @@ qsys/ip/streaming_dma_test_system/emif_A_clock.ip
 qsys/ip/streaming_dma_test_system/host_wr_bridge.ip
 qsys/ip/streaming_dma_test_system/emif_B_bridge.ip
 qsys/ip/streaming_dma_test_system/mmio_bridge.ip
+qsys/ip/streaming_dma_test_system/null_dfh.ip
+qsys/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_clock_in.ip
+qsys/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_csr_bridge.ip
+qsys/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_dispatcher.ip
+qsys/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_dma_read_master.ip
+qsys/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_host_bridge.ip
+qsys/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_id.ip
+qsys/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_memory_bridge.ip
+qsys/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_reset_in.ip
+qsys/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_clock_in.ip
+qsys/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_csr_bridge.ip
+qsys/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_host_bridge.ip
+qsys/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_id.ip
+qsys/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_memory_bridge.ip
+qsys/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_reset_in.ip
+qsys/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_stream_to_memory_dispatcher.ip
+qsys/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_write_master.ip
 
-qsys/ip/streaming_dma_bbb/csr_bridge.ip
-qsys/ip/streaming_dma_bbb/mem_write_bridge.ip
-qsys/ip/streaming_dma_bbb/host_read_bridge.ip
-qsys/ip/streaming_dma_bbb/streaming_dma_bbb_clock_in.ip
-qsys/ip/streaming_dma_bbb/host_write_bridge.ip
-qsys/ip/streaming_dma_bbb/streaming_dma_bbb_id.ip
-qsys/ip/streaming_dma_bbb/memory_to_stream_dispatcher.ip
-qsys/ip/streaming_dma_bbb/streaming_dma_bbb_reset_in.ip
-qsys/ip/streaming_dma_bbb/memory_to_stream_master.ip
-qsys/ip/streaming_dma_bbb/stream_to_memory_dispatcher.ip
-qsys/ip/streaming_dma_bbb/mem_read_bridge.ip
-qsys/ip/streaming_dma_bbb/stream_to_memory_master.ip
 
 
 # This will be generated during simulator configuration

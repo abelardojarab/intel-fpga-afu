@@ -28,7 +28,7 @@
 
 // ***************************************************************************
 
-import ccip_if_pkg::*;
+`include "platform_if.vh"
 
 module ccip_std_afu
   #(
@@ -86,17 +86,12 @@ module ccip_std_afu
     // ====================================================================
 
     // The platform may transform the CCI-P clock from pClk to a clock
-    // chosen in the AFU's JSON file.  ccip_if_clock() is provided to
-    // return the chosen clock so that the AFU code here can connect
-    // to the proper clock without the possibility of a mismatch with
-    // the JSON.
-
+    // chosen in the AFU's JSON file.
     logic clk;
-    logic reset;
+    assign clk = `PLATFORM_PARAM_CCI_P_CLOCK;
 
-    // Use .* to avoid naming any clocks or resets.  They will match
-    // from top-level interface names.
-    ccip_if_clock pick_clk(.*, .clk(clk), .reset(reset));
+    logic reset;
+    assign reset = `PLATFORM_PARAM_CCI_P_RESET;
 
 
     // ====================================================================

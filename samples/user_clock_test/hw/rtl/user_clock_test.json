@@ -7,7 +7,7 @@
       "afu-top-interface":
          {
             "name": "ccip_std_afu",
-            "module-arguments" :
+            "module-ports" :
                [
                   {
                      "class": "cci-p",

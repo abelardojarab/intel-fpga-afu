@@ -11,7 +11,8 @@
                      "class": "cci-p",
                      "params":
                         {
-                           "add-extra-timing-reg-stages": "auto"
+                           "add-extra-timing-reg-stages": "auto",
+                           "clock": "hssi.f2a_prmgmt_ctrl_clk"
                         }
                   },
                   {

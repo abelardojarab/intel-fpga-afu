@@ -82,6 +82,18 @@ localparam ETH_RD_DATA   = 16'h0040;
 localparam AFU_SCRATCH   = 16'h0048;
 
 //------------------------------------------------------------------------------
+// Pick the proper clk, as chosen by the AFU's JSON file
+//------------------------------------------------------------------------------
+
+// The platform may transform the CCI-P clock from pClk to a clock
+// chosen in the AFU's JSON file.
+logic clk;
+assign clk = `PLATFORM_PARAM_CCI_P_CLOCK;
+
+logic reset;
+assign reset = `PLATFORM_PARAM_CCI_P_RESET;
+
+//------------------------------------------------------------------------------
 // Register PR <--> PR signals near interface before consuming it
 //------------------------------------------------------------------------------
 
@@ -94,8 +106,8 @@ t_if_ccip_Tx pck_af2cp_sTx_T0;
 
 ccip_interface_reg inst_green_ccip_interface_reg
 (
-    .pClk                   (pClk),
-    .pck_cp2af_softReset_T0 (pck_cp2af_softReset),
+    .pClk                   (clk),
+    .pck_cp2af_softReset_T0 (reset),
     .pck_cp2af_pwrState_T0  (pck_cp2af_pwrState), 
     .pck_cp2af_error_T0     (pck_cp2af_error),    
     .pck_cp2af_sRx_T0       (pck_cp2af_sRx),      
@@ -182,7 +194,7 @@ logic init_done;
 // logic to capture eth_rd_data (coming from 100MHz domain)
 //------------------------------------------------------------------------------
 
-always @(posedge pClk)
+always @(posedge clk)
 begin
     eth_ctrl_addr <= ctrl_addr;
     eth_wr_data   <= wr_data;
@@ -191,7 +203,7 @@ begin
     if (rd_extend == 3'b110) rd_data <= eth_rd_data;
 end
 
-always @(posedge pClk or posedge pck_cp2af_softReset_T1)
+always @(posedge clk or posedge pck_cp2af_softReset_T1)
 begin
     if (pck_cp2af_softReset_T1)
     begin
@@ -215,7 +227,7 @@ begin
     end
 end
 
-always @(posedge pClk)
+always @(posedge clk)
 begin
     case (csr_addr_8B[3:0])
         AFU_DFH	     [6:3]: csr_rd_data <= 'h1000000000000001;	
@@ -248,7 +260,7 @@ end
 logic           csr_ren_T1;
 t_ccip_tid      csr_tid_T1;
 
-always @(posedge pClk or posedge pck_cp2af_softReset_T1)
+always @(posedge clk or posedge pck_cp2af_softReset_T1)
 begin
     if (pck_cp2af_softReset_T1)
     begin
@@ -264,7 +276,7 @@ begin
     end
 end    
 
-always @(posedge pClk)
+always @(posedge clk)
 begin
     // Pipe Stage T1
     csr_tid_T1 <= cp2csr_MmioHdr.tid;
@@ -275,7 +287,7 @@ end
     
 // Pulse extenders for ETH CTRL RD/WR commands
 
-always @(posedge pClk or posedge pck_cp2af_softReset_T1)
+always @(posedge clk or posedge pck_cp2af_softReset_T1)
 begin
     if (pck_cp2af_softReset_T1)
     begin

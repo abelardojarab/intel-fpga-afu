@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 #ifdef USE_ASE
    use_ase = 1;
 #else
-   use_ase = 1;
+   use_ase = 0;
 #endif
 
    if (use_ase) {

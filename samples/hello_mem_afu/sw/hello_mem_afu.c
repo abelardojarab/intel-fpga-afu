@@ -81,18 +81,23 @@ int main(int argc, char *argv[])
    fpga_guid          guid;
    uint32_t           num_matches;
    uint32_t           bank, use_ase;
+   uint32_t           num_mem_banks;
    struct timespec    sleep_time;
    // Access mandatory AFU registers
    uint64_t data = 0;
    fpga_result     res = FPGA_OK;
    int                pass;
    
-   if(argc < 3) {
-      printf("Usage: hello_mem_afu <bank #> <use_ase = 1 (simulation only), use_ase=0 (hardware)>");
+   if(argc < 2) {
+      printf("Usage: hello_mem_afu <bank #>\n");
       return 1;
    }
    bank = atoi(argv[1]);
-   use_ase = atoi(argv[2]);
+#ifdef USE_ASE
+   use_ase = 1;
+#else
+   use_ase = 1;
+#endif
 
    if (use_ase) {
       sleep_time.tv_sec = 1;
@@ -171,6 +176,14 @@ int main(int argc, char *argv[])
    ON_ERR_GOTO(res, out_close, "reading from MMIO");
    printf("AFU RESERVED = %08lx\n", data);
    
+   // How many banks of memory are there?
+   res = fpgaReadMMIO64(afc_handle, 0, TESTMODE_STATUS_REG, &data);
+   ON_ERR_GOTO(res, out_close, "reading from MMIO");
+   // Stored at bit 16
+   num_mem_banks = (data >> 16);
+   printf("NUM_LOCAL_MEM_BANKS = %d\n", num_mem_banks);
+   ON_ERR_GOTO(bank >= num_mem_banks, out_close, "illegal bank number");
+
    // Access AFU user scratch-pad register
    res = fpgaReadMMIO64(afc_handle, 0, SCRATCH_REG, &data);
    ON_ERR_GOTO(res, out_close, "reading from MMIO");

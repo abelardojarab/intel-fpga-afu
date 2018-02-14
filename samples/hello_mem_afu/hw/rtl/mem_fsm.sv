@@ -11,51 +11,51 @@
 // transmitted,  distributed,  or  disclosed  in any way without Intel's prior
 // express written permission.
 // ***************************************************************************
-// TODO future improvements move sticky registers to HSL module implmentation 
+// TODO future improvements move sticky registers to HSL module implmentation
+
+`include "platform_if.vh"
+import local_mem_cfg_pkg::*;
 
 typedef enum logic[2:0] { IDLE,
                           TEST_WRITE,
-                          TEST_READ, 
+                          TEST_READ,
                           RD_REQ,
                           RD_RSP,
                           WR_REQ,
                           WR_RSP } state_t;
 
-module mem_fsm #(
-  parameter DDR_ADDR_WIDTH=26
-) (     
+module mem_fsm
+ (
 	// ---------------------------global signals-------------------------------------------------
   input	clk,
   input	reset,
 
-  // - AMM Master Signals signals 
-  output logic [63:0]     avs_writedata,
-  input	 logic [63:0]     avs_readdata,
-  output logic [DDR_ADDR_WIDTH-1:0]     avs_address,
+  // - AMM Master Signals signals
+  output t_local_mem_data avs_writedata,
+  input	 t_local_mem_data avs_readdata,
+  output t_local_mem_addr avs_address,
   input	 logic	          avs_waitrequest,
   output logic            avs_write,
   output logic            avs_read,
-  output logic [63:0]     avs_byteenable,
-  output logic [11:0]     avs_burstcount, 
+  output t_local_mem_byte_mask    avs_byteenable,
+  output t_local_mem_burst_cnt    avs_burstcount,
 
   input                   avs_readdatavalid,
-  input [1:0]             avs_response, 
-  input                   avs_writeresponsevalid,
-  
-  // AVL MM CSR Control Signals 
-  input [DDR_ADDR_WIDTH-1:0]           avm_address,
+
+  // AVL MM CSR Control Signals
+  input t_local_mem_addr avm_address,
   input                  avm_write,
   input                  avm_read,
-  input [63:0]           avm_writedata,
-  input [11:0]           avm_burstcount,   
+  input logic [63:0]     avm_writedata,
+  input t_local_mem_burst_cnt avm_burstcount,
   output logic [63:0]    avm_readdata,
   output logic [1:0]     avm_response,
 
   input                  mem_testmode,
-  output logic [4:0]     addr_test_status, 
+  output logic [4:0]     addr_test_status,
   output logic           addr_test_done,
-  output logic [1:0]     rdwr_done, 
-  output logic [4:0]     rdwr_status, 
+  output logic [1:0]     rdwr_done,
+  output logic [4:0]     rdwr_status,
   input                  rdwr_reset,
   output state_t         fsm_state,
   output logic           ready_for_sw_cmd
@@ -68,14 +68,12 @@ parameter ADDRESS_MAX_BIT = 6;
 
    logic [32:0] address;
    assign avs_burstcount = avm_burstcount;
-//   assign  avs_burstcount = burst_count;
    logic  [3:0] max_reads = 0;
-   logic [10:0] burstcount;
+   t_local_mem_burst_cnt burstcount;
    logic avs_readdatavalid_1 = 0;
-   logic [1:0] avs_response_1;
 
   assign avs_address = mem_testmode? {'0, address[ADDRESS_MAX_BIT-1:0]}: avm_address;
-  assign avs_writedata = {burstcount , 53'(avm_writedata)};
+  assign avs_writedata = t_local_mem_data'({burstcount , 53'(avm_writedata)});
 
 assign avm_response = '0;
 always@(posedge clk) begin
@@ -180,7 +178,7 @@ always@(posedge clk) begin
   avs_readdatavalid_1 <= avs_readdatavalid;
 
   if (avs_readdatavalid)
-    avm_readdata <= avs_readdata;
+    avm_readdata <= 64'(avs_readdata);
 
   if(reset)
     addr_test_status <= 0;

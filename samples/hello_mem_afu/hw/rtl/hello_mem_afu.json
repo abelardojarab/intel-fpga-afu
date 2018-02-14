@@ -32,7 +32,7 @@
             {
                "name": "hello_mem_afu",
                "total-contexts": 1,
-               "accelerator-type-uuid": "850adcc2-6ceb-4b22-9722-d43375b61c66"
+               "accelerator-type-uuid": "35f9452b-25c2-434c-93d5-6f8c60db361c"
             }
          ]
    }

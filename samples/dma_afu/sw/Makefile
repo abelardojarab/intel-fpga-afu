@@ -38,6 +38,7 @@ endif
 #CFLAGS += -Wall -Werror -Wno-unknown-pragmas
 LDFLAGS += -luuid
 LDFLAGS += -lsafestr
+LDFLAGS += -lrt
 
 ifeq ($(USE_ASE),1)
 	LDFLAGS += -lopae-c-ase

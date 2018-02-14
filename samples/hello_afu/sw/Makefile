@@ -49,6 +49,11 @@ endif
 
 all: hello_afu
 
+afu_json_info.h: ../hw/rtl/hello_afu.json
+	afu_json_mgr json-info --afu-json=$^ --c-hdr=$@
+
+hello_afu.o: afu_json_info.h
+
 hello_afu: hello_afu.o
 	gcc $(CFLAGS) -o hello_afu hello_afu.o $(LDFLAGS)
 
@@ -56,6 +61,6 @@ hello_afu.o: hello_afu.c  Makefile
 	gcc $(CFLAGS) -c -o hello_afu.o hello_afu.c
 
 clean:
-	$(RM) hello_afu hello_afu.o
+	$(RM) hello_afu hello_afu.o afu_json_info.h
 
 .PHONY:all clean

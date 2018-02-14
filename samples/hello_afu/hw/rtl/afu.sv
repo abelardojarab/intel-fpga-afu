@@ -1,5 +1,5 @@
 // ***************************************************************************
-// Copyright (c) 2013-2017, Intel Corporation
+// Copyright (c) 2013-2018, Intel Corporation
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -27,13 +27,11 @@
 //
 // ***************************************************************************
 //
-// Module Name:         afu.sv
-// Project:             Hello AFU
-// Modified:            PSG - ADAPT
-// Description:         Hello AFU supports MMIO Writes and Reads for the DCP 1.0 Release.
+// Module Name:  afu.sv
+// Project:      Hello AFU
+// Description:  Hello AFU supports MMIO Writes and Reads.
 //
-// Hello_AFU is provided as as starting point for developing AFUs with the dcp_1.0 release for MMIO
-// Writes and Reads.
+// Hello_AFU is provided as a starting point for developing AFUs.
 //
 // It is strongly recommended:
 // - register all AFU inputs and outputs
@@ -48,72 +46,117 @@
 //
 // Scratch_Reg[63:0] @ Byte Address 0x0080 is provided to test MMIO Reads and Writes to the AFU.
 //
-import ccip_if_pkg::*;
 
-module afu (
-        // ---------------------------global signals-------------------------------------------------
-        input	Clk_400,	  //              in    std_logic;           Core clock. CCI interface is synchronous to this clock.
-        input	SoftReset,	  //              in    std_logic;           CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH
-        // ---------------------------IF signals between CCI and AFU  --------------------------------
+`include "platform_if.vh"
+`include "afu_json_info.vh"
 
-        input	t_if_ccip_Rx	cp2af_sRxPort,
-        output	t_if_ccip_Tx	af2cp_sTxPort
-);
+module afu
+   (
+    input  clk,    // Core clock. CCI interface is synchronous to this clock.
+    input  reset,  // CCI interface ACTIVE HIGH reset.
 
-        //Hello_AFU ID
-        localparam HELLO_AFU_ID_H = 64'h850A_DCC2_6CEB_4B22;
-        localparam HELLO_AFU_ID_L = 64'h9722_D433_75B6_1C66;
+    // CCI-P signals
+    input  t_if_ccip_Rx cp2af_sRxPort,
+    output t_if_ccip_Tx af2cp_sTxPort
+    );
 
-        logic  [63:0] scratch_reg = 0;
+    // The AFU must respond with its AFU ID in response to MMIO reads of
+    // the CCI-P device feature header (DFH).  The AFU ID is a unique ID
+    // for a given program.  Here we generated one with the "uuidgen"
+    // program and stored it in the AFU's JSON file.  ASE and synthesis
+    // setup scripts automatically invoke the OPAE afu_json_mgr script
+    // to extract the UUID into afu_json_info.vh.
+    logic [127:0] afu_id = `AFU_ACCEL_UUID;
 
-        // cast c0 header into ReqMmioHdr
-        t_ccip_c0_ReqMmioHdr mmioHdr;
-        assign mmioHdr = t_ccip_c0_ReqMmioHdr'(cp2af_sRxPort.c0.hdr);
+    logic [63:0] scratch_reg;
 
-        always@(posedge Clk_400) begin
-            if(SoftReset) begin
-                af2cp_sTxPort.c1.hdr        <= '0;
-                af2cp_sTxPort.c1.valid      <= '0;
-                af2cp_sTxPort.c1.data       <= '0;
-                af2cp_sTxPort.c0.hdr        <= '0;
-                af2cp_sTxPort.c0.valid      <= '0;
-                af2cp_sTxPort.c2.hdr        <= '0;
-                af2cp_sTxPort.c2.data       <= '0;
-                af2cp_sTxPort.c2.mmioRdValid <= '0;
-                scratch_reg    <= '0;
+    // The c0 header is normally used for memory read responses.
+    // The header must be interpreted as an MMIO response when
+    // c0 mmmioRdValid or mmioWrValid is set.  In these cases the
+    // c0 header is cast into a ReqMmioHdr.
+    t_ccip_c0_ReqMmioHdr mmioHdr;
+    assign mmioHdr = t_ccip_c0_ReqMmioHdr'(cp2af_sRxPort.c0.hdr);
+
+    //
+    // Receive MMIO writes
+    //
+    always_ff @(posedge clk)
+    begin
+        if (reset)
+        begin
+            scratch_reg <= '0;
+        end
+        else
+        begin
+            // set the registers on MMIO write request
+            // these are user-defined AFU registers at offset 0x40.
+            if (cp2af_sRxPort.c0.mmioWrValid == 1)
+            begin
+                case (mmioHdr.address)
+                    16'h0020: scratch_reg <= cp2af_sRxPort.c0.data[63:0];
+                endcase
             end
-            else begin
-                af2cp_sTxPort.c2.mmioRdValid <= 0;
-                // set the registers on MMIO write request
-                // these are user-defined AFU registers at offset 0x40 and 0x41
-                if(cp2af_sRxPort.c0.mmioWrValid == 1)
-                    case(mmioHdr.address)
-                        16'h0020: scratch_reg <= cp2af_sRxPort.c0.data[63:0];
-                    endcase
-              // serve MMIO read requests
-              if(cp2af_sRxPort.c0.mmioRdValid == 1) begin
-                  af2cp_sTxPort.c2.hdr.tid <= mmioHdr.tid; // copy TID
-                  case(mmioHdr.address)
-                      // AFU header
-                      16'h0000: af2cp_sTxPort.c2.data <= {
-                         4'b0001, // Feature type = AFU
-                         8'b0,    // reserved
-                         4'b0,    // afu minor revision = 0
-                         7'b0,    // reserved
-                         1'b1,    // end of DFH list = 1
-                         24'b0,   // next DFH offset = 0
-                         4'b0,    // afu major revision = 0
-                         12'b0    // feature ID = 0
-                      };
-                      16'h0002: af2cp_sTxPort.c2.data <= HELLO_AFU_ID_L; // afu id low
-                      16'h0004: af2cp_sTxPort.c2.data <= HELLO_AFU_ID_H; // afu id hi
-                      16'h0006: af2cp_sTxPort.c2.data <= 64'h0; // next AFU
-                      16'h0008: af2cp_sTxPort.c2.data <= 64'h0; // reserved
-                      16'h0020: af2cp_sTxPort.c2.data <= scratch_reg; // Scratch Register
-                      default:  af2cp_sTxPort.c2.data <= 64'h0;
-                  endcase
-                  af2cp_sTxPort.c2.mmioRdValid <= 1; // post response
-              end
-          end
-      end
+        end
+    end
+
+    //
+    // Handle MMIO reads.
+    //
+    always_ff @(posedge clk)
+    begin
+        if (reset)
+        begin
+            af2cp_sTxPort.c1.hdr <= '0;
+            af2cp_sTxPort.c1.valid <= '0;
+            af2cp_sTxPort.c0.hdr <= '0;
+            af2cp_sTxPort.c0.valid <= '0;
+            af2cp_sTxPort.c2.hdr <= '0;
+            af2cp_sTxPort.c2.mmioRdValid <= '0;
+        end
+        else
+        begin
+            // Clear read response flag in case there was a response last cycle.
+            af2cp_sTxPort.c2.mmioRdValid <= 0;
+
+            // serve MMIO read requests
+            if (cp2af_sRxPort.c0.mmioRdValid == 1'b1)
+            begin
+                // Copy TID, which the host needs to map the response to the request
+                af2cp_sTxPort.c2.hdr.tid <= mmioHdr.tid;
+
+                // Post response
+                af2cp_sTxPort.c2.mmioRdValid <= 1;
+
+                case (mmioHdr.address)
+                    // AFU header
+                    16'h0000: af2cp_sTxPort.c2.data <= {
+                        4'b0001, // Feature type = AFU
+                        8'b0,    // reserved
+                        4'b0,    // afu minor revision = 0
+                        7'b0,    // reserved
+                        1'b1,    // end of DFH list = 1
+                        24'b0,   // next DFH offset = 0
+                        4'b0,    // afu major revision = 0
+                        12'b0    // feature ID = 0
+                        };
+
+                    // AFU_ID_L
+                    16'h0002: af2cp_sTxPort.c2.data <= afu_id[63:0];
+
+                    // AFU_ID_H
+                    16'h0004: af2cp_sTxPort.c2.data <= afu_id[127:64];
+
+                    // DFH_RSVD0 and DFH_RSVD1
+                    16'h0006: af2cp_sTxPort.c2.data <= 64'h0;
+                    16'h0008: af2cp_sTxPort.c2.data <= 64'h0;
+
+                    // Scratch Register.  Return the last value written
+                    // to this MMIO address.
+                    16'h0020: af2cp_sTxPort.c2.data <= scratch_reg;
+
+                    default:  af2cp_sTxPort.c2.data <= 64'h0;
+                endcase
+            end
+        end
+    end
 endmodule

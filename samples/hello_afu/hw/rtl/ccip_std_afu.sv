@@ -30,78 +30,71 @@
 // Description :    This module instantiates CCI-P compliant AFU
 
 // ***************************************************************************
-`default_nettype none
-import ccip_if_pkg::*;
-module ccip_std_afu(
-  // CCI-P Clocks and Resets
-  pClk,                      // 400MHz - CCI-P clock domain. Primary interface clock
-  pClkDiv2,                  // 200MHz - CCI-P clock domain.
-  pClkDiv4,                  // 100MHz - CCI-P clock domain.
-  uClk_usr,                  // User clock domain. Refer to clock programming guide  ** Currently provides fixed 300MHz clock **
-  uClk_usrDiv2,              // User clock domain. Half the programmed frequency  ** Currently provides fixed 150MHz clock **
-  pck_cp2af_softReset,       // CCI-P ACTIVE HIGH Soft Reset
-  pck_cp2af_pwrState,        // CCI-P AFU Power State
-  pck_cp2af_error,           // CCI-P Protocol Error Detected
 
-  // Interface structures
-  pck_cp2af_sRx,             // CCI-P Rx Port
-  pck_af2cp_sTx              // CCI-P Tx Port
-);
-  input           wire             pClk;                     // 400MHz - CCI-P clock domain. Primary interface clock
-  input           wire             pClkDiv2;                 // 200MHz - CCI-P clock domain.
-  input           wire             pClkDiv4;                 // 100MHz - CCI-P clock domain.
-  input           wire             uClk_usr;                 // User clock domain. Refer to clock programming guide  ** Currently provides fixed 300MHz clock **
-  input           wire             uClk_usrDiv2;             // User clock domain. Half the programmed frequency  ** Currently provides fixed 150MHz clock **
-  input           wire             pck_cp2af_softReset;      // CCI-P ACTIVE HIGH Soft Reset
-  input           wire [1:0]       pck_cp2af_pwrState;       // CCI-P AFU Power State
-  input           wire             pck_cp2af_error;          // CCI-P Protocol Error Detected
+`include "platform_if.vh"
 
-  // Interface structures
-  input           t_if_ccip_Rx     pck_cp2af_sRx;           // CCI-P Rx Port
-  output          t_if_ccip_Tx     pck_af2cp_sTx;           // CCI-P Tx Port
+module ccip_std_afu
+   (
+    // CCI-P Clocks and Resets
+    input  logic        pClk,                 // Primary CCI-P interface clock.
+    input  logic        pClkDiv2,             // Aligned, pClk divided by 2.
+    input  logic        pClkDiv4,             // Aligned, pClk divided by 4.
+    input  logic        uClk_usr,             // User clock domain. Refer to clock programming guide.
+    input  logic        uClk_usrDiv2,         // Aligned, user clock divided by 2.
+    input  logic        pck_cp2af_softReset,  // CCI-P ACTIVE HIGH Soft Reset
+
+    input  logic [1:0]  pck_cp2af_pwrState,   // CCI-P AFU Power State
+    input  logic        pck_cp2af_error,      // CCI-P Protocol Error Detected
+
+    // CCI-P structures
+    input  t_if_ccip_Rx pck_cp2af_sRx,        // CCI-P Rx Port
+    output t_if_ccip_Tx pck_af2cp_sTx         // CCI-P Tx Port
+    );
+
+    // =============================================================
+    // Register SR <--> PR signals at interface before consuming it
+    // =============================================================
+
+    (* noprune *) logic [1:0]  pck_cp2af_pwrState_T1;
+    (* noprune *) logic        pck_cp2af_error_T1;
+
+    logic        pck_cp2af_softReset_T1;
+    t_if_ccip_Rx pck_cp2af_sRx_T1;
+    t_if_ccip_Tx pck_af2cp_sTx_T0;
 
 
-// =============================================================
-// Register SR <--> PR signals at interface before consuming it
-// =============================================================
+    // =============================================================
+    // Register PR <--> PR signals near interface before consuming it
+    // =============================================================
 
-(* noprune *) logic [1:0]  pck_cp2af_pwrState_T1;
-(* noprune *) logic        pck_cp2af_error_T1;
+    ccip_interface_reg inst_green_ccip_interface_reg
+       (
+        .pClk                     (pClk),
+        .pck_cp2af_softReset_T0   (pck_cp2af_softReset),
+        .pck_cp2af_pwrState_T0    (pck_cp2af_pwrState),
+        .pck_cp2af_error_T0       (pck_cp2af_error),
+        .pck_cp2af_sRx_T0         (pck_cp2af_sRx),
+        .pck_af2cp_sTx_T0         (pck_af2cp_sTx_T0),
 
-logic        pck_cp2af_softReset_T1;
-t_if_ccip_Rx pck_cp2af_sRx_T1;
-t_if_ccip_Tx pck_af2cp_sTx_T0;
+        .pck_cp2af_softReset_T1   (pck_cp2af_softReset_T1),
+        .pck_cp2af_pwrState_T1    (pck_cp2af_pwrState_T1),
+        .pck_cp2af_error_T1       (pck_cp2af_error_T1),
+        .pck_cp2af_sRx_T1         (pck_cp2af_sRx_T1),
+        .pck_af2cp_sTx_T1         (pck_af2cp_sTx)
+        );
 
-// =============================================================
-// Register PR <--> PR signals near interface before consuming it
-// =============================================================
 
-ccip_interface_reg inst_green_ccip_interface_reg  (
-    .pClk                           (pClk),
-    .pck_cp2af_softReset_T0         (pck_cp2af_softReset),
-    .pck_cp2af_pwrState_T0          (pck_cp2af_pwrState),
-    .pck_cp2af_error_T0             (pck_cp2af_error),
-    .pck_cp2af_sRx_T0               (pck_cp2af_sRx),
-    .pck_af2cp_sTx_T0               (pck_af2cp_sTx_T0),
+    // =============================================================
+    // Instantiate AFU logic
+    // =============================================================
 
-    .pck_cp2af_softReset_T1         (pck_cp2af_softReset_T1),
-    .pck_cp2af_pwrState_T1          (pck_cp2af_pwrState_T1),
-    .pck_cp2af_error_T1             (pck_cp2af_error_T1),
-    .pck_cp2af_sRx_T1               (pck_cp2af_sRx_T1),
-    .pck_af2cp_sTx_T1               (pck_af2cp_sTx)
-);
+    afu afu
+       (
+        .clk            (pClk),
+        .reset          (pck_cp2af_softReset_T1),
 
-//===============================================================================================
-// User AFU goes here
-//===============================================================================================
-
-afu afu(
-    .Clk_400                        (pClk),
-    .SoftReset                      (pck_cp2af_softReset_T1),
-
-    .cp2af_sRxPort                  (pck_cp2af_sRx_T1),
-    .af2cp_sTxPort                  (pck_af2cp_sTx_T0)
-);
-
+        .cp2af_sRxPort  (pck_cp2af_sRx_T1),
+        .af2cp_sTxPort  (pck_af2cp_sTx_T0)
+        );
 
 endmodule

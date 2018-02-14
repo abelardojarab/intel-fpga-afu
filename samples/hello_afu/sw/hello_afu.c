@@ -34,9 +34,12 @@
 #include <opae/properties.h>
 #include <opae/utils.h>
 
+// State from the AFU's JSON file, extracted using OPAE's afu_json_mgr script
+#include "afu_json_info.h"
+
 int usleep(unsigned);
 
-#define HELLO_AFU_ID              "850ADCC2-6CEB-4B22-9722-D43375B61C66"
+#define HELLO_AFU_ID             AFU_ACCEL_UUID  // Defined in afu_json_info.h
 #define SCRATCH_REG              0X80
 #define SCRATCH_VALUE            0x0123456789ABCDEF
 #define SCRATCH_RESET            0

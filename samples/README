@@ -1,1 +1,39 @@
-README
+These samples are provided in two categories.  Some are small, designed to
+introduce key concepts.  Others, such as dma_afu and the eth_e2e_* Ethernet
+MACs are provided as the starting points for larger projects.
+
+The following flow is recommended for an introduction:
+
+- Start with hello_afu to learn the build flow both for simulation and
+  synthesis.
+
+- hello_mem_afu introduces the Platform Interface Manager (PIM), an
+  abstraction layer for managing top-level device ports and system-provided
+  clock crossing.  It also introduces the interface to local memory,
+  FPGA-attached RAM.
+
+- At this point, it would be valuable to learn the CCI-P protocol.  An
+  introduction is available as part of the Basic Building Blocks release on
+  GitHub (https://github.com/OPAE/intel-fpga-bbb/tree/master/samples/tutorial).
+  The tutorial covers basic memory requests and introduces Intel-provided
+  libraries for changing the behavior of CCI-P, such as guaranteeing that read
+  responses return in order.
+
+- While it's RTL is complicated, nlb_400 demonstrates a method for describing
+  a project with multiple variants that may be synthesized from the same
+  sources.  It also demonstrates a mechanism for declaring a top-level device
+  port as optional.  When local memory is available, nlb_400 instantiates a
+  local memory slave.  The AFU also compiles on platforms without local
+  memory.
+
+- hello_intr_afu demonstrates triggering CPU interrupts over CCI-P.
+
+
+The following are provided as components for other projects:
+
+- dma_afu copies buffers back and forth between host memory and FPGA local
+  memory.
+
+- eth_e2e_e10 is a 4x10G Ethernet MAC.
+
+- eth_e2e_e40 is a 40G Ethernet MAC.

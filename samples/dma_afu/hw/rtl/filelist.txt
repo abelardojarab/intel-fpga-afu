@@ -13,6 +13,7 @@ afu.sv
 ccip_interface_reg.sv
 ccip_std_afu.sv
 
+qsys/components.ipx
 qsys/dma_test_system.qsys
 qsys/msgdma_bbb.qsys
 qsys/afu_id_avmm_slave/afu_id_avmm_slave_hw.tcl

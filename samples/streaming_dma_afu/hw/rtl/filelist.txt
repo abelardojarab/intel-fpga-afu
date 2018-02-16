@@ -17,6 +17,7 @@ afu.sv
 ccip_interface_reg.sv
 ccip_std_afu.sv
 
+qsys/components.ipx
 qsys/streaming_dma_test_system.qsys
 qsys/memory_to_stream_dma_bbb.qsys
 qsys/stream_to_memory_dma_bbb.qsys

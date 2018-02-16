@@ -1,2 +1,3 @@
 *.o
 hello_mem_afu
+afu_json_info.h

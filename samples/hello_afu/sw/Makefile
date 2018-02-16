@@ -43,7 +43,6 @@ ifeq ($(USE_ASE),1)
 	CFLAGS += -DUSE_ASE
 else
 	LDFLAGS += -lpthread
-	LDFLAGS += -ljson-c
 	LDFLAGS += -lopae-c
 endif
 

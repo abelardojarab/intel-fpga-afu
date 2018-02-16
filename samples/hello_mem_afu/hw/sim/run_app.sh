@@ -40,5 +40,5 @@ menu_run_app "$@"
 wait_for_sim_ready
 setup_app_env
 build_app
-# Usage: hello_mem_afu <bank#> <use_ase=1>
-$app_base/hello_mem_afu 0 1
+# Usage: hello_mem_afu <bank#>
+$app_base/hello_mem_afu 0

@@ -31,63 +31,61 @@
 // Scratch_Reg[63:0] @ Byte Address 0x0080 is provided to test MMIO Reads and Writes to the AFU.
 //
 // Restrictions of Avalon memory interface (verify with Colleen)
-// - operates with respect to 400 MHz clock
-// - only single bursts are currently supported
 // - No response status is supported
 // - No support for posted writes
-// - Recommended to use lower [63:0] of data bus
 //
-//`default_nettype none
-import ccip_if_pkg::*;
-module hello_mem_afu #(
-   parameter DDR_ADDR_WIDTH=26
-) (
-	// ---------------------------global signals-------------------------------------------------
-  input	clk,
-  input	SoftReset,	//CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH
 
-	// ---------------------------IF signals between CCI and AFU  --------------------------------
-  input	  t_if_ccip_Rx  cp2af_sRxPort,
-  output  t_if_ccip_Tx	af2cp_sTxPort,
+`include "platform_if.vh"
+import local_mem_cfg_pkg::*;
+
+module hello_mem_afu
+  #(
+    parameter NUM_LOCAL_MEM_BANKS = 2
+    )
+ (
+        // ---------------------------global signals-------------------------------------------------
+  input clk,
+  input SoftReset,      //CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH
+
+        // ---------------------------IF signals between CCI and AFU  --------------------------------
+  input   t_if_ccip_Rx  cp2af_sRxPort,
+  output  t_if_ccip_Tx  af2cp_sTxPort,
 
   // --------------------------- AMM signals
-  output  logic [511:0]   avs_writedata,     	
-  input	  logic [63:0]    avs_readdata,     	
-  output  logic [DDR_ADDR_WIDTH-1:0]    avs_address,       	
-  input	  logic	          avs_waitrequest,   	
-  output  logic           avs_write,        	
-  output  logic           avs_read,         	
-  output  logic [63:0]    avs_byteenable,   	
-  output  logic [11:0]    avs_burstcount,
-  input			              avs_readdatavalid,
-  input                   avs_writeresponsevalid,
-  input         [1:0]     avs_response,
+  output  t_local_mem_data  avs_writedata,
+  input   t_local_mem_data  avs_readdata,
+  output  t_local_mem_addr  avs_address,
+  input   logic             avs_waitrequest,
+  output  logic             avs_write,
+  output  logic             avs_read,
+  output  t_local_mem_byte_mask  avs_byteenable,
+  output  t_local_mem_burst_cnt  avs_burstcount,
+  input                     avs_readdatavalid,
 
-  output logic mem_bank_select
+  output logic [$clog2(NUM_LOCAL_MEM_BANKS)-1:0] mem_bank_select
 );
 
-  wire [63:0] avm_writedata, avm_readdata;
+  logic [63:0] avm_writedata, avm_readdata;
   wire mem_testmode;
-  wire            ready_for_sw_cmd;
+  wire         ready_for_sw_cmd;
 
-  wire [4:0]      addr_test_status;
-  wire            addr_test_done;
+  wire [4:0]   addr_test_status;
+  wire         addr_test_done;
 
-  wire [DDR_ADDR_WIDTH-1:0]     avm_address;
-  wire [11:0]     avm_burstcount;
-  wire [1:0]      avm_response;
-  wire            avm_read;
-  wire            avm_write;
+  t_local_mem_addr      avm_address;
+  t_local_mem_burst_cnt avm_burstcount;
+  wire [1:0]   avm_response;
+  wire         avm_read;
+  wire         avm_write;
 
-  wire  [1:0]     rdwr_done;
-  wire  [4:0]     rdwr_status;
-  wire            rdwr_reset;
+  wire  [1:0]  rdwr_done;
+  wire  [4:0]  rdwr_status;
+  wire         rdwr_reset;
 
-  wire  [2:0]     fsm_state;
+  wire  [2:0]  fsm_state;
 
-  mem_csr #(
-    .DDR_ADDR_WIDTH         (DDR_ADDR_WIDTH)
-  ) csr(
+  mem_csr csr
+   (
     .clk                    (clk),
     .SoftReset              (SoftReset ),
 
@@ -113,9 +111,8 @@ module hello_mem_afu #(
     .ready_for_sw_cmd       (ready_for_sw_cmd)
  );
 
-  mem_fsm #(
-    .DDR_ADDR_WIDTH         (DDR_ADDR_WIDTH)
-  ) fsm (
+  mem_fsm fsm
+   (
     .clk                    (clk ),
     .reset                  (SoftReset ),
 
@@ -137,18 +134,16 @@ module hello_mem_afu #(
     .ready_for_sw_cmd       (ready_for_sw_cmd),
 
      //AVL MM Master Interface
-    .avs_writedata          ( avs_writedata ),
-    .avs_readdata           ( avs_readdata ),
-    .avs_address            ( avs_address ),
-    .avs_waitrequest        ( avs_waitrequest ),
-    .avs_write              ( avs_write ),
-    .avs_read               ( avs_read ),
-    .avm_response           ( avm_response),
-    .avs_byteenable         ( avs_byteenable ),
-    .avs_burstcount         ( avs_burstcount),
-    .avs_response           ( avs_response),
-    .avs_readdatavalid      ( avs_readdatavalid),
-    .avs_writeresponsevalid ( avs_writeresponsevalid)
+    .avs_writedata          (avs_writedata ),
+    .avs_readdata           (avs_readdata ),
+    .avs_address            (avs_address ),
+    .avs_waitrequest        (avs_waitrequest ),
+    .avs_write              (avs_write ),
+    .avs_read               (avs_read ),
+    .avm_response           (avm_response),
+    .avs_byteenable         (avs_byteenable ),
+    .avs_burstcount         (avs_burstcount),
+    .avs_readdatavalid      (avs_readdatavalid)
   );
 
 endmodule

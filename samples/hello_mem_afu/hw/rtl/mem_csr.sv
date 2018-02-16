@@ -13,22 +13,26 @@
 // ***************************************************************************
 //
 
-import ccip_if_pkg::*;
+`include "platform_if.vh"
+import local_mem_cfg_pkg::*;
+`include "afu_json_info.vh"
 
-module mem_csr #(
-   parameter DDR_ADDR_WIDTH=26
-) (
+module mem_csr
+  #(
+    parameter NUM_LOCAL_MEM_BANKS = 2
+    )
+ (
 	// ---------------------------global signals-------------------------------------------------
   input	clk,
   input	SoftReset,	// CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH
 
 	// ---------------------------IF signals between CCI and AFU  --------------------------------
-	input	 t_if_ccip_Rx    cp2af_sRxPort,
-	output t_if_ccip_Tx	   af2cp_sTxPort,
+  input	 t_if_ccip_Rx    cp2af_sRxPort,
+  output t_if_ccip_Tx	 af2cp_sTxPort,
 
   // avm
-  output reg [31:0]      avm_address,
-  output reg [11:0]      avm_burstcount,
+  output t_local_mem_addr      avm_address,
+  output t_local_mem_burst_cnt avm_burstcount,
   output reg             avm_read,
   input [63:0]           avm_readdata,
   input [1:0]            avm_response,
@@ -43,12 +47,10 @@ module mem_csr #(
   input [4:0]            rdwr_status, 
   output reg             rdwr_reset,
   input [2:0]            fsm_state,
-  output reg             mem_bank_select,
+  output logic [$clog2(NUM_LOCAL_MEM_BANKS)-1:0] mem_bank_select,
   input wire             ready_for_sw_cmd
 );
 
-localparam HELLO_AFU_ID_H        = 64'h35F9_452B_25C2_434C; // HELLO_AFU_ID Upper 
-localparam HELLO_AFU_ID_L        = 64'h93D5_6F8C_60DB_361C; // HELLO_AFU_ID Lower
 localparam AFU_ID_L              = 16'h0002;                // AFU ID Lower
 localparam AFU_ID_H              = 16'h0004;                // AFU ID Higher 
 localparam SCRATCH_REG           = 16'h0020;                // Scratch Register
@@ -62,6 +64,8 @@ localparam MEM_ADDR_TEST_STATUS  = 16'h0060;                // Test Status Regis
 localparam MEM_RDWR_STATUS       = 16'h0062;
 localparam MEM_BANK_SELECT       = 16'h0064;                // Memory bank selection register
 localparam READY_FOR_SW_CMD      = 16'h0066;                // "Ready for sw cmd" register. S/w must poll this register before issuing a read/write command to fsm
+
+logic [127:0] afu_id = `AFU_ACCEL_UUID;
 
 // cast c0 header into ReqMmioHdr
 t_ccip_c0_ReqMmioHdr mmioHdr;
@@ -104,12 +108,12 @@ always@(posedge clk) begin
       if(cp2af_sRxPort.c0.mmioWrValid == 1)
         case(mmioHdr.address)
           SCRATCH_REG: scratch_reg <= cp2af_sRxPort.c0.data[63:0];
-          MEM_ADDRESS: avm_address <= cp2af_sRxPort.c0.data[31:0];
+          MEM_ADDRESS: avm_address <= t_local_mem_addr'(cp2af_sRxPort.c0.data);
           MEM_BURSTCOUNT: avm_burstcount <= cp2af_sRxPort.c0.data[11:0];
           MEM_RDWR: mem_RDWR <= cp2af_sRxPort.c0.data[2:0];
           MEM_WRDATA: avm_writedata <= cp2af_sRxPort.c0.data[63:0];
           MEM_ADDR_TESTMODE : mem_testmode <= cp2af_sRxPort.c0.data[0];
-          MEM_BANK_SELECT: mem_bank_select <=  cp2af_sRxPort.c0.data[0];          
+          MEM_BANK_SELECT: mem_bank_select <= $bits(mem_bank_select)'(cp2af_sRxPort.c0.data);
       endcase
 
       if (addr_test_done == 1) 
@@ -130,18 +134,19 @@ always@(posedge clk) begin
              4'b0,    // afu major revision = 0
              12'b0    // feature ID = 0
           };            
-          AFU_ID_L:             af2cp_sTxPort.c2.data <= HELLO_AFU_ID_L; // afu id low
-          AFU_ID_H:             af2cp_sTxPort.c2.data <= HELLO_AFU_ID_H; // afu id hi
+          AFU_ID_L:             af2cp_sTxPort.c2.data <= afu_id[63:0];   // afu id low
+          AFU_ID_H:             af2cp_sTxPort.c2.data <= afu_id[127:64]; // afu id hi
           16'h0006:             af2cp_sTxPort.c2.data <= 64'h0; // next AFU
           16'h0008:             af2cp_sTxPort.c2.data <= 64'h0; // reserved
           SCRATCH_REG:          af2cp_sTxPort.c2.data <= scratch_reg; // Scratch Register
-          MEM_ADDRESS:          af2cp_sTxPort.c2.data <= {32'h0, avm_address};
-          MEM_BURSTCOUNT:       af2cp_sTxPort.c2.data <= {20'd0,avm_burstcount};
+          MEM_ADDRESS:          af2cp_sTxPort.c2.data <= 64'(avm_address);
+          MEM_BURSTCOUNT:       af2cp_sTxPort.c2.data <= 64'(avm_burstcount);
           MEM_RDWR:             af2cp_sTxPort.c2.data <= {62'd0, mem_RDWR};
           MEM_WRDATA:           af2cp_sTxPort.c2.data <= avm_writedata;
           MEM_RDDATA:           af2cp_sTxPort.c2.data <= avm_readdata; 
-          MEM_ADDR_TESTMODE:    af2cp_sTxPort.c2.data <= {63'd0, mem_testmode};
-          MEM_ADDR_TEST_STATUS: af2cp_sTxPort.c2.data <= {'d0, addr_test_done,3'd0, addr_test_status}; 
+          MEM_ADDR_TESTMODE:    af2cp_sTxPort.c2.data <= 64'(mem_testmode);
+          MEM_ADDR_TEST_STATUS: af2cp_sTxPort.c2.data <= 64'({NUM_LOCAL_MEM_BANKS,
+                                                             16'({addr_test_done, 3'd0, addr_test_status})});
           READY_FOR_SW_CMD:     af2cp_sTxPort.c2.data <= ready_for_sw_cmd;
           MEM_RDWR_STATUS: begin 
             af2cp_sTxPort.c2.data <= {54'd0,
@@ -153,7 +158,7 @@ always@(posedge clk) begin
                                       rdwr_status[1:0]}; // 1:0
             rdwr_reset     <= 1;
           end 
-		      MEM_BANK_SELECT:  af2cp_sTxPort.c2.data <= mem_bank_select;
+		      MEM_BANK_SELECT:  af2cp_sTxPort.c2.data <= 64'(mem_bank_select);
             default:  af2cp_sTxPort.c2.data <= 64'h0;
         endcase
         af2cp_sTxPort.c2.mmioRdValid <= 1; // post response

@@ -30,6 +30,8 @@
 
 `include "platform_if.vh"
 
+import local_mem_cfg_pkg::*;
+
 module ccip_std_afu
   #(
     parameter NUM_LOCAL_MEM_BANKS = 2
@@ -53,33 +55,6 @@ module ccip_std_afu
     // Local memory interface
     avalon_mem_if.to_fiu local_mem[NUM_LOCAL_MEM_BANKS]
 );
-
-    logic [63:0]                avs_byteenable;
-    logic                       avs_waitrequest;
-    logic [511:0]               avs_readdata;
-    logic                       avs_readdatavalid;
-    logic [6:0]                 avs_burstcount;
-    logic [511:0]               avs_writedata;
-    local_mem_cfg_pkg::t_local_mem_addr  avs_address;
-    logic                       avs_write;
-    logic                       avs_read;
-
-    // bank A
-    logic                avs_waitrequest_a;
-    logic [511:0]        avs_readdata_a;
-    logic                avs_readdatavalid_a;
-    logic                avs_write_a;
-    logic                avs_read_a;
-
-    // bank B
-    logic                avs_waitrequest_b;
-    logic [511:0]        avs_readdata_b;
-    logic                avs_readdatavalid_b;
-    logic                avs_write_b;
-    logic                avs_read_b;
-
-    // choose which memory bank to test
-    logic                mem_bank_select;
 
     // ====================================================================
     // Pick the proper clk and reset, as chosen by the AFU's JSON file
@@ -133,16 +108,35 @@ module ccip_std_afu
     // crossing shims automatically, as needed.
     //
 
+    //
+    // Memory banks are used very simply here.  Only bank is active at
+    // a time, selected by mem_bank_select.  mem_bank_select is set
+    // by a CSR from the host.
+    //
+    t_local_mem_byte_mask avs_byteenable;
+    logic                 avs_waitrequest;
+    t_local_mem_data      avs_readdata;
+    logic                 avs_readdatavalid;
+    t_local_mem_burst_cnt avs_burstcount;
+    t_local_mem_data      avs_writedata;
+    t_local_mem_addr      avs_address;
+    logic                 avs_write;
+    logic                 avs_read;
+
+    // choose which memory bank to test
+    logic [$clog2(NUM_LOCAL_MEM_BANKS)-1:0] mem_bank_select;
+
     hello_mem_afu
       #(
-        .DDR_ADDR_WIDTH(local_mem_cfg_pkg::LOCAL_MEM_ADDR_WIDTH)
-        ) hello_mem_afu_inst
+        .NUM_LOCAL_MEM_BANKS(NUM_LOCAL_MEM_BANKS)
+        )
+      hello_mem_afu_inst
        (
         .clk                 (clk),
         .SoftReset           (reset_T1),
 
         .avs_writedata       (avs_writedata),
-        .avs_readdata        (avs_readdata[63:0]),
+        .avs_readdata        (avs_readdata),
         .avs_address         (avs_address),
         .avs_waitrequest     (avs_waitrequest),
         .avs_write           (avs_write),
@@ -156,41 +150,45 @@ module ccip_std_afu
         .af2cp_sTxPort       (af2cp_sTx_T0)
         );
 
+    // 
+    // Export the local memory interface signals as vectors so that bank
+    // selection can use array syntax.
     //
-    // Map Avalon MM requests from hello_mem_afu to memory banks.
-    //
-    assign avs_waitrequest   = (mem_bank_select)?avs_waitrequest_b:avs_waitrequest_a;
-    assign avs_readdata      = (mem_bank_select)?avs_readdata_b:avs_readdata_a;
-    assign avs_readdatavalid = (mem_bank_select)?avs_readdatavalid_b:avs_readdatavalid_a;
-    assign avs_write_a       = (mem_bank_select)?1'b0:avs_write;
-    assign avs_write_b       = (mem_bank_select)?avs_write:1'b0;
-    assign avs_read_a        = (mem_bank_select)?1'b0:avs_read;
-    assign avs_read_b        = (mem_bank_select)?avs_read:1'b0;
+    logic             avs_waitrequest_v[NUM_LOCAL_MEM_BANKS];
+    t_local_mem_data  avs_readdata_v[NUM_LOCAL_MEM_BANKS];
+    logic             avs_readdatavalid_v[NUM_LOCAL_MEM_BANKS];
 
-    always_comb
-    begin
-        avs_waitrequest_a = local_mem[0].waitrequest;
-        avs_readdata_a = local_mem[0].readdata;
-        avs_readdatavalid_a = local_mem[0].readdatavalid;
-        local_mem[0].burstcount = avs_burstcount;
-        local_mem[0].writedata = avs_writedata;
-        local_mem[0].address = avs_address;
-        local_mem[0].write = avs_write_a;
-        local_mem[0].read = avs_read_a;
-        local_mem[0].byteenable = avs_byteenable;
-    end
+    genvar b;
+    generate
+        for (b = 0; b < NUM_LOCAL_MEM_BANKS; b = b + 1)
+        begin : lmb
+            always_comb
+            begin
+                // Local memory to AFU signals
+                avs_waitrequest_v[b] = local_mem[b].waitrequest;
+                avs_readdata_v[b] = local_mem[b].readdata;
+                avs_readdatavalid_v[b] = local_mem[b].readdatavalid;
 
-    always_comb
-    begin
-        avs_waitrequest_b = local_mem[1].waitrequest;
-        avs_readdata_b = local_mem[1].readdata;
-        avs_readdatavalid_b = local_mem[1].readdatavalid;
-        local_mem[1].burstcount = avs_burstcount;
-        local_mem[1].writedata = avs_writedata;
-        local_mem[1].address = avs_address;
-        local_mem[1].write = avs_write_b;
-        local_mem[1].read = avs_read_b;
-        local_mem[1].byteenable = avs_byteenable;
-    end
+                // Replicate address and write data to all banks.  Only
+                // the request signals have to be bank-specific.
+                local_mem[b].burstcount = avs_burstcount;
+                local_mem[b].writedata = avs_writedata;
+                local_mem[b].address = avs_address;
+                local_mem[b].byteenable = avs_byteenable;
+
+                // Request a write to this bank?
+                local_mem[b].write = avs_write &&
+                                     ($bits(mem_bank_select)'(b) == mem_bank_select);
+
+                // Request a read from this bank?
+                local_mem[b].read =  avs_read &&
+                                     ($bits(mem_bank_select)'(b) == mem_bank_select);
+            end
+        end
+    endgenerate
+
+    assign avs_waitrequest   = avs_waitrequest_v[mem_bank_select];
+    assign avs_readdata      = avs_readdata_v[mem_bank_select];
+    assign avs_readdatavalid = avs_readdatavalid_v[mem_bank_select];
 
 endmodule

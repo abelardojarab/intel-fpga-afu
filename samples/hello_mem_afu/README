@@ -87,19 +87,26 @@ hw/rtl/hello_mem_afu.json modifies two port classes: "cci-p" and
   encouraged, though be aware that no extra FIU-side buffering is added for
   CCI-P sending limits following almost full.  AFUs that are already near
   their sending limit following CCI-P almost full may cause overruns,
-  resulting in lost requests.
+  resulting in lost requests.  If add-extra-timing-reg-stages is not present
+  in the JSON, no buffer stages are added.
 
 - clock.  Setting "clock" to something other than it's default ("default") or
   to the interface's native clock (e.g. "pClk" for CCI-P) triggers automatic
   insertion of clock crossing logic from the native domain to the target
-  domain.  Any valid clock name may be used.  Note that not all module port
-  classes offer automatic clock crossing.  afu_platform_config will fail if a
-  clock crossing is requested that can not be satisfied.
+  domain.  Any valid clock name may be used.  Most AFUs will use one of the
+  standard CCI-P clocks (pClkDiv2, uClk_usr, etc.).  Specifying a local memory
+  clock (e.g. local_mem[0].clk) is legal, though generally a poor choice since
+  each memory bank may have its own clock.
 
+  When no clock is specified in the JSON, a port's native clock is unchanged.
   It is not necessary to specify clocks for all interfaces.  For example,
   hello_mem_afu could run in the pClk domain by removing the "clock" field
   from class "cci-p" and specifying "pClk" as the clock in class
   "local-memory".
+
+  Note that not all module port classes offer automatic clock crossing.
+  afu_platform_config will fail if a clock crossing is requested that can not
+  be satisfied.
 
   For most interfaces, an automated clock crossing changes the clock passed
   along with the interface.  For example, the local_mem[0].clk port in
@@ -129,4 +136,4 @@ combination of Intel-provided code:
   PR connection module that ships with a physical platform release.
 
 - Shims that are provided as part of OPAE
-  (https://github.com/OPAE/opae-sdk/tree/master/platforms/platform_if).
+  https://github.com/OPAE/opae-sdk/tree/master/platforms/platform_if/rtl/platform_shims

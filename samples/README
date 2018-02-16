@@ -26,7 +26,9 @@ The following flow is recommended for an introduction:
   local memory slave.  The AFU also compiles on platforms without local
   memory.
 
-- hello_intr_afu demonstrates triggering CPU interrupts over CCI-P.
+- hello_intr_afu demonstrates triggering CPU interrupts over CCI-P.  In
+  addition, it uses a legacy top-level interface with individual wires for
+  each of the two DDR4 memory banks.
 
 
 The following are provided as components for other projects:

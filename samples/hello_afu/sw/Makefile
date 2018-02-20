@@ -33,6 +33,9 @@ CFLAGS += -g -O2 -std=c99
 ifdef prefix
 CFLAGS += -I$(prefix)/include
 LDFLAGS += -L$(prefix)/lib
+AFU_JSON_MGR = $(prefix)/bin/afu_json_mgr
+else
+AFU_JSON_MGR = afu_json_mgr
 endif
 LDFLAGS += -luuid
 
@@ -49,7 +52,7 @@ endif
 all: hello_afu
 
 afu_json_info.h: ../hw/rtl/hello_afu.json
-	afu_json_mgr json-info --afu-json=$^ --c-hdr=$@
+	$(AFU_JSON_MGR) json-info --afu-json=$^ --c-hdr=$@
 
 hello_afu.o: afu_json_info.h
 

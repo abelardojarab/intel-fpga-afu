@@ -46,10 +46,11 @@ module mem_fsm
   input t_local_mem_addr avm_address,
   input                  avm_write,
   input                  avm_read,
-  input logic [63:0]     avm_writedata,
+  input t_local_mem_data avm_writedata,
   input t_local_mem_burst_cnt avm_burstcount,
-  output logic [63:0]    avm_readdata,
+  output t_local_mem_data avm_readdata,
   output logic [1:0]     avm_response,
+  input t_local_mem_byte_mask avm_byteenable,
 
   input                  mem_testmode,
   output logic [4:0]     addr_test_status,
@@ -58,22 +59,45 @@ module mem_fsm
   output logic [4:0]     rdwr_status,
   input                  rdwr_reset,
   output state_t         fsm_state,
-  output logic           ready_for_sw_cmd
+  output logic           ready_for_sw_cmd,
+
+  output reg [31:0]      mem_errors,
+  input                  mem_error_clr
 );
 
 parameter ADDRESS_MAX_BIT = 6;
 
-   state_t state;
-   assign fsm_state = state;
+state_t state;
+assign fsm_state = state;
 
-   logic [32:0] address;
-   assign avs_burstcount = avm_burstcount;
-   logic  [3:0] max_reads = 0;
-   t_local_mem_burst_cnt burstcount;
-   logic avs_readdatavalid_1 = 0;
+logic [32:0] address;
+assign avs_burstcount = avm_burstcount;
+logic  [3:0] max_reads = 0;
+t_local_mem_burst_cnt burstcount;
+logic avs_readdatavalid_1 = 0;
 
-  assign avs_address = mem_testmode? {'0, address[ADDRESS_MAX_BIT-1:0]}: avm_address;
-  assign avs_writedata = t_local_mem_data'({burstcount , 53'(avm_writedata)});
+assign avs_address = mem_testmode? {'0, address[ADDRESS_MAX_BIT-1:0]}: avm_address;
+assign avs_writedata = avm_writedata;
+assign avs_byteenable = avm_byteenable;
+
+function automatic logic [511:0] get_mask (logic [63:0] byteenable);
+  logic [511:0] mask;
+  for(int i=0; i<64; i++) begin
+    mask[i*8 +: 8] = byteenable[i]? {8{1'b1}}:
+                                    {8{1'b0}};
+  end
+  return mask;
+endfunction
+
+// record memory errors
+
+always@(posedge clk) begin
+  if(reset | mem_error_clr)
+    mem_errors <= 0;
+  else
+    if(avs_readdatavalid && ((avs_readdata & get_mask(avs_byteenable)) != (avm_writedata & get_mask(avs_byteenable))))
+      mem_errors <= mem_errors+1;
+end
 
 assign avm_response = '0;
 always@(posedge clk) begin
@@ -81,7 +105,6 @@ always@(posedge clk) begin
     address        <= '0;
     avs_write      <= '0;
     avs_read       <= 0;
-    avs_byteenable <= 64'hffff_ffff_ffff_ffff;
     state          <= IDLE;
     addr_test_done <= '0;
     burstcount     <= 1;

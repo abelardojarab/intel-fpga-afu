@@ -34,10 +34,13 @@ module mem_csr
   output t_local_mem_addr      avm_address,
   output t_local_mem_burst_cnt avm_burstcount,
   output reg             avm_read,
-  input [63:0]           avm_readdata,
+  input t_local_mem_data avm_readdata,
   input [1:0]            avm_response,
   output reg             avm_write,
-  output reg [63:0]      avm_writedata,
+  output t_local_mem_data avm_writedata,
+  output t_local_mem_byte_mask avm_byteenable,
+  input [31:0]           mem_errors,
+  output reg             mem_error_clr,
 
   // control and status
   output reg             mem_testmode,
@@ -64,6 +67,8 @@ localparam MEM_ADDR_TEST_STATUS  = 16'h0060;                // Test Status Regis
 localparam MEM_RDWR_STATUS       = 16'h0062;
 localparam MEM_BANK_SELECT       = 16'h0064;                // Memory bank selection register
 localparam READY_FOR_SW_CMD      = 16'h0066;                // "Ready for sw cmd" register. S/w must poll this register before issuing a read/write command to fsm
+localparam MEM_BYTEENABLE        = 16'h0068;                // Test byteenable
+localparam MEM_ERRORS            = 16'h006A;
 
 logic [127:0] afu_id = `AFU_ACCEL_UUID;
 
@@ -96,6 +101,8 @@ always@(posedge clk) begin
     mem_testmode   <= '0;
     rdwr_reset     <= 1;
     mem_bank_select <= '0;
+    avm_byteenable <= '0;
+    mem_error_clr  <= 0;
   end
   else begin
       rdwr_reset     <= 0;
@@ -106,15 +113,24 @@ always@(posedge clk) begin
       // set the registers on MMIO write request
       // these are user-defined AFU registers at offset 0x40 and 0x41
       if(cp2af_sRxPort.c0.mmioWrValid == 1)
+      begin
         case(mmioHdr.address)
           SCRATCH_REG: scratch_reg <= cp2af_sRxPort.c0.data[63:0];
           MEM_ADDRESS: avm_address <= t_local_mem_addr'(cp2af_sRxPort.c0.data);
           MEM_BURSTCOUNT: avm_burstcount <= cp2af_sRxPort.c0.data[11:0];
           MEM_RDWR: mem_RDWR <= cp2af_sRxPort.c0.data[2:0];
-          MEM_WRDATA: avm_writedata <= cp2af_sRxPort.c0.data[63:0];
+          MEM_WRDATA: avm_writedata <= {8{cp2af_sRxPort.c0.data[63:0]}};
           MEM_ADDR_TESTMODE : mem_testmode <= cp2af_sRxPort.c0.data[0];
           MEM_BANK_SELECT: mem_bank_select <= $bits(mem_bank_select)'(cp2af_sRxPort.c0.data);
-      endcase
+          // sw programmable byteenables
+          MEM_BYTEENABLE: avm_byteenable <= cp2af_sRxPort.c0.data[63:0];
+          // write any value to MEM_ERRORS register to clear errors
+          MEM_ERRORS: mem_error_clr <= 1'b1;
+        endcase
+      end
+      else begin
+        mem_error_clr <= 0;
+      end
 
       if (addr_test_done == 1) 
         mem_testmode <= 0;
@@ -148,6 +164,9 @@ always@(posedge clk) begin
           MEM_ADDR_TEST_STATUS: af2cp_sTxPort.c2.data <= 64'({NUM_LOCAL_MEM_BANKS,
                                                              16'({addr_test_done, 3'd0, addr_test_status})});
           READY_FOR_SW_CMD:     af2cp_sTxPort.c2.data <= ready_for_sw_cmd;
+          MEM_BYTEENABLE:       af2cp_sTxPort.c2.data <= avm_byteenable;
+          // MEM_ERRORs records the count of memory errors during the transfer
+          MEM_ERRORS:           af2cp_sTxPort.c2.data <= mem_errors;
           MEM_RDWR_STATUS: begin 
             af2cp_sTxPort.c2.data <= {54'd0,
                                       fsm_state,         // 9:7

@@ -24,8 +24,8 @@ set_false_path -from [get_registers {*|inst_fme_csr|csr_reg[14][1][*]}] -to [get
 set_false_path -from [get_registers {*|inst_hssi_ctrl|*meta*}] -to *
 set_false_path -to [get_registers {*|inst_hssi_ctrl|*meta*}] -from *
 
-set_false_path -from [get_registers {fpga_top|inst_green_bs|inst_ccip_std_afu|ENET|rx_rst}] -to *
-set_false_path -from [get_registers {fpga_top|inst_green_bs|inst_ccip_std_afu|ENET|tx_rst}] -to *
+set_false_path -from [get_registers {fpga_top|inst_green_bs|ccip_std_afu|ENET|rx_rst}] -to *
+set_false_path -from [get_registers {fpga_top|inst_green_bs|ccip_std_afu|ENET|tx_rst}] -to *
 set_false_path -from [get_registers {fpga_top|inst_fiu_top|inst_ccip_fabric_top|inst_fme_top|inst_PR_cntrl|pr2fme_freeze_32UI[0]}] -to *
 set_false_path -from [get_ports SYS_RST_N] -to *
 set_false_path -from [get_registers {*|inst_hssi_ctrl|system_status_r[*]}] -to [get_registers {*|inst_fiu_top|inst_ccip_fabric_top|inst_fme_top|inst_fme_csr|csr_reg[6][2][*]}]

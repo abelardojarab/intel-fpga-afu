@@ -42,7 +42,6 @@
 #include "fpga_dma_st_internal.h"
 #include "fpga_dma.h"
 
-#if 0
 static int err_cnt = 0;
 
 /*
@@ -57,19 +56,22 @@ do {\
 		goto label;\
 	}\
 } while (0)
-#endif
 
-// Transaction worker thread (one per DMA channel)
-// Worker processes each transaction in the order
-// it gets submitted to the dma->queue
-static fpga_result transactionWorker(fpga_dma_handle_t dma) {	
-	// TODO
-	// while dma->queue not empty	
-	// 		atomically dequeue transaction
-	//		break and dispatch descriptors
-	// 		invoke callback for completed asynchronous transfers
-	// 		atomically mark transfer->transf_status = TRANSFER_COMPLETE
-	return FPGA_OK;
+// Internal Functions
+// End of feature list
+static bool _fpga_dma_feature_eol(uint64_t dfh) {
+   return ((dfh >> AFU_DFH_EOL_OFFSET) & 1) == 1;
+}
+
+// Feature type is BBB
+static bool _fpga_dma_feature_is_bbb(uint64_t dfh) {
+   // BBB is type 2
+   return ((dfh >> AFU_DFH_TYPE_OFFSET) & 0xf) == FPGA_DMA_BBB;
+}
+
+// Offset to the next feature header
+static uint64_t _fpga_dma_feature_next(uint64_t dfh) {
+   return (dfh >> AFU_DFH_NEXT_OFFSET) & 0xffffff;
 }
 
 // Public APIs
@@ -77,8 +79,61 @@ fpga_result fpgaGetDMAChannels(fpga_handle fpga, size_t *count) {
 	// TODO:
 	// Discover total# DMA channels by traversing the device feature list
 	// We may encounter one or more BBBs during discovery
-	// Populate the count	
-	return FPGA_OK;
+	// Populate the count
+	fpga_result res = FPGA_OK;
+   if(!fpga) {
+      return FPGA_INVALID_PARAM;
+   }
+   uint32_t mmio_no = 0;
+   uint64_t offset = 0;
+
+   // Discover DMA BBB by traversing the device feature list
+   bool end_of_list = false;
+   uint64_t dfh = 0;
+   do {
+      // Read the next feature header
+      res = fpgaReadMMIO64(fpga, mmio_no, offset, &dfh);
+      ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
+
+      // Read the current feature's UUID
+      uint64_t feature_uuid_lo, feature_uuid_hi;
+      res = fpgaReadMMIO64(fpga, mmio_no, offset + 8, &feature_uuid_lo);
+      ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
+
+      res = fpgaReadMMIO64(fpga, mmio_no, offset + 16,
+                        &feature_uuid_hi);
+      ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
+
+      if (_fpga_dma_feature_is_bbb(dfh) &&
+         (((feature_uuid_lo == M2S_DMA_UUID_L) && (feature_uuid_hi == M2S_DMA_UUID_H)) ||
+         ((feature_uuid_lo == S2M_DMA_UUID_L) && (feature_uuid_hi == S2M_DMA_UUID_H)))) {
+         // Found one. Record it.
+         *count =  *count+1;
+      }
+
+      // End of the list?
+      end_of_list = _fpga_dma_feature_eol(dfh);
+		// Move to the next feature header
+      offset = offset + _fpga_dma_feature_next(dfh);
+   } while(!end_of_list);
+out:
+   return res;		
+}
+
+// Transaction worker thread (one per DMA channel)
+// Worker processes each transaction in the order
+// it gets submitted to the dma->queue
+   // while dma->queue not empty 
+   //       atomically dequeue transaction
+   //    break and dispatch descriptors
+   //       invoke callback for completed asynchronous transfers
+   //       atomically mark transfer->transf_status = TRANSFER_COMPLETE
+void *m2sTransactionWorker(void* dma_handle) {
+	while(1) {};
+}
+
+void *s2mTransactionWorker(void* dma_handle) {
+	while(1) {};
 }
 
 fpga_result fpgaOpenDMA(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dma) {
@@ -93,9 +148,114 @@ fpga_result fpgaOpenDMA(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dm
 	// - register event handles
 	// - Initialize worker thread transaction queue
 	// - Spawn worker thread
-	fpga_dma_handle_t d;
-	transactionWorker(d); //mock
-	return FPGA_OK;
+	fpga_result res = FPGA_OK;
+   fpga_dma_handle_t dma_h;
+   int channel_index = 0;
+   int i = 0;
+   int ret = 0;
+   if(!fpga) {
+      return FPGA_INVALID_PARAM;
+   }
+   if(!dma) {
+      return FPGA_INVALID_PARAM;
+   }
+
+   // init the dma handle
+   dma_h = (fpga_dma_handle_t)malloc(sizeof(struct fpga_dma_handle));
+   if(!dma_h) {
+      return FPGA_NO_MEMORY;
+   }
+   dma_h->fpga_h = fpga;
+   for(i=0; i < FPGA_DMA_MAX_BUF; i++)
+      dma_h->dma_buf_ptr[i] = NULL;
+   dma_h->mmio_num = 0;
+   dma_h->mmio_offset = 0;
+   bool end_of_list = false;
+   bool dma_found = false;
+   uint64_t dfh = 0;
+   uint64_t offset = dma_h->mmio_offset;
+	do {
+      // Read the next feature header
+      res = fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, offset, &dfh);
+      ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
+      // Read the current feature's UUID
+      uint64_t feature_uuid_lo, feature_uuid_hi;
+      res = fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, offset + 8,
+                     &feature_uuid_lo);
+      ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
+
+      res = fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, offset + 16,
+                        &feature_uuid_hi);
+      ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
+
+      if (_fpga_dma_feature_is_bbb(dfh) &&
+         (((feature_uuid_lo == M2S_DMA_UUID_L) && (feature_uuid_hi == M2S_DMA_UUID_H)) ||
+         ((feature_uuid_lo == S2M_DMA_UUID_L) && (feature_uuid_hi == S2M_DMA_UUID_H))) ) {
+
+         // Found one. Record it.
+         if(channel_index == dma_channel) {
+            if ((feature_uuid_lo == M2S_DMA_UUID_L) && (feature_uuid_hi == M2S_DMA_UUID_H))
+               dma_h->ch_type=TX_ST;
+            else if ((feature_uuid_lo == S2M_DMA_UUID_L) && (feature_uuid_hi == S2M_DMA_UUID_H))
+               dma_h->ch_type=RX_ST;
+               dma_h->dma_base = offset;
+               dma_h->dma_csr_base = dma_h->dma_base+FPGA_DMA_CSR;
+               dma_h->dma_desc_base = dma_h->dma_base+FPGA_DMA_DESC;
+               dma_found = true;
+               printf("DMA Base Addr = %08lx\n", dma_h->dma_base);
+               break;
+            }
+         else
+            channel_index += 1;
+		}
+
+      // End of the list?
+      end_of_list = _fpga_dma_feature_eol(dfh);
+
+      // Move to the next feature header
+      offset = offset + _fpga_dma_feature_next(dfh);
+   } while(!end_of_list);
+
+   if(dma_found) {
+      *dma = dma_h;
+      res = FPGA_OK;
+   }
+   else {
+      *dma = NULL;
+      res = FPGA_NOT_FOUND;
+      goto out;
+   }
+
+   // Buffer size must be page aligned for prepareBuffer
+   for(i=0; i< FPGA_DMA_MAX_BUF; i++) {
+      res = fpgaPrepareBuffer(dma_h->fpga_h, FPGA_DMA_BUF_SIZE, (void **)&(dma_h->dma_buf_ptr[i]), &dma_h->dma_buf_wsid[i], 0);
+      ON_ERR_GOTO(res, out, "fpgaPrepareBuffer");
+
+      res = fpgaGetIOAddress(dma_h->fpga_h, dma_h->dma_buf_wsid[i], &dma_h->dma_buf_iova[i]);
+      ON_ERR_GOTO(res, rel_buf, "fpgaGetIOAddress");
+   }
+
+	if(dma_h->ch_type == TX_ST)
+      ret = pthread_create(&dma_h->thread_id, NULL, m2sTransactionWorker, (void*)dma_h);
+   else if(dma_h->ch_type == RX_ST)
+      ret = pthread_create(&dma_h->thread_id, NULL, s2mTransactionWorker, (void*)dma_h);
+
+   if(ret) {
+      printf("ERROR; return code from pthread_create() is %d\n", ret);
+      exit(1);
+   }
+
+   return FPGA_OK;
+
+rel_buf:
+   for(i=0; i< FPGA_DMA_MAX_BUF; i++) {
+      res = fpgaReleaseBuffer(dma_h->fpga_h, dma_h->dma_buf_wsid[i]);
+      ON_ERR_GOTO(res, out, "fpgaReleaseBuffer");
+   }
+out:
+   if(!dma_found)
+      free(dma_h);
+   return res;
 }
 
 fpga_result fpgaCloseDMA(fpga_dma_handle_t dma) {
@@ -107,7 +267,27 @@ fpga_result fpgaCloseDMA(fpga_dma_handle_t dma) {
 	// release channel properties
 	// free DMA handle object
 	// Terminate worker thread
-	return FPGA_OK;
+	fpga_result res = FPGA_OK;
+   int i = 0;
+   if(!dma) {
+      res = FPGA_INVALID_PARAM;
+      goto out;
+   }
+
+   if(!dma->fpga_h) {
+      res = FPGA_INVALID_PARAM;
+      goto out;
+   }
+
+   for(i=0; i<FPGA_DMA_MAX_BUF; i++) {
+      res = fpgaReleaseBuffer(dma->fpga_h, dma->dma_buf_wsid[i]);
+      ON_ERR_GOTO(res, out, "fpgaReleaseBuffer failed");
+   }
+
+	pthread_cancel(dma->thread_id);
+out:
+   free((void*)dma);
+   return res;
 }
 
 fpga_result fpgaGetDMAChannelType(fpga_dma_handle_t dma, fpga_dma_channel_type_t *ch_type) {
@@ -237,7 +417,7 @@ fpga_result fpgaDMATransferGetBytesTransferred(fpga_dma_transfer_t transfer, siz
 	return transfer->rx_bytes;
 }
 
-fpga_result fpgaDmaTransfer(fpga_dma_handle_t dma, const fpga_dma_transfer_t transfer, 
+fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, const fpga_dma_transfer_t transfer, 
                             fpga_dma_transfer_cb cb, void *context) {
 
 	// TODO:

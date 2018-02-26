@@ -37,10 +37,12 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#define HELLO_AFU_ID              "331DB30C-9885-41EA-9081-F88B8F655CAA"
+#define DMA_AFU_ID              "EB59BF9D-B211-4A4E-B3E3-753CE68634BA"
 #define TEST_BUF_SIZE (10*1024*1024)
 #define ASE_TEST_BUF_SIZE (4*1024)
+#define MAX_DMA count
 
+static uint64_t count=0;
 
 static int err_cnt = 0;
 /*
@@ -73,15 +75,17 @@ static void fill_buffer(char *buf, size_t size) {
 
 int main(int argc, char *argv[]) {
    fpga_result res = FPGA_OK;
-   fpga_dma_handle_t dma_h;
-   uint64_t count;
+	fpga_dma_handle_t dma_h[MAX_DMA];
+	int  i;
+	uint64_t transfer_len = 0;
    fpga_properties filter = NULL;
    fpga_token afc_token;
    fpga_handle afc_h;
    fpga_guid guid;
    uint32_t num_matches;
    volatile uint64_t *mmio_ptr = NULL;
-   uint64_t *dma_buf_ptr  = NULL;   
+	uint64_t *dma_tx_buf_ptr = NULL;
+   uint64_t *dma_rx_buf_ptr = NULL;
    uint32_t use_ase;
    
    if(argc < 2) {
@@ -91,20 +95,23 @@ int main(int argc, char *argv[]) {
    use_ase = atoi(argv[1]);
    if(use_ase) {
       printf("Running test in ASE mode\n");
+		transfer_len = ASE_TEST_BUF_SIZE;
    } else {
       printf("Running test in HW mode\n");
+		transfer_len = TEST_BUF_SIZE;
    }
 
-   dma_buf_ptr = (uint64_t*)malloc(count);
-   if(!dma_buf_ptr) {
+	dma_tx_buf_ptr = (uint64_t*)malloc(transfer_len);
+   dma_rx_buf_ptr = (uint64_t*)malloc(transfer_len);
+   if(!dma_tx_buf_ptr || !dma_rx_buf_ptr) {
       res = FPGA_NO_MEMORY;
       ON_ERR_GOTO(res, out_dma_close, "Error allocating memory");
-   }   
+   }
 
-   fill_buffer((char*)dma_buf_ptr, count);
+   fill_buffer((char*)dma_tx_buf_ptr, transfer_len);
 
    // enumerate the afc
-   if(uuid_parse(HELLO_AFU_ID, guid) < 0) {
+   if(uuid_parse(DMA_AFU_ID, guid) < 0) {
       return 1;
    }
 
@@ -141,26 +148,38 @@ int main(int argc, char *argv[]) {
    // Enumerate DMA handles
    res = fpgaGetDMAChannels(afc_h, &count);
    ON_ERR_GOTO(res, out_unmap, "fpgaGetDMAChannels");
-   
-   res = fpgaOpenDMA(afc_h, 0, &dma_h);
+ 	
+	if(count < 1) {
+      printf("Error: DMA channels not found\n");
+      ON_ERR_GOTO(FPGA_INVALID_PARAM, out_unmap, "count<1");
+   }
+	 
+	printf("No of DMA channels = %08lx\n", count);
+   res = fpgaOpenDMA(afc_h, 0, &dma_h[0]);
+   ON_ERR_GOTO(res, out_unmap, "fpgaOpenDMA");
+
+   res = fpgaOpenDMA(afc_h, 1, &dma_h[1]);
    ON_ERR_GOTO(res, out_unmap, "fpgaOpenDMA");
 
    // Example DMA transfer (host to fpga, asynchronous)
    fpga_dma_transfer_t transfer;
    fpgaDMATransferInit(&transfer);
-   fpgaDMATransferSetSrc(transfer, (uint64_t)dma_buf_ptr);
+   fpgaDMATransferSetSrc(transfer, (uint64_t)dma_tx_buf_ptr);
    fpgaDMATransferSetDst(transfer, 0x0);
-   fpgaDMATransferSetLen(transfer, 1024);
+   fpgaDMATransferSetLen(transfer, transfer_len);
    fpgaDMATransferSetTransferType(transfer, HOST_MM_TO_FPGA_ST);
    fpgaDMATransferSetTxControl(transfer, TX_NO_PACKET);
    fpgaDMATransferSetTransferCallback(transfer, NULL);
-   fpgaDmaTransfer(dma_h, transfer, (fpga_dma_transfer_cb)&transferComplete, NULL);
+   fpgaDMATransfer(dma_h[0], transfer, (fpga_dma_transfer_cb)&transferComplete, NULL);
    fpgaDMATransferDestroy(transfer);
 
 out_dma_close:
-   free(dma_buf_ptr);
-   if(dma_h)
-      res = fpgaCloseDMA(dma_h);
+	free(dma_tx_buf_ptr);
+   free(dma_rx_buf_ptr);
+   for(i=0; i<MAX_DMA; i++){
+      if(dma_h[i])
+         res = fpgaCloseDMA(dma_h[i]);
+   }
    ON_ERR_GOTO(res, out_unmap, "fpgaDmaClose");
 
 out_unmap:

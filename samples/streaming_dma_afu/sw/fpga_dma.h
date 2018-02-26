@@ -43,7 +43,7 @@ extern "C" {
 
 
 /**
-* fpgaCountDMAChannels
+* fpgaGetDMAChannels
 *
 * @brief           Count available DMA channels
 *                    
@@ -55,10 +55,10 @@ extern "C" {
 * @param[out]   count  Total number of DMA channels in the FPGA AFU object
 * @returns             FPGA_OK on success, return code otherwise
 */
-fpga_result fpgaCountDMAChannels(fpga_handle fpga, size_t *count);
+fpga_result fpgaGetDMAChannels(fpga_handle fpga, size_t *count);
 
 /**
-* fpgaDMAOpen
+* fpgaOpenDMA
 *
 * @brief                      Open DMA channel handle
 *
@@ -67,7 +67,7 @@ fpga_result fpgaCountDMAChannels(fpga_handle fpga, size_t *count);
 * @param[out] dma             DMA object handle
 * @returns                    FPGA_OK on success, return code otherwise
 */
-fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel_idx, fpga_dma_handle_t *dma);
+fpga_result fpgaOpenDMA(fpga_handle fpga, int dma_channel_idx, fpga_dma_handle_t *dma);
 
 /**
 * fpgaDMAClose
@@ -78,7 +78,7 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel_idx, fpga_dma_handle_t
 * @param[in]  dma         DMA channel handle
 * @returns                FPGA_OK on success, return code otherwise
 */
-fpga_result fpgaDMAClose(fpga_dma_handle_t dma);
+fpga_result fpgaCloseDMA(fpga_dma_handle_t dma);
 
 /**
 * fpgaGetDMAChannelType

@@ -91,7 +91,7 @@ endfunction
 
 // record memory errors
 
-always@(posedge clk) begin
+always_ff @(posedge clk) begin
   if(reset | mem_error_clr)
     mem_errors <= 0;
   else
@@ -100,7 +100,7 @@ always@(posedge clk) begin
 end
 
 assign avm_response = '0;
-always@(posedge clk) begin
+always_ff @(posedge clk) begin
   if(reset) begin
     address        <= '0;
     avs_write      <= '0;
@@ -197,7 +197,7 @@ always@(posedge clk) begin
   end // end else reset
 end // posedge clk
 
-always@(posedge clk) begin
+always_ff @(posedge clk) begin
   avs_readdatavalid_1 <= avs_readdatavalid;
 
   if (avs_readdatavalid)
@@ -217,7 +217,7 @@ always@(posedge clk) begin
   end
 end
 
-always@(posedge clk) begin
+always_ff @(posedge clk) begin
   if (rdwr_reset & (state != RD_RSP)) begin
     rdwr_status <= '0;
     rdwr_done   <= '0;
@@ -234,7 +234,7 @@ always@(posedge clk) begin
   end
 end
 
-always@(posedge clk) begin
+always_ff @(posedge clk) begin
   if (reset)
     max_reads <= 0;
   else  if (avs_read == 1 & avs_readdatavalid == 0 & ~avs_waitrequest)

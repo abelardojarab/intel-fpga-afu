@@ -8,7 +8,8 @@ create_clock -name {hssi_pll_t_outclk1}   -period 3.200 -waveform { 0.000 1.600 
 set_clock_groups -asynchronous -group [get_clocks {hssi_pll_r_0_outclk0}] \
 							   -group [get_clocks {hssi_pll_r_0_outclk1}] \
 							   -group [get_clocks {SYS_RefClk}] \
-                               -group [get_clocks {hssi_pll_t_outclk0 hssi_pll_t_outclk1}] \
+							   -group [get_clocks {u0|dcp_iopll|dcp_iopll|clk1x}] \
+                               -group [get_clocks {hssi_pll_t_outclk0 hssi_pll_t_outclk1}]
 set_clock_groups -asynchronous -group [get_clocks {fpga_top|inst_fiu_top|inst_hssi_ctrl|ntv0|xcvr_native_a10_0|g_xcvr_native_insts[*]*|rx_pma_clk}]
 
 # Cutting path from temp sense logic to FME sampling logic

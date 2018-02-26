@@ -65,7 +65,9 @@ module hello_mem_afu
   output logic [$clog2(NUM_LOCAL_MEM_BANKS)-1:0] mem_bank_select
 );
 
-  logic [63:0] avm_writedata, avm_readdata;
+  t_local_mem_data avm_writedata;
+  t_local_mem_data avm_readdata;
+  t_local_mem_byte_mask avm_byteenable;
   wire mem_testmode;
   wire         ready_for_sw_cmd;
 
@@ -83,6 +85,8 @@ module hello_mem_afu
   wire         rdwr_reset;
 
   wire  [2:0]  fsm_state;
+  wire mem_error_clr;
+  wire [31:0]  mem_errors;
 
   mem_csr csr
    (
@@ -99,6 +103,7 @@ module hello_mem_afu
     .avm_readdata           (avm_readdata),
     .avm_response           (avm_response),
     .avm_writedata          (avm_writedata),
+    .avm_byteenable         (avm_byteenable),
 
     .mem_testmode           (mem_testmode),
     .addr_test_status       (addr_test_status),
@@ -108,7 +113,9 @@ module hello_mem_afu
     .rdwr_reset             (rdwr_reset),
     .fsm_state              (fsm_state),
     .mem_bank_select        (mem_bank_select),
-    .ready_for_sw_cmd       (ready_for_sw_cmd)
+    .ready_for_sw_cmd       (ready_for_sw_cmd),
+    .mem_error_clr          (mem_error_clr),
+    .mem_errors             (mem_errors)
  );
 
   mem_fsm fsm
@@ -123,6 +130,7 @@ module hello_mem_afu
     .avm_burstcount         (avm_burstcount),
     .avm_readdata           (avm_readdata),
     .avm_writedata          (avm_writedata),
+    .avm_byteenable         (avm_byteenable),
 
     .mem_testmode           (mem_testmode),
     .addr_test_status       (addr_test_status),
@@ -143,7 +151,9 @@ module hello_mem_afu
     .avm_response           (avm_response),
     .avs_byteenable         (avs_byteenable ),
     .avs_burstcount         (avs_burstcount),
-    .avs_readdatavalid      (avs_readdatavalid)
+    .avs_readdatavalid      (avs_readdatavalid),
+    .mem_error_clr          (mem_error_clr),
+    .mem_errors             (mem_errors)
   );
 
 endmodule

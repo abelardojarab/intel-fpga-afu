@@ -1,5 +1,5 @@
 LDFLAGS ?=
-CFLAGS = -g -O2 -fPIC 
+CFLAGS = -g -O2 -fPIC
 
 ifdef prefix
 CFLAGS += -I$(prefix)/include
@@ -26,7 +26,7 @@ fpga_dma_st_test: fpga_dma_st_test.o fpga_dma_st.so
 	gcc -o $@ $^ $(LDFLAGS)
 
 fpga_dma_st_test.o: fpga_dma_st_test.c
-	gcc $(CFLAGS) -o $@ -c $^ 
+	gcc $(CFLAGS) -o $@ -c $^
 
 fpga_dma_st.so: fpga_dma_st.o
 	gcc $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)

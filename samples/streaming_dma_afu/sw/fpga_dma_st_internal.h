@@ -1,4 +1,4 @@
-// Copyright(c) 2017, Intel Corporation
+// Copyright(c) 2018, Intel Corporation
 //
 // Redistribution  and  use  in source  and  binary  forms,  with  or  without
 // modification, are permitted provided that the following conditions are met:
@@ -34,15 +34,17 @@
 
 #include <opae/fpga.h>
 #include "fpga_dma_types.h"
+#include <pthread.h>
 
 #define QWORD_BYTES 8
 #define DWORD_BYTES 4
 #define IS_ALIGNED_DWORD(addr) (addr%4==0)
 #define IS_ALIGNED_QWORD(addr) (addr%8==0)
 
-#define FPGA_DMA_UUID_H 0xef82def7f6ec40fc
-#define FPGA_DMA_UUID_L 0xa9149a35bace01ea
-#define FPGA_DMA_WF_MAGIC_NO          0x5772745F53796E63ULL
+#define M2S_DMA_UUID_H                0xfee69b442f7743ed
+#define M2S_DMA_UUID_L                0x9ff49b8cf9ee6335
+#define S2M_DMA_UUID_H                0xf118209ad59a4b3f
+#define S2M_DMA_UUID_L                0xa66cd700a658a015
 #define FPGA_DMA_HOST_MASK            0x2000000000000
 #define FPGA_DMA_WF_HOST_MASK         0x3000000000000
 #define FPGA_DMA_WF_ROM_MAGIC_NO_MASK 0x1000000000000
@@ -149,6 +151,7 @@ struct fpga_dma_handle {
 	uint64_t dma_buf_iova[FPGA_DMA_MAX_BUF];
 	// channel type
 	fpga_dma_channel_type_t ch_type;
+	pthread_t thread_id;
 	// Transaction queue (model as a fixed-size circular buffer)
 	fpga_dma_transfer_t queue[FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS];
 };

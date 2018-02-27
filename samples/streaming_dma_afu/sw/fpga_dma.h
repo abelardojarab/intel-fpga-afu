@@ -48,7 +48,7 @@ extern "C" {
 * @brief           Count available DMA channels
 *                    
 *                  Scan the device feature chain for DMA BBBs and count
-*                  all available channels. Total number of available channels 
+*                  all available channels. Total number of available channels
 *                  are populated in count on successfull return.
 *
 * @param[in]    fpga   Handle to the FPGA AFU object obtained via fpgaOpen()
@@ -86,21 +86,21 @@ fpga_result fpgaDMAClose(fpga_dma_handle_t dma);
 * @brief                  Query DMA channel type
 *
 *                         Possible type of channels are TX streaming (TX_ST),
-*                         RX streaming (RX_ST), Memory-mapped (MM). 
+*                         RX streaming (RX_ST), Memory-mapped (MM).
 *                         
 * @param[in]  dma         DMA channel handle
 * @param[out] props       Pointer to channel type
 
 * @returns                FPGA_OK on success, return code otherwise
 */
-fpga_result fpgaGetDMAChannelType(fpga_dma_handle_t dma,  fpga_dma_channel_type_t *ch_type);
+fpga_result fpgaGetDMAChannelType(fpga_dma_handle_t dma, fpga_dma_channel_type_t *ch_type);
 
 /**
 * fpgaDMATransferInit
 *
-* @brief                  Initialize an object that represents the DMA transfer. 
+* @brief                  Initialize an object that represents the DMA transfer.
 *
-*                         The driver will reset all transfer attributes to their default 
+*                         The driver will reset all transfer attributes to their default
 *                         values upon successful initialization
 *
 * @param[out]  transfer   Pointer to transfer attribute struct
@@ -112,9 +112,9 @@ fpga_result fpgaDMATransferInit(fpga_dma_transfer_t *transfer);
 /**
 * fpgaDMATransferDestroy
 *
-* @brief                  Destroy DMA transfer attribute object. 
+* @brief                  Destroy DMA transfer attribute object.
 *
-*                         The driver will reset all transfer attributes to their default 
+*                         The driver will reset all transfer attributes to their default
 *                         values upon successful initialization
 *
 * @param[out]  transfer   Pointer to transfer attribute struct
@@ -128,9 +128,9 @@ fpga_result fpgaDMATransferDestroy(fpga_dma_transfer_t transfer);
 *
 * @brief                  Set source address of the transfer
 * 
-*                         For Host to FPGA transfer, source address is 
-*                         the host virtual address. For FPGA to host 
-*                         transfer and FPGA to FPGA transfer, source 
+*                         For Host to FPGA transfer, source address is
+*                         the host virtual address. For FPGA to host
+*                         transfer and FPGA to FPGA transfer, source
 *                         address is the FPGA physical address
 *
 * @param[in]  transfer    Pointer to transfer attribute struct
@@ -145,10 +145,10 @@ fpga_result fpgaDMATransferSetSrc(fpga_dma_transfer_t transfer, uint64_t src);
 *
 * @brief                  Set destination address of the transfer
 *
-*                         For Host to FPGA and FPGA to FPGA transfer, 
-*                         destination address is the FPGA physical 
-*                         address. For FPGA to host transfer, 
-*                         destination address is the host virtual 
+*                         For Host to FPGA and FPGA to FPGA transfer,
+*                         destination address is the FPGA physical
+*                         address. For FPGA to host transfer,
+*                         destination address is the host virtual
 *                         address
 *
 * @param[in]  transfer    Pointer to transfer attribute struct
@@ -198,7 +198,7 @@ fpga_result fpgaDMATransferSetTransferType(fpga_dma_transfer_t transfer, fpga_dm
 *                         stream sent from the TX DMA.
 *
 *                         TX Control is valid only for HOST_MM_TO_FPGA_ST and
-*                         FPGA_MM_TO_FPGA_ST transfers. 
+*                         FPGA_MM_TO_FPGA_ST transfers.
 *
 *                         Valid values are:
 * 
@@ -219,13 +219,13 @@ fpga_result fpgaDMATransferSetTxControl(fpga_dma_transfer_t transfer, fpga_dma_t
 *
 * @brief                  Set RX control
 *
-*                         RX control allows the driver to handle an unknown 
-*                         amount of receive data from the FPGA.  When END_ON_EOP 
+*                         RX control allows the driver to handle an unknown
+*                         amount of receive data from the FPGA.  When END_ON_EOP
 *                         is set, the RX DMA will end the transfer when EOP arrives
-*                         in the receive stream or when rx_count bytes have been 
+*                         in the receive stream or when rx_count bytes have been
 *                         received (whichever occurs first)
 *
-*                         RX Control is valid only for FPGA_ST_TO_HOST_MM and 
+*                         RX Control is valid only for FPGA_ST_TO_HOST_MM and
 *                         FPGA_MM_TO_FPGA_ST transfers.
 *                         The rx chave one of the following values:
 *
@@ -244,7 +244,7 @@ fpga_result fpgaDMATransferSetRxControl(fpga_dma_transfer_t transfer, fpga_dma_r
 /**
 * fpgaDMATransferSetTransferCallback
 *
-* @brief                  Register callback for notification on asynchronous 
+* @brief                  Register callback for notification on asynchronous
 *                         transfer completion
 *
 * @param[in]  transfer    Pointer to transfer attribute struct
@@ -260,9 +260,9 @@ fpga_result fpgaDMATransferSetTransferCallback(fpga_dma_transfer_t transfer, fpg
 * @brief                  Retrieve number of bytes completed by RX DMA
 *
 *                         Pointer to the number of bytes the RX DMA transferred
-*                         to memory. RX transfer from streaming sources will 
-*                         have an unknown amount of data to transfer when 
-*                         rx_control is set to END_ON_EOP.  
+*                         to memory. RX transfer from streaming sources will
+*                         have an unknown amount of data to transfer when
+*                         rx_control is set to END_ON_EOP.
 *
 * @param[in]  transfer    Pointer to transfer attribute struct
 * @param[out] rx_bytes    Pointer to the number of bytes RX DMA has
@@ -282,10 +282,7 @@ fpga_result fpgaDMATransferGetBytesTransferred(fpga_dma_transfer_t transfer, siz
 *
 *                         If a callback is not specified, fpgaDMATransfer
 *                         returns after the transfer is complete (synchronous/
-*                         blocking transfer). 
-*
-*                         TODO: Is there a use-case for asynchronous transfer
-*                               without callback?
+*                         blocking transfer).
 *
 * @param[dma] dma         DMA handle
 * @param[in]  transfer    Transfer attribute object
@@ -294,8 +291,8 @@ fpga_result fpgaDMATransferGetBytesTransferred(fpga_dma_transfer_t transfer, siz
 *
 * @returns                FPGA_OK on success, return code otherwise
 */
-fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, const fpga_dma_transfer_t transfer, 
-                            fpga_dma_transfer_cb cb, void *context);
+fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, const fpga_dma_transfer_t transfer,
+						fpga_dma_transfer_cb cb, void *context);
 
 
 #ifdef __cplusplus

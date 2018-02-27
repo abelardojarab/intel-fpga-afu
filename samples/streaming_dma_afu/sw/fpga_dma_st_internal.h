@@ -1,4 +1,4 @@
-// Copyright(c) 2017, Intel Corporation
+// Copyright(c) 2018, Intel Corporation
 //
 // Redistribution  and  use  in source  and  binary  forms,  with  or  without
 // modification, are permitted provided that the following conditions are met:
@@ -41,10 +41,10 @@
 #define IS_ALIGNED_DWORD(addr) (addr%4==0)
 #define IS_ALIGNED_QWORD(addr) (addr%8==0)
 
-#define M2S_DMA_UUID_H 0xfee69b442f7743ed
-#define M2S_DMA_UUID_L 0x9ff49b8cf9ee6335
-#define S2M_DMA_UUID_H 0xf118209ad59a4b3f
-#define S2M_DMA_UUID_L 0xa66cd700a658a015
+#define M2S_DMA_UUID_H                0xfee69b442f7743ed
+#define M2S_DMA_UUID_L                0x9ff49b8cf9ee6335
+#define S2M_DMA_UUID_H                0xf118209ad59a4b3f
+#define S2M_DMA_UUID_L                0xa66cd700a658a015
 #define FPGA_DMA_HOST_MASK            0x2000000000000
 #define FPGA_DMA_WF_HOST_MASK         0x3000000000000
 #define FPGA_DMA_WF_ROM_MAGIC_NO_MASK 0x1000000000000

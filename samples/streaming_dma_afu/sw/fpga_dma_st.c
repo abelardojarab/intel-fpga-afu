@@ -1,4 +1,4 @@
-// Copyright(c) 2017, Intel Corporation
+// Copyright(c) 2018, Intel Corporation
 //
 // Redistribution  and	use  in source	and  binary  forms,  with  or  without
 // modification, are permitted provided that the following conditions are met:
@@ -104,9 +104,9 @@ fpga_result fpgaCountDMAChannels(fpga_handle fpga, size_t *count) {
 		ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
 
 		if (_fpga_dma_feature_is_bbb(dfh) &&
-		(((feature_uuid_lo == M2S_DMA_UUID_L) && (feature_uuid_hi == M2S_DMA_UUID_H)) ||
-		((feature_uuid_lo == S2M_DMA_UUID_L) && (feature_uuid_hi == S2M_DMA_UUID_H)))) {
-		// Found one. Record it.
+			(((feature_uuid_lo == M2S_DMA_UUID_L) && (feature_uuid_hi == M2S_DMA_UUID_H)) ||
+			((feature_uuid_lo == S2M_DMA_UUID_L) && (feature_uuid_hi == S2M_DMA_UUID_H)))) {
+			// Found one. Record it.
 			*count = *count+1;
 		}
 
@@ -115,6 +115,7 @@ fpga_result fpgaCountDMAChannels(fpga_handle fpga, size_t *count) {
 		// Move to the next feature header
 		offset = offset + _fpga_dma_feature_next(dfh);
 	} while(!end_of_list);
+
 out:
 	return res;
 }
@@ -136,16 +137,6 @@ void *s2mTransactionWorker(void* dma_handle) {
 }
 
 fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dma) {
-	// Make a channel available for use
-	//
-	// - Walk the DFH list to the index of the DMA channel
-	// - Allocate the DMA handle object
-	// - Populate channel properties
-	// - Initialize channel buffers
-	// - Turn on interrupts when necessary
-	// - register event handles
-	// - Initialize worker thread transaction queue
-	// - Spawn worker thread
 	fpga_result res = FPGA_OK;
 	fpga_dma_handle_t dma_h;
 	int channel_index = 0;
@@ -166,6 +157,7 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dm
 	dma_h->fpga_h = fpga;
 	for(i=0; i < FPGA_DMA_MAX_BUF; i++)
 		dma_h->dma_buf_ptr[i] = NULL;
+
 	dma_h->mmio_num = 0;
 	dma_h->mmio_offset = 0;
 	bool end_of_list = false;
@@ -187,24 +179,24 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dm
 		ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
 
 		if (_fpga_dma_feature_is_bbb(dfh) &&
-		(((feature_uuid_lo == M2S_DMA_UUID_L) && (feature_uuid_hi == M2S_DMA_UUID_H)) ||
-		((feature_uuid_lo == S2M_DMA_UUID_L) && (feature_uuid_hi == S2M_DMA_UUID_H))) ) {
+			(((feature_uuid_lo == M2S_DMA_UUID_L) && (feature_uuid_hi == M2S_DMA_UUID_H)) ||
+			((feature_uuid_lo == S2M_DMA_UUID_L) && (feature_uuid_hi == S2M_DMA_UUID_H))) ) {
 
-		// Found one. Record it.
-		if(channel_index == dma_channel) {
-			if ((feature_uuid_lo == M2S_DMA_UUID_L) && (feature_uuid_hi == M2S_DMA_UUID_H))
-				dma_h->ch_type=TX_ST;
-			else if ((feature_uuid_lo == S2M_DMA_UUID_L) && (feature_uuid_hi == S2M_DMA_UUID_H))
-				dma_h->ch_type=RX_ST;
-			dma_h->dma_base = offset;
-			dma_h->dma_csr_base = dma_h->dma_base+FPGA_DMA_CSR;
-			dma_h->dma_desc_base = dma_h->dma_base+FPGA_DMA_DESC;
-			dma_found = true;
-			printf("DMA Base Addr = %08lx\n", dma_h->dma_base);
-			break;
-		}
-		else
-			channel_index += 1;
+			// Found one. Record it.
+			if(channel_index == dma_channel) {
+				if ((feature_uuid_lo == M2S_DMA_UUID_L) && (feature_uuid_hi == M2S_DMA_UUID_H))
+					dma_h->ch_type=TX_ST;
+				else if ((feature_uuid_lo == S2M_DMA_UUID_L) && (feature_uuid_hi == S2M_DMA_UUID_H))
+					dma_h->ch_type=RX_ST;
+				dma_h->dma_base = offset;
+				dma_h->dma_csr_base = dma_h->dma_base+FPGA_DMA_CSR;
+				dma_h->dma_desc_base = dma_h->dma_base+FPGA_DMA_DESC;
+				dma_found = true;
+				printf("DMA Base Addr = %08lx\n", dma_h->dma_base);
+				break;
+			} else {
+				channel_index += 1;
+			}
 		}
 
 		// End of the list?
@@ -221,7 +213,7 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dm
 	else {
 		*dma = NULL;
 		res = FPGA_NOT_FOUND;
-		goto out;
+		ON_ERR_GOTO(res, out, "DMA not found");
 	}
 
 	// Buffer size must be page aligned for prepareBuffer
@@ -233,14 +225,16 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dm
 		ON_ERR_GOTO(res, rel_buf, "fpgaGetIOAddress");
 	}
 
-	if(dma_h->ch_type == TX_ST)
-		ret = pthread_create(&dma_h->thread_id, NULL, m2sTransactionWorker, (void*)dma_h);
-	else if(dma_h->ch_type == RX_ST)
-		ret = pthread_create(&dma_h->thread_id, NULL, s2mTransactionWorker, (void*)dma_h);
-
-	if(ret) {
-		printf("ERROR; return code from pthread_create() is %d\n", ret);
-		goto rel_buf;
+	if(dma_h->ch_type == TX_ST) {
+		if(pthread_create(&dma_h->thread_id, NULL, m2sTransactionWorker, (void*)dma_h) != 0) {
+			res = FPGA_EXCEPTION;
+			ON_ERR_GOTO(res, rel_buf, "pthread_create");		
+		}
+	} else if(dma_h->ch_type == RX_ST) {
+		if(pthread_create(&dma_h->thread_id, NULL, s2mTransactionWorker, (void*)dma_h) != 0) {
+			res = FPGA_EXCEPTION;
+			ON_ERR_GOTO(res, rel_buf, "pthread_create");	
+		}
 	}
 
 	return FPGA_OK;
@@ -257,12 +251,6 @@ out:
 }
 
 fpga_result fpgaDMAClose(fpga_dma_handle_t dma) {
-	// Release a used channel
-	// unregister event handles
-	// turn off interrupts
-	// release channel properties
-	// free DMA handle object
-	// Terminate worker thread
 	fpga_result res = FPGA_OK;
 	int i = 0;
 	if(!dma) {

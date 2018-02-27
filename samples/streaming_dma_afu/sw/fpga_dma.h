@@ -284,9 +284,6 @@ fpga_result fpgaDMATransferGetBytesTransferred(fpga_dma_transfer_t transfer, siz
 *                         returns after the transfer is complete (synchronous/
 *                         blocking transfer).
 *
-*                         TODO: Is there a use-case for asynchronous transfer
-*                               without callback?
-*
 * @param[dma] dma         DMA handle
 * @param[in]  transfer    Transfer attribute object
 * @param[in]  cb          Callback

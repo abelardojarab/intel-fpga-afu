@@ -79,6 +79,8 @@ initial begin
     hssi.f2a_prmgmt_ram_ena = 0;
 end
 
+genvar x;
+
 always #3.2 hssi.f2a_tx_clk        = ~hssi.f2a_tx_clk;
 always #3.2 hssi.f2a_rx_clk_ln0    = ~hssi.f2a_rx_clk_ln0;
 always #1.6 hssi.f2a_tx_clkx2      = ~hssi.f2a_tx_clkx2;
@@ -86,7 +88,12 @@ always #1.6 hssi.f2a_rx_clkx2_ln0  = ~hssi.f2a_rx_clkx2_ln0;
 always #5 hssi.f2a_prmgmt_ctrl_clk = ~hssi.f2a_prmgmt_ctrl_clk;
 
 assign hssi.f2a_rx_parallel_data = hssi.a2f_tx_parallel_data;
-assign hssi.f2a_rx_control       = hssi.a2f_tx_control;
+
+generate 
+for (x = 0;x<4;x=x+1) begin : gv1
+	assign hssi.f2a_rx_control[(x*20)+19:(x*20)] = {2'b0,hssi.a2f_tx_control[(x*18)+17:(x*18)]};
+end
+endgenerate
 
 t_if_ccip_Rx ccip_rx;
 t_if_ccip_Tx ccip_tx;
@@ -263,7 +270,7 @@ endtask
 logic [3:0] rxstatus = 0;
 logic [3:0] txstatus = 0;
 
-genvar x;
+
 generate
     for (x=0; x<4; x=x+1) begin : xn0
 		always begin
@@ -354,7 +361,7 @@ initial begin
 		
 		assert (test == test2) else begin
 			$display("FAILED!");
-			$fatal(1,"Port %d TX Packet Count != Rx Packet Count! (TX: %d, RX: %d)",i[1:0],rxstatus,txstatus);
+			$fatal(1,"Port %d TX Packet Count != Rx Packet Count! (TX: %d, RX: %d)",i[1:0],test,test2);
 		end
 		$display("Packet counts are GOOD!");
 	end

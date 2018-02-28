@@ -128,7 +128,7 @@ generate
         wire [63:0]    xgmii_rx_data;
         wire err_ins = 1'b0;
 
-        assign xgmii_rx_control = hssi.f2a_rx_control [(i*18)+7:(i*18)];
+        assign xgmii_rx_control = hssi.f2a_rx_control [(i*20)+7:(i*20)];
         assign xgmii_rx_data = hssi.f2a_rx_parallel_data [(i*128)+63:(i*128)];
         assign hssi.a2f_tx_control [(i+1)*18-1:(i*18)] = {9'b0,err_ins,xgmii_tx_control};
         assign hssi.a2f_tx_parallel_data [(i+1)*128-1:(i*128)] = {64'b0,xgmii_tx_data};

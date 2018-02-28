@@ -58,13 +58,7 @@ module ccip_std_afu
 //------------------------------------------------------------------------------
 // Internal signals
 //------------------------------------------------------------------------------
-
-reg  [31:0] ctrl_addr;
-reg  [31:0] wr_data;
-reg  [31:0] rd_data;
-
 reg         init_done_r;
-
 reg  [63:0] afu_scratch;
 reg  [63:0] afu_init;
 
@@ -150,10 +144,6 @@ end
 //------------------------------------------------------------------------------
 // CSR registers 
 //------------------------------------------------------------------------------
-
-reg  [ 2:0] wr_extend;
-reg  [ 2:0] rd_extend;
-
 wire [15:0] csr_addr_4B = cp2csr_MmioHdr.address;
 wire [14:0] csr_addr_8B = cp2csr_MmioHdr.address[15:1];
 
@@ -166,7 +156,11 @@ t_ccip_mmioData csr_rd_data;
 
 logic [31:0] eth_ctrl_addr;
 logic [31:0] eth_wr_data;
+logic [31:0] eth_ctrl_addr_o;
 logic [31:0] eth_rd_data;
+logic   [31:0] ctrl_addr;
+logic   [31:0] wr_data;
+logic   [31:0] rd_data;
 logic init_start;
 logic init_done;
 
@@ -182,25 +176,52 @@ logic init_done;
     .eth_ctrl_addr(eth_ctrl_addr),
     .eth_wr_data(eth_wr_data),
     .eth_rd_data(eth_rd_data),
-    .csr_init_start(csr_init_start),
-    .csr_init_done(csr_init_done),
+    .csr_init_start(init_start),
+    .csr_init_done(init_done),
 
     // Connection to BBS
     .hssi(hssi)
     );
 
+logic action_r = 0;
+always @(posedge hssi.f2a_prmgmt_ctrl_clk or posedge hssi.f2a_prmgmt_arst)
+begin
+	if (hssi.f2a_prmgmt_arst) begin
+		action_r <= 0;
+	end else begin
+		eth_ctrl_addr[31:16] <= 16'b0;
+		if (~action_r & (eth_ctrl_addr_o[17] | eth_ctrl_addr_o[16])) begin
+			eth_ctrl_addr <= eth_ctrl_addr_o;
+			action_r <= 1'b1;
+		end
+		if (action_r & (~eth_ctrl_addr_o[17] & ~eth_ctrl_addr_o[16])) begin
+			action_r <= 1'b0;
+		end
+	end
+end
 
-//------------------------------------------------------------------------------
-// logic to capture eth_rd_data (coming from 100MHz domain)
-//------------------------------------------------------------------------------
+alt_sync_regs_m2 #(
+	.WIDTH(64),
+	.DEPTH(2)
+) sy01(
+	.clk(hssi.f2a_prmgmt_ctrl_clk),
+	.din({ctrl_addr,wr_data}),
+	.dout({eth_ctrl_addr_o,eth_wr_data})
+);
+
+alt_sync_regs_m2 #(
+	.WIDTH(32),
+	.DEPTH(2)
+) sy02(
+	.clk(clk),
+	.din(eth_rd_data),
+	.dout(rd_data)
+);
 
 always @(posedge clk)
 begin
-    eth_ctrl_addr <= ctrl_addr;
-    eth_wr_data   <= wr_data;
-    init_start    <= afu_init[0];
-    init_done_r   <= init_done;
-    if (rd_extend == 3'b110) rd_data <= eth_rd_data;
+	init_start    <= afu_init[0];
+	init_done_r   <= init_done;
 end
 
 always @(posedge clk or posedge pck_cp2af_softReset_T1)
@@ -222,8 +243,6 @@ begin
                 AFU_SCRATCH  [6:3]: afu_scratch <= cp2csr_MmioDin;           
                 default: ;
             endcase
-        if (&wr_extend) ctrl_addr[16] <= 1'b0;
-        if (&rd_extend) ctrl_addr[17] <= 1'b0;
     end
 end
 
@@ -285,20 +304,4 @@ begin
     csr2cp_MmioDout     <= csr_rd_data;
 end    
     
-// Pulse extenders for ETH CTRL RD/WR commands
-
-always @(posedge clk or posedge pck_cp2af_softReset_T1)
-begin
-    if (pck_cp2af_softReset_T1)
-    begin
-        wr_extend <= 'b0;
-        rd_extend <= 'b0;
-    end
-    else
-    begin
-        wr_extend <= wr_extend + ctrl_addr[16];
-        rd_extend <= rd_extend + ctrl_addr[17];
-    end
-end
-
 endmodule

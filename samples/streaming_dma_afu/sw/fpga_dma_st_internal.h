@@ -34,7 +34,9 @@
 
 #include <opae/fpga.h>
 #include "fpga_dma_types.h"
+#include <stdbool.h>
 #include <pthread.h>
+#include <semaphore.h>
 
 #define QWORD_BYTES 8
 #define DWORD_BYTES 4
@@ -87,7 +89,7 @@
 // Convenience macros
 #ifdef FPGA_DMA_DEBUG
 	#define debug_print(fmt, ...) \
-					do { if (FPGA_DMA_DEBUG) fprintf(stderr, fmt, ##__VA_ARGS__); } while (0)
+	do { if (FPGA_DMA_DEBUG) fprintf(stderr, fmt, ##__VA_ARGS__); } while (0)
 #else
 	#define debug_print(...)
 #endif
@@ -96,11 +98,17 @@
 
 // Max. async transfers in progress
 #define FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS 1024
+#ifndef FALSE
+#define FALSE (0)
+#endif
+#ifndef TRUE
+#define TRUE (!FALSE)
+#endif
 
-typedef enum {
-	TRANSFER_IN_PROGRESS = 0,
-	TRANSFER_COMPLETE
-} transfer_status_t;
+typedef enum {  
+	TRANSFER_IN_PROGRESS = 0,  
+	TRANSFER_COMPLETE  
+} transfer_status_t;  
 
 struct fpga_dma_transfer {
 	uint64_t src;
@@ -130,6 +138,16 @@ typedef union {
 	} bits;
 } dfh_reg_t;
 
+struct qinfo_t {
+	int read_index;
+	int write_index;
+	int sizeOfQueue;
+	struct fpga_dma_transfer* queue[FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS];
+	sem_t empty;
+	sem_t full;
+	sem_t mutex;
+};
+
 struct fpga_dma_handle {
 	fpga_handle fpga_h;
 	uint32_t mmio_num;
@@ -153,7 +171,7 @@ struct fpga_dma_handle {
 	fpga_dma_channel_type_t ch_type;
 	pthread_t thread_id;
 	// Transaction queue (model as a fixed-size circular buffer)
-	fpga_dma_transfer_t queue[FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS];
+	struct qinfo_t qinfo;
 };
 
 // Data structures from DMA MM implementation

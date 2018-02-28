@@ -1,6 +1,6 @@
 LDFLAGS ?=
 CFLAGS = -g -O2 -fPIC
-
+CFLAGS += -D FPGA_DMA_DEBUG=0
 ifdef prefix
 CFLAGS += -I$(prefix)/include
 LDFLAGS += -L$(prefix)/lib

@@ -98,17 +98,7 @@
 
 // Max. async transfers in progress
 #define FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS 1024
-#ifndef FALSE
-#define FALSE (0)
-#endif
-#ifndef TRUE
-#define TRUE (!FALSE)
-#endif
 
-typedef enum {  
-	TRANSFER_IN_PROGRESS = 0,  
-	TRANSFER_COMPLETE  
-} transfer_status_t;  
 
 struct fpga_dma_transfer {
 	uint64_t src;
@@ -121,7 +111,6 @@ struct fpga_dma_transfer {
 	void *context;
 	size_t rx_bytes;
 	bool is_blocking;
-	transfer_status_t transf_status;
 };
 
 typedef union {
@@ -141,10 +130,8 @@ typedef union {
 struct qinfo_t {
 	int read_index;
 	int write_index;
-	int sizeOfQueue;
 	struct fpga_dma_transfer* queue[FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS];
-	sem_t empty;
-	sem_t full;
+	sem_t qsem;
 	sem_t mutex;
 };
 

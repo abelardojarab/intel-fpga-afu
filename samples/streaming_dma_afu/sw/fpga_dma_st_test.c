@@ -199,8 +199,8 @@ int main(int argc, char *argv[]) {
 	fpgaDMATransferSetTransferType(rx_transfer, FPGA_ST_TO_HOST_MM);
 	fpgaDMATransferSetTxControl(rx_transfer, TX_NO_PACKET);
 	fpgaDMATransferSetTransferCallback(rx_transfer, rxtransferComplete);
-	fpgaDMATransfer(dma_h[1], rx_transfer, (fpga_dma_transfer_cb)&rxtransferComplete, NULL);
-	fpgaDMATransferDestroy(rx_transfer);
+	res = fpgaDMATransfer(dma_h[1], rx_transfer, (fpga_dma_transfer_cb)&rxtransferComplete, NULL);
+	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransfer");
 
 	fpga_dma_transfer_t tx_transfer;
 	fpgaDMATransferInit(&tx_transfer);
@@ -210,14 +210,16 @@ int main(int argc, char *argv[]) {
 	fpgaDMATransferSetTransferType(tx_transfer, HOST_MM_TO_FPGA_ST);
 	fpgaDMATransferSetTxControl(tx_transfer, TX_NO_PACKET);
 	fpgaDMATransferSetTransferCallback(tx_transfer, txtransferComplete);
-	fpgaDMATransfer(dma_h[0], tx_transfer, (fpga_dma_transfer_cb)&txtransferComplete, NULL);
-	fpgaDMATransferDestroy(tx_transfer);
-	
-	//while(status != TRANSFER_COMPLETE) {}
+	res = fpgaDMATransfer(dma_h[0], tx_transfer, (fpga_dma_transfer_cb)&txtransferComplete, NULL);
+	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransfer");
+
 	sem_wait(&cb_status);
 	verify_buffer((char*)dma_rx_buf_ptr, transfer_len);
 	clear_buffer((char*)dma_rx_buf_ptr, transfer_len);
 
+	fpgaDMATransferDestroy(rx_transfer);
+	fpgaDMATransferDestroy(tx_transfer);
+	
 out_dma_close:
 	free(dma_tx_buf_ptr);
 	free(dma_rx_buf_ptr);

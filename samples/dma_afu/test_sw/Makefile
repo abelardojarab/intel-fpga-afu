@@ -32,7 +32,7 @@ dma_afu_test: dma_afu_test.o dma_test_common.o
 	g++ $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 fpga_dma_gtest: fpga_dma_gtest.o
-	g++ -o $@ $^ -L/usr/lib/libgtest.so -L$(drv_path) -l:fpga_dma.so -lgtest  $(LDFLAGS)
+	g++ -o $@ $^ -L$(googletest) -lgtest -L$(drv_path) -l:fpga_dma.so $(LDFLAGS)
 
 fpga_dma_gtest.o: fpga_dma_gtest.cpp
 	g++ -o $@ -c $^ $(CFLAGS) -I$(drv_path)

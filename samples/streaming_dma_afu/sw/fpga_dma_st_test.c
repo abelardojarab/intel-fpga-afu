@@ -189,7 +189,6 @@ int main(int argc, char *argv[]) {
 
 	fill_buffer((char*)dma_tx_buf_ptr, transfer_len);
 	// Example DMA transfer (host to fpga, asynchronous)
-	//sleep(5);
 
 	fpga_dma_transfer_t rx_transfer;
 	fpgaDMATransferInit(&rx_transfer);

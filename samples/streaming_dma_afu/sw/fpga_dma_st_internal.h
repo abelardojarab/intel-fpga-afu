@@ -111,6 +111,8 @@ struct fpga_dma_transfer {
 	void *context;
 	size_t rx_bytes;
 	bool is_blocking;
+	// tf_status, wait state denotes transfer in progress
+	sem_t tf_status;
 };
 
 typedef union {
@@ -132,7 +134,7 @@ struct qinfo_t {
 	int write_index;
 	struct fpga_dma_transfer* queue[FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS];
 	sem_t qsem;
-	sem_t mutex;
+	pthread_mutex_t qmutex;
 };
 
 struct fpga_dma_handle {

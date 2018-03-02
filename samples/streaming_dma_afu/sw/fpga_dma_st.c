@@ -81,10 +81,10 @@ static void queueInit (struct qinfo_t *q) {
 static bool enqueue(struct qinfo_t *q, fpga_dma_transfer_t *tf) {
 	// Check to see if the Queue is full
 	int value=0;
-	sem_wait(&q->mutex);
+	pthread_mutex_lock(&q->qmutex);
 	sem_getvalue(&q->qsem, &value);
 	if(value == FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS) {
-		sem_post(&q->mutex);
+		pthread_mutex_unlock(&q->qmutex);
 		return false;
 	}
 	else {
@@ -93,19 +93,18 @@ static bool enqueue(struct qinfo_t *q, fpga_dma_transfer_t *tf) {
 		// Add the item to the Queue
 		q->queue[q->write_index % FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS]= *tf;
 		sem_post(&q->qsem);
-		sem_post(&q->mutex);
+		pthread_mutex_unlock(&q->qmutex);
 		return true;
 	}
 }
 
-static bool dequeue(struct qinfo_t *q, fpga_dma_transfer_t *tf) {
+static void dequeue(struct qinfo_t *q, fpga_dma_transfer_t *tf) {
 	// Check for empty Queue
 	sem_wait(&q->qsem);
-	sem_wait(&q->mutex);
+	pthread_mutex_lock(&q->qmutex);
 	q->read_index++;
 	*tf = q->queue[q->read_index % FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS];
-	sem_post(&q->mutex);
-	return true;
+	pthread_mutex_unlock(&q->qmutex);
 }
 
 // copy bytes to MMIO
@@ -256,7 +255,10 @@ void *m2sTransactionWorker(void* dma_handle) {
 			debug_print("h2f desc status non-busy %d\n", i);
 		}
 		//transfer_complete
-		m2s_transfer->cb(NULL);
+		if(m2s_transfer->cb)
+			m2s_transfer->cb(NULL);
+		else
+			sem_post(&m2s_transfer->tf_status);
 	}
 out:
 	pthread_exit((void *)1);
@@ -303,7 +305,10 @@ void *s2mTransactionWorker(void* dma_handle) {
 			debug_print("f2h memcpy done: leftover\n");
 		}
 		//transfer complete
-		s2m_transfer->cb(NULL);
+		if(s2m_transfer->cb)
+			s2m_transfer->cb(NULL);
+		else
+			sem_post(&s2m_transfer->tf_status);
 	}
 out:
 	pthread_exit((void *)1);
@@ -378,7 +383,6 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dm
 	dma_h->mmio_offset = 0;
 	queueInit(&dma_h->qinfo);
 	sem_init(&dma_h->qinfo.qsem, 0, 0);
-	sem_init(&dma_h->qinfo.mutex, 0, 1);
 	bool end_of_list = false;
 	bool dma_found = false;
 	uint64_t dfh = 0;
@@ -487,7 +491,6 @@ fpga_result fpgaDMAClose(fpga_dma_handle_t dma) {
 	}
 
 	sem_destroy(&dma->qinfo.qsem);
-	sem_destroy(&dma->qinfo.mutex);
 	if(pthread_cancel(dma->thread_id) != 0) {
 		res = FPGA_EXCEPTION;
 		ON_ERR_GOTO(res, out, "pthread_cancel");
@@ -630,6 +633,7 @@ fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, fpga_dma_transfer_t transfer,
 	fpga_result res = FPGA_OK;
 	fpga_dma_transfer_type_t type;
 	type = transfer->transfer_type;
+	bool ret;
 	if(!dma)
 		return FPGA_INVALID_PARAM;
 	if(type >= FPGA_MAX_TRANSFER_TYPE)
@@ -638,25 +642,32 @@ fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, fpga_dma_transfer_t transfer,
 		return FPGA_NOT_SUPPORTED;
 	if(!dma->fpga_h)
 		return FPGA_INVALID_PARAM;
+	if(cb)
+		sem_init(&transfer->tf_status,0,0);
 
 	if(type == HOST_MM_TO_FPGA_ST) {
 		if(IS_DMA_ALIGNED(transfer->dst)) {
-			if (enqueue(&dma->qinfo, &transfer) == false) {
-				res = FPGA_EXCEPTION;
-				ON_ERR_GOTO(res, out, "enqueue");
+			do {
+				ret = enqueue(&dma->qinfo, &transfer);
+			} while(ret != true);
+			debug_print("m2s enqueue successful\n");
+			if(!cb) {
+				sem_wait(&transfer->tf_status);
+				sem_destroy(&transfer->tf_status);
 			}
-			debug_print("m2s broadcast signal sent\n");
 		}
 	}
 	else if (type == FPGA_ST_TO_HOST_MM) {
 		if(IS_DMA_ALIGNED(transfer->src)) {
-			if (enqueue(&dma->qinfo, &transfer) == false) {
-				res = FPGA_EXCEPTION;
-				ON_ERR_GOTO(res, out, "enqueue");
+			do {
+				ret = enqueue(&dma->qinfo, &transfer);
+			} while(ret != true);
+			debug_print("s2m enqueue successful\n");
+			if(!cb) {
+				sem_wait(&transfer->tf_status);
+				sem_destroy(&transfer->tf_status);
 			}
-			debug_print("s2m broadcast signal sent\n");
 		}
 	}
-out:
-	return res;
+return res;
 }

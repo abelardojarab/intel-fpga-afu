@@ -1,10 +1,10 @@
-ETH_E2E_E10 Modelsim Simulation Script
+ETH_E2E_E40 Modelsim Simulation Script
 
-This directory contains files to perform a modelsim test loopback simulation of the ETH_E2E_E10 AFU.
+This directory contains files to perform a modelsim test loopback simulation of the ETH_E2E_E40 AFU.
 
 Files:
 	./include - include directory with platform specific files requied by the testbench.
-	tb.av - top level testbench file which wraps the AFU.
+	tb.sv - top level testbench file which wraps the AFU.
 	Makefile - makefile script which targets Modelsim SE.
 	
 Requirements:
@@ -16,5 +16,9 @@ Commands:
 	make debug - This command deletes the local work area then compiles all nessisary RTL and starts a gui based simulation with no optimization on and full waveform logging.
 	make clean - This command cleans only the work area.
 	make clobber - This command cleans the work area, the IP specific libraries and the FPGA specific libraries.
+
+Notes:
+	First run the testbench by default with FASTSIM parameter (parameter inside tb.sv) turned off. This simulation could take upwards of 300+ us to complete.
+	Once the simulation completes record the alignment parameters for FASTSIM mode to use. This will ensure faster simlation times (rx alignment under 50us).
 
 	

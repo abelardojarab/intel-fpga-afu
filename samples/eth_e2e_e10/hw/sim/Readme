@@ -4,7 +4,7 @@ This directory contains files to perform a modelsim test loopback simulation of 
 
 Files:
 	./include - include directory with platform specific files requied by the testbench.
-	tb.av - top level testbench file which wraps the AFU.
+	tb.sv - top level testbench file which wraps the AFU.
 	Makefile - makefile script which targets Modelsim SE.
 	
 Requirements:

@@ -367,10 +367,10 @@ defparam afu.prz0.alt_eth_ultra_0.CREATE_TX_SKEW   = 1'b0;
 /////////////////////////////////////////////////////////////////////////
 // FASTSIM mode defparams - Run a full simulation before using this mode.
 /////////////////////////////////////////////////////////////////////////
-//defparam afu.prz0.alt_eth_ultra_0.FASTSIM 	       = 1;
-//defparam afu.prz0.alt_eth_ultra_0.FORCE_RO_SELS    = 140'he4e4e4e4e48d111a223444688e4e4e4e4e4;
-//defparam afu.prz0.alt_eth_ultra_0.FORCE_BPOS       = 24'h965965;
-//defparam afu.prz0.alt_eth_ultra_0.FORCE_WPOS       = 20'h18c63;
+#defparam afu.prz0.alt_eth_ultra_0.FASTSIM 	       = 1;
+#defparam afu.prz0.alt_eth_ultra_0.FORCE_RO_SELS    = 140'he4e4e4e4e48d111a223444688e4e4e4e4e4;
+#defparam afu.prz0.alt_eth_ultra_0.FORCE_BPOS       = 24'h965965;
+#defparam afu.prz0.alt_eth_ultra_0.FORCE_WPOS       = 20'h18c63;
 ////////////////////////////////////////////////////////////////////////
 
 int timer = 0;

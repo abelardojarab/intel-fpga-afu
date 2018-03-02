@@ -383,6 +383,7 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dm
 	dma_h->mmio_offset = 0;
 	queueInit(&dma_h->qinfo);
 	sem_init(&dma_h->qinfo.qsem, 0, 0);
+	pthread_mutex_init(&dma_h->qinfo.qmutex, NULL);
 	bool end_of_list = false;
 	bool dma_found = false;
 	uint64_t dfh = 0;
@@ -491,6 +492,7 @@ fpga_result fpgaDMAClose(fpga_dma_handle_t dma) {
 	}
 
 	sem_destroy(&dma->qinfo.qsem);
+	pthread_mutex_destroy(&dma->qinfo.qmutex);
 	if(pthread_cancel(dma->thread_id) != 0) {
 		res = FPGA_EXCEPTION;
 		ON_ERR_GOTO(res, out, "pthread_cancel");

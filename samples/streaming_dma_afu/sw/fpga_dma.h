@@ -220,7 +220,7 @@ fpga_result fpgaDMATransferSetTxControl(fpga_dma_transfer_t transfer, fpga_dma_t
 * @brief                  Set RX control
 *
 *                         RX control allows the driver to handle an unknown
-*                         amount of receive data from the FPGA.  When END_ON_EOP
+*                         amount of receive data from the FPGA. When END_ON_EOP
 *                         is set, the RX DMA will end the transfer when EOP arrives
 *                         in the receive stream or when rx_count bytes have been
 *                         received (whichever occurs first)

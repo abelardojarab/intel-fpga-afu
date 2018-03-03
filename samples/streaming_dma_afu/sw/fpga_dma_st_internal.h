@@ -99,6 +99,12 @@
 // Max. async transfers in progress
 #define FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS 1024
 
+// Channel types
+typedef enum {
+	TRANSFER_IN_PROGRESS = 0,
+	TRANSFER_COMPLETE = 1
+} fpga_transf_status_t;
+
 
 struct fpga_dma_transfer {
 	uint64_t src;
@@ -110,9 +116,8 @@ struct fpga_dma_transfer {
 	fpga_dma_transfer_cb cb;
 	void *context;
 	size_t rx_bytes;
-	bool is_blocking;
-	// tf_status, wait state denotes transfer in progress
-	sem_t tf_status;
+	bool is_blocking;	
+	sem_t tf_status; // When locked, the transfer in progress
 };
 
 typedef union {
@@ -129,13 +134,13 @@ typedef union {
 	} bits;
 } dfh_reg_t;
 
-struct qinfo_t {
+typedef struct qinfo {
 	int read_index;
 	int write_index;
-	struct fpga_dma_transfer* queue[FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS];
-	sem_t qsem;
-	pthread_mutex_t qmutex;
-};
+	fpga_dma_transfer_t queue[FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS];
+	sem_t entries; // Counting semaphore, count represents available entries in queue
+	pthread_mutex_t qmutex; // Gain exclusive access before queue operations
+} qinfo_t;
 
 struct fpga_dma_handle {
 	fpga_handle fpga_h;
@@ -160,7 +165,7 @@ struct fpga_dma_handle {
 	fpga_dma_channel_type_t ch_type;
 	pthread_t thread_id;
 	// Transaction queue (model as a fixed-size circular buffer)
-	struct qinfo_t qinfo;
+	qinfo_t qinfo;
 };
 
 // Data structures from DMA MM implementation

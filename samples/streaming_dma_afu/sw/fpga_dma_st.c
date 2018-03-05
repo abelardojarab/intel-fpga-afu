@@ -76,8 +76,8 @@ static uint64_t _fpga_dma_feature_next(uint64_t dfh) {
 
 static void queueInit(qinfo_t *q) {
 	q->read_index = q->write_index = -1;
-	sem_init(q->entries, 0, 0);
-	pthread_mutex_init(q->qmutex, NULL);
+	sem_init(&q->entries, 0, 0);
+	pthread_mutex_init(&q->qmutex, NULL);
 }
 
 static void queueDestroy(qinfo_t *q) {

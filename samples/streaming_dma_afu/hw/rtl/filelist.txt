@@ -57,8 +57,3 @@ qsys/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_memory_bridge.ip
 qsys/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_reset_in.ip
 qsys/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_stream_to_memory_dispatcher.ip
 qsys/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_write_master.ip
-
-
-
-# This will be generated during simulator configuration
-SI:qsys_sim_filelist.txt

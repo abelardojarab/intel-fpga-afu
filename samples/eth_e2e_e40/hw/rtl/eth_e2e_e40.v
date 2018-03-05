@@ -50,6 +50,8 @@ wire          l4_tx_eop_0;
 wire          l4_tx_valid_0;
 wire    [4:0] l4_tx_empty_0;
 wire  [255:0] l4_tx_data_0;
+wire          l4_tx_ready_0;
+wire    [5:0] l4_tx_error_0;
 
 wire          l4_rx_sop_0;
 wire          l4_rx_eop_0;
@@ -57,6 +59,7 @@ wire          l4_rx_valid_0;
 wire    [4:0] l4_rx_empty_0;
 wire  [255:0] l4_rx_data_0;
 wire    [5:0] l4_rx_error_0;
+wire          l4_rx_ready_0;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,21 +70,25 @@ reg  [15:0] prmgmt_cmd;
 reg  [15:0] prmgmt_addr;   
 reg  [31:0] prmgmt_din;   
 
-always_comb
+always @(posedge hssi.f2a_prmgmt_ctrl_clk)
 begin
-    // RD/WR request from AFU CSR 
+    // RD/WR request from AFU CSR
+	prmgmt_cmd <= 16'b0;
+	
+	if (hssi.f2a_prmgmt_cmd != 16'b0)
+    begin
+        prmgmt_cmd  <= hssi.f2a_prmgmt_cmd;
+        prmgmt_addr <= hssi.f2a_prmgmt_addr;
+        prmgmt_din  <= hssi.f2a_prmgmt_din;
+    end
+	
     if (eth_ctrl_addr[17] | eth_ctrl_addr[16])
     begin
-        prmgmt_cmd  = eth_ctrl_addr[31:16];
-        prmgmt_addr = eth_ctrl_addr[15: 0];
-        prmgmt_din  = eth_wr_data;
+        prmgmt_cmd  <= eth_ctrl_addr[31:16];
+        prmgmt_addr <= eth_ctrl_addr[15: 0];
+        prmgmt_din  <= eth_wr_data;
     end
-    else
-    begin
-        prmgmt_cmd  = hssi.f2a_prmgmt_cmd;
-        prmgmt_addr = hssi.f2a_prmgmt_addr;
-        prmgmt_din  = hssi.f2a_prmgmt_din;
-    end
+
 end
 
 assign eth_rd_data   = prmgmt_dout_r;
@@ -348,6 +355,11 @@ alt_aeu_40_top #(
 // serdes IO registers
 ////////////////////////////////////
 
+wire [NUM_LN*40-1:0] active_rx_data;
+wire [NUM_LN*40-1:0] active_tx_data;
+
+
+
 reg [40*8-1:0] tx_launch = 0 /* synthesis preserve */;
 reg [7:0] tx_valid = 0 /* synthesis preserve */;
 
@@ -379,8 +391,7 @@ wire [7:0] eio_rx_rd_en = {4'b0, rx_req_r_0};
 //////////////////////////////////////////////////////////////////
 // pull the active subset of the wires for 40 bit basic stream
 
-wire [NUM_LN*40-1:0] active_rx_data;
-wire [NUM_LN*40-1:0] active_tx_data;
+
 genvar i;
 generate
     for (i=0; i<NUM_LN; i=i+1) begin : drf

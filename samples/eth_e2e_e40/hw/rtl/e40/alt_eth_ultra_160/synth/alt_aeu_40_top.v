@@ -49,8 +49,8 @@
         parameter [139:0]FORCE_RO_SELS  = 0,      
         parameter [23:0]FORCE_BPOS      = 0,      
         parameter [35:0]FORCE_WPOS      = 0,
-        parameter RST_CNTR              = 6,   // 6 for sim
-        parameter AM_CNT_BITS           = 6,   // 6 for sim
+        parameter RST_CNTR              = 16,   // 6 for sim
+        parameter AM_CNT_BITS           = 14,   // 6 for sim
         parameter SIM_FAKE_JTAG         = 1'b0,
         parameter CREATE_TX_SKEW = 1'b0, // debug skew the TX lanes
         parameter TIMING_MODE           = 1'b0,
@@ -1356,7 +1356,7 @@ end
    
 generate
 if (TARGET_CHIP != 5 || !ENA_KR4) //A10 kr4 does its own reset control 
-begin : reset_delays
+begin
 
     // FSM for Rx FIFO health moniter    
     localparam               

@@ -361,8 +361,8 @@ crc32_chk_inst (
 
  // __________________________________________________________
  //synopsys translate_off
-  always@(good_pkts)    begin $display("_INFO_: Received Packet %d", good_pkts); end
-  always@(bad_pkts) begin $display("_ERROR_: CRC Error Found %d", bad_pkts); end
+  //always@(good_pkts)    begin $display("_INFO_: Received Packet %d", good_pkts); end
+  //always@(bad_pkts) begin $display("_ERROR_: CRC Error Found %d", bad_pkts); end
  //synopsys translate_on
  // __________________________________________________________
 

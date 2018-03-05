@@ -25,6 +25,7 @@
 // baeckler - 05-11-2016
 // maguirre - Apr/2017
 //          - Edited for ETH E2E validation project
+// ecustodi - Feb/2018 modifications for DCP testing
 
 module eth_e2e_e10 #(
     parameter NUM_LN = 4   // no override
@@ -35,34 +36,7 @@ module eth_e2e_e10 #(
     input  [31:0] eth_wr_data, 
     output [31:0] eth_rd_data,   
     input         csr_init_start,
-    output        csr_init_done,
-    // I2C and GPIO ports
-    output  [4:0] g2b_GPIO_a,
-    output  [4:0] g2b_GPIO_b,
-    output        g2b_I2C0_scl,
-    output        g2b_I2C0_sda,
-    output        g2b_I2C0_rstn,
-    output        g2b_I2C1_scl,
-    output        g2b_I2C1_sda,
-    output        g2b_I2C1_rstn,
-                  
-    input   [4:0] b2g_GPIO_a, 
-    input   [4:0] b2g_GPIO_b,
-    input         b2g_I2C0_scl,
-    input         b2g_I2C0_sda,
-    input         b2g_I2C0_rstn,
-    input         b2g_I2C1_scl,
-    input         b2g_I2C1_sda,
-    input         b2g_I2C1_rstn,
-                  
-    output  [4:0] oen_GPIO_a,
-    output  [4:0] oen_GPIO_b,
-    output        oen_I2C0_scl,
-    output        oen_I2C0_sda,
-    output        oen_I2C0_rstn,
-    output        oen_I2C1_scl,
-    output        oen_I2C1_sda,
-    output        oen_I2C1_rstn
+    output        csr_init_done
 );
 
 localparam [23:0] GBS_ID = "E2E";
@@ -84,21 +58,25 @@ reg  [15:0] prmgmt_cmd;
 reg  [15:0] prmgmt_addr;   
 reg  [31:0] prmgmt_din;   
 
-always_comb
+always @(posedge hssi.f2a_prmgmt_ctrl_clk)
 begin
-    // RD/WR request from AFU CSR 
+    // RD/WR request from AFU CSR
+	prmgmt_cmd <= 16'b0;
+	
+	if (hssi.f2a_prmgmt_cmd != 16'b0)
+    begin
+        prmgmt_cmd  <= hssi.f2a_prmgmt_cmd;
+        prmgmt_addr <= hssi.f2a_prmgmt_addr;
+        prmgmt_din  <= hssi.f2a_prmgmt_din;
+    end
+	
     if (eth_ctrl_addr[17] | eth_ctrl_addr[16])
     begin
-        prmgmt_cmd  = eth_ctrl_addr[31:16];
-        prmgmt_addr = eth_ctrl_addr[15: 0];
-        prmgmt_din  = eth_wr_data;
+        prmgmt_cmd  <= eth_ctrl_addr[31:16];
+        prmgmt_addr <= eth_ctrl_addr[15: 0];
+        prmgmt_din  <= eth_wr_data;
     end
-    else
-    begin
-        prmgmt_cmd  = hssi.f2a_prmgmt_cmd;
-        prmgmt_addr = hssi.f2a_prmgmt_addr;
-        prmgmt_din  = hssi.f2a_prmgmt_din;
-    end
+
 end
 
 assign eth_rd_data   = prmgmt_dout_r;
@@ -128,9 +106,9 @@ wire  [0:0] status_readdata_valid;
 wire  [0:0] status_waitrequest;
 wire  [0:0] status_read_timeout;
 
-reg csr_rst = 1'b0;
-reg rx_rst = 1'b0;
-reg tx_rst = 1'b0;
+reg csr_rst = 1'b1;
+reg rx_rst = 1'b1;
+reg tx_rst = 1'b1;
 wire [NUM_ETH-1:0] tx_ready_export;
 wire [NUM_ETH-1:0] rx_ready_export;
 reg [1:0] port_sel = 2'b0;

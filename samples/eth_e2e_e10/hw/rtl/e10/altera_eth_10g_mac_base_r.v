@@ -217,8 +217,8 @@ wire [5:0]  rx_st_adapter_0_out_0_error;
         .dout(avalon_st_pause_data_sync[1])
     );
 
-
-
+wire tx_reset;
+wire rx_reset;
 wire tx_reset_n = ~tx_reset;
 wire rx_reset_n = ~rx_reset;
 

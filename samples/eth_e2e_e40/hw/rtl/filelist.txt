@@ -8,8 +8,6 @@ eth_pkt_csr.v
 eth_pkt_gen.v
 eth_pkt_mon.v
 eth_traff_ctrl.v
-i2c_contrl.v
-trans_bit.v
 ./hsl_files/alt_a10_temp_sense.v
 ./hsl_files/alt_and3t0.v
 ./hsl_files/alt_and3t1.v

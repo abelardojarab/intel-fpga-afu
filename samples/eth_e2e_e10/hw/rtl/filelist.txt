@@ -6,10 +6,6 @@ e2e_e10.sdc
 eth_e2e_e10.v
 e10_avl_st_gen.v
 e10_avl_st_mon.v
-eth_pkt_csr.v
-eth_pkt_gen.v
-eth_pkt_mon.v
-eth_traff_ctrl.v
 i2c_contrl.v
 trans_bit.v
 ./hsl_files/alt_a10_temp_sense.v

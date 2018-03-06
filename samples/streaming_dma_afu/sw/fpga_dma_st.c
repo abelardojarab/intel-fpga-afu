@@ -141,7 +141,6 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dm
 	fpga_dma_handle_t dma_h;
 	int channel_index = 0;
 	int i = 0;
-	int ret = 0;
 	if(!fpga) {
 		return FPGA_INVALID_PARAM;
 	}

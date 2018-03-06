@@ -66,6 +66,7 @@
 // DMA Register offsets from base
 #define FPGA_DMA_CSR 0x40
 #define FPGA_DMA_DESC 0x60
+#define FPGA_DMA_RESPONSE 0x80
 #define FPGA_DMA_ADDR_SPAN_EXT_CNTL 0x200
 #define FPGA_DMA_ADDR_SPAN_EXT_DATA 0x1000
 
@@ -151,6 +152,7 @@ struct fpga_dma_handle {
 	uint64_t dma_offset;
 	uint64_t dma_csr_base;
 	uint64_t dma_desc_base;
+	uint64_t dma_resp_base;
 	uint64_t dma_ase_cntl_base;
 	uint64_t dma_ase_data_base;
 	// Interrupt event handle

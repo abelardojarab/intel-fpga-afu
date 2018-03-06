@@ -283,13 +283,15 @@ void *s2mTransactionWorker(void* dma_handle) {
 		count = s2m_transfer->len;
 		uint32_t dma_chunks = count/FPGA_DMA_BUF_SIZE;
 		count -= (dma_chunks*FPGA_DMA_BUF_SIZE);
-	
+		uint64_t resp_status;
 		for(i=0; i<dma_chunks; i++) {
 			res = _do_dma(dma_h, dma_h->dma_buf_iova[0] | 0x1000000000000, 0, FPGA_DMA_BUF_SIZE, 1, s2m_transfer->transfer_type, 0);
 			ON_ERR_GOTO(res, out, "FPGA_ST_TO_HOST_MM Transfer failed");
 	
 			res = _dma_desc_status(dma_h);
 			ON_ERR_GOTO(res, out, "DMA DESC BUFFER Empty polling failed");
+			res = fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_resp_base, &resp_status);
+			ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
 			memcpy((void*)(s2m_transfer->dst+i*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[0], FPGA_DMA_BUF_SIZE);
 		}
 
@@ -299,6 +301,8 @@ void *s2mTransactionWorker(void* dma_handle) {
 	
 			res = _dma_desc_status(dma_h);
 			ON_ERR_GOTO(res, out, "DMA DESC BUFFER Empty polling failed");
+			res = fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_resp_base, &resp_status);
+         ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
 			memcpy((void*)(s2m_transfer->dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[0], count);
 		}
 
@@ -406,11 +410,13 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dm
 
 			// Found one. Record it.
 			if(channel_index == dma_channel) {
+				dma_h->dma_base = offset;
 				if ((feature_uuid_lo == M2S_DMA_UUID_L) && (feature_uuid_hi == M2S_DMA_UUID_H))
 					dma_h->ch_type=TX_ST;
-				else if ((feature_uuid_lo == S2M_DMA_UUID_L) && (feature_uuid_hi == S2M_DMA_UUID_H))
+				else if ((feature_uuid_lo == S2M_DMA_UUID_L) && (feature_uuid_hi == S2M_DMA_UUID_H)) {
 					dma_h->ch_type=RX_ST;
-				dma_h->dma_base = offset;
+					dma_h->dma_resp_base = dma_h->dma_base+FPGA_DMA_RESPONSE;
+				}
 				dma_h->dma_csr_base = dma_h->dma_base+FPGA_DMA_CSR;
 				dma_h->dma_desc_base = dma_h->dma_base+FPGA_DMA_DESC;
 				dma_found = true;

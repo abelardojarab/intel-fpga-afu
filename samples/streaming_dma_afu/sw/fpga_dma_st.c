@@ -96,9 +96,9 @@ static bool enqueue(qinfo_t *q, fpga_dma_transfer_t tf) {
 	}
 
 	// Increment tail index
-	q->write_index++;
+	q->write_index = (q->write_index+1)%FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS;
 	// Add the item to the Queue
-	q->queue[q->write_index % FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS] = tf;
+	q->queue[q->write_index] = tf;
 	sem_post(&q->entries);
 	pthread_mutex_unlock(&q->qmutex);
 	return true;
@@ -109,8 +109,8 @@ static void dequeue(qinfo_t *q, fpga_dma_transfer_t *tf) {
 	sem_wait(&q->entries);
 
 	pthread_mutex_lock(&q->qmutex);
-	q->read_index++;
-	*tf = q->queue[q->read_index % FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS];
+	q->read_index = (q->read_index+1)%FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS;
+	*tf = q->queue[q->read_index];
 	pthread_mutex_unlock(&q->qmutex);
 }
 
@@ -466,7 +466,7 @@ rel_buf:
 		ON_ERR_GOTO(res, out, "fpgaReleaseBuffer");
 	}
 out:
-	queueDestroy(dma_h->qinfo);
+	queueDestroy(&dma_h->qinfo);
 	if(!dma_found)
 		free(dma_h);
 	return res;
@@ -525,8 +525,8 @@ fpga_result fpgaDMATransferInit(fpga_dma_transfer_t *transfer) {
 		res = FPGA_NO_MEMORY;
 		return res;
 	}
-
-	sem_init(&transfer->tf_status, 0, TRANSFER_NOT_IN_PROGRESS);
+	pthread_mutex_init(&(*transfer)->tf_mutex, NULL);
+	sem_init(&(*transfer)->tf_status, 0, TRANSFER_NOT_IN_PROGRESS);
 
 	return res;
 }
@@ -538,12 +538,13 @@ fpga_result fpgaDMATransferDestroy(fpga_dma_transfer_t transfer) {
 		res = FPGA_INVALID_PARAM;
 		return res;
 	}
-
+	
+	pthread_mutex_lock(&transfer->tf_mutex);
 	sem_wait(&transfer->tf_status);
-	sem_destroy(&transfer->tf_status);
 	free(transfer);
-	sem_post(&transfer->tf_status);
-
+	sem_destroy(&transfer->tf_status);
+	pthread_mutex_destroy(&transfer->tf_mutex);
+	
 	return res;
 }
 
@@ -554,9 +555,11 @@ fpga_result fpgaDMATransferSetSrc(fpga_dma_transfer_t transfer, uint64_t src) {
 		return res;
 	}
 
+	pthread_mutex_lock(&transfer->tf_mutex);
 	sem_wait(&transfer->tf_status);
 	transfer->src = src;
 	sem_post(&transfer->tf_status);
+	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
 
@@ -567,9 +570,11 @@ fpga_result fpgaDMATransferSetDst(fpga_dma_transfer_t transfer, uint64_t dst) {
 		return res;
 	}
 
+	pthread_mutex_lock(&transfer->tf_mutex);
 	sem_wait(&transfer->tf_status);
 	transfer->dst = dst;
 	sem_post(&transfer->tf_status);
+	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
 
@@ -580,9 +585,11 @@ fpga_result fpgaDMATransferSetLen(fpga_dma_transfer_t transfer, uint64_t len) {
 		return res;
 	}
 
+	pthread_mutex_lock(&transfer->tf_mutex);
 	sem_wait(&transfer->tf_status);
 	transfer->len = len;
 	sem_post(&transfer->tf_status);
+	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
 
@@ -593,9 +600,11 @@ fpga_result fpgaDMATransferSetTransferType(fpga_dma_transfer_t transfer, fpga_dm
 		return res;
 	}
 
+	pthread_mutex_lock(&transfer->tf_mutex);
 	sem_wait(&transfer->tf_status);
 	transfer->transfer_type = type;
 	sem_post(&transfer->tf_status);
+	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
 
@@ -606,9 +615,11 @@ fpga_result fpgaDMATransferSetTxControl(fpga_dma_transfer_t transfer, fpga_dma_t
 		return res;
 	}
 
+	pthread_mutex_lock(&transfer->tf_mutex);
 	sem_wait(&transfer->tf_status);
 	transfer->tx_ctrl = tx_ctrl;
 	sem_post(&transfer->tf_status);
+	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
 
@@ -619,9 +630,11 @@ fpga_result fpgaDMATransferSetRxControl(fpga_dma_transfer_t transfer, fpga_dma_r
 		return res;
 	}
 
+	pthread_mutex_lock(&transfer->tf_mutex);
 	sem_wait(&transfer->tf_status);
 	transfer->rx_ctrl = rx_ctrl;
 	sem_post(&transfer->tf_status);
+	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
 
@@ -632,9 +645,11 @@ fpga_result fpgaDMATransferSetTransferCallback(fpga_dma_transfer_t transfer, fpg
 		return res;
 	}
 
+	pthread_mutex_lock(&transfer->tf_mutex);
 	sem_wait(&transfer->tf_status);
 	transfer->cb = cb;
 	sem_post(&transfer->tf_status);
+	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
 
@@ -670,16 +685,20 @@ fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, fpga_dma_transfer_t transfer,
 	if(type == FPGA_ST_TO_HOST_MM && !IS_DMA_ALIGNED(transfer->src))
 		return FPGA_INVALID_PARAM;
 
+	pthread_mutex_lock(&transfer->tf_mutex);
 	// Wait for pending transaction on the transfer object
-	sem_wait(&transfer->tf_status);
+	sem_wait(&transfer->tf_status); 
 
 	do {
 		ret = enqueue(&dma->qinfo, transfer);
 	} while(ret != true);
 			
 	// Blocking transfer
-	if(!cb)
+	if(!cb) {
 		sem_wait(&transfer->tf_status);
+		sem_post(&transfer->tf_status);
+	}
+	pthread_mutex_unlock(&transfer->tf_mutex);
 
 	return res;
 }

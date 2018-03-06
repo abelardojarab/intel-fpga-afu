@@ -284,7 +284,7 @@ void *s2mTransactionWorker(void* dma_handle) {
 		uint32_t dma_chunks = count/FPGA_DMA_BUF_SIZE;
 		count -= (dma_chunks*FPGA_DMA_BUF_SIZE);
 		uint64_t resp_status;
-		
+
 		for(i=0; i<dma_chunks; i++) {
 			res = _do_dma(dma_h, dma_h->dma_buf_iova[0] | 0x1000000000000, 0, FPGA_DMA_BUF_SIZE, 1, s2m_transfer->transfer_type, 0);
 			ON_ERR_GOTO(res, out, "FPGA_ST_TO_HOST_MM Transfer failed");
@@ -550,11 +550,9 @@ fpga_result fpgaDMATransferDestroy(fpga_dma_transfer_t transfer) {
 		return res;
 	}
 	
-	pthread_mutex_lock(&transfer->tf_mutex);
-	free(transfer);
 	sem_destroy(&transfer->tf_status);
-	pthread_mutex_unlock(&transfer->tf_mutex);
 	pthread_mutex_destroy(&transfer->tf_mutex);
+	free(transfer);
 	
 	return res;
 }

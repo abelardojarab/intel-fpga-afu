@@ -29,6 +29,7 @@
 #include <opae/fpga.h>
 #include <time.h>
 #include "fpga_dma.h"
+#include <unistd.h>
 /**
  * \fpga_dma_st_test.c
  * \brief Streaming DMA test
@@ -36,13 +37,14 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include<semaphore.h>
 
 #define DMA_AFU_ID				"EB59BF9D-B211-4A4E-B3E3-753CE68634BA"
 #define TEST_BUF_SIZE (10*1024*1024)
 #define ASE_TEST_BUF_SIZE (4*1024)
 
 static uint64_t count=0;
-
+sem_t cb_status;
 static int err_cnt = 0;
 /*
  * macro for checking return codes
@@ -56,10 +58,35 @@ static int err_cnt = 0;
 		}\
 	} while (0)
 
-// Callback 
-static void transferComplete(void *ctx) {
+
+fpga_result verify_buffer(char *buf, size_t size) {
+	size_t i, rnum=0;
+	srand(99);
+	for(i=0; i<size; i++) {
+		rnum = rand()%256;
+		if((*buf&0xFF) != rnum) {
+			printf("Invalid data at %zx Expected = %zx Actual = %x\n",i,rnum,(*buf&0xFF));
+			return FPGA_INVALID_PARAM;
+		}
+		buf++;
+	}
+	printf("Buffer Verification Success!\n");
+	return FPGA_OK;
+}
+
+void clear_buffer(char *buf, size_t size) {
+	memset(buf, 0, size);
+}
+
+// Callback
+static void rxtransferComplete(void *ctx) {
+	sem_post(&cb_status);
+}
+
+static void txtransferComplete(void *ctx) {
 	return;
 }
+
 
 static void fill_buffer(char *buf, size_t size) {
 	size_t i=0;
@@ -104,7 +131,7 @@ int main(int argc, char *argv[]) {
 	if(uuid_parse(DMA_AFU_ID, guid) < 0) {
 		return 1;
 	}
-
+	sem_init(&cb_status, 0, 0);
 	res = fpgaGetProperties(NULL, &filter);
 	ON_ERR_GOTO(res, out, "fpgaGetProperties");
 
@@ -162,17 +189,36 @@ int main(int argc, char *argv[]) {
 
 	fill_buffer((char*)dma_tx_buf_ptr, transfer_len);
 	// Example DMA transfer (host to fpga, asynchronous)
-	fpga_dma_transfer_t transfer;
-	fpgaDMATransferInit(&transfer);
-	fpgaDMATransferSetSrc(transfer, (uint64_t)dma_tx_buf_ptr);
-	fpgaDMATransferSetDst(transfer, 0x0);
-	fpgaDMATransferSetLen(transfer, transfer_len);
-	fpgaDMATransferSetTransferType(transfer, HOST_MM_TO_FPGA_ST);
-	fpgaDMATransferSetTxControl(transfer, TX_NO_PACKET);
-	fpgaDMATransferSetTransferCallback(transfer, NULL);
-	fpgaDMATransfer(dma_h[0], transfer, (fpga_dma_transfer_cb)&transferComplete, NULL);
-	fpgaDMATransferDestroy(transfer);
 
+	fpga_dma_transfer_t rx_transfer;
+	fpgaDMATransferInit(&rx_transfer);
+	fpgaDMATransferSetSrc(rx_transfer, 0x0);
+	fpgaDMATransferSetDst(rx_transfer, (uint64_t)dma_rx_buf_ptr);
+	fpgaDMATransferSetLen(rx_transfer, transfer_len);
+	fpgaDMATransferSetTransferType(rx_transfer, FPGA_ST_TO_HOST_MM);
+	fpgaDMATransferSetTxControl(rx_transfer, TX_NO_PACKET);
+	fpgaDMATransferSetTransferCallback(rx_transfer, rxtransferComplete);
+	res = fpgaDMATransfer(dma_h[1], rx_transfer, (fpga_dma_transfer_cb)&rxtransferComplete, NULL);
+	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransfer");
+
+	fpga_dma_transfer_t tx_transfer;
+	fpgaDMATransferInit(&tx_transfer);
+	fpgaDMATransferSetSrc(tx_transfer, (uint64_t)dma_tx_buf_ptr);
+	fpgaDMATransferSetDst(tx_transfer, 0x0);
+	fpgaDMATransferSetLen(tx_transfer, transfer_len);
+	fpgaDMATransferSetTransferType(tx_transfer, HOST_MM_TO_FPGA_ST);
+	fpgaDMATransferSetTxControl(tx_transfer, TX_NO_PACKET);
+	fpgaDMATransferSetTransferCallback(tx_transfer, txtransferComplete);
+	res = fpgaDMATransfer(dma_h[0], tx_transfer, (fpga_dma_transfer_cb)&txtransferComplete, NULL);
+	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransfer");
+
+	sem_wait(&cb_status);
+	verify_buffer((char*)dma_rx_buf_ptr, transfer_len);
+	clear_buffer((char*)dma_rx_buf_ptr, transfer_len);
+
+	fpgaDMATransferDestroy(rx_transfer);
+	fpgaDMATransferDestroy(tx_transfer);
+	
 out_dma_close:
 	free(dma_tx_buf_ptr);
 	free(dma_rx_buf_ptr);
@@ -182,6 +228,7 @@ out_dma_close:
 			ON_ERR_GOTO(res, out_unmap, "fpgaDmaClose");
 		}
 	}
+	free(dma_h);
 
 out_unmap:
 	if(!use_ase) {

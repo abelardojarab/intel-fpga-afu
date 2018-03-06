@@ -74,6 +74,254 @@ static uint64_t _fpga_dma_feature_next(uint64_t dfh) {
 	return (dfh >> AFU_DFH_NEXT_OFFSET) & 0xffffff;
 }
 
+static void queueInit(qinfo_t *q) {
+	q->read_index = q->write_index = -1;
+	sem_init(&q->entries, 0, 0);
+	pthread_mutex_init(&q->qmutex, NULL);
+}
+
+static void queueDestroy(qinfo_t *q) {
+	q->read_index = q->write_index = -1;
+	sem_destroy(&q->entries);
+	pthread_mutex_destroy(&q->qmutex);
+}
+
+static bool enqueue(qinfo_t *q, fpga_dma_transfer_t tf) {
+	int value=0;
+	pthread_mutex_lock(&q->qmutex);
+	sem_getvalue(&q->entries, &value);
+	if(value == FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS) {
+		pthread_mutex_unlock(&q->qmutex);
+		return false;
+	}
+
+	// Increment tail index
+	q->write_index = (q->write_index+1)%FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS;
+	// Add the item to the Queue
+	q->queue[q->write_index] = tf;
+	sem_post(&q->entries);
+	pthread_mutex_unlock(&q->qmutex);
+	return true;
+}
+
+static void dequeue(qinfo_t *q, fpga_dma_transfer_t *tf) {
+	// Wait till have an entry
+	sem_wait(&q->entries);
+
+	pthread_mutex_lock(&q->qmutex);
+	q->read_index = (q->read_index+1)%FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS;
+	*tf = q->queue[q->read_index];
+	pthread_mutex_unlock(&q->qmutex);
+}
+
+// copy bytes to MMIO
+static fpga_result _copy_to_mmio(fpga_handle afc_handle, uint64_t mmio_dst, uint64_t *host_src, int len) {
+	int i=0;
+	fpga_result res = FPGA_OK;
+	//mmio requires 8 byte alignment
+	if(len % QWORD_BYTES != 0) return FPGA_INVALID_PARAM;
+	if(mmio_dst % QWORD_BYTES != 0) return FPGA_INVALID_PARAM;
+
+	uint64_t dev_addr = mmio_dst;
+	uint64_t *host_addr = host_src;
+
+	for(i = 0; i < len/QWORD_BYTES; i++) {
+		res = fpgaWriteMMIO64(afc_handle, 0, dev_addr, *host_addr);
+		if(res != FPGA_OK)
+			return res;
+
+		host_addr += 1;
+		dev_addr += QWORD_BYTES;
+	}
+
+	return FPGA_OK;
+}
+
+static fpga_result _dma_desc_status(fpga_dma_handle_t dma_h)
+{
+	fpga_result res = FPGA_OK;
+	msgdma_status_t status = {0};
+	res = fpgaReadMMIO32(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_csr_base+offsetof(msgdma_csr_t, status), &status.reg);
+	ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
+	
+	while((status.st.busy) != 0) {
+		res = fpgaReadMMIO32(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_csr_base+offsetof(msgdma_csr_t, status), &status.reg);
+		ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
+	}
+out:
+	return res;
+}
+
+static fpga_result _send_descriptor(fpga_dma_handle_t dma_h, msgdma_ext_desc_t desc) {
+	fpga_result res = FPGA_OK;
+	msgdma_status_t status = {0};
+
+	debug_print("desc.rd_address = %x\n",desc.rd_address);
+	debug_print("desc.wr_address = %x\n",desc.wr_address);
+	debug_print("desc.len = %x\n",desc.len);
+	debug_print("desc.wr_burst_count = %x\n",desc.wr_burst_count);
+	debug_print("desc.rd_burst_count = %x\n",desc.rd_burst_count);
+	debug_print("desc.wr_stride %x\n",desc.wr_stride);
+	debug_print("desc.rd_stride %x\n",desc.rd_stride);
+	debug_print("desc.rd_address_ext %x\n",desc.rd_address_ext);
+	debug_print("desc.wr_address_ext %x\n",desc.wr_address_ext);
+
+	debug_print("SGDMA_CSR_BASE = %lx SGDMA_DESC_BASE=%lx\n",dma_h->dma_csr_base, dma_h->dma_desc_base);
+
+	do {
+		res = fpgaReadMMIO32(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_csr_base+offsetof(msgdma_csr_t, status), &status.reg);
+		ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
+	} while(status.st.desc_buf_full);
+
+	res = _copy_to_mmio(dma_h->fpga_h, dma_h->dma_desc_base, (uint64_t *)&desc, sizeof(desc));
+	ON_ERR_GOTO(res, out, "_copy_to_mmio");
+
+out:
+	return res;
+}
+
+static fpga_result _do_dma(fpga_dma_handle_t dma_h, uint64_t dst, uint64_t src, int count, int is_last_desc, fpga_dma_transfer_type_t type, bool intr_en) {
+	msgdma_ext_desc_t desc = {0};
+	fpga_result res = FPGA_OK;
+
+	// src, dst and count must be 64-byte aligned
+	if(dst%FPGA_DMA_ALIGN_BYTES	!=0 ||
+		src%FPGA_DMA_ALIGN_BYTES  !=0 ||
+		count%FPGA_DMA_ALIGN_BYTES!=0) {
+		return FPGA_INVALID_PARAM;
+	}
+
+	// these fields are fixed for all DMA transfers
+	desc.seq_num = 0;
+	desc.wr_stride = 1;
+	desc.rd_stride = 1;
+
+	desc.control.go = 1;
+	if(intr_en)
+		desc.control.transfer_irq_en = 1;
+	else
+		desc.control.transfer_irq_en = 0;
+
+	// Enable "earlyreaddone" in the control field of the descriptor except the last.
+	// Setting early done causes the read logic to move to the next descriptor
+	// before the previous descriptor completes.
+	// This elminates a few hundred clock cycles of waiting between transfers.
+	if(!is_last_desc)
+		desc.control.early_done_en = 1;
+	else
+		desc.control.early_done_en = 0;
+
+	desc.rd_address = src & FPGA_DMA_MASK_32_BIT;
+	desc.wr_address = dst & FPGA_DMA_MASK_32_BIT;
+	desc.len = count;
+	desc.rd_address_ext = (src >> 32) & FPGA_DMA_MASK_32_BIT;
+	desc.wr_address_ext = (dst >> 32) & FPGA_DMA_MASK_32_BIT;
+
+	res = _send_descriptor(dma_h, desc);
+	ON_ERR_GOTO(res, out, "_send_descriptor");
+
+out:
+	return res;
+}
+
+// Memory to Streaming Dispatcher Thread
+void *m2sTransactionWorker(void* dma_handle) {
+	fpga_result res = FPGA_OK;
+	fpga_dma_handle_t dma_h = (fpga_dma_handle_t )dma_handle;
+	uint64_t count;
+	int i;
+
+	while (1) {
+		fpga_dma_transfer_t m2s_transfer;
+		dequeue(&dma_h->qinfo, &m2s_transfer);
+		
+		debug_print("HOST to FPGA --- src_addr = %08lx, dst_addr = %08lx\n", m2s_transfer->src, m2s_transfer->dst);
+		count = m2s_transfer->len;
+		uint32_t dma_chunks = count/FPGA_DMA_BUF_SIZE;
+		count -= (dma_chunks*FPGA_DMA_BUF_SIZE);
+		
+		for(i=0; i<dma_chunks; i++) {
+			memcpy(dma_h->dma_buf_ptr[0], (void*)(m2s_transfer->src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);
+			res = _do_dma(dma_h, 0, dma_h->dma_buf_iova[0] | 0x1000000000000, FPGA_DMA_BUF_SIZE, 1, m2s_transfer->transfer_type, 0);
+			ON_ERR_GOTO(res, out, "HOST_TO_FPGA_ST Transfer failed\n");
+
+			res = _dma_desc_status(dma_h);
+			ON_ERR_GOTO(res, out, "DMA DESC BUFFER Empty polling failed");
+		}
+
+		if(count > 0) {
+			memcpy(dma_h->dma_buf_ptr[0], (void*)(m2s_transfer->src+dma_chunks*FPGA_DMA_BUF_SIZE), count);
+			res = _do_dma(dma_h, 0, dma_h->dma_buf_iova[0] | 0x1000000000000, count, 1, m2s_transfer->transfer_type, 0);
+			ON_ERR_GOTO(res, out, "HOST_TO_FPGA_ST Transfer failed");
+			
+			res = _dma_desc_status(dma_h);
+			ON_ERR_GOTO(res, out, "DMA DESC BUFFER Empty polling failed");			
+		}
+
+		// transfer_complete, if a callback was registered, invoke it
+		if(m2s_transfer->cb)
+			m2s_transfer->cb(NULL);
+		
+		// Mark transfer complete
+		sem_post(&m2s_transfer->tf_status);
+	}
+out:
+	return NULL;
+}
+
+// Streaming to Memory Dispatcher Thread
+void *s2mTransactionWorker(void* dma_handle) {
+	fpga_result res = FPGA_OK;
+	fpga_dma_handle_t dma_h = (fpga_dma_handle_t )dma_handle;
+	uint64_t count;
+	int i;
+	
+	while (1) {
+		fpga_dma_transfer_t s2m_transfer;
+		dequeue(&dma_h->qinfo, &s2m_transfer);
+		debug_print("FPGA to HOST --- src_addr = %08lx, dst_addr = %08lx\n", s2m_transfer->src, s2m_transfer->dst);
+		count = s2m_transfer->len;
+		uint32_t dma_chunks = count/FPGA_DMA_BUF_SIZE;
+		count -= (dma_chunks*FPGA_DMA_BUF_SIZE);
+		uint64_t resp_status;
+
+		for(i=0; i<dma_chunks; i++) {
+			res = _do_dma(dma_h, dma_h->dma_buf_iova[0] | 0x1000000000000, 0, FPGA_DMA_BUF_SIZE, 1, s2m_transfer->transfer_type, 0);
+			ON_ERR_GOTO(res, out, "FPGA_ST_TO_HOST_MM Transfer failed");
+	
+			res = _dma_desc_status(dma_h);
+			ON_ERR_GOTO(res, out, "DMA DESC BUFFER Empty polling failed");
+
+			res = fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_resp_base, &resp_status);
+			ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
+
+			memcpy((void*)(s2m_transfer->dst+i*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[0], FPGA_DMA_BUF_SIZE);
+		}
+
+		if(count > 0) {
+			res = _do_dma(dma_h, dma_h->dma_buf_iova[0] | 0x1000000000000, 0, count, 1, s2m_transfer->transfer_type, 0);
+			ON_ERR_GOTO(res, out, "FPGA_TO_HOST_ST Transfer failed");
+	
+			res = _dma_desc_status(dma_h);
+			ON_ERR_GOTO(res, out, "DMA DESC BUFFER Empty polling failed");
+
+			res = fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_resp_base, &resp_status);
+			ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
+
+			memcpy((void*)(s2m_transfer->dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[0], count);
+		}
+
+		//transfer complete
+		if(s2m_transfer->cb)
+			s2m_transfer->cb(NULL);
+		
+		sem_post(&s2m_transfer->tf_status);
+	}
+
+out:
+	return NULL;
+}
+
 // Public APIs
 fpga_result fpgaCountDMAChannels(fpga_handle fpga, size_t *count) {
 	// Discover total# DMA channels by traversing the device feature list
@@ -120,22 +368,6 @@ out:
 	return res;
 }
 
-// Transaction worker thread (one per DMA channel)
-// Worker processes each transaction in the order
-// it gets submitted to the dma->queue
-// while dma->queue not empty
-// atomically dequeue transaction
-// break and dispatch descriptors
-// invoke callback for completed asynchronous transfers
-// atomically mark transfer->transf_status = TRANSFER_COMPLETE
-void *m2sTransactionWorker(void* dma_handle) {
-	while(1) {};
-}
-
-void *s2mTransactionWorker(void* dma_handle) {
-	while(1) {};
-}
-
 fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dma) {
 	fpga_result res = FPGA_OK;
 	fpga_dma_handle_t dma_h;
@@ -147,7 +379,6 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dm
 	if(!dma) {
 		return FPGA_INVALID_PARAM;
 	}
-
 	// init the dma handle
 	dma_h = (fpga_dma_handle_t)malloc(sizeof(struct fpga_dma_handle));
 	if(!dma_h) {
@@ -156,9 +387,10 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dm
 	dma_h->fpga_h = fpga;
 	for(i=0; i < FPGA_DMA_MAX_BUF; i++)
 		dma_h->dma_buf_ptr[i] = NULL;
-
 	dma_h->mmio_num = 0;
 	dma_h->mmio_offset = 0;
+	queueInit(&dma_h->qinfo);
+
 	bool end_of_list = false;
 	bool dma_found = false;
 	uint64_t dfh = 0;
@@ -183,11 +415,13 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dm
 
 			// Found one. Record it.
 			if(channel_index == dma_channel) {
+				dma_h->dma_base = offset;
 				if ((feature_uuid_lo == M2S_DMA_UUID_L) && (feature_uuid_hi == M2S_DMA_UUID_H))
 					dma_h->ch_type=TX_ST;
-				else if ((feature_uuid_lo == S2M_DMA_UUID_L) && (feature_uuid_hi == S2M_DMA_UUID_H))
+				else if ((feature_uuid_lo == S2M_DMA_UUID_L) && (feature_uuid_hi == S2M_DMA_UUID_H)) {
 					dma_h->ch_type=RX_ST;
-				dma_h->dma_base = offset;
+					dma_h->dma_resp_base = dma_h->dma_base+FPGA_DMA_RESPONSE;
+				}
 				dma_h->dma_csr_base = dma_h->dma_base+FPGA_DMA_CSR;
 				dma_h->dma_desc_base = dma_h->dma_base+FPGA_DMA_DESC;
 				dma_found = true;
@@ -200,7 +434,6 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dm
 
 		// End of the list?
 		end_of_list = _fpga_dma_feature_eol(dfh);
-
 		// Move to the next feature header
 		offset = offset + _fpga_dma_feature_next(dfh);
 	} while(!end_of_list);
@@ -227,12 +460,12 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dm
 	if(dma_h->ch_type == TX_ST) {
 		if(pthread_create(&dma_h->thread_id, NULL, m2sTransactionWorker, (void*)dma_h) != 0) {
 			res = FPGA_EXCEPTION;
-			ON_ERR_GOTO(res, rel_buf, "pthread_create");		
+			ON_ERR_GOTO(res, rel_buf, "pthread_create");
 		}
 	} else if(dma_h->ch_type == RX_ST) {
 		if(pthread_create(&dma_h->thread_id, NULL, s2mTransactionWorker, (void*)dma_h) != 0) {
 			res = FPGA_EXCEPTION;
-			ON_ERR_GOTO(res, rel_buf, "pthread_create");	
+			ON_ERR_GOTO(res, rel_buf, "pthread_create");
 		}
 	}
 
@@ -244,6 +477,7 @@ rel_buf:
 		ON_ERR_GOTO(res, out, "fpgaReleaseBuffer");
 	}
 out:
+	queueDestroy(&dma_h->qinfo);
 	if(!dma_found)
 		free(dma_h);
 	return res;
@@ -267,7 +501,12 @@ fpga_result fpgaDMAClose(fpga_dma_handle_t dma) {
 		ON_ERR_GOTO(res, out, "fpgaReleaseBuffer failed");
 	}
 
-	pthread_cancel(dma->thread_id);
+	queueDestroy(&dma->qinfo);
+	if(pthread_cancel(dma->thread_id) != 0) {
+		res = FPGA_EXCEPTION;
+		ON_ERR_GOTO(res, out, "pthread_cancel");
+	}
+
 out:
 	free((void*)dma);
 	return res;
@@ -280,7 +519,7 @@ fpga_result fpgaGetDMAChannelType(fpga_dma_handle_t dma, fpga_dma_channel_type_t
 		return res;
 	}
 
-	*ch_type = dma->ch_type;	
+	*ch_type = dma->ch_type;
 	return FPGA_OK;
 }
 
@@ -297,6 +536,8 @@ fpga_result fpgaDMATransferInit(fpga_dma_transfer_t *transfer) {
 		res = FPGA_NO_MEMORY;
 		return res;
 	}
+	pthread_mutex_init(&(*transfer)->tf_mutex, NULL);
+	sem_init(&(*transfer)->tf_status, 0, TRANSFER_NOT_IN_PROGRESS);
 
 	return res;
 }
@@ -308,8 +549,11 @@ fpga_result fpgaDMATransferDestroy(fpga_dma_transfer_t transfer) {
 		res = FPGA_INVALID_PARAM;
 		return res;
 	}
-
+	
+	sem_destroy(&transfer->tf_status);
+	pthread_mutex_destroy(&transfer->tf_mutex);
 	free(transfer);
+	
 	return res;
 }
 
@@ -320,7 +564,9 @@ fpga_result fpgaDMATransferSetSrc(fpga_dma_transfer_t transfer, uint64_t src) {
 		return res;
 	}
 
+	pthread_mutex_lock(&transfer->tf_mutex);
 	transfer->src = src;
+	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
 
@@ -331,7 +577,9 @@ fpga_result fpgaDMATransferSetDst(fpga_dma_transfer_t transfer, uint64_t dst) {
 		return res;
 	}
 
+	pthread_mutex_lock(&transfer->tf_mutex);
 	transfer->dst = dst;
+	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
 
@@ -342,7 +590,9 @@ fpga_result fpgaDMATransferSetLen(fpga_dma_transfer_t transfer, uint64_t len) {
 		return res;
 	}
 
+	pthread_mutex_lock(&transfer->tf_mutex);
 	transfer->len = len;
+	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
 
@@ -353,7 +603,9 @@ fpga_result fpgaDMATransferSetTransferType(fpga_dma_transfer_t transfer, fpga_dm
 		return res;
 	}
 
+	pthread_mutex_lock(&transfer->tf_mutex);
 	transfer->transfer_type = type;
+	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
 
@@ -364,7 +616,9 @@ fpga_result fpgaDMATransferSetTxControl(fpga_dma_transfer_t transfer, fpga_dma_t
 		return res;
 	}
 
+	pthread_mutex_lock(&transfer->tf_mutex);
 	transfer->tx_ctrl = tx_ctrl;
+	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
 
@@ -375,7 +629,9 @@ fpga_result fpgaDMATransferSetRxControl(fpga_dma_transfer_t transfer, fpga_dma_r
 		return res;
 	}
 
+	pthread_mutex_lock(&transfer->tf_mutex);
 	transfer->rx_ctrl = rx_ctrl;
+	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
 
@@ -386,7 +642,9 @@ fpga_result fpgaDMATransferSetTransferCallback(fpga_dma_transfer_t transfer, fpg
 		return res;
 	}
 
+	pthread_mutex_lock(&transfer->tf_mutex);
 	transfer->cb = cb;
+	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
 
@@ -396,19 +654,45 @@ fpga_result fpgaDMATransferGetBytesTransferred(fpga_dma_transfer_t transfer, siz
 		res = FPGA_INVALID_PARAM;
 		return res;
 	}
-	
+
 	return transfer->rx_bytes;
 }
 
-fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, const fpga_dma_transfer_t transfer,
+fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, fpga_dma_transfer_t transfer,
 							fpga_dma_transfer_cb cb, void *context) {
+	fpga_result res = FPGA_OK;
+	fpga_dma_transfer_type_t type;
+	type = transfer->transfer_type;
+	bool ret;
 
-	// TODO:
-	// Validate transfer attributes
-	// atomically mark transfer->transf_status to TRANSFER_IN_PROGRESS
-	// atomically enqueue transfer to dma->queue
-	//
-	// for synchronous transfer, block till transfer->transf_status is marked TRANSFER_COMPLETE
-	// for asynchronous transfer, return immediately
-	return FPGA_OK;
+	if(!dma)
+		return FPGA_INVALID_PARAM;
+	if(type >= FPGA_MAX_TRANSFER_TYPE)
+		return FPGA_INVALID_PARAM;
+	if(!( type == HOST_MM_TO_FPGA_ST || type == FPGA_ST_TO_HOST_MM))
+		return FPGA_NOT_SUPPORTED;
+	if(!dma->fpga_h)
+		return FPGA_INVALID_PARAM;
+
+	if(type == HOST_MM_TO_FPGA_ST && !IS_DMA_ALIGNED(transfer->dst))
+		return FPGA_INVALID_PARAM;
+
+	if(type == FPGA_ST_TO_HOST_MM && !IS_DMA_ALIGNED(transfer->src))
+		return FPGA_INVALID_PARAM;
+
+	pthread_mutex_lock(&transfer->tf_mutex);
+	sem_wait(&transfer->tf_status); 
+
+	do {
+		ret = enqueue(&dma->qinfo, transfer);
+	} while(ret != true);
+			
+	// Blocking transfer
+	if(!cb) {
+		sem_wait(&transfer->tf_status);
+		sem_post(&transfer->tf_status);
+	}
+	pthread_mutex_unlock(&transfer->tf_mutex);
+
+	return res;
 }

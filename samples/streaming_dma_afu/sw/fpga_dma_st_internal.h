@@ -34,7 +34,9 @@
 
 #include <opae/fpga.h>
 #include "fpga_dma_types.h"
+#include <stdbool.h>
 #include <pthread.h>
+#include <semaphore.h>
 
 #define QWORD_BYTES 8
 #define DWORD_BYTES 4
@@ -64,6 +66,7 @@
 // DMA Register offsets from base
 #define FPGA_DMA_CSR 0x40
 #define FPGA_DMA_DESC 0x60
+#define FPGA_DMA_RESPONSE 0x80
 #define FPGA_DMA_ADDR_SPAN_EXT_CNTL 0x200
 #define FPGA_DMA_ADDR_SPAN_EXT_DATA 0x1000
 
@@ -87,7 +90,7 @@
 // Convenience macros
 #ifdef FPGA_DMA_DEBUG
 	#define debug_print(fmt, ...) \
-					do { if (FPGA_DMA_DEBUG) fprintf(stderr, fmt, ##__VA_ARGS__); } while (0)
+	do { if (FPGA_DMA_DEBUG) fprintf(stderr, fmt, ##__VA_ARGS__); } while (0)
 #else
 	#define debug_print(...)
 #endif
@@ -97,10 +100,12 @@
 // Max. async transfers in progress
 #define FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS 1024
 
+// Channel types
 typedef enum {
 	TRANSFER_IN_PROGRESS = 0,
-	TRANSFER_COMPLETE
-} transfer_status_t;
+	TRANSFER_NOT_IN_PROGRESS = 1
+} fpga_transf_status_t;
+
 
 struct fpga_dma_transfer {
 	uint64_t src;
@@ -113,7 +118,8 @@ struct fpga_dma_transfer {
 	void *context;
 	size_t rx_bytes;
 	bool is_blocking;
-	transfer_status_t transf_status;
+	pthread_mutex_t tf_mutex;	
+	sem_t tf_status; // When locked, the transfer in progress
 };
 
 typedef union {
@@ -130,6 +136,14 @@ typedef union {
 	} bits;
 } dfh_reg_t;
 
+typedef struct qinfo {
+	int read_index;
+	int write_index;
+	fpga_dma_transfer_t queue[FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS];
+	sem_t entries; // Counting semaphore, count represents available entries in queue
+	pthread_mutex_t qmutex; // Gain exclusive access before queue operations
+} qinfo_t;
+
 struct fpga_dma_handle {
 	fpga_handle fpga_h;
 	uint32_t mmio_num;
@@ -138,6 +152,7 @@ struct fpga_dma_handle {
 	uint64_t dma_offset;
 	uint64_t dma_csr_base;
 	uint64_t dma_desc_base;
+	uint64_t dma_resp_base;
 	uint64_t dma_ase_cntl_base;
 	uint64_t dma_ase_data_base;
 	// Interrupt event handle
@@ -153,7 +168,7 @@ struct fpga_dma_handle {
 	fpga_dma_channel_type_t ch_type;
 	pthread_t thread_id;
 	// Transaction queue (model as a fixed-size circular buffer)
-	fpga_dma_transfer_t queue[FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS];
+	qinfo_t qinfo;
 };
 
 // Data structures from DMA MM implementation

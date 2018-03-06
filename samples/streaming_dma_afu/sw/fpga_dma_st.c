@@ -284,14 +284,17 @@ void *s2mTransactionWorker(void* dma_handle) {
 		uint32_t dma_chunks = count/FPGA_DMA_BUF_SIZE;
 		count -= (dma_chunks*FPGA_DMA_BUF_SIZE);
 		uint64_t resp_status;
+		
 		for(i=0; i<dma_chunks; i++) {
 			res = _do_dma(dma_h, dma_h->dma_buf_iova[0] | 0x1000000000000, 0, FPGA_DMA_BUF_SIZE, 1, s2m_transfer->transfer_type, 0);
 			ON_ERR_GOTO(res, out, "FPGA_ST_TO_HOST_MM Transfer failed");
 	
 			res = _dma_desc_status(dma_h);
 			ON_ERR_GOTO(res, out, "DMA DESC BUFFER Empty polling failed");
+
 			res = fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_resp_base, &resp_status);
 			ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
+
 			memcpy((void*)(s2m_transfer->dst+i*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[0], FPGA_DMA_BUF_SIZE);
 		}
 
@@ -301,8 +304,10 @@ void *s2mTransactionWorker(void* dma_handle) {
 	
 			res = _dma_desc_status(dma_h);
 			ON_ERR_GOTO(res, out, "DMA DESC BUFFER Empty polling failed");
+
 			res = fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_resp_base, &resp_status);
-         ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
+			ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
+
 			memcpy((void*)(s2m_transfer->dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[0], count);
 		}
 
@@ -546,9 +551,9 @@ fpga_result fpgaDMATransferDestroy(fpga_dma_transfer_t transfer) {
 	}
 	
 	pthread_mutex_lock(&transfer->tf_mutex);
-	sem_wait(&transfer->tf_status);
 	free(transfer);
 	sem_destroy(&transfer->tf_status);
+	pthread_mutex_unlock(&transfer->tf_mutex);
 	pthread_mutex_destroy(&transfer->tf_mutex);
 	
 	return res;
@@ -562,9 +567,7 @@ fpga_result fpgaDMATransferSetSrc(fpga_dma_transfer_t transfer, uint64_t src) {
 	}
 
 	pthread_mutex_lock(&transfer->tf_mutex);
-	sem_wait(&transfer->tf_status);
 	transfer->src = src;
-	sem_post(&transfer->tf_status);
 	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
@@ -577,9 +580,7 @@ fpga_result fpgaDMATransferSetDst(fpga_dma_transfer_t transfer, uint64_t dst) {
 	}
 
 	pthread_mutex_lock(&transfer->tf_mutex);
-	sem_wait(&transfer->tf_status);
 	transfer->dst = dst;
-	sem_post(&transfer->tf_status);
 	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
@@ -592,9 +593,7 @@ fpga_result fpgaDMATransferSetLen(fpga_dma_transfer_t transfer, uint64_t len) {
 	}
 
 	pthread_mutex_lock(&transfer->tf_mutex);
-	sem_wait(&transfer->tf_status);
 	transfer->len = len;
-	sem_post(&transfer->tf_status);
 	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
@@ -607,9 +606,7 @@ fpga_result fpgaDMATransferSetTransferType(fpga_dma_transfer_t transfer, fpga_dm
 	}
 
 	pthread_mutex_lock(&transfer->tf_mutex);
-	sem_wait(&transfer->tf_status);
 	transfer->transfer_type = type;
-	sem_post(&transfer->tf_status);
 	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
@@ -622,9 +619,7 @@ fpga_result fpgaDMATransferSetTxControl(fpga_dma_transfer_t transfer, fpga_dma_t
 	}
 
 	pthread_mutex_lock(&transfer->tf_mutex);
-	sem_wait(&transfer->tf_status);
 	transfer->tx_ctrl = tx_ctrl;
-	sem_post(&transfer->tf_status);
 	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
@@ -637,9 +632,7 @@ fpga_result fpgaDMATransferSetRxControl(fpga_dma_transfer_t transfer, fpga_dma_r
 	}
 
 	pthread_mutex_lock(&transfer->tf_mutex);
-	sem_wait(&transfer->tf_status);
 	transfer->rx_ctrl = rx_ctrl;
-	sem_post(&transfer->tf_status);
 	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
@@ -652,9 +645,7 @@ fpga_result fpgaDMATransferSetTransferCallback(fpga_dma_transfer_t transfer, fpg
 	}
 
 	pthread_mutex_lock(&transfer->tf_mutex);
-	sem_wait(&transfer->tf_status);
 	transfer->cb = cb;
-	sem_post(&transfer->tf_status);
 	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
@@ -692,7 +683,6 @@ fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, fpga_dma_transfer_t transfer,
 		return FPGA_INVALID_PARAM;
 
 	pthread_mutex_lock(&transfer->tf_mutex);
-	// Wait for pending transaction on the transfer object
 	sem_wait(&transfer->tf_status); 
 
 	do {

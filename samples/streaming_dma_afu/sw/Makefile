@@ -16,8 +16,9 @@ ifeq ($(USE_ASE),1)
 else
 	LDFLAGS += -ljson-c
 	LDFLAGS += -lopae-c
-	LDFLAGS += -pthread
 endif
+
+LDFLAGS += -pthread
 
 all: fpga_dma_st_test
 

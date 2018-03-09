@@ -52,7 +52,12 @@
       Added 64-bit addressing.
       
   2.6 Added "dcp_" to all module names to avoid namespace collisions with the mSGDMA
-      shipped in the ACDS.
+      shipped in the ACDS.  Added a new bit to the response to signal when a transfer
+      completes due to EOP arriving.  Also added a bit to the command to support
+      non-posted writes.  The write master will keep track of how many writes are
+      in flight and when it's told to wait for all write responses it will wait until
+      they are all responded.  It is recommended to only enable this on the last
+      descriptor since this prevents the master from accepting more transfer commands.
 
 */
 
@@ -95,7 +100,9 @@ module dcp_write_master (
   master_byteenable,
   master_writedata,
   master_waitrequest,
-  master_burstcount
+  master_burstcount,
+  master_response,
+  master_writeresponsevalid
 );
 
   parameter UNALIGNED_ACCESSES_ENABLE = 0;        // when enabled allows transfers to begin from off word boundaries
@@ -163,6 +170,8 @@ module dcp_write_master (
   output wire [BYTE_ENABLE_WIDTH-1:0] master_byteenable;
   output wire [DATA_WIDTH-1:0] master_writedata;
   output wire [MAX_BURST_COUNT_WIDTH-1:0] master_burstcount;
+  input [1:0] master_response;
+  input master_writeresponsevalid;
 
 
   // internal wires and registers
@@ -242,6 +251,14 @@ module dcp_write_master (
 
   wire last_access;  // JCJB: new signal to flag that the final access is occuring, will be used to supress the burst counter from reloading incorrectly at the end of the transfer
   reg [LENGTH_WIDTH-1:0] streaming_counter;
+  
+  wire [9:0] outstanding_bursts;    // this signal tracks how many bursts at out in the system that haven't been responded to yet
+  reg [9:0] outstanding_bursts_d1;  // using to detect transistion from 1 to 0 to create a one cycle strobe to send response to dispatcher 
+  wire all_writes_complete_strobe;
+  wire wait_for_write_responses;
+  reg wait_for_write_responses_d1;  // when set after all writes are issued the write master will wait for outstanding_bursts to be 0 before sending response to dispatcher
+  reg eop_arrived;                  // copy of eop_seen that will be held after done condition so that it can be fed into the response
+  reg response_early_termination;   // copy of early termination held around so that it can be fed into the response
 
 /********************************************* REGISTERS ****************************************************************************************/
   // registering the stride control bit
@@ -474,6 +491,7 @@ module dcp_write_master (
   end
 
 
+  // send response after done_strobe fires.  The exception is if wait_for_write_responses_d1 is enabled in which case we need to wait for outstanding_bursts to reach 0
   always @ (posedge clk)
   begin
     if (reset)
@@ -486,9 +504,9 @@ module dcp_write_master (
       begin
         src_response_valid <= 0;
       end
-      else if (done_strobe == 1)
+      else if (((done_strobe == 1) & (wait_for_write_responses_d1 == 0)) | ((all_writes_complete_strobe == 1) & (wait_for_write_responses_d1 == 1)))
       begin
-        src_response_valid <= 1;  // will be set only once
+        src_response_valid <= 1;  // will be set only once either when the last write is posted or when the last write response returns
       end
       else if ((src_response_valid == 1) & (src_response_ready == 1))
       begin
@@ -571,6 +589,51 @@ module dcp_write_master (
       end
     end
   end
+  
+  
+  always @ (posedge clk)
+  begin
+    if (reset)
+    begin
+      wait_for_write_responses_d1 <= 0;
+    end
+    else if (go == 1)
+    begin
+      wait_for_write_responses_d1 <= wait_for_write_responses;
+    end 
+  end
+  
+  
+  always @ (posedge clk)
+  begin
+    if (reset)
+    begin
+      outstanding_bursts_d1 <= 10'h000;
+    end
+    else
+    begin
+      outstanding_bursts_d1 <= outstanding_bursts;
+    end    
+  end
+  
+  
+  always @ (posedge clk)
+  begin
+    if (done_strobe)
+      eop_arrived <= eop_seen;  // capturing eop_seen before done_strobe clears out it's state, will feed this into response back to dispatcher
+  end
+  
+  
+  always @ (posedge clk)
+  begin
+    if (reset)
+      response_early_termination <= 1'b0;
+    else if (early_termination)
+      response_early_termination <= 1'b1;
+    else if (response_early_termination & go)
+      response_early_termination <= 1'b0;  
+  end
+  
 /********************************************* END REGISTERS ************************************************************************************/
 
 
@@ -644,7 +707,7 @@ module dcp_write_master (
     .clk (clk),
     .reset (reset),
     .sw_reset (sw_reset_in),
-	 .sw_stop (sw_stop_in),
+	  .sw_stop (sw_stop_in),
     .length (length_counter),
     .eop_enabled (descriptor_end_on_eop_enable_d1),
     .eop (snk_eop),
@@ -666,7 +729,10 @@ module dcp_write_master (
     .burst_count (master_burstcount),
     .stall (write_stall_from_write_burst_control),
     .reset_taken (reset_taken_from_write_burst_control),
-	 .stopped (stopped_from_write_burst_control)
+	  .stopped (stopped_from_write_burst_control),
+    .response (master_response),
+    .response_valid (master_writeresponsevalid),
+    .outstanding_bursts (outstanding_bursts)
   );
   defparam the_dcp_write_burst_control.BURST_ENABLE = BURST_ENABLE;
   defparam the_dcp_write_burst_control.BURST_COUNT_WIDTH = MAX_BURST_COUNT_WIDTH;
@@ -690,6 +756,7 @@ module dcp_write_master (
   assign descriptor_programmable_burst_count = snk_command_data[75:68];
   assign descriptor_stride = snk_command_data[91:76];
   assign descriptor_end_on_eop_enable = snk_command_data[64];
+  assign wait_for_write_responses = snk_command_data[65];
   assign sw_stop_in = snk_command_data[66];
   assign sw_reset_in = snk_command_data[67];
 
@@ -923,7 +990,9 @@ module dcp_write_master (
 
   assign stop_state = stopped;
   assign reset_delayed = (reset_taken == 0) & (sw_reset_in == 1);
-  assign src_response_data = {{212{1'b0}}, done_strobe, early_termination_d1, response_error, stop_state, reset_delayed, response_actual_bytes_transferred};
+  assign src_response_data = {{211{1'b0}}, eop_arrived, done_strobe, response_early_termination, response_error, stop_state, reset_delayed, response_actual_bytes_transferred};
+
+
 
   always @ (posedge clk)
   begin
@@ -952,6 +1021,9 @@ module dcp_write_master (
 
   // any time the FIFO is full or all the data has been accepted, backpressure the sink port 
   assign snk_ready = (fifo_full == 0) & (streaming_counter != 0);
+  
+  // strobe when remaining write responses have returned
+  assign all_writes_complete_strobe = (done == 1'b1) & (outstanding_bursts == 10'h000) & (outstanding_bursts_d1 == 10'h001);
 
 /********************************************* END CONTROL AND COMBINATIONAL SIGNALS ************************************************************/
 

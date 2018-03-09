@@ -84,7 +84,10 @@ module dcp_write_burst_control (
   burst_count,
   stall,
   reset_taken,
-  stopped
+  stopped,
+  response,
+  response_valid,
+  outstanding_bursts
 );
 
   parameter BURST_ENABLE = 1;  // set to 0 to hardwire the address and write signals straight out
@@ -126,7 +129,9 @@ module dcp_write_burst_control (
   output wire stall;  // need to issue a stall if there isn't enough data buffered to start a burst
   output wire reset_taken;  // if a reset occurs in the middle of a burst larger than 1 then the write master needs to know that the burst hasn't completed yet
   output wire stopped;  // if a stop occurs in the middle of a burst larger than 1 then the write master needs to know that the burst hasn't completed yet
-
+  input [1:0] response; // for now not going to handle decoding this
+  input response_valid; // used to decrement outstanding_bursts counter
+  output wire [9:0] outstanding_bursts;
 
   reg [ADDRESS_WIDTH-1:0] address_d1;
   reg [BURST_COUNT_WIDTH-1:0] burst_counter;  // interal statemachine register
@@ -150,7 +155,10 @@ module dcp_write_burst_control (
   reg fifo_write_dly;
   wire quick_burst_masked;
   wire [BURST_OFFSET_WIDTH-1:0] burst_offset;
-
+  
+  reg [9:0] outstanding_transactions_counter;
+  wire increment_outstanding_transactions_counter;
+  wire decrement_outstanding_transactions_counter;
 
 
   always @ (posedge clk)
@@ -229,6 +237,24 @@ module dcp_write_burst_control (
     end 
   end
 
+  
+  always @ (posedge clk)
+  begin
+    if (reset)
+    begin
+      outstanding_transactions_counter <= 10'h000;
+    end
+    else
+    begin
+      case ({increment_outstanding_transactions_counter, decrement_outstanding_transactions_counter})
+        2'b01:    outstanding_transactions_counter <= outstanding_transactions_counter - 1'b1;
+        2'b10:    outstanding_transactions_counter <= outstanding_transactions_counter + 1'b1;
+        default:  outstanding_transactions_counter <= outstanding_transactions_counter;  // inc + dec (cancel out) or neither
+      endcase
+    end
+  end
+  
+  
   // case:323505 quick_burst_masked is used to prevent quick burst operation to be triggered when fifo is almost empty (fifo level == 2) and newly written data is not ready yet at output port
   // this prevention is needed as newly written data requires 3 clocks to be ready at output port 
   assign quick_burst_masked = (write_fifo_used == 2) & fifo_write_dly;
@@ -298,6 +324,12 @@ endgenerate
     endcase
   end
 
+  
+  // signals for keeping track of how many bursts are out in the NoC.  There can be up to 1023 individual bursts outstanding (not responded to yet)
+  assign increment_outstanding_transactions_counter = burst_begin;  // one cycle pulse every time the NoC accepts a new burst from the write master
+  assign decrement_outstanding_transactions_counter = response_valid;  // one cycle pulse every time the NoC returns a write (for a burst) response
+  assign outstanding_bursts = outstanding_transactions_counter;
+  
 
 generate
   if (BURST_ENABLE == 1)
@@ -308,7 +340,7 @@ generate
     assign write_out = (idle_state == 0);
     assign stall = (idle_state == 1);
     assign reset_taken = (sw_reset == 1) & (idle_state == 1);  // for bursts of 1 the write master logic will handle the correct reset timing
-	assign stopped = (sw_stop == 1) & (idle_state == 1);       // for bursts of 1 the write master logic will handle the correct stop timing
+	  assign stopped = (sw_stop == 1) & (idle_state == 1);       // for bursts of 1 the write master logic will handle the correct stop timing
   end
   else
   begin

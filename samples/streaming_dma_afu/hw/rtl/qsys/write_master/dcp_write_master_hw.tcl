@@ -421,6 +421,9 @@ add_interface_port Data_Write_Master master_byteenable byteenable Output -1
 add_interface_port Data_Write_Master master_writedata writedata Output -1
 add_interface_port Data_Write_Master master_waitrequest waitrequest Input 1
 add_interface_port Data_Write_Master master_burstcount burstcount Output -1
+add_interface_port Data_Write_Master master_response response Input 2
+add_interface_port Data_Write_Master master_writeresponsevalid writeresponsevalid Input 1
+
 
 set_port_property master_burstcount VHDL_TYPE STD_LOGIC_VECTOR
 # | 

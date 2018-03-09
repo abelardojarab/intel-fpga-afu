@@ -260,7 +260,7 @@
                 <suppliedSystemInfos>
                     <entry>
                         <key>ADDRESS_MAP</key>
-                        <value>&lt;address-map&gt;&lt;slave name='parent/emif_A_bridge.s0' start='0x0' end='0x100000000' datawidth='512' /&gt;&lt;slave name='parent/emif_B_bridge.s0' start='0x100000000' end='0x200000000' datawidth='512' /&gt;&lt;/address-map&gt;</value>
+                        <value></value>
                     </entry>
                     <entry>
                         <key>ADDRESS_WIDTH</key>
@@ -386,7 +386,7 @@
     </boundary>
     <originalModuleInfo>
         <className>altera_clock_bridge</className>
-        <version>17.0</version>
+        <version>17.1</version>
         <displayName>Clock Bridge</displayName>
     </originalModuleInfo>
     <systemInfoParameterDescriptors>
@@ -459,6 +459,7 @@
   <parameter name="moduleAssignmentDefinition"><![CDATA[<assignmentDefinition>
     <assignmentValueMap/>
 </assignmentDefinition>]]></parameter>
+  <parameter name="svInterfaceDefinition" value="" />
  </module>
  <module
    name="csr_bridge"
@@ -1039,7 +1040,7 @@
     </boundary>
     <originalModuleInfo>
         <className>altera_avalon_mm_bridge</className>
-        <version>17.0</version>
+        <version>17.1</version>
         <displayName>Avalon-MM Pipeline Bridge</displayName>
     </originalModuleInfo>
     <systemInfoParameterDescriptors>
@@ -1117,6 +1118,7 @@
   <parameter name="moduleAssignmentDefinition"><![CDATA[<assignmentDefinition>
     <assignmentValueMap/>
 </assignmentDefinition>]]></parameter>
+  <parameter name="svInterfaceDefinition" value="" />
  </module>
  <module
    name="m2s_dispatcher"
@@ -1884,7 +1886,7 @@
     </boundary>
     <originalModuleInfo>
         <className>modular_sgdma_dispatcher</className>
-        <version>17.0</version>
+        <version>17.1</version>
         <displayName>Modular SGDMA Dispatcher</displayName>
     </originalModuleInfo>
     <systemInfoParameterDescriptors>
@@ -2022,6 +2024,7 @@
         </entry>
     </assignmentValueMap>
 </assignmentDefinition>]]></parameter>
+  <parameter name="svInterfaceDefinition" value="" />
  </module>
  <module
    name="m2s_host_bridge"
@@ -2602,7 +2605,7 @@
     </boundary>
     <originalModuleInfo>
         <className>altera_avalon_mm_bridge</className>
-        <version>17.0</version>
+        <version>17.1</version>
         <displayName>Avalon-MM Pipeline Bridge</displayName>
     </originalModuleInfo>
     <systemInfoParameterDescriptors>
@@ -2680,6 +2683,7 @@
   <parameter name="moduleAssignmentDefinition"><![CDATA[<assignmentDefinition>
     <assignmentValueMap/>
 </assignmentDefinition>]]></parameter>
+  <parameter name="svInterfaceDefinition" value="" />
  </module>
  <module
    name="m2s_id"
@@ -3050,6 +3054,7 @@
   <parameter name="moduleAssignmentDefinition"><![CDATA[<assignmentDefinition>
     <assignmentValueMap/>
 </assignmentDefinition>]]></parameter>
+  <parameter name="svInterfaceDefinition" value="" />
  </module>
  <module
    name="m2s_memory_bridge"
@@ -3630,7 +3635,7 @@
     </boundary>
     <originalModuleInfo>
         <className>altera_avalon_mm_bridge</className>
-        <version>17.0</version>
+        <version>17.1</version>
         <displayName>Avalon-MM Pipeline Bridge</displayName>
     </originalModuleInfo>
     <systemInfoParameterDescriptors>
@@ -3708,6 +3713,7 @@
   <parameter name="moduleAssignmentDefinition"><![CDATA[<assignmentDefinition>
     <assignmentValueMap/>
 </assignmentDefinition>]]></parameter>
+  <parameter name="svInterfaceDefinition" value="" />
  </module>
  <module
    name="m2s_read_master"
@@ -4288,7 +4294,7 @@
     </boundary>
     <originalModuleInfo>
         <className>dma_read_master</className>
-        <version>17.0</version>
+        <version>17.1</version>
         <displayName>Read Master</displayName>
     </originalModuleInfo>
     <systemInfoParameterDescriptors>
@@ -4348,6 +4354,7 @@
   <parameter name="moduleAssignmentDefinition"><![CDATA[<assignmentDefinition>
     <assignmentValueMap/>
 </assignmentDefinition>]]></parameter>
+  <parameter name="svInterfaceDefinition" value="" />
  </module>
  <module
    name="reset_in"
@@ -4462,7 +4469,7 @@
     </boundary>
     <originalModuleInfo>
         <className>altera_reset_bridge</className>
-        <version>17.0</version>
+        <version>17.1</version>
         <displayName>Reset Bridge</displayName>
     </originalModuleInfo>
     <systemInfoParameterDescriptors>
@@ -4522,115 +4529,116 @@
   <parameter name="moduleAssignmentDefinition"><![CDATA[<assignmentDefinition>
     <assignmentValueMap/>
 </assignmentDefinition>]]></parameter>
+  <parameter name="svInterfaceDefinition" value="" />
  </module>
  <connection
    kind="avalon"
-   version="17.0"
+   version="17.1"
    start="m2s_read_master.Data_Read_Master"
    end="m2s_memory_bridge.s0">
   <parameter name="baseAddress" value="0x0000" />
  </connection>
  <connection
    kind="avalon"
-   version="17.0"
+   version="17.1"
    start="m2s_read_master.Data_Read_Master"
    end="m2s_host_bridge.s0">
   <parameter name="baseAddress" value="0x0001000000000000" />
  </connection>
  <connection
    kind="avalon"
-   version="17.0"
+   version="17.1"
    start="csr_bridge.m0"
    end="m2s_dispatcher.CSR">
   <parameter name="baseAddress" value="0x0040" />
  </connection>
  <connection
    kind="avalon"
-   version="17.0"
+   version="17.1"
    start="csr_bridge.m0"
    end="m2s_dispatcher.Descriptor_Slave">
   <parameter name="baseAddress" value="0x0060" />
  </connection>
  <connection
    kind="avalon"
-   version="17.0"
+   version="17.1"
    start="csr_bridge.m0"
    end="m2s_id.afu_cfg_slave">
   <parameter name="baseAddress" value="0x0000" />
  </connection>
  <connection
    kind="avalon_streaming"
-   version="17.0"
+   version="17.1"
    start="m2s_dispatcher.Read_Command_Source"
    end="m2s_read_master.Command_Sink" />
  <connection
    kind="avalon_streaming"
-   version="17.0"
+   version="17.1"
    start="m2s_read_master.Response_Source"
    end="m2s_dispatcher.Read_Response_Sink" />
  <connection
    kind="clock"
-   version="17.0"
+   version="17.1"
    start="clock_in.out_clk"
    end="m2s_read_master.Clock" />
  <connection
    kind="clock"
-   version="17.0"
+   version="17.1"
    start="clock_in.out_clk"
    end="reset_in.clk" />
  <connection
    kind="clock"
-   version="17.0"
+   version="17.1"
    start="clock_in.out_clk"
    end="csr_bridge.clk" />
  <connection
    kind="clock"
-   version="17.0"
+   version="17.1"
    start="clock_in.out_clk"
    end="m2s_memory_bridge.clk" />
  <connection
    kind="clock"
-   version="17.0"
+   version="17.1"
    start="clock_in.out_clk"
    end="m2s_host_bridge.clk" />
  <connection
    kind="clock"
-   version="17.0"
+   version="17.1"
    start="clock_in.out_clk"
    end="m2s_dispatcher.clock" />
  <connection
    kind="clock"
-   version="17.0"
+   version="17.1"
    start="clock_in.out_clk"
    end="m2s_id.clock" />
  <connection
    kind="reset"
-   version="17.0"
+   version="17.1"
    start="reset_in.out_reset"
    end="m2s_read_master.Clock_reset" />
  <connection
    kind="reset"
-   version="17.0"
+   version="17.1"
    start="reset_in.out_reset"
    end="m2s_dispatcher.clock_reset" />
  <connection
    kind="reset"
-   version="17.0"
+   version="17.1"
    start="reset_in.out_reset"
    end="csr_bridge.reset" />
  <connection
    kind="reset"
-   version="17.0"
+   version="17.1"
    start="reset_in.out_reset"
    end="m2s_id.reset" />
  <connection
    kind="reset"
-   version="17.0"
+   version="17.1"
    start="reset_in.out_reset"
    end="m2s_memory_bridge.reset" />
  <connection
    kind="reset"
-   version="17.0"
+   version="17.1"
    start="reset_in.out_reset"
    end="m2s_host_bridge.reset" />
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />

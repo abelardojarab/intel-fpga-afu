@@ -148,6 +148,8 @@ module afu #(
 	wire [CCIP_AVMM_REQUESTOR_WR_ADDR_WIDTH-1:0]	requestor_avmm_wr_address;
 	wire requestor_avmm_wr_write;
 	wire [CCIP_AVMM_REQUESTOR_BURST_WIDTH-1:0]	requestor_avmm_wr_burstcount;
+   wire [1:0] requestor_avmm_wr_write_response;
+   wire requestor_avmm_wr_writeresponsevalid;
 	
 	wire requestor_avmm_rd_waitrequest;
 	wire [CCIP_AVMM_REQUESTOR_DATA_WIDTH-1:0]	requestor_avmm_rd_readdata;
@@ -193,41 +195,39 @@ module afu #(
 		.emif_b_avmm_byteenable        (DDR4b_byteenable),    //           .byteenable
 		.emif_b_avmm_debugaccess       (),   //           .debugaccess
         
-        .mmio_avmm_waitrequest         (mmio_avmm_waitrequest),         //       ccip_avmm_mmio.waitrequest
-        .mmio_avmm_readdata            (mmio_avmm_readdata),            //                    .readdata
-        .mmio_avmm_readdatavalid       (mmio_avmm_readdatavalid),       //                    .readdatavalid
-        .mmio_avmm_burstcount          (1'b1),          //                    .burstcount
-        .mmio_avmm_writedata           (mmio_avmm_writedata),           //                    .writedata
-        .mmio_avmm_address             (mmio_avmm_address),             //                    .address
-        .mmio_avmm_write               (mmio_avmm_write),               //                    .write
-        .mmio_avmm_read                (mmio_avmm_read),                //                    .read
-        .mmio_avmm_byteenable          (mmio_avmm_byteenable),          //                    .byteenable
-        .mmio_avmm_debugaccess         (),         //                    .debugaccess
+      .mmio_avmm_waitrequest         (mmio_avmm_waitrequest),         //       ccip_avmm_mmio.waitrequest
+      .mmio_avmm_readdata            (mmio_avmm_readdata),            //                    .readdata
+      .mmio_avmm_readdatavalid       (mmio_avmm_readdatavalid),       //                    .readdatavalid
+      .mmio_avmm_burstcount          (1'b1),          //                    .burstcount
+      .mmio_avmm_writedata           (mmio_avmm_writedata),           //                    .writedata
+      .mmio_avmm_address             (mmio_avmm_address),             //                    .address
+      .mmio_avmm_write               (mmio_avmm_write),               //                    .write
+      .mmio_avmm_read                (mmio_avmm_read),                //                    .read
+      .mmio_avmm_byteenable          (mmio_avmm_byteenable),          //                    .byteenable
+      .mmio_avmm_debugaccess         (),         //                    .debugaccess
         
-        .host_write_waitrequest   (requestor_avmm_wr_waitrequest),   // ccip_avmm_requestor.waitrequest
-        .host_write_readdata      (),      //                    .readdata
-        .host_write_readdatavalid (), //                    .readdatavalid
-        .host_write_burstcount    (requestor_avmm_wr_burstcount),    //                    .burstcount
-        .host_write_writedata     (requestor_avmm_wr_writedata),     //                    .writedata
-        .host_write_address       (requestor_avmm_wr_address[CCIP_AVMM_REQUESTOR_WR_ADDR_WIDTH-2:0]),       //                    .address
-        .host_write_write         (requestor_avmm_wr_write),         //                    .write
-        .host_write_read          (),          //                    .read
-        .host_write_byteenable    (),    //                    .byteenable
-        .host_write_debugaccess   (),   //                    .debugaccess
+      .host_write_address            (requestor_avmm_wr_address[CCIP_AVMM_REQUESTOR_WR_ADDR_WIDTH-2:0]),            //  host_write.address
+      .host_write_writedata          (requestor_avmm_wr_writedata),                                                 //            .writedata
+      .host_write_write              (requestor_avmm_wr_write),                                                     //            .write
+      .host_write_byteenable         (),                                                                            //            .byteenable
+      .host_write_burstcount         (requestor_avmm_wr_burstcount),                                                //            .burstcount
+      .host_write_response           (requestor_avmm_wr_write_response),                                            //            .response
+      .host_write_waitrequest        (requestor_avmm_wr_waitrequest),                                               //            .waitrequest
+      .host_write_writeresponsevalid (requestor_avmm_wr_writeresponsevalid),                                        //            .writeresponsevalid
+
+      .host_read_waitrequest    (requestor_avmm_rd_waitrequest),   // ccip_avmm_requestor.waitrequest
+      .host_read_readdata       (requestor_avmm_rd_readdata),      //                    .readdata
+      .host_read_readdatavalid  (requestor_avmm_rd_readdatavalid), //                    .readdatavalid
+      .host_read_burstcount     (requestor_avmm_rd_burstcount),    //                    .burstcount
+      .host_read_writedata      (),     //                    .writedata
+      .host_read_address        (requestor_avmm_rd_address),       //                    .address
+      .host_read_write          (),         //                    .write
+      .host_read_read           (requestor_avmm_rd_read),          //                    .read
+      .host_read_byteenable     (),    //                    .byteenable
+      .host_read_debugaccess    (),   //                    .debugaccess
         
-        .host_read_waitrequest    (requestor_avmm_rd_waitrequest),   // ccip_avmm_requestor.waitrequest
-        .host_read_readdata       (requestor_avmm_rd_readdata),      //                    .readdata
-        .host_read_readdatavalid  (requestor_avmm_rd_readdatavalid), //                    .readdatavalid
-        .host_read_burstcount     (requestor_avmm_rd_burstcount),    //                    .burstcount
-        .host_read_writedata      (),     //                    .writedata
-        .host_read_address        (requestor_avmm_rd_address),       //                    .address
-        .host_read_write          (),         //                    .write
-        .host_read_read           (requestor_avmm_rd_read),          //                    .read
-        .host_read_byteenable     (),    //                    .byteenable
-        .host_read_debugaccess    (),   //                    .debugaccess
-        
-        .m2s_irq_irq                   (m2s_dma_irq),
-        .s2m_irq_irq                   (s2m_dma_irq),
+      .m2s_irq_irq                   (m2s_dma_irq),
+      .s2m_irq_irq                   (s2m_dma_irq),
         
 		.emif_a_clock_clk              (DDR4a_USERCLK),
 		.emif_b_clock_clk              (DDR4b_USERCLK),
@@ -257,20 +257,22 @@ module afu #(
 	avmm_ccip_host_wr #(
 		.ENABLE_INTR(1)
 	) avmm_ccip_host_wr_inst (
-		.clk                     (pClkDiv2),            //   clk.clk
-		.reset                   (reset),         // reset.reset
+		.clk                      (pClkDiv2),            //   clk.clk
+		.reset                    (reset),         // reset.reset
 		
-		.irq                     ({2'b00, s2m_dma_irq, m2s_dma_irq}),
+		.irq                      ({2'b00, s2m_dma_irq, m2s_dma_irq}),
 		
-		.avmm_waitrequest        (requestor_avmm_wr_waitrequest),
-		.avmm_writedata          (requestor_avmm_wr_writedata),
-		.avmm_address            (requestor_avmm_wr_address),
-		.avmm_write              (requestor_avmm_wr_write),
-		.avmm_burstcount         (requestor_avmm_wr_burstcount),
+		.avmm_waitrequest         (requestor_avmm_wr_waitrequest),
+		.avmm_writedata           (requestor_avmm_wr_writedata),
+		.avmm_address             (requestor_avmm_wr_address),
+		.avmm_write               (requestor_avmm_wr_write),
+		.avmm_burstcount          (requestor_avmm_wr_burstcount),
+      .avmm_write_response      (requestor_avmm_wr_write_response),
+      .avmm_write_responsevalid (requestor_avmm_wr_writeresponsevalid),
 		
-		.c1TxAlmFull             (cp2af_sRxPort.c1TxAlmFull),
+		.c1TxAlmFull              (cp2af_sRxPort.c1TxAlmFull),
 		//.c1rx                    (cp2af_sRxPort.c1),	//write response
-		.c1tx                    (af2cp_sTxPort.c1)
+		.c1tx                     (af2cp_sTxPort.c1)
 	);
 	
 	ccip_avmm_mmio ccip_avmm_mmio_inst (

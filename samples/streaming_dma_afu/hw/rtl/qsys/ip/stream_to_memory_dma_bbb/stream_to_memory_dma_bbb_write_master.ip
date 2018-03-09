@@ -7,7 +7,7 @@
   <spirit:busInterfaces>
     <spirit:busInterface>
       <spirit:name>Clock</spirit:name>
-      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="clock" spirit:version="17.0"></spirit:busType>
+      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="clock" spirit:version="17.1"></spirit:busType>
       <spirit:slave></spirit:slave>
       <spirit:portMaps>
         <spirit:portMap>
@@ -39,7 +39,7 @@
     </spirit:busInterface>
     <spirit:busInterface>
       <spirit:name>Clock_reset</spirit:name>
-      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="reset" spirit:version="17.0"></spirit:busType>
+      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="reset" spirit:version="17.1"></spirit:busType>
       <spirit:slave></spirit:slave>
       <spirit:portMaps>
         <spirit:portMap>
@@ -66,7 +66,7 @@
     </spirit:busInterface>
     <spirit:busInterface>
       <spirit:name>Command_Sink</spirit:name>
-      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="avalon_streaming" spirit:version="17.0"></spirit:busType>
+      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="avalon_streaming" spirit:version="17.1"></spirit:busType>
       <spirit:slave></spirit:slave>
       <spirit:portMaps>
         <spirit:portMap>
@@ -164,7 +164,7 @@
     </spirit:busInterface>
     <spirit:busInterface>
       <spirit:name>Data_Sink</spirit:name>
-      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="avalon_streaming" spirit:version="17.0"></spirit:busType>
+      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="avalon_streaming" spirit:version="17.1"></spirit:busType>
       <spirit:slave></spirit:slave>
       <spirit:portMaps>
         <spirit:portMap>
@@ -286,7 +286,7 @@
     </spirit:busInterface>
     <spirit:busInterface>
       <spirit:name>Data_Write_Master</spirit:name>
-      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="avalon" spirit:version="17.0"></spirit:busType>
+      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="avalon" spirit:version="17.1"></spirit:busType>
       <spirit:master></spirit:master>
       <spirit:portMaps>
         <spirit:portMap>
@@ -335,6 +335,22 @@
           </spirit:logicalPort>
           <spirit:physicalPort>
             <spirit:name>master_burstcount</spirit:name>
+          </spirit:physicalPort>
+        </spirit:portMap>
+        <spirit:portMap>
+          <spirit:logicalPort>
+            <spirit:name>response</spirit:name>
+          </spirit:logicalPort>
+          <spirit:physicalPort>
+            <spirit:name>master_response</spirit:name>
+          </spirit:physicalPort>
+        </spirit:portMap>
+        <spirit:portMap>
+          <spirit:logicalPort>
+            <spirit:name>writeresponsevalid</spirit:name>
+          </spirit:logicalPort>
+          <spirit:physicalPort>
+            <spirit:name>master_writeresponsevalid</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
       </spirit:portMaps>
@@ -513,7 +529,7 @@
     </spirit:busInterface>
     <spirit:busInterface>
       <spirit:name>Response_Source</spirit:name>
-      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="avalon_streaming" spirit:version="17.0"></spirit:busType>
+      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="avalon_streaming" spirit:version="17.1"></spirit:busType>
       <spirit:master></spirit:master>
       <spirit:portMaps>
         <spirit:portMap>
@@ -735,6 +751,34 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
+        <spirit:name>master_response</spirit:name>
+        <spirit:wire>
+          <spirit:direction>in</spirit:direction>
+          <spirit:vector>
+            <spirit:left>0</spirit:left>
+            <spirit:right>1</spirit:right>
+          </spirit:vector>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
+              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>master_writeresponsevalid</spirit:name>
+        <spirit:wire>
+          <spirit:direction>in</spirit:direction>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
+              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
         <spirit:name>snk_data</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
@@ -918,7 +962,7 @@
         <spirit:parameter>
           <spirit:name>LENGTH_WIDTH</spirit:name>
           <spirit:displayName>Length Width</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="LENGTH_WIDTH">22</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="LENGTH_WIDTH">31</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>FIFO_DEPTH</spirit:name>
@@ -1073,7 +1117,7 @@
         <spirit:parameter>
           <spirit:name>ACTUAL_BYTES_TRANSFERRED_WIDTH</spirit:name>
           <spirit:displayName>ACTUAL_BYTES_TRANSFERRED_WIDTH</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="ACTUAL_BYTES_TRANSFERRED_WIDTH">23</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="ACTUAL_BYTES_TRANSFERRED_WIDTH">32</spirit:value>
         </spirit:parameter>
       </spirit:parameters>
     </altera:altera_module_parameters>
@@ -1093,6 +1137,11 @@
           <spirit:name>deviceSpeedGrade</spirit:name>
           <spirit:displayName>Device Speed Grade</spirit:displayName>
           <spirit:value spirit:format="string" spirit:id="deviceSpeedGrade">2</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>generationId</spirit:name>
+          <spirit:displayName>Generation Id</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="generationId">0</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>bonusData</spirit:name>
@@ -1430,6 +1479,22 @@
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
+                <port>
+                    <name>master_response</name>
+                    <role>response</role>
+                    <direction>Input</direction>
+                    <width>2</width>
+                    <lowerBound>0</lowerBound>
+                    <vhdlType>STD_LOGIC_VECTOR</vhdlType>
+                </port>
+                <port>
+                    <name>master_writeresponsevalid</name>
+                    <role>writeresponsevalid</role>
+                    <direction>Input</direction>
+                    <width>1</width>
+                    <lowerBound>0</lowerBound>
+                    <vhdlType>STD_LOGIC</vhdlType>
+                </port>
             </ports>
             <assignments>
                 <assignmentValueMap/>
@@ -1713,9 +1778,11 @@
         <altera:port_mapping altera:name="master_address" altera:internal="master_address"></altera:port_mapping>
         <altera:port_mapping altera:name="master_burstcount" altera:internal="master_burstcount"></altera:port_mapping>
         <altera:port_mapping altera:name="master_byteenable" altera:internal="master_byteenable"></altera:port_mapping>
+        <altera:port_mapping altera:name="master_response" altera:internal="master_response"></altera:port_mapping>
         <altera:port_mapping altera:name="master_waitrequest" altera:internal="master_waitrequest"></altera:port_mapping>
         <altera:port_mapping altera:name="master_write" altera:internal="master_write"></altera:port_mapping>
         <altera:port_mapping altera:name="master_writedata" altera:internal="master_writedata"></altera:port_mapping>
+        <altera:port_mapping altera:name="master_writeresponsevalid" altera:internal="master_writeresponsevalid"></altera:port_mapping>
       </altera:interface_mapping>
       <altera:interface_mapping altera:name="Response_Source" altera:internal="stream_to_memory_dma_bbb_write_master.Response_Source" altera:type="avalon_streaming" altera:dir="start">
         <altera:port_mapping altera:name="src_response_data" altera:internal="src_response_data"></altera:port_mapping>

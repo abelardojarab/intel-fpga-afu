@@ -48,11 +48,12 @@ module avmm_ccip_host_wr #(
 	input 	[CCIP_AVMM_REQUESTOR_WR_ADDR_WIDTH-1:0]	avmm_address,
 	input 		avmm_write,
 	input 	[CCIP_AVMM_REQUESTOR_BURST_WIDTH-1:0]	avmm_burstcount,
+	output logic [1:0] avmm_write_response,
+	output logic avmm_write_responsevalid,
 
 	// ---------------------------IF signals between CCI and AFU  --------------------------------
 	input c1TxAlmFull,
-	//for write response.  don't need for now.  not using avmm write response
-	//input t_if_ccip_c1_Rx      c1rx,
+	input t_if_ccip_c1_Rx c1rx,
 
 	//write request
 	output t_if_ccip_c1_Tx c1tx
@@ -348,5 +349,11 @@ module avmm_ccip_host_wr #(
 	assign clear_ccip_write_fence_complete = ccip_write_fence_complete && avcmd_ready_next;
 	// once the write fence is sent we immediately let the data that arrived with it to be sent to host memory
 	assign ccip_write_fence_dly = ccip_write_fence_request && ~ccip_write_fence_complete;
+
+
+  // Write response logic (sent to Avalon write master only if it's a write response, ie. write fence and IRQ responses ignored)
+  assign avmm_write_response = 2'b00;  // Avalon response 'OK'
+  assign avmm_write_responsevalid = c1rx.rspValid & (c1rx.hdr.resp_type == eRSP_WRLINE);  // MPF always issues packed responses
+
 
 endmodule

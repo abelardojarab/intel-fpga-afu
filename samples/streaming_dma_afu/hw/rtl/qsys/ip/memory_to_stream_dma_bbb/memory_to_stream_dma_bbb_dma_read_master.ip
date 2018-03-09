@@ -3,11 +3,11 @@
   <spirit:vendor>Intel Corporation</spirit:vendor>
   <spirit:library>memory_to_stream_dma_bbb_dma_read_master</spirit:library>
   <spirit:name>memory_to_stream_dma_bbb_dma_read_master</spirit:name>
-  <spirit:version>17.0</spirit:version>
+  <spirit:version>17.1</spirit:version>
   <spirit:busInterfaces>
     <spirit:busInterface>
       <spirit:name>Clock</spirit:name>
-      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="clock" spirit:version="17.0"></spirit:busType>
+      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="clock" spirit:version="17.1"></spirit:busType>
       <spirit:slave></spirit:slave>
       <spirit:portMaps>
         <spirit:portMap>
@@ -39,7 +39,7 @@
     </spirit:busInterface>
     <spirit:busInterface>
       <spirit:name>Clock_reset</spirit:name>
-      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="reset" spirit:version="17.0"></spirit:busType>
+      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="reset" spirit:version="17.1"></spirit:busType>
       <spirit:slave></spirit:slave>
       <spirit:portMaps>
         <spirit:portMap>
@@ -66,7 +66,7 @@
     </spirit:busInterface>
     <spirit:busInterface>
       <spirit:name>Command_Sink</spirit:name>
-      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="avalon_streaming" spirit:version="17.0"></spirit:busType>
+      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="avalon_streaming" spirit:version="17.1"></spirit:busType>
       <spirit:slave></spirit:slave>
       <spirit:portMaps>
         <spirit:portMap>
@@ -164,7 +164,7 @@
     </spirit:busInterface>
     <spirit:busInterface>
       <spirit:name>Data_Read_Master</spirit:name>
-      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="avalon" spirit:version="17.0"></spirit:busType>
+      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="avalon" spirit:version="17.1"></spirit:busType>
       <spirit:master></spirit:master>
       <spirit:portMaps>
         <spirit:portMap>
@@ -399,7 +399,7 @@
     </spirit:busInterface>
     <spirit:busInterface>
       <spirit:name>Data_Source</spirit:name>
-      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="avalon_streaming" spirit:version="17.0"></spirit:busType>
+      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="avalon_streaming" spirit:version="17.1"></spirit:busType>
       <spirit:master></spirit:master>
       <spirit:portMaps>
         <spirit:portMap>
@@ -529,7 +529,7 @@
     </spirit:busInterface>
     <spirit:busInterface>
       <spirit:name>Response_Source</spirit:name>
-      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="avalon_streaming" spirit:version="17.0"></spirit:busType>
+      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="avalon_streaming" spirit:version="17.1"></spirit:busType>
       <spirit:master></spirit:master>
       <spirit:portMaps>
         <spirit:portMap>
@@ -945,7 +945,7 @@
       <spirit:vendor>Intel Corporation</spirit:vendor>
       <spirit:library>memory_to_stream_dma_bbb_dma_read_master</spirit:library>
       <spirit:name>dma_read_master</spirit:name>
-      <spirit:version>17.0</spirit:version>
+      <spirit:version>17.1</spirit:version>
     </altera:entity_info>
     <altera:altera_module_parameters>
       <spirit:parameters>
@@ -957,7 +957,7 @@
         <spirit:parameter>
           <spirit:name>LENGTH_WIDTH</spirit:name>
           <spirit:displayName>Length Width</spirit:displayName>
-          <spirit:value spirit:format="long" spirit:id="LENGTH_WIDTH">22</spirit:value>
+          <spirit:value spirit:format="long" spirit:id="LENGTH_WIDTH">31</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>FIFO_DEPTH</spirit:name>
@@ -1132,6 +1132,11 @@
           <spirit:name>deviceSpeedGrade</spirit:name>
           <spirit:displayName>Device Speed Grade</spirit:displayName>
           <spirit:value spirit:format="string" spirit:id="deviceSpeedGrade">2</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>generationId</spirit:name>
+          <spirit:displayName>Generation Id</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="generationId">0</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>bonusData</spirit:name>

@@ -152,7 +152,7 @@ struct fpga_dma_handle {
 	uint64_t dma_offset;
 	uint64_t dma_csr_base;
 	uint64_t dma_desc_base;
-	uint64_t dma_resp_base;
+	uint64_t dma_rsp_base;
 	uint64_t dma_ase_cntl_base;
 	uint64_t dma_ase_data_base;
 	// Interrupt event handle
@@ -275,9 +275,25 @@ typedef struct __attribute__((__packed__)) {
 	// 0x8
 	msgdma_fill_level_t fill_level;
 	// 0xc
-	msgdma_rsp_level_t rsp;
+	msgdma_rsp_level_t rsp_level;
 	// 0x10
 	msgdma_seq_num_t seq_num;
 } msgdma_csr_t;
 
+typedef union {
+	uint32_t reg;
+	struct {
+		uint32_t error:8;
+		uint32_t early_termination:1;
+		uint32_t eop_arrived:1;
+		uint32_t rsvd:22;
+	} rsp;
+} msgdma_rsp_status_t;
+
+typedef struct __attribute__((__packed__)) {
+	// 0x0
+	uint32_t actual_bytes_tf;
+	// 0x4
+	msgdma_rsp_status_t rsp_status;
+} msgdma_rsp_t;
 #endif // __FPGA_DMA_ST_INT_H__

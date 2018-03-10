@@ -64,7 +64,8 @@ module altera_emif_avl_tg_driver # (
    parameter TG_USE_UNIX_ID                         = 3'b000,
 
    // If set to "1", the driver generates pseudo-random byte enables
-   parameter TG_RANDOM_BYTE_ENABLE                  = 1,
+   //parameter TG_RANDOM_BYTE_ENABLE                  = 1,
+   parameter TG_RANDOM_BYTE_ENABLE                  = 0,
 
    // If set to "1", the driver generates 'avl_size' which are powers of two
    parameter TG_POWER_OF_TWO_BURSTS_ONLY            = 0,
@@ -178,7 +179,8 @@ module altera_emif_avl_tg_driver # (
    output logic                                     fail,
    output logic                                     timeout,
    output logic [TG_AVL_DATA_WIDTH-1:0]             pnf_per_bit,
-   output logic [TG_AVL_DATA_WIDTH-1:0]             pnf_per_bit_persist
+   output logic [TG_AVL_DATA_WIDTH-1:0]             pnf_per_bit_persist,
+   output logic [3:0]                               fsm_state
 );
    timeunit 1ns;
    timeprecision 1ps;
@@ -451,6 +453,7 @@ module altera_emif_avl_tg_driver # (
       .do_inv_be_write                 (do_inv_be_write),
       .do_write                        (do_write),
       .do_read                         (do_read),
+      .fsm_state                       (fsm_state),
       .test_complete                   (test_complete),
       .loop_counter                    (loop_counter),
       .timeout                         (timeout)

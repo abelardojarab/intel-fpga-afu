@@ -83,6 +83,8 @@ module altera_emif_avl_tg_driver_fsm # (
    output logic                                   do_inv_be_write,
    output logic                                   do_write,
    output logic                                   do_read,
+  
+   output [3:0]                                   fsm_state,
 
    // Driver status
    output logic                                   test_complete,
@@ -136,6 +138,8 @@ module altera_emif_avl_tg_driver_fsm # (
 
    // Test stages
    test_stage_t                      stage;
+
+   assign fsm_state = stage[3:0];
 
    // Generate status signals
    assign test_complete    = (stage == TEST_COMPLETE);

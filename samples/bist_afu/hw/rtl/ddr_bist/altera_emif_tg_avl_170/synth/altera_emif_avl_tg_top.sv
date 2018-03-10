@@ -61,7 +61,7 @@ module altera_emif_avl_tg_top # (
    parameter CTRL_AVL_PROTOCOL_ENUM                  = "",
 
    // Indicates whether Avalon byte-enable signal is used
-   parameter USE_AVL_BYTEEN                          = 1,
+   parameter USE_AVL_BYTEEN                          = 0,
 
    // Specifies alignment criteria for Avalon-MM word addresses and burst count
    parameter AMM_WORD_ADDRESS_DIVISIBLE_BY           = 1,
@@ -228,6 +228,7 @@ module altera_emif_avl_tg_top # (
    input  logic                                               mmr_master_readdatavalid_1,
 
 
+   output logic [3:0]                                         fsm_state,
    // Ports for "tg_status" interfaces (auto-generated)
    output logic                                               traffic_gen_pass_0,
    output logic                                               traffic_gen_fail_0,
@@ -437,6 +438,7 @@ module altera_emif_avl_tg_top # (
                      .pnf_per_bit_persist                    (pnf_per_bit_persist[(2*i)+1])
                   );
                end else begin : normal
+      //end else if (bitwise_or) begin
                   altera_emif_avl_tg_driver # (
                      .DEVICE_FAMILY                          (MEGAFUNC_DEVICE_FAMILY),
                      .PROTOCOL_ENUM                          (PROTOCOL_ENUM),
@@ -680,7 +682,8 @@ module altera_emif_avl_tg_top # (
                      .fail                                   (traffic_gen_fail_all[i]),
                      .timeout                                (traffic_gen_timeout_all[i]),
                      .pnf_per_bit                            (),
-                     .pnf_per_bit_persist                    (pnf_per_bit_persist[i])
+                     .pnf_per_bit_persist                    (pnf_per_bit_persist[i]),
+                     .fsm_state                              (fsm_state)
                   );
                end
 

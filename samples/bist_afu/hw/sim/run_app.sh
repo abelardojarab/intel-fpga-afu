@@ -39,7 +39,6 @@ SCRIPT_COMMON_DIR=`${SCRIPT_DIR_PATH}/find_parent_dir.sh common`
 menu_run_app "$@"
 wait_for_sim_ready
 setup_app_env
-
-# The BIST is driven by samples/hello_fpga.c from the OPAE SDK
-gcc -g -o $app_base/hello_fpga $opae_base/samples/hello_fpga.c -L $opae_base/build/lib/ -I $opae_base/common/include -luuid -lpthread -lopae-c-ase -std=c99
-exec_app
+build_app
+# run the executable
+$app_base/bist_afu_ase_test 1

@@ -1,1 +1,3 @@
-hello_fpga
+*.o
+*.so
+fpga_dma_test

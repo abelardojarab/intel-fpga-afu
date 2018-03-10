@@ -441,7 +441,7 @@ module arbiter #(parameter PEND_THRESH=1, ADDR_LMT=20, MDATA=14)
         // ---------------------------------------------------------------------------------------------------------------------
         //      Input to tests        
         // ---------------------------------------------------------------------------------------------------------------------
-    `ifdef SIM_MODE
+    `ifdef RTL_SIMULATION
         if(re2ab_Mode==M_LPBK1)
           begin
               // Input
@@ -555,7 +555,7 @@ module arbiter #(parameter PEND_THRESH=1, ADDR_LMT=20, MDATA=14)
              ab2re_WrSop        = 1;
          end
 
-     `else  // NOT SIM_MODE
+     `else  // NOT RTL_SIMULATION
        // PAR MODE
       `ifdef NLB400_MODE_0
               // Input

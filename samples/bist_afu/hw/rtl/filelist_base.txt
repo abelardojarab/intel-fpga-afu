@@ -1,3 +1,4 @@
++define+BIST_AFU
 test_sw1.sv
 test_rdwr.sv
 test_lpbk1.sv

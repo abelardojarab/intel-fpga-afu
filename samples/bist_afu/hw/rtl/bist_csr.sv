@@ -40,13 +40,13 @@ module bist_csr #(parameter CCIP_VERSION_NUMBER=0)
     SoftReset,                      //                              rst:        ACTIVE HIGH soft reset
     re2cr_wrlock_n,
 
-`ifdef INCLUDE_DDR4  
+//`ifdef PLATFORM_PROVIDES_LOCAL_MEMORY
     mem2cr_readdata,
     mem2cr_status,
     cr2mem_ctrl,
     cr2mem_address,
     cr2mem_writedata,
-`endif
+//`endif
 
 // MMIO Requests from CCI-P
     cp2cr_MmioHdr,                // [27:0]                       CSR Request Hdr 
@@ -80,13 +80,13 @@ input  wire          Clk_400;               // 400MHz clock
 input  wire          SoftReset;
 input  wire          re2cr_wrlock_n;
 
-`ifdef INCLUDE_DDR4
+//`ifdef PLATFORM_PROVIDES_LOCAL_MEMORY
 (* `KEEP_WIRE *) input wire [63:0]  mem2cr_readdata;
 (* `KEEP_WIRE *) input wire [63:0]  mem2cr_status;
 (* `KEEP_WIRE *) output wire [63:0]  cr2mem_ctrl;
 (* `KEEP_WIRE *) output wire [63:0]  cr2mem_address;
 (* `KEEP_WIRE *) output wire [63:0]  cr2mem_writedata;
-`endif
+//`endif
 
 // MMIO Requests                           
 input  t_ccip_c0_ReqMmioHdr  cp2cr_MmioHdr;        //   CSR Request Hdr
@@ -160,13 +160,13 @@ localparam      CSR_STATUS1          = 16'h168;    // 32b                RO   nu
 localparam      CSR_ERROR            = 16'h170;    // 32b                RO   error
 localparam      CSR_STRIDE           = 16'h178;    // 32b           //  stride value  
 
-`ifdef INCLUDE_DDR4
+//`ifdef PLATFORM_PROVIDES_LOCAL_MEMORY
 localparam      CSR_DDR4_WD          = 16'h180;		// 64b RW
 localparam      CSR_DDR4_RD          = 16'h188;		// 64b RW
 localparam      CSR_DDR4_ADDR        = 16'h190;		// 64b RW
 localparam      CSR_DDR4_CTRL        = 16'h198;		// 64b RW
 localparam      CSR_DDR4_STATUS      = 16'h200;		// 64b RO
-`endif
+//`endif
   
 //---------------------------------------------------------
 localparam      NO_STAGED_CSR  = 16'hXXX;       // used for NON late action CSRs
@@ -186,7 +186,7 @@ localparam      FEATURE_0_BEG  = 18'h0000;
 // Therefore it should really be treated like a different AFU
 // For ease of maintainability they are implemented in a single source tree
 // At compile time, user can decide which test mode is synthesized.
-`ifndef SIM_MODE // PAR_MODE
+/*`ifndef RTL_SIMULATION // PAR_MODE
 
     `ifdef NLB400_MODE_0
     localparam       NLB_AFU_ID_H    = 64'hD842_4DC4_A4A3_C413;
@@ -204,7 +204,7 @@ localparam      FEATURE_0_BEG  = 18'h0000;
     `else
         ** Select a valid NLB Test Mode
     `endif	
-`else   // SIM_MODE
+`else   // RTL_SIMULATION*/
     // Temporary Workaround
     // Simulation tests are always expecting same AFU ID
     // ** To be Fixed **
@@ -212,7 +212,7 @@ localparam      FEATURE_0_BEG  = 18'h0000;
     localparam BIST_AFU_ID_L =  64'h84b9aad98993fe41;
     //localparam       BIST_AFU_ID_H        = 64'hC000_C966_0D82_4272;
     //localparam       BIST_AFU_ID_L        = 64'h9AEF_FE5F_8457_0612;
-`endif
+//`endif
 
 //----------------------------------------------------------------------------------------------------------------------------------------------
 reg             rw1c_pulse, rw1s_pulse;
@@ -249,11 +249,11 @@ assign     cr2re_num_lines       = func_csr_connect_4B(CSR_NUM_LINES, csr_reg[CS
 assign     cr2re_inact_thresh    = func_csr_connect_4B(CSR_INACT_THRESH,csr_reg[CSR_INACT_THRESH>>3]);
 assign     cr2re_cfg             = csr_reg[CSR_CFG>>3];
 
-`ifdef INCLUDE_DDR4  
+//`ifdef PLATFORM_PROVIDES_LOCAL_MEMORY
 assign     cr2mem_ctrl           = csr_reg[CSR_DDR4_CTRL>>3];
 assign     cr2mem_address        = csr_reg[CSR_DDR4_ADDR>>3];
 assign     cr2mem_writedata      = csr_reg[CSR_DDR4_WD>>3];
-`endif
+//`endif
 
 function automatic [31:0] func_csr_connect_4B;
     input [15:0]    address;

@@ -196,7 +196,11 @@ module altera_emif_avl_tg_read_compare # (
                int abs_bit_num;
                abs_bit_num = byte_num * BYTE_SIZE + bit_num;
                if (enable && rdata_valid_r2 && written_be_lfsr_out[byte_num])
-                  pnf_per_bit[abs_bit_num] <= (rdata_r2[abs_bit_num] === written_data[abs_bit_num]);
+                  /*if (rdata[11:0] == 48'h4a3a40fa0052) begin
+                    pnf_per_bit[abs_bit_num] <= 1'b1;
+                  end else begin*/
+                    pnf_per_bit[abs_bit_num] <= (rdata_r2[abs_bit_num] === written_data[abs_bit_num]);
+                  //end
                else
                   pnf_per_bit[abs_bit_num] <= 1'b1;
             end
@@ -497,13 +501,31 @@ module altera_emif_avl_tg_read_compare # (
 
    // synthesis translate_off   
    // Display a message to the user if there is an error
+   logic [511:0] bitwise_xor = 'b0;
+   logic pnfperbit_logic;
+   logic [511:0] bitwise_xor_d;
+   logic bitwise_or;
+   assign bitwise_xor_d = ~bitwise_xor ^ pnf_per_bit;
+   assign bitwise_or = |bitwise_xor_d;
+   assign pnfperbit_logic = ~(&pnf_per_bit);
    always_ff @(posedge clk)
    begin
-      if (~(&pnf_per_bit))
+      //if (~(&pnf_per_bit))
+      if (pnfperbit_logic)
       begin
-         $display("[%0t] ERROR: Expected %h/%h but read %h", $time, written_data_r, written_be_full_r, rdata_r3);
-         $display("            wrote bits: %h", written_data_r & written_be_full_r);
-         $display("             read bits: %h", rdata_r3 & written_be_full_r);
+        // if ((written_data_r != rdata_r3) && (written_data_r != rdata_r4)) begin
+           //$display("[%0t] ERROR: Expected %h/%h but read %h", $time, written_data_r, written_be_full_r, rdata_r3);
+           $display("[%0t] ERROR: Expected %h/%h but read %h", $time, written_data, written_be_full_r, rdata_r3);
+           $display("            wrote bits: %h", written_data_r & written_be_full_r);
+           $display("             read bits: %h", rdata_r3 & written_be_full_r);
+           //$display("             read bits: %h", rdata_r4 & written_be_full_r);
+      //   end 
+      end
+      //end else if (bitwise_or) begin
+      if (~pnfperbit_logic && (written_data_r == rdata_r3)) begin
+         $display("[%0t] SUCCESS: Expected %h/%h and read %h", $time, written_data_r, written_be_full_r, rdata_r3);
+         $display("               wrote bits: %h", written_data_r & written_be_full_r);
+         $display("               read bits: %h", rdata_r3 & written_be_full_r);
       end
    end
    // synthesis translate_on
@@ -571,7 +593,8 @@ module altera_emif_avl_tg_read_compare # (
    end
    
    assign read_compare_fifo_full  = (written_data_counter[WRITTEN_DATA_COUNTER_WIDTH-1:WRITTEN_DATA_COUNTER_WIDTH-2] == 2'b01);
-   assign read_compare_fifo_empty = written_data_counter[WRITTEN_DATA_COUNTER_WIDTH-1];
+   assign read_compare_fifo_empty = written_data_counter[WRITTEN_DATA_COUNTER_WIDTH-1] || (written_data_counter == 'b0);
+   //assign read_compare_fifo_empty = written_data_counter[WRITTEN_DATA_COUNTER_WIDTH-1];
    
    // Register stage to ease timing closure. The assumption is that read data
    // must come back after this additional latency, or else we will underflow fifo.

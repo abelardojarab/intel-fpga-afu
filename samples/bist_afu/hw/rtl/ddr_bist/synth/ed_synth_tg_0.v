@@ -15,6 +15,7 @@ module ed_synth_tg_0 (
 		input  wire         amm_readdatavalid_0,   //                 .readdatavalid
 		input  wire         emif_usr_clk,          //     emif_usr_clk.clk
 		input  wire         emif_usr_reset_n,      // emif_usr_reset_n.reset_n
+                output logic [3:0]  fsm_state,
 		output wire         traffic_gen_pass_0,    //      tg_status_0.traffic_gen_pass
 		output wire         traffic_gen_fail_0,    //                 .traffic_gen_fail
 		output wire         traffic_gen_timeout_0  //                 .traffic_gen_timeout
@@ -28,7 +29,7 @@ module ed_synth_tg_0 (
 		.SEPARATE_READ_WRITE_IFS            (0),
 		.GENERATE_LOCAL_RESET_SYNC          (1),
 		.CTRL_AVL_PROTOCOL_ENUM             ("CTRL_AVL_PROTOCOL_MM"),
-		.USE_AVL_BYTEEN                     (1),
+		.USE_AVL_BYTEEN                     (0),
 		.AMM_WORD_ADDRESS_WIDTH             (26),
 		.AMM_WORD_ADDRESS_DIVISIBLE_BY      (1),
 		.AMM_BURST_COUNT_DIVISIBLE_BY       (1),
@@ -56,6 +57,7 @@ module ed_synth_tg_0 (
 		.amm_byteenable_0                (amm_byteenable_0),                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      //                 .byteenable
 		.amm_readdatavalid_0             (amm_readdatavalid_0),                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   //                 .readdatavalid
 		.traffic_gen_pass_0              (traffic_gen_pass_0),                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    //      tg_status_0.traffic_gen_pass
+                .fsm_state                       (fsm_state),
 		.traffic_gen_fail_0              (traffic_gen_fail_0),                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    //                 .traffic_gen_fail
 		.traffic_gen_timeout_0           (traffic_gen_timeout_0),                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 //                 .traffic_gen_timeout
 		.amm_beginbursttransfer_0        (),                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      //      (terminated)

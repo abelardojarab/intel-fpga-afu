@@ -61,7 +61,7 @@ module altera_emif_avl_tg_top # (
    parameter CTRL_AVL_PROTOCOL_ENUM                  = "",
 
    // Indicates whether Avalon byte-enable signal is used
-   parameter USE_AVL_BYTEEN                          = 1,
+   parameter USE_AVL_BYTEEN                          = 0,
 
    // Specifies alignment criteria for Avalon-MM word addresses and burst count
    parameter AMM_WORD_ADDRESS_DIVISIBLE_BY           = 1,

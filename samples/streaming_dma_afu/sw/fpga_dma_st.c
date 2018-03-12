@@ -244,11 +244,7 @@ static fpga_result clear_interrupt(fpga_dma_handle_t dma_h) {
 
 static fpga_result poll_interrupt(fpga_dma_handle_t dma_h) {
 	struct pollfd pfd;
-	if(dma_h->ch_type == TX_ST) {
-		pfd.fd = 0;
-	} else if(dma_h->ch_type == RX_ST) {
-		pfd.fd = 1;
-	}
+	pfd.fd = dma_h->dma_channel;
 	fpga_result res = FPGA_OK;
 
 	res = fpgaGetOSObjectFromEventHandle(dma_h->eh, &pfd.fd);
@@ -292,7 +288,7 @@ static void *m2sTransactionWorker(void* dma_handle) {
 		
 		debug_print("HOST to FPGA --- src_addr = %08lx, dst_addr = %08lx\n", m2s_transfer->src, m2s_transfer->dst);
 		count = m2s_transfer->len;
-		uint32_t dma_chunks = count/FPGA_DMA_BUF_SIZE;
+		uint64_t dma_chunks = count/FPGA_DMA_BUF_SIZE;
 		count -= (dma_chunks*FPGA_DMA_BUF_SIZE);
 		
 		for(i=0; i<dma_chunks; i++) {
@@ -347,7 +343,7 @@ static void *s2mTransactionWorker(void* dma_handle) {
 		dequeue(&dma_h->qinfo, &s2m_transfer);
 		debug_print("FPGA to HOST --- src_addr = %08lx, dst_addr = %08lx\n", s2m_transfer->src, s2m_transfer->dst);
 		count = s2m_transfer->len;
-		uint32_t dma_chunks = count/FPGA_DMA_BUF_SIZE;
+		uint64_t dma_chunks = count/FPGA_DMA_BUF_SIZE;
 		count -= (dma_chunks*FPGA_DMA_BUF_SIZE);
 		uint64_t pending_buf = 0;
 		int issued_intr = 0;
@@ -451,7 +447,7 @@ out:
 	return res;
 }
 
-fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dma) {
+fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel_index, fpga_dma_handle_t *dma) {
 	fpga_result res = FPGA_OK;
 	fpga_dma_handle_t dma_h;
 	int channel_index = 0;
@@ -497,7 +493,7 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dm
 			((feature_uuid_lo == S2M_DMA_UUID_L) && (feature_uuid_hi == S2M_DMA_UUID_H))) ) {
 
 			// Found one. Record it.
-			if(channel_index == dma_channel) {
+			if(channel_index == dma_channel_index) {
 				dma_h->dma_base = offset;
 				if ((feature_uuid_lo == M2S_DMA_UUID_L) && (feature_uuid_hi == M2S_DMA_UUID_H))
 					dma_h->ch_type=TX_ST;
@@ -508,6 +504,7 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dm
 				dma_h->dma_csr_base = dma_h->dma_base+FPGA_DMA_CSR;
 				dma_h->dma_desc_base = dma_h->dma_base+FPGA_DMA_DESC;
 				dma_found = true;
+				dma_h->dma_channel = dma_channel_index;
 				printf("DMA Base Addr = %08lx\n", dma_h->dma_base);
 				break;
 			} else {
@@ -562,13 +559,8 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel, fpga_dma_handle_t *dm
 	res = fpgaCreateEventHandle(&dma_h->eh);
 	ON_ERR_GOTO(res, rel_buf, "fpgaCreateEventHandle");
 
-	if(dma_h->ch_type == TX_ST) {
-		res = fpgaRegisterEvent(dma_h->fpga_h, FPGA_EVENT_INTERRUPT, dma_h->eh, dma_channel/*vector id*/);
-		ON_ERR_GOTO(res, destroy_eh, "fpgaRegisterEvent");
-	} else if(dma_h->ch_type == RX_ST) {
-		res = fpgaRegisterEvent(dma_h->fpga_h, FPGA_EVENT_INTERRUPT, dma_h->eh, dma_channel/*vector id*/);
-		ON_ERR_GOTO(res, destroy_eh, "fpgaRegisterEvent");
-	}
+	res = fpgaRegisterEvent(dma_h->fpga_h, FPGA_EVENT_INTERRUPT, dma_h->eh, dma_h->dma_channel/*vector id*/);
+	ON_ERR_GOTO(res, destroy_eh, "fpgaRegisterEvent");
 	return FPGA_OK;
 
 destroy_eh:

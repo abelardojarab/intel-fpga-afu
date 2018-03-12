@@ -85,7 +85,7 @@
 // in a single descriptor).This value must match configuration of
 // the DMA IP. Larger transfers will be broken down into smaller
 // transactions.
-#define FPGA_DMA_BUF_SIZE (1023*1024)
+#define FPGA_DMA_BUF_SIZE (2*1024*1024)
 #define FPGA_DMA_BUF_ALIGN_SIZE FPGA_DMA_BUF_SIZE
 // Convenience macros
 #ifdef FPGA_DMA_DEBUG
@@ -166,6 +166,7 @@ struct fpga_dma_handle {
 	uint64_t dma_buf_iova[FPGA_DMA_MAX_BUF];
 	// channel type
 	fpga_dma_channel_type_t ch_type;
+	uint64_t dma_channel;
 	pthread_t thread_id;
 	// Transaction queue (model as a fixed-size circular buffer)
 	qinfo_t qinfo;

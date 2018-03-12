@@ -286,7 +286,10 @@ typedef union {
 		uint32_t error:8;
 		uint32_t early_termination:1;
 		uint32_t eop_arrived:1;
-		uint32_t rsvd:22;
+		uint32_t err_irq_mask:8;
+		uint32_t early_termination_irq_mask:1;
+		uint32_t desc_buffer_full:1;
+		uint32_t rsvd:12;
 	} rsp;
 } msgdma_rsp_status_t;
 

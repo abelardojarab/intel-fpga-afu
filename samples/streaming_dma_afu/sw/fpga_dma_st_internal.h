@@ -85,7 +85,7 @@
 // in a single descriptor).This value must match configuration of
 // the DMA IP. Larger transfers will be broken down into smaller
 // transactions.
-#define FPGA_DMA_BUF_SIZE (1023*1024)
+#define FPGA_DMA_BUF_SIZE (2*1023*1024)
 #define FPGA_DMA_BUF_ALIGN_SIZE FPGA_DMA_BUF_SIZE
 // Convenience macros
 #ifdef FPGA_DMA_DEBUG
@@ -152,7 +152,7 @@ struct fpga_dma_handle {
 	uint64_t dma_offset;
 	uint64_t dma_csr_base;
 	uint64_t dma_desc_base;
-	uint64_t dma_resp_base;
+	uint64_t dma_rsp_base;
 	uint64_t dma_ase_cntl_base;
 	uint64_t dma_ase_data_base;
 	// Interrupt event handle
@@ -166,6 +166,7 @@ struct fpga_dma_handle {
 	uint64_t dma_buf_iova[FPGA_DMA_MAX_BUF];
 	// channel type
 	fpga_dma_channel_type_t ch_type;
+	uint64_t dma_channel;
 	pthread_t thread_id;
 	// Transaction queue (model as a fixed-size circular buffer)
 	qinfo_t qinfo;
@@ -275,9 +276,28 @@ typedef struct __attribute__((__packed__)) {
 	// 0x8
 	msgdma_fill_level_t fill_level;
 	// 0xc
-	msgdma_rsp_level_t rsp;
+	msgdma_rsp_level_t rsp_level;
 	// 0x10
 	msgdma_seq_num_t seq_num;
 } msgdma_csr_t;
 
+typedef union {
+	uint32_t reg;
+	struct {
+		uint32_t error:8;
+		uint32_t early_termination:1;
+		uint32_t eop_arrived:1;
+		uint32_t err_irq_mask:8;
+		uint32_t early_termination_irq_mask:1;
+		uint32_t desc_buffer_full:1;
+		uint32_t rsvd:12;
+	} rsp;
+} msgdma_rsp_status_t;
+
+typedef struct __attribute__((__packed__)) {
+	// 0x0
+	uint32_t actual_bytes_tf;
+	// 0x4
+	msgdma_rsp_status_t rsp_status;
+} msgdma_rsp_t;
 #endif // __FPGA_DMA_ST_INT_H__

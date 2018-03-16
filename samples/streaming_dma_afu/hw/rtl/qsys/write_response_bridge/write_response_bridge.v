@@ -137,7 +137,7 @@ assign inc_transaction_counter = load_burst_counter;
 assign dec_transaction_counter = s_write_response_valid;
 
 
-assign enable_downstream = (m_waitrequest == 1'b0);
+assign enable_downstream = (m_waitrequest == 1'b0) & (transaction_counter[MAX_PENDING_WRITES_WIDTH-1] == 1'b0);
 
 
 assign m_address = address;
@@ -148,6 +148,9 @@ assign m_burst = burst;
 
 assign s_response = response;
 assign s_write_response_valid = write_response_valid;
-assign s_waitrequest = waitrequest | transaction_counter[MAX_PENDING_WRITES_WIDTH-1];  // backpressure when we have too many writes in flight as well
+
+// using pipelined waitrequest is causing one too many beats to get through, fix this later
+// assign s_waitrequest = waitrequest | transaction_counter[MAX_PENDING_WRITES_WIDTH-1];  // backpressure when we have too many writes in flight as well
+assign s_waitrequest = m_waitrequest | transaction_counter[MAX_PENDING_WRITES_WIDTH-1];  // backpressure when we have too many writes in flight as well
 
 endmodule

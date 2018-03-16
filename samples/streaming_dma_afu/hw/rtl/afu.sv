@@ -271,7 +271,7 @@ module afu #(
       .avmm_write_responsevalid (requestor_avmm_wr_writeresponsevalid),
 		
 		.c1TxAlmFull              (cp2af_sRxPort.c1TxAlmFull),
-		//.c1rx                    (cp2af_sRxPort.c1),	//write response
+		.c1rx                     (cp2af_sRxPort.c1),
 		.c1tx                     (af2cp_sTxPort.c1)
 	);
 	

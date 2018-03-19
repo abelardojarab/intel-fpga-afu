@@ -4,9 +4,7 @@ streaming_dma_afu.json
 QI:BBB_ccip_avmm/hw/par/ccip_avmm_addenda.qsf
 SI:BBB_ccip_avmm/hw/sim/ccip_avmm_sim_addenda.txt
 
-# CCI-P async shim
-QI:BBB_ccip_async/hw/par/ccip_async_addenda.qsf
-SI:BBB_ccip_async/hw/sim/ccip_async_sim_addenda.txt
+
 
 # MPF
 +define+MPF_PLATFORM_DCP_PCIE=1

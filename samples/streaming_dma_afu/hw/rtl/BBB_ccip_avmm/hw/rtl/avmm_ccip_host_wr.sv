@@ -115,7 +115,7 @@ module avmm_ccip_host_wr #(
      the address increments by 1 and the burst_counter decrements by 1 for each beat of the burst.  */
 	always @ (posedge clk)
 	begin
-	  if (reset == 1'b1)
+	  if (reset)
 	  begin
       burst_counter <= 2'b00;
       address_counter <= 2'b00;
@@ -143,9 +143,10 @@ module avmm_ccip_host_wr #(
       
       In all three cases the burst will get chopped into single 1CL bursts when issued to CCI-P.  
   */
-  assign unaligned_burst = ((avmm_burstcount == 3'b100) & (avmm_address[7:6] != 2'b00)) |
+  assign unaligned_burst = ((burst_counter == 2'b00) & (avmm_write == 1'b1) & (avcmd_ready == 1'b1) & (ccip_write_fence_dly == 1'b0)) &
+                           (((avmm_burstcount == 3'b100) & (avmm_address[7:6] != 2'b00)) |
                            ((avmm_burstcount == 3'b010) & (avmm_address[6] != 1'b0)) |
-                           (avmm_burstcount == 3'b011);
+                           (avmm_burstcount == 3'b011));
   
   /* When an incoming Avalon burst is not aligned to 2CL or 4CL (or is 3), additional_unaligned_beats will assert until the Avalon burst completes.
      This signal will be used to ensure we keep issuing 1CL bursts to the CCI-P interface while asserting sop.  After the last beat
@@ -157,9 +158,9 @@ module avmm_ccip_host_wr #(
   begin
     if (reset)
       additional_unaligned_beats <= 1'b0;
-    else if ((burst_counter == 2'b00) & (unaligned_burst == 1'b1) & (avmm_write == 1'b1) & (avcmd_ready == 1'b1) & (ccip_write_fence_dly == 1'b0))
+    else if (unaligned_burst == 1'b1)  // unaligned bursts are always at least 2 beats
       additional_unaligned_beats <= 1'b1;
-    else if ((additional_unaligned_beats == 1'b1) & (burst_counter == 2'b00))
+    else if ((additional_unaligned_beats == 1'b1) & (burst_counter == 2'b01) & (avcmd_ready == 1'b1))
       additional_unaligned_beats <= 1'b0;
   end
   
@@ -221,8 +222,7 @@ module avmm_ccip_host_wr #(
 	assign c1tx_next.hdr = ccip_pending_irq_dly? ccip_intr_req_hdr :
 				                 ccip_write_fence_dly? ccip_fence_req_hdr : ccip_mem_req_hdr;
 
-	//while there are any pending IRQs no new write fences writes are allowed through
-	wire avcmd_ready_next = ~c1TxAlmFull && ~ccip_pending_irq_dly;  //TODO:  ccip_pending_irq_dly term can probably be removed from this signal
+  wire avcmd_ready_next = ~c1TxAlmFull;
 	/* When a write fence arrives this logic must backpressure immediately so that data accompanying the write fence is not lost.
      Since only a finite number of write bursts can be tracked need to backpressure when the burst FIFO is full */
 	assign avmm_waitrequest = ~avcmd_ready | ccip_pending_irq_dly | ccip_write_fence_dly | burst_fifo_full;
@@ -357,7 +357,7 @@ endgenerate
 	// almost full is asserted, since there will always be space for it.
 	assign set_ccip_write_fence_complete = ccip_write_fence_request && ~ccip_pending_irq_dly;
 	// the write fence completes the cycle after the write fence command has been sent to the next queue so complete is 1 cycle
-	assign clear_ccip_write_fence_complete = ccip_write_fence_complete && avcmd_ready_next;
+  assign clear_ccip_write_fence_complete = ccip_write_fence_complete && avcmd_ready;
 	// once the write fence is sent we immediately let the data that arrived with it to be sent to host memory
 	assign ccip_write_fence_dly = ccip_write_fence_request && ~ccip_write_fence_complete;
 

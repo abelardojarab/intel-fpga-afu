@@ -103,9 +103,10 @@ module avmm_ccip_host_rd (
       
       In all three cases the burst will get chopped into single 1CL bursts when issued to CCI-P.  
   */
-  assign unaligned_burst = ((avmm_burstcount == 3'b100) & (avmm_address[7:6] != 2'b00)) |
+  assign unaligned_burst = ((burst_counter == 2'b00) & (avmm_read == 1'b1) & (avcmd_ready == 1'b1)) &
+                           (((avmm_burstcount == 3'b100) & (avmm_address[7:6] != 2'b00)) |
                            ((avmm_burstcount == 3'b010) & (avmm_address[6] != 1'b0)) |
-                           (avmm_burstcount == 3'b011);
+                           (avmm_burstcount == 3'b011));
 
                            
   /* When an incoming Avalon burst is not aligned to 2CL or 4CL (or is 3), additional_unaligned_beats will assert until the Avalon burst completes.
@@ -118,9 +119,9 @@ module avmm_ccip_host_rd (
   begin
     if (reset == 1'b1)
       additional_unaligned_beats <= 1'b0;
-    else if ((burst_counter == 2'b00) & (unaligned_burst == 1'b1) & (avmm_read == 1'b1) & (avcmd_ready == 1'b1))
+    else if (unaligned_burst == 1'b1)
       additional_unaligned_beats <= 1'b1;
-    else if ((additional_unaligned_beats == 1'b1) & (burst_counter == 2'b00))
+    else if ((additional_unaligned_beats == 1'b1) & (burst_counter == 2'b01) & (avcmd_ready == 1'b1))
       additional_unaligned_beats <= 1'b0;
   end
   
@@ -138,8 +139,8 @@ module avmm_ccip_host_rd (
 	end
 
   // only load the burst counter if the incoming Avalon burst is 2 or 4 and unaligned or if the Avalon burst is 3. 
-  assign load_burst_counter = (burst_counter == 2'b00) & (avmm_read == 1'b1) & (unaligned_burst == 1'b1) & (avcmd_ready == 1'b1);
-	assign burst_counter_enable = (burst_counter != 2'b00) & (avmm_read == 1'b1) & (avcmd_ready == 1'b1);
+  assign load_burst_counter = (unaligned_burst == 1'b1) & (avcmd_ready == 1'b1);
+	assign burst_counter_enable = (burst_counter != 2'b00) & (avcmd_ready == 1'b1);
   
 
 	//read request, this block requires CCIP read re-ordering to be enabled in the MPF to ensure in-order read responses
@@ -150,7 +151,7 @@ module avmm_ccip_host_rd (
   assign c0tx_next.hdr.rsvd0 = '0;
 	assign c0tx_next.hdr.address = (burst_counter == 2'b00)? avmm_address[47:6] : address_counter;
 	assign c0tx_next.hdr.mdata = rx_mdata;
-	assign c0tx_next.valid = reset ? 1'b0 : avmm_read;
+	assign c0tx_next.valid = reset ? 1'b0 : (avmm_read | additional_unaligned_beats);
 
 	wire avcmd_ready_next = ~c0TxAlmFull;
   // need to throttle when dealing with an unaligned burst or an Avalon burst of 3 beats

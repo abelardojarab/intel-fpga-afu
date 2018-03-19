@@ -80,10 +80,10 @@ begin
   else if (enable_downstream)
   begin
     address <= s_address;
-	  writedata <= s_writedata;
-	  byteenable <= s_byteenable;
-	  burst <= s_burst;
-    write <= s_write;
+    writedata <= s_writedata;
+    byteenable <= s_byteenable;
+    burst <= s_burst;
+    write <= s_write & (transaction_counter[MAX_PENDING_WRITES_WIDTH-1] == 1'b0);  // need to throttle writes when too many are in flight
   end
 end
 

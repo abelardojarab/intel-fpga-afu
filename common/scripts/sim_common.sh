@@ -19,9 +19,15 @@ parse_args() {
    # Defaults
    v=""
    r=""
-   p="discrete"
    b="${OPAE_BASEDIR}"
    i=""
+
+   # By documented convention, OPAE_PLATFORM_ROOT points to the root of a release tree.
+   # The platform's interface class is stored there.
+   p="discrete"
+   if [ "${OPAE_PLATFORM_ROOT}" != "" ]; then
+      p=`cat "${OPAE_PLATFORM_ROOT}/hw/lib/fme-platform-class.txt"`
+   fi
 
    if [ -x "$(command -v vcs)" ] ; then
       s="vcs"
@@ -267,7 +273,7 @@ build_sim() {
 
    pushd $rtl_sim_dir
    # run ase make
-   make platform=ASE_PLATFORM_DCP
+   make
    popd
 }
 

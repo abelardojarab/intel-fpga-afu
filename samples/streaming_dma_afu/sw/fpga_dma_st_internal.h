@@ -106,6 +106,14 @@ typedef enum {
 	TRANSFER_NOT_IN_PROGRESS = 1
 } fpga_transf_status_t;
 
+typedef enum {
+	NOT_EOP = 0,
+	SOP,
+	EOP,
+	COMPLETE_ON_EOP,
+	NO_PACKET,
+	FPGA_MAX_TF_CTRL
+} fpga_dma_tf_ctrl_t;
 
 struct fpga_dma_transfer {
 	uint64_t src;
@@ -182,12 +190,13 @@ typedef union {
 		uint32_t park_reads:1;
 		uint32_t park_writes:1;
 		uint32_t end_on_eop:1;
-		uint32_t reserved_1:1;
+		uint32_t eop_rvcd_irq_en:1;
 		uint32_t transfer_irq_en:1;
 		uint32_t early_term_irq_en:1;
 		uint32_t trans_error_irq_en:8;
 		uint32_t early_done_en:1;
-		uint32_t reserved_2:6;
+		uint32_t wait_for_wr_rsp:1;
+		uint32_t reserved_2:5;
 		uint32_t go:1;
 	};
 } msgdma_desc_ctrl_t;

@@ -40,7 +40,7 @@
 #include<semaphore.h>
 
 #define DMA_AFU_ID				"EB59BF9D-B211-4A4E-B3E3-753CE68634BA"
-#define TEST_BUF_SIZE (10*1024*1024)
+#define TEST_BUF_SIZE (20*1024*1024)
 #define ASE_TEST_BUF_SIZE (4*1024)
 
 static uint64_t count=0;
@@ -189,14 +189,14 @@ int main(int argc, char *argv[]) {
 
 	fill_buffer((char*)dma_tx_buf_ptr, transfer_len);
 	// Example DMA transfer (host to fpga, asynchronous)
-
+	
 	fpga_dma_transfer_t rx_transfer;
 	fpgaDMATransferInit(&rx_transfer);
 	fpgaDMATransferSetSrc(rx_transfer, 0x0);
 	fpgaDMATransferSetDst(rx_transfer, (uint64_t)dma_rx_buf_ptr);
 	fpgaDMATransferSetLen(rx_transfer, transfer_len);
 	fpgaDMATransferSetTransferType(rx_transfer, FPGA_ST_TO_HOST_MM);
-	fpgaDMATransferSetTxControl(rx_transfer, TX_NO_PACKET);
+	fpgaDMATransferSetRxControl(rx_transfer, RX_NO_PACKET);
 	fpgaDMATransferSetTransferCallback(rx_transfer, rxtransferComplete);
 	res = fpgaDMATransfer(dma_h[1], rx_transfer, (fpga_dma_transfer_cb)&rxtransferComplete, NULL);
 	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransfer");
@@ -208,6 +208,30 @@ int main(int argc, char *argv[]) {
 	fpgaDMATransferSetLen(tx_transfer, transfer_len);
 	fpgaDMATransferSetTransferType(tx_transfer, HOST_MM_TO_FPGA_ST);
 	fpgaDMATransferSetTxControl(tx_transfer, TX_NO_PACKET);
+	fpgaDMATransferSetTransferCallback(tx_transfer, txtransferComplete);
+	res = fpgaDMATransfer(dma_h[0], tx_transfer, (fpga_dma_transfer_cb)&txtransferComplete, NULL);
+	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransfer");
+
+	sem_wait(&cb_status);
+	verify_buffer((char*)dma_rx_buf_ptr, transfer_len);
+	clear_buffer((char*)dma_rx_buf_ptr, transfer_len);
+
+	fpgaDMATransferInit(&rx_transfer);
+	fpgaDMATransferSetSrc(rx_transfer, 0x0);
+	fpgaDMATransferSetDst(rx_transfer, (uint64_t)dma_rx_buf_ptr);
+	fpgaDMATransferSetLen(rx_transfer, transfer_len);
+	fpgaDMATransferSetTransferType(rx_transfer, FPGA_ST_TO_HOST_MM);
+	fpgaDMATransferSetRxControl(rx_transfer, END_ON_EOP);
+	fpgaDMATransferSetTransferCallback(rx_transfer, rxtransferComplete);
+	res = fpgaDMATransfer(dma_h[1], rx_transfer, (fpga_dma_transfer_cb)&rxtransferComplete, NULL);
+	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransfer");
+
+	fpgaDMATransferInit(&tx_transfer);
+	fpgaDMATransferSetSrc(tx_transfer, (uint64_t)dma_tx_buf_ptr);
+	fpgaDMATransferSetDst(tx_transfer, 0x0);
+	fpgaDMATransferSetLen(tx_transfer, transfer_len);
+	fpgaDMATransferSetTransferType(tx_transfer, HOST_MM_TO_FPGA_ST);
+	fpgaDMATransferSetTxControl(tx_transfer, GENERATE_EOP);
 	fpgaDMATransferSetTransferCallback(tx_transfer, txtransferComplete);
 	res = fpgaDMATransfer(dma_h[0], tx_transfer, (fpga_dma_transfer_cb)&txtransferComplete, NULL);
 	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransfer");

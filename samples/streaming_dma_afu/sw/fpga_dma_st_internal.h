@@ -106,15 +106,6 @@ typedef enum {
 	TRANSFER_NOT_IN_PROGRESS = 1
 } fpga_transf_status_t;
 
-typedef enum {
-	NOT_EOP = 0,
-	SOP,
-	EOP,
-	COMPLETE_ON_EOP,
-	NO_PACKET,
-	FPGA_MAX_TF_CTRL
-} fpga_dma_tf_ctrl_t;
-
 struct fpga_dma_transfer {
 	uint64_t src;
 	uint64_t dst;

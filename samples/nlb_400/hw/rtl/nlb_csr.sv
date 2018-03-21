@@ -158,7 +158,7 @@ localparam      CSR_INACT_THRESH     = 16'h148;    // 32b             // RW   se
 localparam      CSR_SWTEST_MSG       = 16'h158;    // 32b             // RW   Write to this serves as a notification to SW test   
 localparam      CSR_STATUS0          = 16'h160;    // 32b                RO   num_read, num_writes
 localparam      CSR_STATUS1          = 16'h168;    // 32b                RO   num_Rdpend, num_Wrpend 
-localparam      CSR_ERROR            = 16'h170;    // 32b                RO   error
+localparam      CSR_STATUS2          = 16'h170;    // 32b                RO   AFU frequency, error
 localparam      CSR_STRIDE           = 16'h178;    // 32b           //  stride value  
 
 `ifdef PLATFORM_PROVIDES_LOCAL_MEMORY
@@ -523,11 +523,11 @@ begin
 		  64'h0
                  );
 
-         set_attr(CSR_ERROR,
+         set_attr(CSR_STATUS2,
                   NO_STAGED_CSR,
                   1'b1,
                   {64{RO}},
-                  {32'h0, re2cr_error},
+                  {16'h0, 16'(ccip_cfg_pkg::PCLK_FREQ), re2cr_error},
 		  64'h0
                  );
 `ifdef PLATFORM_PROVIDES_LOCAL_MEMORY

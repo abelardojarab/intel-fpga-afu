@@ -78,8 +78,15 @@ parse_args() {
    opae_install=${i}
 
    rtl_filelist="${rtl}/filelist.txt"
-   if [ "${v}" != "" ]; then
-      rtl_filelist="${rtl}/filelist_${variant}.txt"
+   if [ "${variant}" != "" ]; then
+      if [ -f "${rtl}/filelist_${variant}.txt" ]; then
+         rtl_filelist="${rtl}/filelist_${variant}.txt"
+      elif [ -f "${rtl}/${variant}" ]; then
+         rtl_filelist="${rtl}/${variant}"
+      else
+         echo "Unable to find sources for variant ${variant}"
+         exit 1;
+      fi
    fi
 
    # mandatory args
@@ -308,6 +315,7 @@ build_app() {
    set -x
    pushd $app_base
    # Build the software application
+   make clean
    if [[ $opae_install ]]; then
       # non-RPM flow
       echo "Non-RPM Flow"
@@ -323,8 +331,20 @@ build_app() {
 
 exec_app() {
    pushd $app_base
-   # find the executable and run
-   find . -maxdepth 1 -type f -executable -exec {} \;
+
+   # Find the executable and run.  First look for an application with the suffix "_ase".
+   app=`find . -maxdepth 1 -type f -executable -name '*_ase'`
+   if [ "${app}" == "" ]; then
+      # No "_ase".  Find any executable.
+      app=`find . -maxdepth 1 -type f -executable`
+   fi
+
+   # Run $app if found.  This doesn't yet handle multiple executables in a single
+   # directory.
+   if [ "${app}" != "" ]; then
+       "${app}"
+   fi
+
    popd
 }
 

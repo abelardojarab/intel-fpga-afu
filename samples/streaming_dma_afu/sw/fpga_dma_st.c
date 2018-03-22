@@ -151,14 +151,18 @@ static fpga_result _pop_response_fifo(fpga_dma_handle_t dma_h, int *fill_level, 
 
 	fill = rsp_level.rsp.rsp_fill_level;
 	
-	// Pop the responses to find no. of bytes trasnfered, status of transfer and to avoid deadlock of DMA
 	while (fill > 0 && *eop != 1) {
+		// Calculate bytes transferred
 		res = fpgaReadMMIO32(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_rsp_base+offsetof(msgdma_rsp_t, actual_bytes_tf), &rsp_bytes);
 		ON_ERR_GOTO(res, out, "fpgaReadMMIO32");
+		*tf_count += rsp_bytes;
+
+		// Pop the response FIFO (read from rsp_status pops the FIFO)
 		res = fpgaReadMMIO32(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_rsp_base+offsetof(msgdma_rsp_t, rsp_status), &rsp_status.reg);
 		ON_ERR_GOTO(res, out, "fpgaReadMMIO32");
-		*tf_count += rsp_bytes;
 		fill--;
+
+		// check if EOP arrived, update status
 		if(rsp_status.rsp.eop_arrived == 1)
 			*eop = 1;
 		*fill_level += 1;
@@ -244,54 +248,54 @@ out:
 }
 
 static fpga_result _do_dma_rx(fpga_dma_handle_t dma_h, uint64_t dst, uint64_t src, int count, int is_last_desc, fpga_dma_transfer_type_t type, bool intr_en, fpga_dma_rx_ctrl_t rx_ctrl) {
-   msgdma_ext_desc_t desc = {0};
-   fpga_result res = FPGA_OK;
+	msgdma_ext_desc_t desc = {0};
+	fpga_result res = FPGA_OK;
 
-   // src, dst must be 64-byte aligned
-   if(dst%FPGA_DMA_ALIGN_BYTES !=0 ||
-      src%FPGA_DMA_ALIGN_BYTES !=0) {
-      return FPGA_INVALID_PARAM;
-   }
+	// src, dst must be 64-byte aligned
+	if(dst%FPGA_DMA_ALIGN_BYTES !=0 ||
+		src%FPGA_DMA_ALIGN_BYTES !=0) {
+		return FPGA_INVALID_PARAM;
+	}
 
-   // these fields are fixed for all DMA transfers
-   desc.seq_num = 0;
-   desc.wr_stride = 1;
-   desc.rd_stride = 1;
+	// these fields are fixed for all DMA transfers
+	desc.seq_num = 0;
+	desc.wr_stride = 1;
+	desc.rd_stride = 1;
 
-   desc.control.go = 1;
-   if(intr_en)
-      desc.control.transfer_irq_en = 1;
-   else
-      desc.control.transfer_irq_en = 0;
+	desc.control.go = 1;
+	if(intr_en)
+		desc.control.transfer_irq_en = 1;
+	else
+		desc.control.transfer_irq_en = 0;
 
-   // Enable "earlyreaddone" in the control field of the descriptor except the last.
-   // Setting early done causes the read logic to move to the next descriptor
-   // before the previous descriptor completes.
-   // This elminates a few hundred clock cycles of waiting between transfers.
-   if(!is_last_desc)
-      desc.control.early_done_en = 1;
-   else
-      desc.control.early_done_en = 0;
+	// Enable "earlyreaddone" in the control field of the descriptor except the last.
+	// Setting early done causes the read logic to move to the next descriptor
+	// before the previous descriptor completes.
+	// This elminates a few hundred clock cycles of waiting between transfers.
+	if(!is_last_desc)
+		desc.control.early_done_en = 1;
+	else
+		desc.control.early_done_en = 0;
 	
-   if(rx_ctrl == END_ON_EOP) {
-      desc.control.end_on_eop = 1;
-      desc.control.eop_rvcd_irq_en = 1;
+	if(rx_ctrl == END_ON_EOP) {
+		desc.control.end_on_eop = 1;
+		desc.control.eop_rvcd_irq_en = 1;
 	} else {
-      desc.control.end_on_eop = 0;
-      desc.control.eop_rvcd_irq_en = 0;
-   }
+		desc.control.end_on_eop = 0;
+		desc.control.eop_rvcd_irq_en = 0;
+	}
 
-   desc.rd_address = src & FPGA_DMA_MASK_32_BIT;
-   desc.wr_address = dst & FPGA_DMA_MASK_32_BIT;
-   desc.len = count;
-   desc.rd_address_ext = (src >> 32) & FPGA_DMA_MASK_32_BIT;
-   desc.wr_address_ext = (dst >> 32) & FPGA_DMA_MASK_32_BIT;
+	desc.rd_address = src & FPGA_DMA_MASK_32_BIT;
+	desc.wr_address = dst & FPGA_DMA_MASK_32_BIT;
+	desc.len = count;
+	desc.rd_address_ext = (src >> 32) & FPGA_DMA_MASK_32_BIT;
+	desc.wr_address_ext = (dst >> 32) & FPGA_DMA_MASK_32_BIT;
 
-   res = _send_descriptor(dma_h, desc);
-   ON_ERR_GOTO(res, out, "_send_descriptor");
+	res = _send_descriptor(dma_h, desc);
+	ON_ERR_GOTO(res, out, "_send_descriptor");
 
 out:
-   return res;
+	return res;
 }
 
 
@@ -859,24 +863,24 @@ fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, fpga_dma_transfer_t transfer,
 
 	if(type == HOST_MM_TO_FPGA_ST && !IS_DMA_ALIGNED(transfer->dst)) {
 		res = FPGA_INVALID_PARAM;
-		ON_ERR_GOTO(res, out, "Dst Address Unaligned"); 
+		ON_ERR_GOTO(res, out, "Dst Address Unaligned");
 	}
 	if(type == HOST_MM_TO_FPGA_ST && transfer->tx_ctrl > FPGA_MAX_TX_CTRL) {
 		res = FPGA_INVALID_PARAM;
-		ON_ERR_GOTO(res, out, "Invalid TxControl"); 
+		ON_ERR_GOTO(res, out, "Invalid TxControl");
 	}
 
 
 	if(type == FPGA_ST_TO_HOST_MM && !IS_DMA_ALIGNED(transfer->src)) {
 		res = FPGA_INVALID_PARAM;
-      ON_ERR_GOTO(res, out, "Src Address Unaligned");
-   }
-	 
+		ON_ERR_GOTO(res, out, "Src Address Unaligned");
+	}
+
 	if(type == FPGA_ST_TO_HOST_MM && transfer->rx_ctrl > FPGA_MAX_RX_CTRL) {
 		res = FPGA_INVALID_PARAM;
-      ON_ERR_GOTO(res, out, "Invalid RxControl"); 
-   }
- 
+		ON_ERR_GOTO(res, out, "Invalid RxControl");
+	}
+
 	pthread_mutex_lock(&transfer->tf_mutex);
 	sem_wait(&transfer->tf_status);
 

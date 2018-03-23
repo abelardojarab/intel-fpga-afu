@@ -21,7 +21,8 @@
 //                      generates a CCIP interrupt request packet
 //                      Read from MMIO 0x40 to observe an MMIO RD Timeout Failure
 // 
-import ccip_if_pkg::*;
+
+`include "platform_if.vh"
 
 // Generate interrupt
 function automatic t_if_ccip_c1_Tx ccip_genInterrupt(

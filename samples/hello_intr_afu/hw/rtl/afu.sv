@@ -19,7 +19,8 @@
 //                      Write to AFU CSR word address 0x28 (byte address 0xA0)
 //                      generates a CCIP interrupt request packet
 // 
-import ccip_if_pkg::*;
+
+`include "platform_if.vh"
 
 // Generate interrupt
 function automatic t_if_ccip_c1_Tx ccip_genInterrupt(

@@ -30,9 +30,14 @@
 // Description :    This module instantiates CCI-P compliant AFU
 
 // ***************************************************************************
-`default_nettype none
-import ccip_if_pkg::*;
-module ccip_std_afu(
+
+`include "platform_if.vh"
+
+module ccip_std_afu
+  #(
+    parameter DDR_ADDR_WIDTH = 26
+    )
+ (
   // CCI-P Clocks and Resets
   pClk,                      // 400MHz - CCI-P clock domain. Primary interface clock
   pClkDiv2,                  // 200MHz - CCI-P clock domain.

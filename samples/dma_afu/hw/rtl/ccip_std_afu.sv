@@ -34,7 +34,13 @@
 `include "cci_mpf_if.vh"
 import cci_mpf_csrs_pkg::*;
 
-module ccip_std_afu(
+`include "platform_if.vh"
+
+module ccip_std_afu
+  #(
+    parameter DDR_ADDR_WIDTH = 26
+    )
+ (
   // CCI-P Clocks and Resets
   pClk,                      // 400MHz - CCI-P clock domain. Primary interface clock
   pClkDiv2,                  // 200MHz - CCI-P clock domain.

@@ -83,59 +83,48 @@ that were defined after the old AFU was written.
 
 Interface ports are broken down into classes.  The AFU JSON in
 hw/rtl/hello_mem_afu.json modifies two port classes: "cci-p" and
-"local-memory".  Two fields are updated:
+"local-memory".  The clock field is updated.  Setting "clock" to something
+other than it's default ("default") or to the interface's native clock
+(e.g. "pClk" for CCI-P) triggers automatic insertion of clock crossing logic
+from the native domain to the target domain.  Any valid clock name may be
+used.  Most AFUs will use one of the standard CCI-P clocks (pClkDiv2,
+uClk_usr, etc.).  Specifying a local memory clock (e.g. local_mem[0].clk) is
+legal, though generally a poor choice since each memory bank may have its own
+clock.
 
-- add-extra-timing-reg-stages.  Setting this field to "auto" causes the
-  platform logic to insert physical-platform-specific buffering between the
-  AFU and the partial reconfiguration (PR) boundary.  On some platforms, an
-  extra cycle of buffering improves timing closure.  Setting this to "auto" is
-  encouraged, though be aware that no extra FIU-side buffering is added for
-  CCI-P sending limits following almost full.  AFUs that are already near
-  their sending limit following CCI-P almost full may cause overruns,
-  resulting in lost requests.  If add-extra-timing-reg-stages is not present
-  in the JSON, no buffer stages are added.
+When no clock is specified in the JSON, a port's native clock is unchanged.
+It is not necessary to specify clocks for all interfaces.  For example,
+hello_mem_afu could run in the pClk domain by removing the "clock" field
+from class "cci-p" and specifying "pClk" as the clock in class
+"local-memory".
 
-- clock.  Setting "clock" to something other than it's default ("default") or
-  to the interface's native clock (e.g. "pClk" for CCI-P) triggers automatic
-  insertion of clock crossing logic from the native domain to the target
-  domain.  Any valid clock name may be used.  Most AFUs will use one of the
-  standard CCI-P clocks (pClkDiv2, uClk_usr, etc.).  Specifying a local memory
-  clock (e.g. local_mem[0].clk) is legal, though generally a poor choice since
-  each memory bank may have its own clock.
+Note that not all module port classes offer automatic clock crossing.
+afu_platform_config will fail if a clock crossing is requested that can not
+be satisfied.
 
-  When no clock is specified in the JSON, a port's native clock is unchanged.
-  It is not necessary to specify clocks for all interfaces.  For example,
-  hello_mem_afu could run in the pClk domain by removing the "clock" field
-  from class "cci-p" and specifying "pClk" as the clock in class
-  "local-memory".
+For most interfaces, an automated clock crossing changes the clock passed
+along with the interface.  For example, the local_mem[0].clk port in
+hw/rtl/ccip_std_afu.sv is connected to uClk_usr in this example.  CCI-P's
+standard clocks (pClk, pClkDiv2 and pClkDiv4) are exceptions.  Because they
+may be used to drive other logic, these clocks are always passed in
+unchanged.  Instead, afu_platform_config sets two Verilog macros.  Note the
+definitions of clk and reset in hw/rtl/ccip_std_afu.sv:
 
-  Note that not all module port classes offer automatic clock crossing.
-  afu_platform_config will fail if a clock crossing is requested that can not
-  be satisfied.
+  assign clk = `PLATFORM_PARAM_CCI_P_CLOCK;
+  assign reset = `PLATFORM_PARAM_CCI_P_RESET;
 
-  For most interfaces, an automated clock crossing changes the clock passed
-  along with the interface.  For example, the local_mem[0].clk port in
-  hw/rtl/ccip_std_afu.sv is connected to uClk_usr in this example.  CCI-P's
-  standard clocks (pClk, pClkDiv2 and pClkDiv4) are exceptions.  Because they
-  may be used to drive other logic, these clocks are always passed in
-  unchanged.  Instead, afu_platform_config sets two Verilog macros.  Note the
-  definitions of clk and reset in hw/rtl/ccip_std_afu.sv:
+AFUs that use these two macros will always pick the correct CCI-P clock in
+response to changes in the AFU JSON.
 
-    assign clk = `PLATFORM_PARAM_CCI_P_CLOCK;
-    assign reset = `PLATFORM_PARAM_CCI_P_RESET;
+***
+*** The clock and reset macros above and the packages containing CCI-P and
+*** local memory interface definitions should be loaded in AFU sources with:
+***
+***   `include "platform_if.vh"
+***
 
-  AFUs that use these two macros will always pick the correct CCI-P clock in
-  response to changes in the AFU JSON.
-
-  ***
-  *** The clock and reset macros above and the packages containing CCI-P and
-  *** local memory interface definitions should be loaded in AFU sources with:
-  ***
-  ***   `include "platform_if.vh"
-  ***
-
-All port selection, automated clock crossing and buffering is handled in a
-combination of Intel-provided code:
+All port selection and automated clock crossing is handled in a combination of
+Intel-provided code:
 
 - Either the top-level ASE driver module or the top-level green bitstream
   PR connection module that ships with a physical platform release.

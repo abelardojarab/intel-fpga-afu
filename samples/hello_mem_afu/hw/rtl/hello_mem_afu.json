@@ -13,7 +13,6 @@
                      "class": "cci-p",
                      "params":
                         {
-                           "add-extra-timing-reg-stages": "auto",
                            "clock": "uClk_usr"
                         }
                   },
@@ -21,7 +20,6 @@
                      "class": "local-memory",
                      "params":
                         {
-                           "add-extra-timing-reg-stages": "auto",
                            "clock": "uClk_usr"
                         }
                   }

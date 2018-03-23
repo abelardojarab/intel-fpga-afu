@@ -8,13 +8,6 @@
             "module-arguments" :
                [
                   {
-                     "class": "cci-p",
-                     "params":
-                        {
-                           "add-extra-timing-reg-stages": "auto"
-                        }
-                  },
-                  {
                      "class": "local-memory",
                      "optional": true,
                      "params":

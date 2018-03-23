@@ -4,7 +4,7 @@
       "power": 0,
       "afu-top-interface":
          {
-            "name": "ccip_std_afu_avalon_mm",
+            "class": "ccip_std_afu_avalon_mm",
             "module-arguments" :
                [
                   {

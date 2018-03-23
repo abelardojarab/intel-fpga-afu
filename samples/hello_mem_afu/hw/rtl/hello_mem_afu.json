@@ -6,7 +6,7 @@
       "clock-frequency-low": "auto",
       "afu-top-interface":
          {
-            "name": "ccip_std_afu_avalon_mm",
+            "class": "ccip_std_afu_avalon_mm",
             "module-ports" :
                [
                   {

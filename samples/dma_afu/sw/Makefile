@@ -58,10 +58,13 @@ fpga_dma_test: fpga_dma_test.o fpga_dma.so
 fpga_dma_test.o: fpga_dma_test.c
 	gcc $(CFLAGS) -o $@ -c $^ 
 
-fpga_dma.so: fpga_dma.o
+fpga_dma.so: fpga_dma.o x86-sse2.o
 	gcc $(CFLAGS)  -o $@ $^ $(LDFLAGS) -shared
 
 fpga_dma.o: fpga_dma.c
+	gcc $(CFLAGS) -c -o $@ $^
+
+x86-sse2.o: x86-sse2.S
 	gcc $(CFLAGS) -c -o $@ $^
 
 clean:

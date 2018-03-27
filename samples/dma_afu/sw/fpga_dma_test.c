@@ -28,6 +28,7 @@
 #include <uuid/uuid.h>
 #include <opae/fpga.h>
 #include <time.h>
+#include <sys/mman.h>
 #include "fpga_dma.h"
 /**
  * \fpga_dma_test.c
@@ -43,6 +44,12 @@
 
 
 static int err_cnt = 0;
+
+// Options determining various optimization attempts
+bool use_malloc = true;
+bool use_memcpy = true;
+bool use_advise = false;
+
 /*
  * macro for checking return codes
  */
@@ -54,6 +61,45 @@ static int err_cnt = 0;
       goto label;\
     }\
   } while (0)
+
+
+// Aligned malloc
+static void *malloc_aligned(uint32_t align, size_t size)
+{
+	assert(align && ((align & (align - 1)) == 0));      // Must be power of 2 and not 0
+	assert(align >= 2 * sizeof(void *));
+	void *blk = NULL;
+	if (use_malloc)
+	{
+		blk = malloc(size + align + 2 * sizeof(void *));
+	}
+	else
+	{
+		align = getpagesize();
+		blk = mmap(NULL, size + align + 2 * sizeof(void *), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS | MAP_POPULATE, 0, 0);
+	}
+	void **aptr =
+		(void **)(((uint64_t)blk + sizeof(void *) + (align - 1)) &
+			~(align - 1));
+	aptr[-1] = blk;
+	aptr[-2] = (void *)(size + align + 2 * sizeof(void *));
+	return aptr;
+}
+
+// Aligned free
+static void free_aligned(void *ptr)
+{
+	void **aptr = (void **)ptr;
+	if (use_malloc)
+	{
+		free(aptr[-1]);
+	}
+	else
+	{
+		munmap(aptr[-1], (size_t)aptr[-2]);
+	}
+	return;
+}
 
 
 void fill_buffer(char *buf, size_t size) {
@@ -105,12 +151,16 @@ fpga_result ddr_sweep(fpga_dma_handle dma_h) {
    
    ssize_t total_mem_size = (uint64_t)(4*1024)*(uint64_t)(1024*1024);
    
-   uint64_t *dma_buf_ptr = malloc(total_mem_size);
+   uint64_t *dma_buf_ptr = malloc_aligned(getpagesize(), total_mem_size);
    if(dma_buf_ptr == NULL) {
       printf("Unable to allocate %ld bytes of memory", total_mem_size);
       return FPGA_NO_MEMORY;
    }
    printf("Allocated test buffer\n");
+   if (use_advise)
+   {
+	   int rr = madvise(dma_buf_ptr, total_mem_size, MADV_SEQUENTIAL);
+   }
    printf("Fill test buffer\n");
    fill_buffer((char*)dma_buf_ptr, total_mem_size);
 
@@ -124,7 +174,7 @@ fpga_result ddr_sweep(fpga_dma_handle dma_h) {
 	clock_gettime(CLOCK_MONOTONIC, &end);
    if(res != FPGA_OK) {
       printf(" fpgaDmaTransferSync Host to FPGA failed with error %s", fpgaErrStr(res));
-      free(dma_buf_ptr);
+      free_aligned(dma_buf_ptr);
       return FPGA_EXCEPTION;
    }
 	
@@ -143,7 +193,7 @@ fpga_result ddr_sweep(fpga_dma_handle dma_h) {
 
    if(res != FPGA_OK) {
       printf(" fpgaDmaTransferSync FPGA to Host failed with error %s", fpgaErrStr(res));
-      free(dma_buf_ptr);
+      free_aligned(dma_buf_ptr);
       return FPGA_EXCEPTION;
    }
    report_bandwidth(total_mem_size, getTime(start,end));
@@ -151,8 +201,20 @@ fpga_result ddr_sweep(fpga_dma_handle dma_h) {
    printf("Verifying buffer..\n");   
    verify_buffer((char*)dma_buf_ptr, total_mem_size);
 
-   free(dma_buf_ptr);
+   free_aligned(dma_buf_ptr);
    return FPGA_OK;
+}
+
+static void usage(void)
+{
+	printf("Usage: fpga_dma_test <use_ase = 1 (simulation only), 0 (hardware)> [options]\n");
+	printf("Options are:\n");
+	printf("\t-m\tUse malloc (default)\n");
+	printf("\t-p\tUse mmap (Incompatible with -m)\n");
+	printf("\t-c\tUse builtin memcpy (default)\n");
+	printf("\t-2\tUse SSE2 memcpy (Incompatible with -c)\n");
+	printf("\t-n\tDo not provide OS advice (default)\n");
+	printf("\t-a\tUse madvise (Incompatible with -n)\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -169,14 +231,55 @@ int main(int argc, char *argv[]) {
    uint32_t use_ase;
 
    if(argc < 2) {
-      printf("Usage: fpga_dma_test <use_ase = 1 (simulation only), 0 (hardware)>");
-      return 1;
+	usage();
+	return 1;
    }
+
+   if (!isdigit(*argv[1])) {
+	   usage();
+	   return 1;
+   }
+
    use_ase = atoi(argv[1]);
    if(use_ase) {
       printf("Running test in ASE mode\n");
    } else {
       printf("Running test in HW mode\n");
+   }
+
+   int x;
+   for (x = 2; x < argc; x++)
+   {
+	   char *str = argv[x];
+	   if (str[0] != '-')
+	   {
+		   usage();
+		   return 1;
+	   }
+
+	   switch (str[1])
+	   {
+	   case 'm':
+		   use_malloc = true;
+		   break;
+	   case 'p':
+		   use_malloc = false;
+		   break;
+	   case 'c':
+		   use_memcpy = true;
+		   break;
+	   case '2':
+		   use_memcpy = false;
+		   break;
+	   case 'n':
+		   use_advise = false;
+		   break;
+	   case 'a':
+		   use_advise = true;
+		   break;
+	   default:
+		   return 1;
+	   }
    }
 
    // enumerate the afc
@@ -226,11 +329,17 @@ int main(int argc, char *argv[]) {
    else
       count = TEST_BUF_SIZE;
 
-   dma_buf_ptr = (uint64_t*)malloc(count);
+   dma_buf_ptr = (uint64_t*)malloc_aligned(getpagesize(), count);
    if(!dma_buf_ptr) {
       res = FPGA_NO_MEMORY;
       ON_ERR_GOTO(res, out_dma_close, "Error allocating memory");
-   }   
+   }
+
+   if (use_advise)
+   {
+	   int rr = madvise(dma_buf_ptr, count, MADV_SEQUENTIAL);
+	   ON_ERR_GOTO((rr == 0) ? FPGA_OK : FPGA_EXCEPTION, out_dma_close, "Error madvise");
+   }
 
    fill_buffer((char*)dma_buf_ptr, count);
 
@@ -277,7 +386,7 @@ int main(int argc, char *argv[]) {
    }
 
 out_dma_close:
-   free(dma_buf_ptr);
+   free_aligned(dma_buf_ptr);
    if(dma_h)
       res = fpgaDmaClose(dma_h);
    ON_ERR_GOTO(res, out_unmap, "fpgaDmaClose");

@@ -29,6 +29,7 @@
 #include <opae/fpga.h>
 #include <time.h>
 #include <sys/mman.h>
+#include <stdbool.h>
 #include "fpga_dma.h"
 /**
  * \fpga_dma_test.c
@@ -49,6 +50,7 @@ static int err_cnt = 0;
 bool use_malloc = true;
 bool use_memcpy = true;
 bool use_advise = false;
+bool do_not_verify = false;
 
 /*
  * macro for checking return codes
@@ -64,7 +66,7 @@ bool use_advise = false;
 
 
 // Aligned malloc
-static void *malloc_aligned(uint32_t align, size_t size)
+static inline void *malloc_aligned(uint64_t align, size_t size)
 {
 	assert(align && ((align & (align - 1)) == 0));      // Must be power of 2 and not 0
 	assert(align >= 2 * sizeof(void *));
@@ -79,7 +81,7 @@ static void *malloc_aligned(uint32_t align, size_t size)
 		blk = mmap(NULL, size + align + 2 * sizeof(void *), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS | MAP_POPULATE, 0, 0);
 	}
 	void **aptr =
-		(void **)(((uint64_t)blk + sizeof(void *) + (align - 1)) &
+		(void **)(((uint64_t)blk + 2 * sizeof(void *) + (align - 1)) &
 			~(align - 1));
 	aptr[-1] = blk;
 	aptr[-2] = (void *)(size + align + 2 * sizeof(void *));
@@ -87,7 +89,7 @@ static void *malloc_aligned(uint32_t align, size_t size)
 }
 
 // Aligned free
-static void free_aligned(void *ptr)
+static inline void free_aligned(void *ptr)
 {
 	void **aptr = (void **)ptr;
 	if (use_malloc)
@@ -102,7 +104,8 @@ static void free_aligned(void *ptr)
 }
 
 
-void fill_buffer(char *buf, size_t size) {
+static inline void fill_buffer(char *buf, size_t size) {
+   if(do_not_verify) return;
    size_t i=0;
    // use a deterministic seed to generate pseudo-random numbers
    srand(99);
@@ -113,7 +116,8 @@ void fill_buffer(char *buf, size_t size) {
    }
 }
 
-fpga_result verify_buffer(char *buf, size_t size) {
+static inline fpga_result verify_buffer(char *buf, size_t size) {
+   if(do_not_verify) return FPGA_OK;
    size_t i, rnum=0;
    srand(99);
 
@@ -129,17 +133,18 @@ fpga_result verify_buffer(char *buf, size_t size) {
    return FPGA_OK;
 }
 
-void clear_buffer(char *buf, size_t size) {
+static inline void clear_buffer(char *buf, size_t size) {
+   if(do_not_verify) return;
    memset(buf, 0, size);
 }
 
-void report_bandwidth(size_t size, double seconds) {
+static inline void report_bandwidth(size_t size, double seconds) {
    double throughput = (double)size/((double)seconds*1000*1000);
    printf("\rMeasured bandwidth = %lf Megabytes/sec\n", throughput);
 }
 
 // return elapsed time
-double getTime(struct timespec start, struct timespec end) {
+static inline double getTime(struct timespec start, struct timespec end) {
    uint64_t diff = 1000000000L * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
    return (double) diff/(double)1000000000L;
 }
@@ -166,19 +171,29 @@ fpga_result ddr_sweep(fpga_dma_handle dma_h) {
 
    uint64_t src = (uint64_t)dma_buf_ptr;
    uint64_t dst = 0x0;
+
+   double tot_time = 0.0;
+   int i;
    
    printf("DDR Sweep Host to FPGA\n");   
-     
+
+#define ITERS 32
+
+   for(i = 0; i < ITERS; i++)
+   {
 	clock_gettime(CLOCK_MONOTONIC, &start);
-   res = fpgaDmaTransferSync(dma_h, dst, src, total_mem_size, HOST_TO_FPGA_MM);
+      res = fpgaDmaTransferSync(dma_h, dst, src, total_mem_size, HOST_TO_FPGA_MM);
 	clock_gettime(CLOCK_MONOTONIC, &end);
-   if(res != FPGA_OK) {
-      printf(" fpgaDmaTransferSync Host to FPGA failed with error %s", fpgaErrStr(res));
-      free_aligned(dma_buf_ptr);
-      return FPGA_EXCEPTION;
+      if(res != FPGA_OK) {
+         printf(" fpgaDmaTransferSync Host to FPGA failed with error %s", fpgaErrStr(res));
+         free_aligned(dma_buf_ptr);
+         return FPGA_EXCEPTION;
+      }
+      tot_time += getTime(start,end);
    }
 	
-   report_bandwidth(total_mem_size, getTime(start,end));
+   report_bandwidth(total_mem_size * ITERS, tot_time);
+   tot_time = 0.0;
 
    printf("\rClear buffer\n");
    clear_buffer((char*)dma_buf_ptr, total_mem_size);
@@ -187,16 +202,22 @@ fpga_result ddr_sweep(fpga_dma_handle dma_h) {
    dst = (uint64_t)dma_buf_ptr;
 	
    printf("DDR Sweep FPGA to Host\n");   
+
+   for(i = 0; i < ITERS; i++)
+   {
 	clock_gettime(CLOCK_MONOTONIC, &start);
-   res = fpgaDmaTransferSync(dma_h, dst, src, total_mem_size, FPGA_TO_HOST_MM);
+      res = fpgaDmaTransferSync(dma_h, dst, src, total_mem_size, FPGA_TO_HOST_MM);
 	clock_gettime(CLOCK_MONOTONIC, &end);
 
-   if(res != FPGA_OK) {
-      printf(" fpgaDmaTransferSync FPGA to Host failed with error %s", fpgaErrStr(res));
-      free_aligned(dma_buf_ptr);
-      return FPGA_EXCEPTION;
+      if(res != FPGA_OK) {
+         printf(" fpgaDmaTransferSync FPGA to Host failed with error %s", fpgaErrStr(res));
+         free_aligned(dma_buf_ptr);
+         return FPGA_EXCEPTION;
+      }
+      tot_time += getTime(start,end);
    }
-   report_bandwidth(total_mem_size, getTime(start,end));
+   report_bandwidth(total_mem_size * ITERS, tot_time);
+   tot_time = 0.0;
    
    printf("Verifying buffer..\n");   
    verify_buffer((char*)dma_buf_ptr, total_mem_size);
@@ -215,6 +236,7 @@ static void usage(void)
 	printf("\t-2\tUse SSE2 memcpy (Incompatible with -c)\n");
 	printf("\t-n\tDo not provide OS advice (default)\n");
 	printf("\t-a\tUse madvise (Incompatible with -n)\n");
+	printf("\t-y\tDo not verify buffer contents - faster (default is to verify)\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -276,6 +298,9 @@ int main(int argc, char *argv[]) {
 		   break;
 	   case 'a':
 		   use_advise = true;
+		   break;
+	   case 'y':
+		   do_not_verify = true;
 		   break;
 	   default:
 		   return 1;

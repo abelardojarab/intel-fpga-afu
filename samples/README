@@ -2,6 +2,9 @@ These samples are provided in two categories.  Some are small, designed to
 introduce key concepts.  Others, such as dma_afu and the eth_e2e_* Ethernet
 MACs are provided as the starting points for larger projects.
 
+Your environment must be set up correctly in order to configure and build
+the samples.  Please see "Configuring the Build Environment" below.
+
 The following flow is recommended for an introduction:
 
 - Start with hello_afu to learn the build flow both for simulation and
@@ -39,3 +42,29 @@ The following are provided as components for other projects:
 - eth_e2e_e10 is a 4x10G Ethernet MAC.
 
 - eth_e2e_e40 is a 40G Ethernet MAC.
+
+
+
+
+Configuring the Build Environment:
+
+- The OPAE SDK must be installed.  The SDK is available through multiple
+  methods.  Choose one:
+
+  1. Pre-compiled Linux RPMs are shipped with platform releases.  Follow
+     the installation guide included in a platform release.  Ensure that
+     the optional ASE (the AFU Simulation Environment) RPM is installed.
+
+  2. OPAE SDK sources and pre-compiled RPMs are stored on GitHub in
+     https://github.com/OPAE/opae-sdk.  Installation instructions are available
+     at https://opae.github.io.  Ensure that the optional ASE (the AFU
+     Simulation Environment) is installed, either using the pre-compiled RPMs
+     or by following the ASE documentation at https://opae.github.io.
+
+- Ensure that the OPAE SDK and ASE are properly installed.  Confirm that the
+  afu_sim_setup program is found on the PATH in a shell.
+
+- Set the OPAE_PLATFORM_ROOT environment variable to the root of a platform
+  release directory, as described in the platform's quickstart guide.
+  Confirm that the variable setting appears valid by checking that
+  the $OPAE_PLATFORM_ROOT/hw/lib directory exists.

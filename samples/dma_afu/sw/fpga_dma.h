@@ -41,6 +41,47 @@
 extern "C" {
 #endif
 
+#ifdef _WIN32
+#include <Windows.h>
+#define __attribute__()
+	typedef size_t ssize_t;
+#define CLOCK_MONOTONIC 0
+#define bool unsigned int
+	//#define true 1;
+	//#define false 0;
+#define PROT_READ 1
+#define PROT_WRITE 2
+#define MAP_SHARED 3
+#define MAP_ANONYMOUS 4
+#define MAP_POPULATE 5
+#define MADV_SEQUENTIAL 6
+#define __attribute__(x)
+	typedef long long ssize_t;
+
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#define min(a,b) ((a) < (b) ? (a) : (b))
+
+	struct pollfd {
+		int fd;                 /* file descriptor */
+		short events;           /* requested events */
+		short revents;          /* returned events */
+	};
+
+#define POLLIN 0x300
+
+#else
+
+#define max(a,b) \
+   ({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+     _a > _b ? _a : _b; })
+
+#define min(a,b) \
+   ({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+     _a < _b ? _a : _b; })
+#endif
+
 /*
 * The DMA driver supports host to FPGA, FPGA to host and FPGA
 * to FPGA transfers. The FPGA interface can be streaming

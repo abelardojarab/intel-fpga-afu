@@ -41,8 +41,8 @@
 typedef size_t ssize_t;
 #define CLOCK_MONOTONIC 0
 #define bool unsigned int
-#define true 1;
-#define false 0;
+//#define true 1;
+//#define false 0;
 #define PROT_READ 1
 #define PROT_WRITE 2
 #define MAP_SHARED 3

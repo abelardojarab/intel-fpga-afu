@@ -35,6 +35,13 @@
 #include <opae/fpga.h>
 #include "x86-sse2.h"
 
+#ifdef CHECK_DELAYS
+#warning "Compiled with -DCHECK_DELAYS.  Not to be used in production"
+#endif
+
+#ifdef FPGA_DMA_DEBUG
+#warning "Compiled with -DFPGA_DMA_DEBUG.  Not to be used in production"
+#endif
 
 #ifndef max
 #define max(a,b) \

@@ -488,10 +488,9 @@ int main(int argc, char *argv[]) {
    if(!use_ase) {
       printf("Running DDR sweep test\n");
       res = ddr_sweep(dma_h, 0, 0);
-      ON_ERR_GOTO(res, out_dma_close, "ddr_sweep");
-      res = ddr_sweep(dma_h, 3, 0);
-      ON_ERR_GOTO(res, out_dma_close, "ddr_sweep");
-      res = ddr_sweep(dma_h, 7, 3);
+      res |= ddr_sweep(dma_h, 61, 5);
+      res |= ddr_sweep(dma_h, 3, 0);
+      res |= ddr_sweep(dma_h, 7, 3);
       ON_ERR_GOTO(res, out_dma_close, "ddr_sweep");
    }
 

@@ -672,9 +672,12 @@ out:
 static fpga_result _write_memory_mmio(fpga_dma_handle dma_h, uint64_t *dst_ptr, uint64_t *src_ptr, uint64_t* count) {
 	fpga_result res = FPGA_OK;
 
-	if (0 == count)
+	assert(*count >= DWORD_BYTES);
+
+	if (0 == *count)
 		return res;
-	if ((!IS_ALIGNED_DWORD(*dst_ptr)) || (!IS_ALIGNED_DWORD(*count)))	// If QWORD aligned, this will be true
+	assert(IS_ALIGNED_DWORD(*dst_ptr));
+	if (!IS_ALIGNED_DWORD(*dst_ptr))	// If QWORD aligned, this will be true
 		return FPGA_EXCEPTION;
 
 	uint64_t src = *src_ptr;
@@ -682,12 +685,12 @@ static fpga_result _write_memory_mmio(fpga_dma_handle dma_h, uint64_t *dst_ptr, 
 	uint64_t align_bytes = *count;
 	uint64_t offset = 0;
 
-	if (!IS_ALIGNED_QWORD(align_bytes))
+	if (!IS_ALIGNED_QWORD(dst))
 	{
 		// Write out a single DWORD to get QWORD aligned
 		_switch_to_ase_page(dma_h, dst);
 		offset = dst & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
-		res = MMIOWrite32Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)&src, DWORD_BYTES);
+		res = MMIOWrite32Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)src, DWORD_BYTES);
 		src += DWORD_BYTES;
 		dst += DWORD_BYTES;
 		align_bytes -= DWORD_BYTES;
@@ -696,7 +699,7 @@ static fpga_result _write_memory_mmio(fpga_dma_handle dma_h, uint64_t *dst_ptr, 
 	if (0 == align_bytes)
 		return res;
 
-	assert(IS_ALIGNED_QWORD(align_bytes));
+	assert(IS_ALIGNED_QWORD(dst));
 
 	// Write out blocks of 64-bit values
 	while (align_bytes >= QWORD_BYTES)
@@ -707,7 +710,7 @@ static fpga_result _write_memory_mmio(fpga_dma_handle dma_h, uint64_t *dst_ptr, 
 			break;
 		_switch_to_ase_page(dma_h, dst);
 		offset = dst & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
-		res = MMIOWrite64Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)&src, size_to_copy);
+		res = MMIOWrite64Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)src, size_to_copy);
 		src += size_to_copy;
 		dst += size_to_copy;
 		align_bytes -= size_to_copy;
@@ -718,7 +721,7 @@ static fpga_result _write_memory_mmio(fpga_dma_handle dma_h, uint64_t *dst_ptr, 
 		// Write out remaining DWORD
 		_switch_to_ase_page(dma_h, dst);
 		offset = dst & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
-		res = MMIOWrite32Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)&src, DWORD_BYTES);
+		res = MMIOWrite32Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)src, DWORD_BYTES);
 		src += DWORD_BYTES;
 		dst += DWORD_BYTES;
 		align_bytes -= DWORD_BYTES;
@@ -751,8 +754,6 @@ static fpga_result _ase_host_to_fpga(fpga_dma_handle dma_h, uint64_t *dst_ptr, u
 	uint64_t unaligned_size = 0;
 
 	debug_print("dst_ptr = %08lx , count = %08lx, src = %08lx \n", *dst_ptr, count, *src_ptr);
-
-	assert(IS_ALIGNED_DWORD(count));	// Must be at least DWORD aligned
 
 	//Aligns address to 8 byte using dst masking method
 	if (!IS_ALIGNED_DWORD(dst) && !IS_ALIGNED_QWORD(dst)) {
@@ -803,9 +804,12 @@ static fpga_result _ase_host_to_fpga(fpga_dma_handle dma_h, uint64_t *dst_ptr, u
 static fpga_result _read_memory_mmio(fpga_dma_handle dma_h, uint64_t *src_ptr,uint64_t *dst_ptr, uint64_t* count) {
 	fpga_result res = FPGA_OK;
 
-	if (0 == count)
+	assert(*count >= DWORD_BYTES);
+
+	if (0 == *count)
 		return res;
-	if ((!IS_ALIGNED_DWORD(*src_ptr)) || (!IS_ALIGNED_DWORD(*count)))	// If QWORD aligned, this will be true
+	assert(IS_ALIGNED_DWORD(*src_ptr));
+	if (!IS_ALIGNED_DWORD(*src_ptr))	// If QWORD aligned, this will be true
 		return FPGA_EXCEPTION;
 
 	uint64_t src = *src_ptr;
@@ -813,12 +817,12 @@ static fpga_result _read_memory_mmio(fpga_dma_handle dma_h, uint64_t *src_ptr,ui
 	uint64_t align_bytes = *count;
 	uint64_t offset = 0;
 
-	if (!IS_ALIGNED_QWORD(align_bytes))
+	if (!IS_ALIGNED_QWORD(src))
 	{
 		// Read a single DWORD to get QWORD aligned
 		_switch_to_ase_page(dma_h, src);
 		offset = src & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
-		res = MMIORead32Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)&dst, DWORD_BYTES);
+		res = MMIORead32Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)dst, DWORD_BYTES);
 		src += DWORD_BYTES;
 		dst += DWORD_BYTES;
 		align_bytes -= DWORD_BYTES;
@@ -827,7 +831,7 @@ static fpga_result _read_memory_mmio(fpga_dma_handle dma_h, uint64_t *src_ptr,ui
 	if (0 == align_bytes)
 		return res;
 
-	assert(IS_ALIGNED_QWORD(align_bytes));
+	assert(IS_ALIGNED_QWORD(src));
 
 	// Read blocks of 64-bit values
 	while (align_bytes >= QWORD_BYTES)
@@ -838,7 +842,7 @@ static fpga_result _read_memory_mmio(fpga_dma_handle dma_h, uint64_t *src_ptr,ui
 			break;
 		_switch_to_ase_page(dma_h, src);
 		offset = src & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
-		res = MMIORead64Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)&dst, size_to_copy);
+		res = MMIORead64Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)dst, size_to_copy);
 		src += size_to_copy;
 		dst += size_to_copy;
 		align_bytes -= size_to_copy;
@@ -849,7 +853,7 @@ static fpga_result _read_memory_mmio(fpga_dma_handle dma_h, uint64_t *src_ptr,ui
 		// Read remaining DWORD
 		_switch_to_ase_page(dma_h, src);
 		offset = src & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
-		res = MMIORead32Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)&dst, DWORD_BYTES);
+		res = MMIORead32Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)dst, DWORD_BYTES);
 		src += DWORD_BYTES;
 		dst += DWORD_BYTES;
 		align_bytes -= DWORD_BYTES;
@@ -882,8 +886,6 @@ static fpga_result _ase_fpga_to_host(fpga_dma_handle dma_h, uint64_t *src_ptr,ui
 	uint64_t unaligned_size = 0;
 
 	debug_print("dst_ptr = %08lx , count = %08lx, src = %08lx \n", *dst_ptr, count, *src_ptr);
-
-	assert(IS_ALIGNED_DWORD(count));	// Must be at least DWORD aligned
 
 	//Aligns address to 8 byte using src masking method
 	if (!IS_ALIGNED_DWORD(src) && !IS_ALIGNED_QWORD(src)) {

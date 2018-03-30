@@ -19,7 +19,7 @@ CFLAGS +=-fPIE -fPIC
 LDFLAGS +=-pie
 
 # fortify source
-CFLAGS+=-O2 -D_FORTIFY_SOURCE=2
+#CFLAGS+=-O2 -D_FORTIFY_SOURCE=2
 
 # format string vulnerabilities
 CFLAGS+=-Wformat -Wformat-security
@@ -42,7 +42,7 @@ CFLAGS += -DCHECK_DELAYS
 
 CFLAGS += -Werror -Wunused-variable
 
-CFLAGS += -g -O2
+CFLAGS += -g
 
 ifdef prefix
 CFLAGS += -I$(prefix)/include

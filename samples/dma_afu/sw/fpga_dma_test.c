@@ -43,6 +43,10 @@
 #define TEST_BUF_SIZE (10*1024*1024)
 #define ASE_TEST_BUF_SIZE (4*1024)
 
+#ifdef CHECK_DELAYS
+extern uint64_t poll_wait_count;
+extern uint64_t buf_full_count;
+#endif
 
 static int err_cnt = 0;
 
@@ -138,9 +142,25 @@ static inline void clear_buffer(char *buf, size_t size) {
    memset(buf, 0, size);
 }
 
+static inline char *showDelays(char *buf)
+{
+#ifdef CHECK_DELAYS
+	sprintf(buf, "Poll delays: %ld, Wait delays: %ld", poll_wait_count, buf_full_count);
+#else
+	buf[0] = '\0';
+#endif
+	return buf;
+}
+
 static inline void report_bandwidth(size_t size, double seconds) {
+	char buf[2048];
    double throughput = (double)size/((double)seconds*1000*1000);
-   printf("\rMeasured bandwidth = %lf Megabytes/sec\n", throughput);
+   printf("\rMeasured bandwidth = %lf Megabytes/sec %s\n", throughput, showDelays(buf));
+
+#ifdef CHECK_DELAYS
+   poll_wait_count = 0;
+   buf_full_count = 0;
+#endif
 }
 
 // return elapsed time
@@ -180,6 +200,11 @@ fpga_result ddr_sweep(fpga_dma_handle dma_h) {
 
 #define ITERS 32
 
+#ifdef CHECK_DELAYS
+   poll_wait_count = 0;
+   buf_full_count = 0;
+#endif
+
    for(i = 0; i < ITERS; i++)
    {
 	clock_gettime(CLOCK_MONOTONIC, &start);
@@ -203,6 +228,11 @@ fpga_result ddr_sweep(fpga_dma_handle dma_h) {
    dst = (uint64_t)dma_buf_ptr;
 	
    printf("DDR Sweep FPGA to Host\n");   
+
+#ifdef CHECK_DELAYS
+   poll_wait_count = 0;
+   buf_full_count = 0;
+#endif
 
    for(i = 0; i < ITERS; i++)
    {
@@ -381,9 +411,20 @@ int main(int argc, char *argv[]) {
    // - Verify host buffer data
 
    // copy from host to fpga
+
+#ifdef CHECK_DELAYS
+   poll_wait_count = 0;
+   buf_full_count = 0;
+#endif
+
    res = fpgaDmaTransferSync(dma_h, 0x0 /*dst*/, (uint64_t)dma_buf_ptr /*src*/, count, HOST_TO_FPGA_MM);
    ON_ERR_GOTO(res, out_dma_close, "fpgaDmaTransferSync HOST_TO_FPGA_MM");
    clear_buffer((char*)dma_buf_ptr, count);
+
+#ifdef CHECK_DELAYS
+   poll_wait_count = 0;
+   buf_full_count = 0;
+#endif
 
    // copy from fpga to host
    res = fpgaDmaTransferSync(dma_h, (uint64_t)dma_buf_ptr /*dst*/, 0x0 /*src*/, count, FPGA_TO_HOST_MM);
@@ -393,10 +434,19 @@ int main(int argc, char *argv[]) {
 
    clear_buffer((char*)dma_buf_ptr, count);
 
+#ifdef CHECK_DELAYS
+   poll_wait_count = 0;
+   buf_full_count = 0;
+#endif
+
    // copy from fpga to fpga
    res = fpgaDmaTransferSync(dma_h, count /*dst*/, 0x0 /*src*/, count, FPGA_TO_FPGA_MM);
    ON_ERR_GOTO(res, out_dma_close, "fpgaDmaTransferSync FPGA_TO_FPGA_MM");
 
+#ifdef CHECK_DELAYS
+   poll_wait_count = 0;
+   buf_full_count = 0;
+#endif
 
    // copy from fpga to host
    res = fpgaDmaTransferSync(dma_h, (uint64_t)dma_buf_ptr /*dst*/, count /*src*/, count, FPGA_TO_HOST_MM);

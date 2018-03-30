@@ -76,6 +76,8 @@ struct pollfd {
      _a < _b ? _a : _b; })
 #endif
 
+#define FPGA_DMA_TIMEOUT_MSEC (120000)
+
 #define QWORD_BYTES 8
 #define DWORD_BYTES 4
 #define IS_ALIGNED_DWORD(addr) (addr%4==0)

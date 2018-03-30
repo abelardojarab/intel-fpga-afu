@@ -35,6 +35,9 @@ CFLAGS += -Wl,--gc-sections
 # Compile for ASE
 #CFLAGS += -DUSE_ASE
 
+# Expose and report poll and buffer full wait counts
+CFLAGS += -DCHECK_DELAYS
+
 ############################################################
 
 CFLAGS += -Werror -Wunused-variable

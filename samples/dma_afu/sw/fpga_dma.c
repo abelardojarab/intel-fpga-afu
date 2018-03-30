@@ -46,6 +46,11 @@
 static int err_cnt = 0;
 #endif
 
+#ifdef CHECK_DELAYS
+uint64_t poll_wait_count = 0;
+uint64_t buf_full_count = 0;
+#endif
+
 void *local_memcpy(void *dst, void * src, size_t n)
 {
 #ifdef USE_MEMCPY
@@ -291,9 +296,19 @@ static fpga_result _send_descriptor(fpga_dma_handle dma_h, msgdma_ext_desc_t des
 
 	debug_print("SGDMA_CSR_BASE = %lx SGDMA_DESC_BASE=%lx\n",dma_h->dma_csr_base, dma_h->dma_desc_base);
 
+#ifdef CHECK_DELAYS
+	bool first = true;
+#endif
 	do {
 		res = MMIORead32Blk(dma_h, CSR_STATUS(dma_h), (uint64_t)&status.reg, sizeof(status.reg));
 		ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
+#ifdef CHECK_DELAYS
+		if (first && status.st.desc_buf_full)
+		{
+			buf_full_count++;
+			first = false;
+		}
+#endif
 	} while(status.st.desc_buf_full);
 
 	res = MMIOWrite64Blk(dma_h, dma_h->dma_desc_base, (uint64_t)&desc, sizeof(desc));
@@ -916,12 +931,18 @@ static fpga_result clear_interrupt(fpga_dma_handle dma_h) {
 static fpga_result poll_interrupt(fpga_dma_handle dma_h) {
 	struct pollfd pfd = {0};
 	fpga_result res = FPGA_OK;
+	int poll_res;
 
 	res = fpgaGetOSObjectFromEventHandle(dma_h->eh, &pfd.fd);
 	ON_ERR_GOTO(res, out, "fpgaGetOSObjectFromEventHandle failed\n");
 
 	pfd.events = POLLIN;
-	int poll_res = poll(&pfd, 1, -1);
+
+#ifdef CHECK_DELAYS
+	if (0 == poll(&pfd, 1, 0))
+		poll_wait_count++;
+#endif
+	poll_res = poll(&pfd, 1, FPGA_DMA_TIMEOUT_MSEC);
 	if(poll_res < 0) {
 		fprintf( stderr, "Poll error errno = %s\n",strerror(errno));
 		res = FPGA_EXCEPTION;

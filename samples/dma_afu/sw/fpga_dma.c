@@ -47,8 +47,8 @@ static int err_cnt = 0;
 #endif
 
 #ifdef CHECK_DELAYS
-uint64_t poll_wait_count = 0;
-uint64_t buf_full_count = 0;
+double poll_wait_count = 0;
+double buf_full_count = 0;
 #endif
 
 void *local_memcpy(void *dst, void * src, size_t n)

@@ -182,7 +182,8 @@ struct _dma_handle_t {
 	fpga_handle fpga_h;
 	uint32_t mmio_num;
 	uint64_t mmio_offset;
-	uint64_t *mmio_va;
+	uint64_t mmio_va;
+	uint64_t cur_ase_page;
 	uint64_t dma_base;
 	uint64_t dma_offset;
 	uint64_t dma_csr_base;

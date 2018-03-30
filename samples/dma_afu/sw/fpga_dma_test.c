@@ -164,7 +164,8 @@ fpga_result ddr_sweep(fpga_dma_handle dma_h) {
    printf("Allocated test buffer\n");
    if (use_advise)
    {
-	   int rr = madvise(dma_buf_ptr, total_mem_size, MADV_SEQUENTIAL);
+	   if (0 != madvise(dma_buf_ptr, total_mem_size, MADV_SEQUENTIAL))
+		   perror("Warning: madvise returned error");
    }
    printf("Fill test buffer\n");
    fill_buffer((char*)dma_buf_ptr, total_mem_size);

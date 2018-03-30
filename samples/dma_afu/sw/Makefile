@@ -24,6 +24,11 @@ CFLAGS+=-O2 -D_FORTIFY_SOURCE=2
 # format string vulnerabilities
 CFLAGS+=-Wformat -Wformat-security
 
+# More optimizations - dump unused code, spatial locality
+CFLAGS += -ffunction-sections -fdata-sections
+CFLAGS += -freorder-functions -freorder-blocks-and-partition
+CFLAGS += -Wl,--gc-sections
+
 # Use native memcpy()
 #CFLAGS += -DUSE_MEMCPY
 
@@ -32,7 +37,7 @@ CFLAGS+=-Wformat -Wformat-security
 
 ############################################################
 
-CFLAGS += -Werror
+CFLAGS += -Werror -Wunused-variable
 
 CFLAGS += -g -O2
 

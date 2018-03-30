@@ -457,6 +457,7 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle *dma_p) {
 		dma_h->dma_buf_ptr[i] = NULL;
 	dma_h->mmio_num = 0;
 	dma_h->mmio_offset = 0;
+	dma_h->cur_ase_page = 0xffffffffffffffffUll;
 
 	// Discover DMA BBB by traversing the device feature list
 	bool end_of_list = false;
@@ -549,6 +550,17 @@ out:
 	return res;
 }
 
+static inline void _switch_to_ase_page(fpga_dma_handle dma_h, uint64_t addr)
+{
+	uint64_t requested_page = addr & ~DMA_ADDR_SPAN_EXT_WINDOW_MASK;
+
+	if (requested_page != dma_h->cur_ase_page)
+	{
+		MMIOWrite64Blk(dma_h, ASE_CNTL_BASE(dma_h), (uint64_t)&requested_page, sizeof(requested_page));
+		dma_h->cur_ase_page = requested_page;
+	}
+}
+
 /**
 * _read_memory_mmio_unaligned
 *
@@ -563,20 +575,24 @@ out:
 static fpga_result _read_memory_mmio_unaligned(fpga_dma_handle dma_h, uint64_t dev_addr,uint64_t host_addr, uint64_t count) {
 	fpga_result res = FPGA_OK;
 
+	assert(count < QWORD_BYTES);
+
+	if (0 == count)
+		return res;
+
 	uint64_t shift = dev_addr % QWORD_BYTES;
 	debug_print("shift = %08lx , count = %08lx \n",shift, count);
 
+	_switch_to_ase_page(dma_h, dev_addr);
 	uint64_t dev_aligned_addr = (dev_addr - shift) & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
+
 	//read data from device memory
 	uint64_t read_tmp = 0;
 	res = MMIORead64Blk(dma_h, ASE_DATA_BASE(dma_h) + dev_aligned_addr, (uint64_t)&read_tmp, sizeof(read_tmp));
 	if(res != FPGA_OK)
 		return res;
+
 	//overlay our data
-	if(count > FPGA_DMA_ALIGN_BYTES) {
-		res = FPGA_NO_MEMORY;
-		ON_ERR_GOTO(res, out, "Illegal transfer size\n");
-	}
 	local_memcpy((void *)host_addr, ((char *)(&read_tmp))+shift, count);
 
 out:	
@@ -587,7 +603,7 @@ out:
 /**
 * _write_memory_mmio_unaligned
 *
-* @brief                Performs a unaligned write(address not 4/8/64 byte aligned) to FPGA address(device address).
+* @brief                Performs an unaligned write(address not 4/8/64 byte aligned) to FPGA address(device address).
 * @param[in] dma        Handle to the FPGA DMA object
 * @param[in] dev_addr   FPGA address
 * @param[in] host_addr  Host buffer address
@@ -598,29 +614,26 @@ out:
 static fpga_result _write_memory_mmio_unaligned(fpga_dma_handle dma_h, uint64_t dev_addr,uint64_t host_addr, uint64_t count) {
 	fpga_result res = FPGA_OK;
 
+	assert(count < QWORD_BYTES);
+
 	if (0 == count)
 		return res;
 
 	uint64_t shift = dev_addr % QWORD_BYTES;
 	debug_print("shift = %08lx , count = %08lx \n",shift, count);
 
-	uint64_t dev_aligned_addr = (dev_addr - shift) & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
-
-	// Set up the ASE page, then do the write
-	uint64_t mem_page = dev_aligned_addr & ~DMA_ADDR_SPAN_EXT_WINDOW_MASK;
-	MMIOWrite64Blk(dma_h, ASE_CNTL_BASE(dma_h), (uint64_t)&mem_page, sizeof(mem_page));
+	_switch_to_ase_page(dma_h, dev_addr);
+	uint64_t dev_aligned_addr = (dev_addr - (dev_addr % QWORD_BYTES)) & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
 
 	//read data from device memory
 	uint64_t read_tmp = 0;
 	res = MMIORead64Blk(dma_h, ASE_DATA_BASE(dma_h) + dev_aligned_addr, (uint64_t)&read_tmp, sizeof(read_tmp));
 	if(res != FPGA_OK)
 		return res;
+
 	//overlay our data
-	if(count > FPGA_DMA_ALIGN_BYTES) {
-		res = FPGA_NO_MEMORY;
-		ON_ERR_GOTO(res, out, "Illegal transfer size\n");
-	}
 	local_memcpy(((char *)(&read_tmp))+shift, (void *)host_addr, count);
+
 	//write back to device
 	res = MMIOWrite64Blk(dma_h, ASE_DATA_BASE(dma_h) + dev_aligned_addr, (uint64_t)&read_tmp, sizeof(read_tmp));
 	if(res != FPGA_OK)
@@ -652,53 +665,44 @@ static fpga_result _write_memory_mmio(fpga_dma_handle dma_h, uint64_t *dst_ptr, 
 	uint64_t src = *src_ptr;
 	uint64_t dst = *dst_ptr;
 	uint64_t align_bytes = *count;
-	uint64_t cur_mem_page = 0;
 	uint64_t offset = 0;
-	uint64_t i = 0;
 
 	if (!IS_ALIGNED_QWORD(align_bytes))
 	{
 		// Write out a single DWORD to get QWORD aligned
-		uint64_t mem_page = dst & ~DMA_ADDR_SPAN_EXT_WINDOW_MASK;
+		_switch_to_ase_page(dma_h, dst);
 		offset = dst & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
-		res = MMIOWrite64Blk(dma_h, ASE_CNTL_BASE(dma_h), (uint64_t)&mem_page, sizeof(mem_page));
 		res = MMIOWrite32Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)&src, DWORD_BYTES);
 		src += DWORD_BYTES;
 		dst += DWORD_BYTES;
 		align_bytes -= DWORD_BYTES;
 	}
 
-	assert(IS_ALIGNED_QWORD(align_bytes));
-
 	if (0 == align_bytes)
 		return res;
 
-	// Set up the ASE page, then do the write
-	uint64_t mem_page = dst & ~DMA_ADDR_SPAN_EXT_WINDOW_MASK;
-	int end_page = (dst + align_bytes) & ~DMA_ADDR_SPAN_EXT_WINDOW_MASK;
-	uint64_t size_to_copy = min(dst & DMA_ADDR_SPAN_EXT_WINDOW_MASK, align_bytes);
+	assert(IS_ALIGNED_QWORD(align_bytes));
 
-	for (; mem_page <= end_page; mem_page += DMA_ADDR_SPAN_EXT_WINDOW)
+	// Write out blocks of 64-bit values
+	while (align_bytes >= QWORD_BYTES)
 	{
-		size_to_copy = min(DMA_ADDR_SPAN_EXT_WINDOW, align_bytes);
+		uint64_t left_in_page = (-dst) & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
+		uint64_t size_to_copy = min(left_in_page, (align_bytes & ~(QWORD_BYTES - 1)));
 		if (size_to_copy < QWORD_BYTES)
 			break;
+		_switch_to_ase_page(dma_h, dst);
 		offset = dst & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
-		res = MMIOWrite64Blk(dma_h, ASE_CNTL_BASE(dma_h), (uint64_t)&mem_page, sizeof(mem_page));
 		res = MMIOWrite64Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)&src, size_to_copy);
 		src += size_to_copy;
 		dst += size_to_copy;
 		align_bytes -= size_to_copy;
 	}
 
-	assert(align_bytes < QWORD_BYTES);
-
 	if (align_bytes >= DWORD_BYTES)
 	{
-		// Write out a single DWORD to get QWORD aligned
-		uint64_t mem_page = dst & ~DMA_ADDR_SPAN_EXT_WINDOW_MASK;
+		// Write out remaining DWORD
+		_switch_to_ase_page(dma_h, dst);
 		offset = dst & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
-		res = MMIOWrite64Blk(dma_h, ASE_CNTL_BASE(dma_h), (uint64_t)&mem_page, sizeof(mem_page));
 		res = MMIOWrite32Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)&src, DWORD_BYTES);
 		src += DWORD_BYTES;
 		dst += DWORD_BYTES;
@@ -729,11 +733,14 @@ static fpga_result _ase_host_to_fpga(fpga_dma_handle dma_h, uint64_t *dst_ptr, u
 	uint64_t dst = *dst_ptr;
 	uint64_t src = *src_ptr;
 	uint64_t count_left = count;
-	uint64_t mmio_shift = 0;
 	uint64_t unaligned_size = 0;
 
+	debug_print("dst_ptr = %08lx , count = %08lx, src = %08lx \n", *dst_ptr, count, *src_ptr);
+
+	assert(IS_ALIGNED_DWORD(count));	// Must be at least DWORD aligned
+
 	//Aligns address to 8 byte using dst masking method
-	if (!IS_ALIGNED_QWORD(dst) && !IS_ALIGNED_DWORD(dst)) {
+	if (!IS_ALIGNED_DWORD(dst) && !IS_ALIGNED_QWORD(dst)) {
 		unaligned_size = QWORD_BYTES - (dst % QWORD_BYTES);
 		if (unaligned_size > count_left)
 			unaligned_size = count_left;
@@ -763,11 +770,7 @@ static fpga_result _ase_host_to_fpga(fpga_dma_handle dma_h, uint64_t *dst_ptr, u
 
 	*dst_ptr = dst + unaligned_size;
 	*src_ptr = src + unaligned_size;
-	debug_print("dst_ptr = %08lx , count = %08lx, src = %08lx \n", *dst_ptr, count, *src_ptr);
-	if (count_left != 0) {
-		debug_print("%08lx bytes left to transfer, MMIO needs tx len to be 8/4 byte aligned \n", count_left);
-		return FPGA_NOT_SUPPORTED;
-	}
+
 	return FPGA_OK;
 }
 
@@ -784,39 +787,60 @@ static fpga_result _ase_host_to_fpga(fpga_dma_handle dma_h, uint64_t *dst_ptr, u
 */
 static fpga_result _read_memory_mmio(fpga_dma_handle dma_h, uint64_t *src_ptr,uint64_t *dst_ptr, uint64_t* count) {
 	fpga_result res = FPGA_OK;
+
+	if (0 == count)
+		return res;
+	if ((!IS_ALIGNED_DWORD(*src_ptr)) || (!IS_ALIGNED_DWORD(*count)))	// If QWORD aligned, this will be true
+		return FPGA_EXCEPTION;
+
 	uint64_t src = *src_ptr;
 	uint64_t dst = *dst_ptr;
 	uint64_t align_bytes = *count;
-	uint64_t cur_mem_page = 0;
 	uint64_t offset = 0;
-	uint64_t i = 0;
-	uint64_t alignment = 0;
-	if(IS_ALIGNED_QWORD(src))
-		alignment = QWORD_BYTES;
-	else if(IS_ALIGNED_DWORD(src))
-		alignment = DWORD_BYTES;
 
-	if(alignment == 0)
-		return FPGA_EXCEPTION;
-
-	fpgaReadMMIO64(dma_h->fpga_h, 0, dma_h->dma_ase_cntl_base, &cur_mem_page);
-	for(i = 0; i < align_bytes/alignment ; i++) {
-		uint64_t mem_page = src & ~DMA_ADDR_SPAN_EXT_WINDOW_MASK;
-		if(mem_page != cur_mem_page) {
-			cur_mem_page = mem_page;
-			fpgaWriteMMIO64(dma_h->fpga_h, 0, dma_h->dma_ase_cntl_base, cur_mem_page);
-		}
-		offset = dma_h->dma_ase_data_base+(src&DMA_ADDR_SPAN_EXT_WINDOW_MASK);
-		if(alignment == QWORD_BYTES)
-			res = fpgaReadMMIO64(dma_h->fpga_h, 0, offset, (uint64_t *)dst);
-		else if(alignment == DWORD_BYTES)
-			res = fpgaReadMMIO32(dma_h->fpga_h, 0, offset, (uint32_t *)dst);
-		if(res != FPGA_OK)
-			return res;
-		dst += alignment;
-		src += alignment;
+	if (!IS_ALIGNED_QWORD(align_bytes))
+	{
+		// Read a single DWORD to get QWORD aligned
+		_switch_to_ase_page(dma_h, src);
+		offset = src & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
+		res = MMIORead32Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)&dst, DWORD_BYTES);
+		src += DWORD_BYTES;
+		dst += DWORD_BYTES;
+		align_bytes -= DWORD_BYTES;
 	}
-	align_bytes -= (align_bytes/alignment)*alignment;
+
+	if (0 == align_bytes)
+		return res;
+
+	assert(IS_ALIGNED_QWORD(align_bytes));
+
+	// Read blocks of 64-bit values
+	while (align_bytes >= QWORD_BYTES)
+	{
+		uint64_t left_in_page = (-src) & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
+		uint64_t size_to_copy = min(left_in_page, (align_bytes & ~(QWORD_BYTES - 1)));
+		if (size_to_copy < QWORD_BYTES)
+			break;
+		_switch_to_ase_page(dma_h, src);
+		offset = src & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
+		res = MMIORead64Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)&dst, size_to_copy);
+		src += size_to_copy;
+		dst += size_to_copy;
+		align_bytes -= size_to_copy;
+	}
+
+	if (align_bytes >= DWORD_BYTES)
+	{
+		// Read remaining DWORD
+		_switch_to_ase_page(dma_h, src);
+		offset = src & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
+		res = MMIORead32Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)&dst, DWORD_BYTES);
+		src += DWORD_BYTES;
+		dst += DWORD_BYTES;
+		align_bytes -= DWORD_BYTES;
+	}
+
+	assert(align_bytes < DWORD_BYTES);
 
 	*src_ptr = src;
 	*dst_ptr = dst;
@@ -840,64 +864,44 @@ static fpga_result _ase_fpga_to_host(fpga_dma_handle dma_h, uint64_t *src_ptr,ui
 	uint64_t src = *src_ptr;
 	uint64_t dst = *dst_ptr;
 	uint64_t count_left = count;
-	uint64_t mmio_shift = 0;
 	uint64_t unaligned_size = 0;
 
-	do {
-		//Set the Address Span expander CTRL port to the required 4K window
-		uint64_t cur_mem_page = src & ~DMA_ADDR_SPAN_EXT_WINDOW_MASK;
-		res = fpgaWriteMMIO64(dma_h->fpga_h, 0, dma_h->dma_ase_cntl_base , cur_mem_page);
-		if(res != FPGA_OK)
-			return res;
-		//Can use for debug if src span was set to the right 4K
-		//mmio_read64(dma_h->fpga_h, (dma_h->dma_base)+FPGA_DMA_ADDR_SPAN_EXT_CNTL, &data, "addr_span");
+	debug_print("dst_ptr = %08lx , count = %08lx, src = %08lx \n", *dst_ptr, count, *src_ptr);
 
-		//Aligns address to 8 byte using src masking method
-		if(!IS_ALIGNED_QWORD(src) && !IS_ALIGNED_DWORD(src)) {
-			mmio_shift = src % QWORD_BYTES;
-			unaligned_size = QWORD_BYTES - mmio_shift;
-			if(unaligned_size > count_left)
-				unaligned_size = count_left;
-			res = _read_memory_mmio_unaligned(dma_h, src, dst, unaligned_size);
-			if(res != FPGA_OK)
-				return res;
-			count_left -= unaligned_size;
-			src += unaligned_size;
-			dst += unaligned_size;
-		}
-		if(count_left) {
-			//Handles 8/4 byte MMIO transfer
-			if(IS_ALIGNED_QWORD(src)) {
-				res = _read_memory_mmio(dma_h, &src, &dst, &count_left);
-				if(res != FPGA_OK)
-					return res;
-			}
-			if(IS_ALIGNED_DWORD(src)) {
-				res = _read_memory_mmio(dma_h, &src, &dst, &count_left);
-				if(res != FPGA_OK)
-					return res;
-			}//Left over unaligned count bytes are transfered using src masking method
-			if(count_left) {
-				mmio_shift = src % QWORD_BYTES;
-				unaligned_size = QWORD_BYTES - mmio_shift;
-				if(unaligned_size > count_left)
-					unaligned_size = count_left;
-				res = _read_memory_mmio_unaligned(dma_h, src, dst, unaligned_size);
-				if(res != FPGA_OK)
-					return res;
-				count_left -= unaligned_size;
-				src += unaligned_size;
-				dst += unaligned_size;
-			}
-		}
-	}while(count_left!=0);
-	*src_ptr = src;
-	*dst_ptr = dst;
-	debug_print("src_ptr = %08lx , count_left = %08lx, dst = %08lx \n", *src_ptr, count_left, *dst_ptr);
-	if(count_left != 0) {
-		debug_print("%08lx bytes left to transfer, MMIO needs tx len to be 8/4 byte aligned \n", count_left);
-		return FPGA_NOT_SUPPORTED;
+	assert(IS_ALIGNED_DWORD(count));	// Must be at least DWORD aligned
+
+	//Aligns address to 8 byte using src masking method
+	if (!IS_ALIGNED_DWORD(src) && !IS_ALIGNED_QWORD(src)) {
+		unaligned_size = QWORD_BYTES - (src % QWORD_BYTES);
+		if (unaligned_size > count_left)
+			unaligned_size = count_left;
+		res = _read_memory_mmio_unaligned(dma_h, src, dst, unaligned_size);
+		if (res != FPGA_OK)
+			return res;
+		count_left -= unaligned_size;
+		dst += unaligned_size;
+		src += unaligned_size;
 	}
+
+	//Handles 8/4 byte MMIO transfer
+	res = _read_memory_mmio(dma_h, &src, &dst, &count_left);
+	if (res != FPGA_OK)
+		return res;
+
+	//Left over unaligned count bytes are transfered using src masking method
+	unaligned_size = QWORD_BYTES - (src % QWORD_BYTES);
+	if (unaligned_size > count_left)
+		unaligned_size = count_left;
+
+	res = _read_memory_mmio_unaligned(dma_h, src, dst, unaligned_size);
+	if (res != FPGA_OK)
+		return res;
+
+	count_left -= unaligned_size;
+
+	*dst_ptr = dst + unaligned_size;
+	*src_ptr = src + unaligned_size;
+
 	return FPGA_OK;
 }
 

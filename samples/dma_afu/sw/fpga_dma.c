@@ -38,7 +38,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <assert.h>
-#include <safe_string/safe_string.h>
+//#include <safe_string/safe_string.h>
 #include "fpga_dma_internal.h"
 #include "fpga_dma.h"
 
@@ -127,7 +127,7 @@ static fpga_result MMIOWrite64Blk(fpga_dma_handle dma_h, uint64_t device, uint64
 	volatile uint64_t *dev_addr = HOST_MMIO_64_ADDR(dma_h, device);
 #endif
 
-	debug_print("%s : copying %d bytes from 0x%p to 0x%p\n", __FUNCTION__, bytes, haddr, device);
+	debug_print("%s : copying %lld bytes from 0x%p to 0x%p\n", __FUNCTION__, (long long int)bytes, haddr, (void *)device);
 	for (i = 0; i < bytes / sizeof(uint64_t); i++)
 	{
 #ifdef USE_ASE
@@ -138,7 +138,8 @@ static fpga_result MMIOWrite64Blk(fpga_dma_handle dma_h, uint64_t device, uint64
 #else
 		*dev_addr++ = *haddr++;
 #endif
-}
+	}
+	return res;
 }
 
 /**
@@ -165,7 +166,7 @@ static fpga_result MMIOWrite32Blk(fpga_dma_handle dma_h, uint64_t device, uint64
 	volatile uint32_t *dev_addr = HOST_MMIO_32_ADDR(dma_h, device);
 #endif
 
-	debug_print("%s : copying %d bytes from 0x%p to 0x%p\n", __FUNCTION__, bytes, haddr, device);
+	debug_print("%s : copying %lld bytes from 0x%p to 0x%p\n", __FUNCTION__, (long long int)bytes, haddr, (void*)device);
 	for (i = 0; i < bytes / sizeof(uint32_t); i++)
 	{
 #ifdef USE_ASE
@@ -177,6 +178,7 @@ static fpga_result MMIOWrite32Blk(fpga_dma_handle dma_h, uint64_t device, uint64
 		*dev_addr++ = *haddr++;
 #endif
 	}
+	return res;
 }
 
 /**
@@ -203,7 +205,7 @@ static fpga_result MMIORead64Blk(fpga_dma_handle dma_h, uint64_t device, uint64_
 	volatile uint64_t *dev_addr = HOST_MMIO_64_ADDR(dma_h, device);
 #endif
 
-	debug_print("%s : copying %d bytes from 0x%p to 0x%p\n", __FUNCTION__, bytes, haddr, device);
+	debug_print("%s : copying %lld bytes from 0x%p to 0x%p\n", __FUNCTION__, (long long int)bytes, haddr, (void*)device);
 	for (i = 0; i < bytes / sizeof(uint64_t); i++)
 	{
 #ifdef USE_ASE
@@ -215,6 +217,7 @@ static fpga_result MMIORead64Blk(fpga_dma_handle dma_h, uint64_t device, uint64_
 		*haddr++ = *dev_addr++;
 #endif
 	}
+	return res;
 }
 
 /**
@@ -241,7 +244,7 @@ static fpga_result MMIORead32Blk(fpga_dma_handle dma_h, uint64_t device, uint64_
 	volatile uint32_t *dev_addr = HOST_MMIO_32_ADDR(dma_h, device);
 #endif
 
-	debug_print("%s : copying %d bytes from 0x%p to 0x%p\n", __FUNCTION__, bytes, haddr, device);
+	debug_print("%s : copying %lld bytes from 0x%p to 0x%p\n", __FUNCTION__, (long long int)bytes, haddr, (void *)device);
 	for (i = 0; i < bytes / sizeof(uint32_t); i++)
 	{
 #ifdef USE_ASE
@@ -253,6 +256,7 @@ static fpga_result MMIORead32Blk(fpga_dma_handle dma_h, uint64_t device, uint64_
 		*haddr++ = *dev_addr++;
 #endif
 	}
+	return res;
 }
 
 // End of feature list
@@ -288,7 +292,7 @@ static fpga_result _send_descriptor(fpga_dma_handle dma_h, msgdma_ext_desc_t des
 	debug_print("SGDMA_CSR_BASE = %lx SGDMA_DESC_BASE=%lx\n",dma_h->dma_csr_base, dma_h->dma_desc_base);
 
 	do {
-		res = MMIORead32Blk(dma_h, CSR_STATUS(dma_h), &status.reg, sizeof(status.reg));
+		res = MMIORead32Blk(dma_h, CSR_STATUS(dma_h), (uint64_t)&status.reg, sizeof(status.reg));
 		ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
 	} while(status.st.desc_buf_full);
 
@@ -465,7 +469,7 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle *dma_p) {
 	dfh_feature_t dfh;
 	do {
 		// Read the next feature header
-		res = MMIORead64Blk(dma_h, offset, (uint64_t *)&dfh, sizeof(dfh));
+		res = MMIORead64Blk(dma_h, offset, (uint64_t)&dfh, sizeof(dfh));
 		ON_ERR_GOTO(res, out, "MMIORead64Blk");
 
 		if (_fpga_dma_feature_is_bbb(dfh.dfh) &&
@@ -565,7 +569,7 @@ static fpga_result _read_memory_mmio_unaligned(fpga_dma_handle dma_h, uint64_t d
 	uint64_t dev_aligned_addr = (dev_addr - shift) & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
 	//read data from device memory
 	uint64_t read_tmp = 0;
-	res = MMIORead64Blk(dma_h, ASE_DATA_BASE(dma_h) + dev_aligned_addr, &read_tmp, sizeof(read_tmp));
+	res = MMIORead64Blk(dma_h, ASE_DATA_BASE(dma_h) + dev_aligned_addr, (uint64_t)&read_tmp, sizeof(read_tmp));
 	if(res != FPGA_OK)
 		return res;
 	//overlay our data
@@ -608,7 +612,7 @@ static fpga_result _write_memory_mmio_unaligned(fpga_dma_handle dma_h, uint64_t 
 
 	//read data from device memory
 	uint64_t read_tmp = 0;
-	res = MMIORead64Blk(dma_h, ASE_DATA_BASE(dma_h) + dev_aligned_addr, &read_tmp, sizeof(read_tmp));
+	res = MMIORead64Blk(dma_h, ASE_DATA_BASE(dma_h) + dev_aligned_addr, (uint64_t)&read_tmp, sizeof(read_tmp));
 	if(res != FPGA_OK)
 		return res;
 	//overlay our data
@@ -658,7 +662,7 @@ static fpga_result _write_memory_mmio(fpga_dma_handle dma_h, uint64_t *dst_ptr, 
 		uint64_t mem_page = dst & ~DMA_ADDR_SPAN_EXT_WINDOW_MASK;
 		offset = dst & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
 		res = MMIOWrite64Blk(dma_h, ASE_CNTL_BASE(dma_h), (uint64_t)&mem_page, sizeof(mem_page));
-		res = MMIOWrite32Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, src, DWORD_BYTES);
+		res = MMIOWrite32Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)&src, DWORD_BYTES);
 		src += DWORD_BYTES;
 		dst += DWORD_BYTES;
 		align_bytes -= DWORD_BYTES;
@@ -681,7 +685,7 @@ static fpga_result _write_memory_mmio(fpga_dma_handle dma_h, uint64_t *dst_ptr, 
 			break;
 		offset = dst & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
 		res = MMIOWrite64Blk(dma_h, ASE_CNTL_BASE(dma_h), (uint64_t)&mem_page, sizeof(mem_page));
-		res = MMIOWrite64Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, src, size_to_copy);
+		res = MMIOWrite64Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)&src, size_to_copy);
 		src += size_to_copy;
 		dst += size_to_copy;
 		align_bytes -= size_to_copy;
@@ -695,7 +699,7 @@ static fpga_result _write_memory_mmio(fpga_dma_handle dma_h, uint64_t *dst_ptr, 
 		uint64_t mem_page = dst & ~DMA_ADDR_SPAN_EXT_WINDOW_MASK;
 		offset = dst & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
 		res = MMIOWrite64Blk(dma_h, ASE_CNTL_BASE(dma_h), (uint64_t)&mem_page, sizeof(mem_page));
-		res = MMIOWrite32Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, src, DWORD_BYTES);
+		res = MMIOWrite32Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)&src, DWORD_BYTES);
 		src += DWORD_BYTES;
 		dst += DWORD_BYTES;
 		align_bytes -= DWORD_BYTES;
@@ -944,7 +948,7 @@ static fpga_result _issue_magic(fpga_dma_handle dma_h) {
 
 	// TODO: Don't know why we read status here
 	msgdma_status_t status = {0};
-	res = MMIORead32Blk(dma_h, CSR_STATUS(dma_h), &status.reg, sizeof(status.reg));
+	res = MMIORead32Blk(dma_h, CSR_STATUS(dma_h), (uint64_t)&status.reg, sizeof(status.reg));
 
 	res = _do_dma(dma_h, dma_h->magic_iova | FPGA_DMA_WF_HOST_MASK, FPGA_DMA_WF_ROM_MAGIC_NO_MASK, 64, 1, FPGA_TO_HOST_MM, true/*intr_en*/);
 	return res;
@@ -1251,7 +1255,7 @@ fpga_result fpgaDmaClose(fpga_dma_handle dma_h) {
 	// turn off global interrupts
 	msgdma_ctrl_t ctrl = {0};
 	ctrl.ct.global_intr_en_mask = 0;
-	res = MMIOWrite32Blk(dma_h, CSR_CONTROL(dma_h), &ctrl.reg, sizeof(ctrl.reg));
+	res = MMIOWrite32Blk(dma_h, CSR_CONTROL(dma_h), (uint64_t)&ctrl.reg, sizeof(ctrl.reg));
 
 out:
 	free((void*)dma_h);

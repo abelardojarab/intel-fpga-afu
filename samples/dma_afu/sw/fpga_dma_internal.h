@@ -120,7 +120,7 @@ struct pollfd {
 
 #define MIN_SSE2_SIZE 4096
 #define CACHE_LINE_SIZE 64
-#define ALIGN_TO_CL(x) ((uint64_t)(x) & (CACHE_LINE_SIZE - 1))
+#define ALIGN_TO_CL(x) ((uint64_t)(x) & ~(CACHE_LINE_SIZE - 1))
 #define IS_CL_ALIGNED(x) (((uint64_t)(x) & (CACHE_LINE_SIZE - 1)) == 0)
 
 #define CSR_BASE(dma_handle) ((uint64_t)dma_handle->dma_csr_base)

@@ -36,7 +36,7 @@ CFLAGS += -Wl,--gc-sections
 #CFLAGS += -DUSE_ASE
 
 # Expose and report poll and buffer full wait counts
-#CFLAGS += -DCHECK_DELAYS
+CFLAGS += -DCHECK_DELAYS
 
 ############################################################
 

@@ -116,7 +116,7 @@ static inline void fill_buffer(char *buf, size_t size) {
    if(do_not_verify) return;
    size_t i=0;
 
-   if (verify_buf_size != size)
+   if (verify_buf_size < size)
    {
 	   free(verify_buf);
 	   verify_buf = (char *)malloc(size);

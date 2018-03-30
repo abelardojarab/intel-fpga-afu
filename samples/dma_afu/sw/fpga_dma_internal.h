@@ -117,6 +117,28 @@ struct pollfd {
 
 #define FPGA_DMA_ALIGN_BYTES 64
 #define IS_DMA_ALIGNED(addr) (addr%FPGA_DMA_ALIGN_BYTES==0)
+
+#define MIN_SSE2_SIZE 4096
+#define CACHE_LINE_SIZE 64
+#define ALIGN_TO_CL(x) ((uint64_t)(x) & (CACHE_LINE_SIZE - 1))
+#define IS_CL_ALIGNED(x) (((uint64_t)(x) & (CACHE_LINE_SIZE - 1)) == 0)
+
+#define CSR_BASE(dma_handle) ((uint64_t)dma_handle->dma_csr_base)
+#define ASE_DATA_BASE(dma_handle) ((uint64_t)dma_handle->dma_ase_data_base)
+#define ASE_CNTL_BASE(dma_handle) ((uint64_t)dma_handle->dma_ase_cntl_base)
+#define HOST_MMIO_32_ADDR(dma_handle,offset) ((volatile uint32_t *)((uint64_t)(dma_handle)->mmio_va + (uint64_t)(offset)))
+#define HOST_MMIO_64_ADDR(dma_handle,offset) ((volatile uint64_t *)((uint64_t)(dma_handle)->mmio_va + (uint64_t)(offset)))
+#define HOST_MMIO_32(dma_handle,offset) (*HOST_MMIO_32_ADDR(dma_handle,offset))
+#define HOST_MMIO_64(dma_handle,offset) (*HOST_MMIO_64_ADDR(dma_handle,offset))
+
+#define CSR_STATUS(dma_h) (CSR_BASE(dma_h) + offsetof(msgdma_csr_t, status))
+#define CSR_CONTROL(dma_h) (CSR_BASE(dma_h) + offsetof(msgdma_csr_t, ctrl))
+
+#ifdef _WIN32
+#define __asm__
+#define __volatile__()
+#endif
+
 // Granularity of DMA transfer (maximum bytes that can be packed
 // in a single descriptor).This value must match configuration of
 // the DMA IP. Larger transfers will be broken down into smaller
@@ -125,13 +147,22 @@ struct pollfd {
 #define FPGA_DMA_BUF_ALIGN_SIZE FPGA_DMA_BUF_SIZE
 // Convenience macros
 #ifdef FPGA_DMA_DEBUG
-	#define debug_print(fmt, ...) \
-					do { if (FPGA_DMA_DEBUG) fprintf(stderr, fmt, ##__VA_ARGS__); } while (0)
+#define debug_print(fmt, ...) \
+	do { if (FPGA_DMA_DEBUG) fprintf(stderr, fmt, ##__VA_ARGS__); } while (0)
+#define error_print(fmt, ...) \
+	do { fprintf(stderr, fmt, ##__VA_ARGS__); err_cnt++; } while (0)
 #else
-	#define debug_print(...)
+#define debug_print(...)
+#define error_print(...)
 #endif
 
 #define FPGA_DMA_MAX_BUF 8
+
+typedef struct __attribute__((__packed__)) {
+	uint64_t dfh;
+	uint64_t feature_uuid_lo;
+	uint64_t feature_uuid_hi;
+} dfh_feature_t;
 
 typedef union {
 	uint64_t reg;
@@ -151,6 +182,7 @@ struct _dma_handle_t {
 	fpga_handle fpga_h;
 	uint32_t mmio_num;
 	uint64_t mmio_offset;
+	uint64_t *mmio_va;
 	uint64_t dma_base;
 	uint64_t dma_offset;
 	uint64_t dma_csr_base;

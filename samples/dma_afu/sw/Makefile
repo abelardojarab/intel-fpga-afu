@@ -24,6 +24,12 @@ CFLAGS+=-O2 -D_FORTIFY_SOURCE=2
 # format string vulnerabilities
 CFLAGS+=-Wformat -Wformat-security
 
+# Use native memcpy()
+#CFLAGS += -DUSE_MEMCPY
+
+# Compile for ASE
+#CFLAGS += -DUSE_ASE
+
 ############################################################
 
 CFLAGS += -Werror

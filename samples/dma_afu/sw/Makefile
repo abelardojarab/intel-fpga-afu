@@ -19,7 +19,7 @@ CFLAGS +=-fPIE -fPIC
 LDFLAGS +=-pie
 
 # fortify source
-#CFLAGS+=-O2 -D_FORTIFY_SOURCE=2
+CFLAGS+=-O2 -D_FORTIFY_SOURCE=2
 
 # format string vulnerabilities
 CFLAGS+=-Wformat -Wformat-security
@@ -36,7 +36,7 @@ CFLAGS += -Wl,--gc-sections
 #CFLAGS += -DUSE_ASE
 
 # Expose and report poll and buffer full wait counts
-CFLAGS += -DCHECK_DELAYS
+#CFLAGS += -DCHECK_DELAYS
 
 ############################################################
 

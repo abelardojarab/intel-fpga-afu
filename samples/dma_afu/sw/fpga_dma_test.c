@@ -49,6 +49,9 @@ extern double buf_full_count;
 char cbuf[2048];
 #endif
 
+static char *verify_buf = NULL;
+static uint64_t verify_buf_size = 0;
+
 static int err_cnt = 0;
 
 // Options determining various optimization attempts
@@ -112,29 +115,50 @@ static inline void free_aligned(void *ptr)
 static inline void fill_buffer(char *buf, size_t size) {
    if(do_not_verify) return;
    size_t i=0;
-   // use a deterministic seed to generate pseudo-random numbers
-   srand(99);
 
-   for(i=0; i<size; i++) {
-      *buf = rand()%256;
-      buf++;
+   if (verify_buf_size != size)
+   {
+	   free(verify_buf);
+	   verify_buf = (char *)malloc(size);
+	   verify_buf_size = size;
+	   char *buf = verify_buf;
+
+	   // use a deterministic seed to generate pseudo-random numbers
+	   srand(99);
+
+	   for (i = 0; i < size; i++) {
+		   *buf = rand() % 256;
+		   buf++;
+	   }
    }
+
+   memcpy(buf, verify_buf, size);
 }
 
 static inline fpga_result verify_buffer(char *buf, size_t size) {
    if(do_not_verify) return FPGA_OK;
-   size_t i, rnum=0;
-   srand(99);
 
-   for(i=0; i<size; i++) {
-      rnum = rand()%256;
-      if((*buf&0xFF) != rnum) {
-         printf("Invalid data at %zx Expected = %zx Actual = %x\n",i,rnum,(*buf&0xFF));
-         return FPGA_INVALID_PARAM;
-      }
-      buf++;
+   assert(NULL != verify_buf);
+
+   if (!memcmp(buf, verify_buf, size))
+   {
+	   printf("Buffer Verification Success!\n");
    }
-   printf("Buffer Verification Success!\n");
+   else
+   {
+	   size_t i, rnum = 0;
+	   srand(99);
+
+	   for (i = 0; i<size; i++) {
+		   rnum = rand() % 256;
+		   if ((*buf & 0xFF) != rnum) {
+			   printf("Invalid data at %zx Expected = %zx Actual = %x\n", i, rnum, (*buf & 0xFF));
+			   return FPGA_INVALID_PARAM;
+		   }
+		   buf++;
+	   }
+   }
+
    return FPGA_OK;
 }
 
@@ -488,11 +512,17 @@ int main(int argc, char *argv[]) {
    if(!use_ase) {
       printf("Running DDR sweep test\n");
       res = ddr_sweep(dma_h, 0, 0);
+      printf("DDR sweep with unaligned pointer and size\n");
       res |= ddr_sweep(dma_h, 61, 5);
       res |= ddr_sweep(dma_h, 3, 0);
       res |= ddr_sweep(dma_h, 7, 3);
+      res |= ddr_sweep(dma_h, 0, 3);
+      res |= ddr_sweep(dma_h, 0, 61);
+      res |= ddr_sweep(dma_h, 0, 7);
       ON_ERR_GOTO(res, out_dma_close, "ddr_sweep");
    }
+
+   free(verify_buf);
 
 out_dma_close:
    free_aligned(dma_buf_ptr);

@@ -51,6 +51,17 @@ double poll_wait_count = 0;
 double buf_full_count = 0;
 #endif
 
+
+/**
+* local_memcpy
+*
+* @brief                memcpy using SSE2 or REP MOVSB
+* @param[in] dst        Pointer to the destination memory
+* @param[in] src        Pointer to the source memory
+* @param[in] n          Size in bytes
+* @return dst
+*
+*/
 void *local_memcpy(void *dst, void * src, size_t n)
 {
 #ifdef USE_MEMCPY
@@ -97,7 +108,7 @@ do {\
 	}\
 } while (0)
 
-#define ON_ERR_RETURN(res, label, desc)\
+#define ON_ERR_RETURN(res, desc)\
 do {\
 	if ((res) != FPGA_OK) {\
 		error_print("Error %s: %s\n", (desc), fpgaErrStr(res));\
@@ -210,7 +221,7 @@ static fpga_result MMIORead64Blk(fpga_dma_handle dma_h, uint64_t device, uint64_
 	volatile uint64_t *dev_addr = HOST_MMIO_64_ADDR(dma_h, device);
 #endif
 
-	debug_print("%s : copying %lld bytes from 0x%p to 0x%p\n", __FUNCTION__, (long long int)bytes, haddr, (void*)device);
+	debug_print("%s : copying %lld bytes from 0x%p to 0x%p\n", __FUNCTION__, (long long int)bytes, (void*)device, haddr);
 	for (i = 0; i < bytes / sizeof(uint64_t); i++)
 	{
 #ifdef USE_ASE
@@ -249,7 +260,7 @@ static fpga_result MMIORead32Blk(fpga_dma_handle dma_h, uint64_t device, uint64_
 	volatile uint32_t *dev_addr = HOST_MMIO_32_ADDR(dma_h, device);
 #endif
 
-	debug_print("%s : copying %lld bytes from 0x%p to 0x%p\n", __FUNCTION__, (long long int)bytes, haddr, (void *)device);
+	debug_print("%s : copying %lld bytes from 0x%p to 0x%p\n", __FUNCTION__, (long long int)bytes, (void *)device, haddr);
 	for (i = 0; i < bytes / sizeof(uint32_t); i++)
 	{
 #ifdef USE_ASE
@@ -280,19 +291,48 @@ static inline uint64_t _fpga_dma_feature_next(uint64_t dfh) {
 	return (dfh >> AFU_DFH_NEXT_OFFSET) & 0xffffff;
 }
 
-static fpga_result _send_descriptor(fpga_dma_handle dma_h, msgdma_ext_desc_t desc) {
+/**
+* _switch_to_ase_page
+*
+* @brief                Updates the current page of ASE to the address given
+* @param[in] dma_h      Handle to the FPGA DMA object
+* @param[in] addr       Address to which the ASE page should be switched
+* @return Nothing.  Side-effect is to update the current page in the DMA handle.
+*
+*/
+static inline void _switch_to_ase_page(fpga_dma_handle dma_h, uint64_t addr)
+{
+	uint64_t requested_page = addr & ~DMA_ADDR_SPAN_EXT_WINDOW_MASK;
+
+	if (requested_page != dma_h->cur_ase_page)
+	{
+		MMIOWrite64Blk(dma_h, ASE_CNTL_BASE(dma_h), (uint64_t)&requested_page, sizeof(requested_page));
+		dma_h->cur_ase_page = requested_page;
+	}
+}
+
+/**
+* _send_descriptor
+*
+* @brief                Queues a DMA descriptor to the FPGA
+* @param[in] dma_h      Handle to the FPGA DMA object
+* @param[in] desc       Pointer to a descriptor structure to send
+* @return fpga_result FPGA_OK on success, return code otherwise
+*
+*/
+static fpga_result _send_descriptor(fpga_dma_handle dma_h, msgdma_ext_desc_t *desc) {
 	fpga_result res = FPGA_OK;
 	msgdma_status_t status = {0};
 
-	debug_print("desc.rd_address = %x\n",desc.rd_address);
-	debug_print("desc.wr_address = %x\n",desc.wr_address);
-	debug_print("desc.len = %x\n",desc.len);
-	debug_print("desc.wr_burst_count = %x\n",desc.wr_burst_count);
-	debug_print("desc.rd_burst_count = %x\n",desc.rd_burst_count);
-	debug_print("desc.wr_stride %x\n",desc.wr_stride);
-	debug_print("desc.rd_stride %x\n",desc.rd_stride);
-	debug_print("desc.rd_address_ext %x\n",desc.rd_address_ext);
-	debug_print("desc.wr_address_ext %x\n",desc.wr_address_ext);
+	debug_print("desc.rd_address = %x\n",desc->rd_address);
+	debug_print("desc.wr_address = %x\n",desc->wr_address);
+	debug_print("desc.len = %x\n",desc->len);
+	debug_print("desc.wr_burst_count = %x\n",desc->wr_burst_count);
+	debug_print("desc.rd_burst_count = %x\n",desc->rd_burst_count);
+	debug_print("desc.wr_stride %x\n",desc->wr_stride);
+	debug_print("desc.rd_stride %x\n",desc->rd_stride);
+	debug_print("desc.rd_address_ext %x\n",desc->rd_address_ext);
+	debug_print("desc.wr_address_ext %x\n",desc->wr_address_ext);
 
 	debug_print("SGDMA_CSR_BASE = %lx SGDMA_DESC_BASE=%lx\n",dma_h->dma_csr_base, dma_h->dma_desc_base);
 
@@ -301,7 +341,7 @@ static fpga_result _send_descriptor(fpga_dma_handle dma_h, msgdma_ext_desc_t des
 #endif
 	do {
 		res = MMIORead32Blk(dma_h, CSR_STATUS(dma_h), (uint64_t)&status.reg, sizeof(status.reg));
-		ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
+		ON_ERR_GOTO(res, out, "MMIORead32Blk");
 #ifdef CHECK_DELAYS
 		if (first && status.st.desc_buf_full)
 		{
@@ -311,14 +351,29 @@ static fpga_result _send_descriptor(fpga_dma_handle dma_h, msgdma_ext_desc_t des
 #endif
 	} while(status.st.desc_buf_full);
 
-	res = MMIOWrite64Blk(dma_h, dma_h->dma_desc_base, (uint64_t)&desc, sizeof(desc));
-	ON_ERR_GOTO(res, out, "_copy_to_mmio");
+	res = MMIOWrite64Blk(dma_h, dma_h->dma_desc_base, (uint64_t)desc, sizeof(*desc));
+	ON_ERR_GOTO(res, out, "MMIOWrite64Blk");
 
 out:
 	return res;
 }
 
-static fpga_result _do_dma(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, int count, int is_last_desc, fpga_dma_transfer_t type, bool intr_en) {
+/**
+* _do_dma
+*
+* @brief                    Performs a DMA transaction with the FPGA
+* @param[in] dma_h          Handle to the FPGA DMA object
+* @param[in] dst            Pointer to a host or FPGA buffer to send or retrieve
+* @param[in] src            Pointer to a host or FPGA buffer to send or retrieve
+* @param[in] count          Number of bytes
+* @param[in] is_last_desc   True if this is the last buffer of a batch
+* @param[in] type           Direction of transfer
+* @param[in] intr_en        True means to ask for an interrupt from the FPGA
+* @return fpga_result FPGA_OK on success, return code otherwise
+*
+*/
+static fpga_result _do_dma(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, int count,
+	int is_last_desc, fpga_dma_transfer_t type, bool intr_en) {
 	msgdma_ext_desc_t desc = {0};
 	fpga_result res = FPGA_OK;
 	int alignment_offset = 0;
@@ -360,7 +415,7 @@ static fpga_result _do_dma(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, in
 		desc.rd_address_ext = (src >> 32) & FPGA_DMA_MASK_32_BIT;
 		desc.wr_address_ext = (dst >> 32) & FPGA_DMA_MASK_32_BIT;
 
-		res = _send_descriptor(dma_h, desc);
+		res = _send_descriptor(dma_h, &desc);
 		ON_ERR_GOTO(res, out, "_send_descriptor");
 	}
 	// either FPGA to Host or Host to FPGA transfer so we need to make sure the DMA transaction is aligned to the burst size (CCIP restriction)
@@ -393,7 +448,7 @@ static fpga_result _do_dma(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, in
 			// will post short transfer to align to a 4CL (256 byte) boundary
 			desc.len = segment_size;
 
-			res = _send_descriptor(dma_h, desc);
+			res = _send_descriptor(dma_h, &desc);
 			ON_ERR_GOTO(res, out, "_send_descriptor");
 		}
 
@@ -423,7 +478,7 @@ static fpga_result _do_dma(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, in
 
 			desc.len = segment_size;
 
-			res = _send_descriptor(dma_h, desc);
+			res = _send_descriptor(dma_h, &desc);
 			ON_ERR_GOTO(res, out, "_send_descriptor");
 		}
 
@@ -440,7 +495,7 @@ static fpga_result _do_dma(fpga_dma_handle dma_h, uint64_t dst, uint64_t src, in
 			if(intr_en)
 				desc.control.transfer_irq_en = 1;
 			// will post short transfer to move the remainder of the buffer
-			res = _send_descriptor(dma_h, desc);
+			res = _send_descriptor(dma_h, &desc);
 			ON_ERR_GOTO(res, out, "_send_descriptor");
 		}
 
@@ -539,7 +594,7 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle *dma_p) {
 	msgdma_ctrl_t ctrl = {0};
 	ctrl.ct.global_intr_en_mask = 1;
 	res = MMIOWrite32Blk(dma_h, CSR_CONTROL(dma_h), (uint64_t)&ctrl.reg, sizeof(ctrl.reg));
-	ON_ERR_GOTO(res, rel_buf, "fpgaWriteMMIO32");
+	ON_ERR_GOTO(res, rel_buf, "MMIOWrite32Blk");
 
 	// register interrupt event handle
 	res = fpgaCreateEventHandle(&dma_h->eh);
@@ -552,7 +607,7 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle *dma_p) {
 
 destroy_eh:
 	res = fpgaDestroyEventHandle(&dma_h->eh);
-	ON_ERR_GOTO(res, rel_buf, "fpgaRegisterEvent");
+	ON_ERR_GOTO(res, rel_buf, "fpgaDestroyEventHandle");
 
 rel_buf:
 	for(i=0; i< FPGA_DMA_MAX_BUF; i++) {
@@ -563,17 +618,6 @@ out:
 	if(!dma_found)
 		free(dma_h);
 	return res;
-}
-
-static inline void _switch_to_ase_page(fpga_dma_handle dma_h, uint64_t addr)
-{
-	uint64_t requested_page = addr & ~DMA_ADDR_SPAN_EXT_WINDOW_MASK;
-
-	if (requested_page != dma_h->cur_ase_page)
-	{
-		MMIOWrite64Blk(dma_h, ASE_CNTL_BASE(dma_h), (uint64_t)&requested_page, sizeof(requested_page));
-		dma_h->cur_ase_page = requested_page;
-	}
 }
 
 /**
@@ -663,10 +707,10 @@ out:
 *
 * @brief                   Writes to a DWORD/QWORD aligned memory address(FPGA address).
 * @param[in] dma           Handle to the FPGA DMA object
-* @param[in/out] dst_ptr   FPGA address
-* @param[in/out] src_ptr   Host buffer address
-* @param[in/out] count     Size in bytes
-* @return fpga_result      FPGA_OK on success, return code otherwise
+* @param[in/out] dst_ptr   Pointer to the FPGA address
+* @param[in/out] src_ptr   Pointer to the Host buffer address
+* @param[in/out] count     Pointer to the Size in bytes
+* @return fpga_result      FPGA_OK on success, return code otherwise.  Updates src, dst, and count
 *
 */
 static fpga_result _write_memory_mmio(fpga_dma_handle dma_h, uint64_t *dst_ptr, uint64_t *src_ptr, uint64_t* count) {
@@ -691,6 +735,7 @@ static fpga_result _write_memory_mmio(fpga_dma_handle dma_h, uint64_t *dst_ptr, 
 		_switch_to_ase_page(dma_h, dst);
 		offset = dst & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
 		res = MMIOWrite32Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)src, DWORD_BYTES);
+		ON_ERR_RETURN(res, "MMIOWrite32Blk");
 		src += DWORD_BYTES;
 		dst += DWORD_BYTES;
 		align_bytes -= DWORD_BYTES;
@@ -711,6 +756,7 @@ static fpga_result _write_memory_mmio(fpga_dma_handle dma_h, uint64_t *dst_ptr, 
 		_switch_to_ase_page(dma_h, dst);
 		offset = dst & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
 		res = MMIOWrite64Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)src, size_to_copy);
+		ON_ERR_RETURN(res, "MMIOWrite64Blk");
 		src += size_to_copy;
 		dst += size_to_copy;
 		align_bytes -= size_to_copy;
@@ -722,6 +768,7 @@ static fpga_result _write_memory_mmio(fpga_dma_handle dma_h, uint64_t *dst_ptr, 
 		_switch_to_ase_page(dma_h, dst);
 		offset = dst & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
 		res = MMIOWrite32Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)src, DWORD_BYTES);
+		ON_ERR_RETURN(res, "MMIOWrite32Blk");
 		src += DWORD_BYTES;
 		dst += DWORD_BYTES;
 		align_bytes -= DWORD_BYTES;
@@ -740,10 +787,10 @@ static fpga_result _write_memory_mmio(fpga_dma_handle dma_h, uint64_t *dst_ptr, 
 *
 * @brief                   Tx "count" bytes from HOST to FPGA using Address span expander(ASE)- will internally make calls to handle unaligned and aligned MMIO writes.
 * @param[in] dma           Handle to the FPGA DMA object
-* @param[in/out] dst_ptr   FPGA address
-* @param[in/out] src_ptr   Host buffer address
+* @param[in/out] dst_ptr   Pointer to the FPGA address
+* @param[in/out] src_ptr   Pointer to the Host buffer address
 * @param[in] count         Size in bytes
-* @return fpga_result      FPGA_OK on success, return code otherwise
+* @return fpga_result      FPGA_OK on success, return code otherwise.  Updates src and dst
 *
 */
 static fpga_result _ase_host_to_fpga(fpga_dma_handle dma_h, uint64_t *dst_ptr, uint64_t *src_ptr, uint64_t count) {
@@ -795,10 +842,10 @@ static fpga_result _ase_host_to_fpga(fpga_dma_handle dma_h, uint64_t *dst_ptr, u
 *
 * @brief                   Reads a DWORD/QWORD aligned memory address(FPGA address).
 * @param[in] dma           Handle to the FPGA DMA object
-* @param[in/out] dst_ptr   Host Buffer Address
-* @param[in/out] src_ptr   FPGA address
-* @param[in/out] count     Size in bytes
-* @return fpga_result      FPGA_OK on success, return code otherwise
+* @param[in/out] dst_ptr   Pointer to the Host Buffer Address
+* @param[in/out] src_ptr   Pointer to the FPGA address
+* @param[in/out] count     Pointer to the size in bytes
+* @return fpga_result      FPGA_OK on success, return code otherwise.  Updates src, dst, and count
 *
 */
 static fpga_result _read_memory_mmio(fpga_dma_handle dma_h, uint64_t *src_ptr,uint64_t *dst_ptr, uint64_t* count) {
@@ -823,6 +870,7 @@ static fpga_result _read_memory_mmio(fpga_dma_handle dma_h, uint64_t *src_ptr,ui
 		_switch_to_ase_page(dma_h, src);
 		offset = src & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
 		res = MMIORead32Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)dst, DWORD_BYTES);
+		ON_ERR_RETURN(res, "MMIORead32Blk");
 		src += DWORD_BYTES;
 		dst += DWORD_BYTES;
 		align_bytes -= DWORD_BYTES;
@@ -843,6 +891,7 @@ static fpga_result _read_memory_mmio(fpga_dma_handle dma_h, uint64_t *src_ptr,ui
 		_switch_to_ase_page(dma_h, src);
 		offset = src & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
 		res = MMIORead64Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)dst, size_to_copy);
+		ON_ERR_RETURN(res, "MMIORead64Blk");
 		src += size_to_copy;
 		dst += size_to_copy;
 		align_bytes -= size_to_copy;
@@ -854,6 +903,7 @@ static fpga_result _read_memory_mmio(fpga_dma_handle dma_h, uint64_t *src_ptr,ui
 		_switch_to_ase_page(dma_h, src);
 		offset = src & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
 		res = MMIORead32Blk(dma_h, ASE_DATA_BASE(dma_h) + offset, (uint64_t)dst, DWORD_BYTES);
+		ON_ERR_RETURN(res, "MMIORead32Blk");
 		src += DWORD_BYTES;
 		dst += DWORD_BYTES;
 		align_bytes -= DWORD_BYTES;
@@ -872,10 +922,10 @@ static fpga_result _read_memory_mmio(fpga_dma_handle dma_h, uint64_t *src_ptr,ui
 *
 * @brief                   Tx "count" bytes from FPGA to HOST using Address span expander(ASE)- will internally make calls to handle unaligned and aligned MMIO writes.
 * @param[in] dma           Handle to the FPGA DMA object
-* @param[in/out] dst_ptr   Host Buffer Address
-* @param[in/out] src_ptr   FPGA address
+* @param[in/out] dst_ptr   Pointer to the Host Buffer Address
+* @param[in/out] src_ptr   Pointer to the FPGA address
 * @param[in/out] count     Size in bytes
-* @return fpga_result      FPGA_OK on success, return code otherwise
+* @return fpga_result      FPGA_OK on success, return code otherwise.  Updates src and dst
 *
 */
 static fpga_result _ase_fpga_to_host(fpga_dma_handle dma_h, uint64_t *src_ptr,uint64_t *dst_ptr, uint64_t count) {
@@ -976,6 +1026,7 @@ static fpga_result _issue_magic(fpga_dma_handle dma_h) {
 	// TODO: Don't know why we read status here
 	msgdma_status_t status = {0};
 	res = MMIORead32Blk(dma_h, CSR_STATUS(dma_h), (uint64_t)&status.reg, sizeof(status.reg));
+	ON_ERR_RETURN(res, "MMIORead32Blk");
 
 	res = _do_dma(dma_h, dma_h->magic_iova | FPGA_DMA_WF_HOST_MASK, FPGA_DMA_WF_ROM_MAGIC_NO_MASK, 64, 1, FPGA_TO_HOST_MM, true/*intr_en*/);
 	return res;
@@ -1283,6 +1334,7 @@ fpga_result fpgaDmaClose(fpga_dma_handle dma_h) {
 	msgdma_ctrl_t ctrl = {0};
 	ctrl.ct.global_intr_en_mask = 0;
 	res = MMIOWrite32Blk(dma_h, CSR_CONTROL(dma_h), (uint64_t)&ctrl.reg, sizeof(ctrl.reg));
+	ON_ERR_GOTO(res, out, "MMIOWrite32Blk");
 
 out:
 	free((void*)dma_h);

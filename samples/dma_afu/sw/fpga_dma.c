@@ -716,10 +716,10 @@ out:
 static fpga_result _write_memory_mmio(fpga_dma_handle dma_h, uint64_t *dst_ptr, uint64_t *src_ptr, uint64_t* count) {
 	fpga_result res = FPGA_OK;
 
-	assert(*count >= DWORD_BYTES);
-
 	if (0 == *count)
 		return res;
+
+	assert(*count >= DWORD_BYTES);
 	assert(IS_ALIGNED_DWORD(*dst_ptr));
 	if (!IS_ALIGNED_DWORD(*dst_ptr))	// If QWORD aligned, this will be true
 		return FPGA_EXCEPTION;
@@ -851,10 +851,10 @@ static fpga_result _ase_host_to_fpga(fpga_dma_handle dma_h, uint64_t *dst_ptr, u
 static fpga_result _read_memory_mmio(fpga_dma_handle dma_h, uint64_t *src_ptr,uint64_t *dst_ptr, uint64_t* count) {
 	fpga_result res = FPGA_OK;
 
-	assert(*count >= DWORD_BYTES);
-
 	if (0 == *count)
 		return res;
+
+	assert(*count >= DWORD_BYTES);
 	assert(IS_ALIGNED_DWORD(*src_ptr));
 	if (!IS_ALIGNED_DWORD(*src_ptr))	// If QWORD aligned, this will be true
 		return FPGA_EXCEPTION;

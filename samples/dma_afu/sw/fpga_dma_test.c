@@ -207,19 +207,20 @@ fpga_result ddr_sweep(fpga_dma_handle dma_h, uint64_t ptr_align, uint64_t siz_al
       return FPGA_NO_MEMORY;
    }
 
-   uint64_t *buf_to_free_ptr = dma_buf_ptr;
-   dma_buf_ptr = (uint64_t *)((uint64_t)dma_buf_ptr + ptr_align);
-   total_mem_size = total_mem_size - ptr_align + siz_align;
-
-   printf("Buffer pointer = %p, size = 0x%lx (%p through %p)\n", dma_buf_ptr, total_mem_size, dma_buf_ptr,
-	   (uint64_t *)((uint64_t)dma_buf_ptr + total_mem_size));
-
-   printf("Allocated test buffer\n");
    if (use_advise)
    {
 	   if (0 != madvise(dma_buf_ptr, total_mem_size, MADV_SEQUENTIAL))
 		   perror("Warning: madvise returned error");
    }
+
+   uint64_t *buf_to_free_ptr = dma_buf_ptr;
+   dma_buf_ptr = (uint64_t *)((uint64_t)dma_buf_ptr + ptr_align);
+   total_mem_size -= ptr_align + siz_align;
+
+   printf("Buffer pointer = %p, size = 0x%lx (%p through %p)\n", dma_buf_ptr, total_mem_size, dma_buf_ptr,
+	   (uint64_t *)((uint64_t)dma_buf_ptr + total_mem_size));
+
+   printf("Allocated test buffer\n");
    printf("Fill test buffer\n");
    fill_buffer((char*)dma_buf_ptr, total_mem_size);
 

@@ -36,11 +36,11 @@
 #include "x86-sse2.h"
 
 #ifdef CHECK_DELAYS
-#warning "Compiled with -DCHECK_DELAYS.  Not to be used in production"
+#pragma message "Compiled with -DCHECK_DELAYS.  Not to be used in production"
 #endif
 
 #ifdef FPGA_DMA_DEBUG
-#warning "Compiled with -DFPGA_DMA_DEBUG.  Not to be used in production"
+#pragma message "Compiled with -DFPGA_DMA_DEBUG.  Not to be used in production"
 #endif
 
 #ifndef max
@@ -123,12 +123,22 @@
 // transactions.
 #define FPGA_DMA_BUF_SIZE (1023*1024)
 #define FPGA_DMA_BUF_ALIGN_SIZE FPGA_DMA_BUF_SIZE
+
 // Convenience macros
 #ifdef FPGA_DMA_DEBUG
 #define debug_print(fmt, ...) \
-	do { if (FPGA_DMA_DEBUG) fprintf(stderr, fmt, ##__VA_ARGS__); } while (0)
+do { \
+	if (FPGA_DMA_DEBUG) {\
+		fprintf(stderr, "%s (%d) : ", __FUNCTION__, __LINE__); \
+		fprintf(stderr, fmt, ##__VA_ARGS__); \
+	} \
+} while (0)
 #define error_print(fmt, ...) \
-	do { fprintf(stderr, fmt, ##__VA_ARGS__); err_cnt++; } while (0)
+do { \
+	fprintf(stderr, "%s (%d) : ", __FUNCTION__, __LINE__); \
+	fprintf(stderr, fmt, ##__VA_ARGS__); \
+	err_cnt++; \
+ } while (0)
 #else
 #define debug_print(...)
 #define error_print(...)

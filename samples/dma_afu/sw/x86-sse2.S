@@ -112,6 +112,23 @@ asm_function aligned_block_copy_movsd
     ret
 .endfunc
 
+asm_function unaligned_block_copy_sse2
+0:
+    movdqu      xmm0,       [SRC + 0]
+    movdqu      xmm1,       [SRC + 16]
+    movdqu      xmm2,       [SRC + 32]
+    movdqu      xmm3,       [SRC + 48]
+    movdqu      [DST + 0],  xmm0
+    movdqu      [DST + 16], xmm1
+    movdqu      [DST + 32], xmm2
+    movdqu      [DST + 48], xmm3
+    add         SRC,        64
+    add         DST,        64
+    sub         SIZE, 64
+    jg          0b
+    ret
+.endfunc
+
 asm_function aligned_block_copy_sse2
 0:
     movdqa      xmm0,       [SRC + 0]

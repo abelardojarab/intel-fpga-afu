@@ -73,9 +73,20 @@ void *local_memcpy(void *dst, void * src, size_t n)
 	{
 		if (n >= MIN_SSE2_SIZE) // Arbitrary crossover performance point
 		{
-			debug_print("%s : copying 0x%lx bytes with SSE2\n",
-				__FUNCTION__, (uint64_t)ALIGN_TO_CL(n));
+			debug_print("copying 0x%lx bytes with SSE2\n", (uint64_t)ALIGN_TO_CL(n));
 			aligned_block_copy_sse2((int64_t * __restrict) dst, (int64_t * __restrict) src,
+				ALIGN_TO_CL(n));
+			ldst = (void *)((uint64_t)dst + ALIGN_TO_CL(n));
+			lsrc = (void *)((uint64_t)src + ALIGN_TO_CL(n));
+			n -= ALIGN_TO_CL(n);
+		}
+	}
+	else
+	{
+		if (n >= MIN_SSE2_SIZE) // Arbitrary crossover performance point
+		{
+			debug_print("copying 0x%lx bytes (unaligned) with SSE2\n", (uint64_t)ALIGN_TO_CL(n));
+			unaligned_block_copy_sse2((int64_t * __restrict) dst, (int64_t * __restrict) src,
 				ALIGN_TO_CL(n));
 			ldst = (void *)((uint64_t)dst + ALIGN_TO_CL(n));
 			lsrc = (void *)((uint64_t)src + ALIGN_TO_CL(n));
@@ -85,8 +96,7 @@ void *local_memcpy(void *dst, void * src, size_t n)
 
 	if (n) {
 		register unsigned long int dummy;
-		debug_print("%s : copying 0x%lx bytes with REP MOVSB\n",
-			__FUNCTION__, n);
+		debug_print("copying 0x%lx bytes with REP MOVSB\n", n);
 		__asm__ __volatile__("rep movsb\n"
 			:"=&D"(ldst), "=&S"(lsrc), "=&c"(dummy)
 			: "0"(ldst), "1"(lsrc), "2"(n)
@@ -136,14 +146,14 @@ static fpga_result MMIOWrite64Blk(fpga_dma_handle dma_h, uint64_t device, uint64
 	assert(IS_ALIGNED_QWORD(bytes));
 
 	uint64_t *haddr = (uint64_t *)host;
-	int i;
+	uint64_t i;
 	fpga_result res = FPGA_OK;
 
 #ifndef USE_ASE
 	volatile uint64_t *dev_addr = HOST_MMIO_64_ADDR(dma_h, device);
 #endif
 
-	debug_print("%s : copying %lld bytes from 0x%p to 0x%p\n", __FUNCTION__, (long long int)bytes, haddr, (void *)device);
+	debug_print("copying %lld bytes from 0x%p to 0x%p\n", (long long int)bytes, haddr, (void *)device);
 	for (i = 0; i < bytes / sizeof(uint64_t); i++)
 	{
 #ifdef USE_ASE
@@ -175,14 +185,14 @@ static fpga_result MMIOWrite32Blk(fpga_dma_handle dma_h, uint64_t device, uint64
 	assert(IS_ALIGNED_DWORD(bytes));
 
 	uint32_t *haddr = (uint32_t *)host;
-	int i;
+	uint64_t i;
 	fpga_result res = FPGA_OK;
 
 #ifndef USE_ASE
 	volatile uint32_t *dev_addr = HOST_MMIO_32_ADDR(dma_h, device);
 #endif
 
-	debug_print("%s : copying %lld bytes from 0x%p to 0x%p\n", __FUNCTION__, (long long int)bytes, haddr, (void*)device);
+	debug_print("copying %lld bytes from 0x%p to 0x%p\n", (long long int)bytes, haddr, (void*)device);
 	for (i = 0; i < bytes / sizeof(uint32_t); i++)
 	{
 #ifdef USE_ASE
@@ -214,14 +224,14 @@ static fpga_result MMIORead64Blk(fpga_dma_handle dma_h, uint64_t device, uint64_
 	assert(IS_ALIGNED_QWORD(bytes));
 
 	uint64_t *haddr = (uint64_t *)host;
-	int i;
+	uint64_t i;
 	fpga_result res = FPGA_OK;
 
 #ifndef USE_ASE
 	volatile uint64_t *dev_addr = HOST_MMIO_64_ADDR(dma_h, device);
 #endif
 
-	debug_print("%s : copying %lld bytes from 0x%p to 0x%p\n", __FUNCTION__, (long long int)bytes, (void*)device, haddr);
+	debug_print("copying %lld bytes from 0x%p to 0x%p\n", (long long int)bytes, (void*)device, haddr);
 	for (i = 0; i < bytes / sizeof(uint64_t); i++)
 	{
 #ifdef USE_ASE
@@ -253,14 +263,14 @@ static fpga_result MMIORead32Blk(fpga_dma_handle dma_h, uint64_t device, uint64_
 	assert(IS_ALIGNED_DWORD(bytes));
 
 	uint32_t *haddr = (uint32_t *)host;
-	int i;
+	uint64_t i;
 	fpga_result res = FPGA_OK;
 
 #ifndef USE_ASE
 	volatile uint32_t *dev_addr = HOST_MMIO_32_ADDR(dma_h, device);
 #endif
 
-	debug_print("%s : copying %lld bytes from 0x%p to 0x%p\n", __FUNCTION__, (long long int)bytes, (void *)device, haddr);
+	debug_print("copying %lld bytes from 0x%p to 0x%p\n", (long long int)bytes, (void *)device, haddr);
 	for (i = 0; i < bytes / sizeof(uint32_t); i++)
 	{
 #ifdef USE_ASE
@@ -1300,9 +1310,12 @@ fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_h, uint64_t dst, uint64_t sr
 return res;
 }
 
+#define UNUSED(...) (void)(__VA_ARGS__)
+
 fpga_result fpgaDmaTransferAsync(fpga_dma_handle dma, uint64_t dst, uint64_t src, size_t count,
-										  fpga_dma_transfer_t type, fpga_dma_transfer_cb cb, void *context) {
+				 fpga_dma_transfer_t type, fpga_dma_transfer_cb cb, void *context) {
 	// TODO
+	UNUSED(dma, dst, src, count, type, cb, context);
 	return FPGA_NOT_SUPPORTED;
 }
 

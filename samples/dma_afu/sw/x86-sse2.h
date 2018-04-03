@@ -40,6 +40,9 @@ void aligned_block_copy_movsd(int64_t * __restrict dst,
 void aligned_block_copy_sse2(int64_t * __restrict dst,
                              int64_t * __restrict src,
                              int                  size);
+void unaligned_block_copy_sse2(int64_t * __restrict dst,
+                               int64_t * __restrict src,
+                               int                  size);
 void aligned_block_copy_nt_sse2(int64_t * __restrict dst,
                                 int64_t * __restrict src,
                                 int                  size);

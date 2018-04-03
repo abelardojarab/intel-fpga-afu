@@ -30,6 +30,7 @@
 #include <time.h>
 #include <sys/mman.h>
 #include <stdbool.h>
+#include <hwloc.h>
 #include "fpga_dma.h"
 /**
  * \fpga_dma_test.c
@@ -59,6 +60,8 @@ bool use_malloc = true;
 bool use_memcpy = true;
 bool use_advise = false;
 bool do_not_verify = false;
+bool cpu_affinity = false;
+bool memory_affinity = false;
 
 /*
  * macro for checking return codes
@@ -313,6 +316,8 @@ static void usage(void)
 	printf("\t-n\tDo not provide OS advice (default)\n");
 	printf("\t-a\tUse madvise (Incompatible with -n)\n");
 	printf("\t-y\tDo not verify buffer contents - faster (default is to verify)\n");
+	printf("\t-C\tRestrict process to CPUs attached to DCP NUMA node\n");
+	printf("\t-M\tRestrict process memory allocation to DCP NUMA node\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -378,6 +383,12 @@ int main(int argc, char *argv[]) {
 	   case 'y':
 		   do_not_verify = true;
 		   break;
+	   case 'C':
+		   cpu_affinity = true;
+		   break;
+	   case 'M':
+		   memory_affinity = true;
+		   break;
 	   default:
 		   return 1;
 	   }
@@ -408,6 +419,53 @@ int main(int argc, char *argv[]) {
    // open the AFC
    res = fpgaOpen(afc_token, &afc_h, 0);
    ON_ERR_GOTO(res, out_destroy_tok, "fpgaOpen");
+
+   // Set up proper affinity if requested
+   if (cpu_affinity || memory_affinity)
+   {
+	   unsigned dom = 0, bus = 0, dev = 0, func = 0;
+	   fpga_properties props;
+	   int retval;
+#ifdef FPGA_DMA_DEBUG
+	   char str[4096];
+#endif
+	   res = fpgaGetProperties(afc_token, &props);
+	   ON_ERR_GOTO(res, out_destroy_tok, "fpgaGetProperties");
+	   res = fpgaPropertiesGetBus(props, (uint8_t *)&bus);
+	   ON_ERR_GOTO(res, out_destroy_tok, "fpgaPropertiesGetBus");
+	   res = fpgaPropertiesGetDevice(props, (uint8_t *)&dev);
+	   ON_ERR_GOTO(res, out_destroy_tok, "fpgaPropertiesGetDevice");
+	   res = fpgaPropertiesGetFunction(props, (uint8_t *)&func);
+	   ON_ERR_GOTO(res, out_destroy_tok, "fpgaPropertiesGetFunction");
+
+	   // Find the device from the topology
+	   hwloc_topology_t topology;
+	   hwloc_topology_init(&topology);
+	   hwloc_topology_set_flags(topology, HWLOC_TOPOLOGY_FLAG_IO_DEVICES);
+	   hwloc_topology_load(topology);
+	   hwloc_obj_t obj = hwloc_get_pcidev_by_busid(topology, dom, bus, dev, func);
+	   hwloc_obj_t obj2 = hwloc_get_non_io_ancestor_obj(topology, obj);
+#ifdef FPGA_DMA_DEBUG
+	   hwloc_obj_type_snprintf(str, 4096, obj2, 1);
+	   printf("%s\n", str);
+	   hwloc_obj_attr_snprintf(str, 4096, obj2, " :: ", 1);
+	   printf("%s\n", str);
+	   hwloc_bitmap_taskset_snprintf(str, 4096, obj2->cpuset);
+	   printf("CPUSET is %s\n", str);
+	   hwloc_bitmap_taskset_snprintf(str, 4096, obj2->nodeset);
+	   printf("NODESET is %s\n", str);
+#endif
+	   if (memory_affinity)
+	   {
+		   retval = hwloc_set_membind(topology, obj2->nodeset, HWLOC_MEMBIND_THREAD, HWLOC_MEMBIND_MIGRATE);
+		   ON_ERR_GOTO(retval, out_destroy_tok, "hwloc_set_membind");
+	   }
+	   if (cpu_affinity)
+	   {
+		   retval = hwloc_set_cpubind(topology, obj2->cpuset, HWLOC_CPUBIND_STRICT);
+		   ON_ERR_GOTO(retval, out_destroy_tok, "hwloc_set_cpubind");
+	   }
+   }
 
    if(!use_ase) {
       res = fpgaMapMMIO(afc_h, 0, (uint64_t**)&mmio_ptr);

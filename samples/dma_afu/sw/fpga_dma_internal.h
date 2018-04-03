@@ -71,7 +71,6 @@
 #define FPGA_DMA_WF_HOST_MASK         0x3000000000000
 #define FPGA_DMA_WF_ROM_MAGIC_NO_MASK 0x1000000000000
 
-
 #define AFU_DFH_REG 0x0
 #define AFU_DFH_NEXT_OFFSET 16
 #define AFU_DFH_EOL_OFFSET 40
@@ -146,7 +145,7 @@ do { \
 
 #define FPGA_DMA_MAX_BUF 8
 
-typedef struct __attribute__((__packed__)) {
+typedef struct __attribute__ ((__packed__)) {
 	uint64_t dfh;
 	uint64_t feature_uuid_lo;
 	uint64_t feature_uuid_hi;
@@ -208,7 +207,7 @@ typedef union {
 	};
 } msgdma_desc_ctrl_t;
 
-typedef struct __attribute__((__packed__)) {
+typedef struct __attribute__ ((__packed__)) {
 	//0x0
 	uint32_t rd_address;
 	//0x4
@@ -284,7 +283,7 @@ typedef union {
 	} seq;
 } msgdma_seq_num_t;
 
-typedef struct __attribute__((__packed__)) {
+typedef struct __attribute__ ((__packed__)) {
 	// 0x0
 	msgdma_status_t status;
 	// 0x4
@@ -297,4 +296,4 @@ typedef struct __attribute__((__packed__)) {
 	msgdma_seq_num_t seq_num;
 } msgdma_csr_t;
 
-#endif // __FPGA_DMA_INT_H__
+#endif				// __FPGA_DMA_INT_H__

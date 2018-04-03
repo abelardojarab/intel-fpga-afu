@@ -53,6 +53,7 @@ endif
 LDFLAGS += -luuid
 #LDFLAGS += -lsafestr
 LDFLAGS += -lrt
+LDFLAGS += -lhwloc
 
 ifeq ($(USE_ASE),1)
 	LDFLAGS += -lopae-c-ase

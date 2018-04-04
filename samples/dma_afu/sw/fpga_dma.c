@@ -578,8 +578,10 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle * dma_p)
 	bool end_of_list = false;
 	bool dma_found = false;
 
+#ifndef USE_ASE
 	res = fpgaMapMMIO(dma_h->fpga_h, 0, (uint64_t **) & dma_h->mmio_va);
 	ON_ERR_GOTO(res, out, "fpgaMapMMIO");
+#endif
 
 	uint64_t offset = dma_h->mmio_offset;
 	dfh_feature_t dfh;

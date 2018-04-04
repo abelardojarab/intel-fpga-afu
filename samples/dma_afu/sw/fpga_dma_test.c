@@ -30,7 +30,9 @@
 #include <time.h>
 #include <sys/mman.h>
 #include <stdbool.h>
+#ifndef USE_ASE
 #include <hwloc.h>
+#endif
 #include "fpga_dma.h"
 /**
  * \fpga_dma_test.c
@@ -60,8 +62,8 @@ bool use_malloc = true;
 bool use_memcpy = true;
 bool use_advise = false;
 bool do_not_verify = false;
-bool cpu_affinity = false;
-bool memory_affinity = false;
+bool cpu_affinity = true;
+bool memory_affinity = true;
 
 /*
  * macro for checking return codes
@@ -333,8 +335,8 @@ static void usage(void)
 	printf("\t-a\tUse madvise (Incompatible with -n)\n");
 	printf
 	    ("\t-y\tDo not verify buffer contents - faster (default is to verify)\n");
-	printf("\t-C\tRestrict process to CPUs attached to DCP NUMA node\n");
-	printf("\t-M\tRestrict process memory allocation to DCP NUMA node\n");
+	printf("\t-C\tDo not restrict process to CPUs attached to DCP NUMA node\n");
+	printf("\t-M\tDo not restrict process memory allocation to DCP NUMA node\n");
 }
 
 int main(int argc, char *argv[])
@@ -435,6 +437,7 @@ int main(int argc, char *argv[])
 	res = fpgaOpen(afc_token, &afc_h, 0);
 	ON_ERR_GOTO(res, out_destroy_tok, "fpgaOpen");
 
+#ifndef USE_ASE
 	// Set up proper affinity if requested
 	if (cpu_affinity || memory_affinity) {
 		unsigned dom = 0, bus = 0, dev = 0, func = 0;
@@ -487,6 +490,7 @@ int main(int argc, char *argv[])
 				    "hwloc_set_cpubind");
 		}
 	}
+#endif
 
 	if (!use_ase) {
 		res = fpgaMapMMIO(afc_h, 0, (uint64_t **) & mmio_ptr);

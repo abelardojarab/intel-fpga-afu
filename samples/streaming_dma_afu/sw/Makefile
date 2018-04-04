@@ -19,6 +19,7 @@ else
 endif
 
 LDFLAGS += -pthread
+LDFLAGS += -lm
 
 all: fpga_dma_st_test
 

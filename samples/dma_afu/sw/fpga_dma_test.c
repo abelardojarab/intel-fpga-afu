@@ -335,8 +335,10 @@ static void usage(void)
 	printf("\t-a\tUse madvise (Incompatible with -n)\n");
 	printf
 	    ("\t-y\tDo not verify buffer contents - faster (default is to verify)\n");
-	printf("\t-C\tDo not restrict process to CPUs attached to DCP NUMA node\n");
-	printf("\t-M\tDo not restrict process memory allocation to DCP NUMA node\n");
+	printf
+	    ("\t-C\tDo not restrict process to CPUs attached to DCP NUMA node\n");
+	printf
+	    ("\t-M\tDo not restrict process memory allocation to DCP NUMA node\n");
 }
 
 int main(int argc, char *argv[])
@@ -475,10 +477,18 @@ int main(int argc, char *argv[])
 		printf("NODESET is %s\n", str);
 #endif
 		if (memory_affinity) {
+#ifndef HWLOC_MEMBIND_BYNODESET
+			retval =
+			    hwloc_set_membind_nodeset(topology, obj2->nodeset,
+						      HWLOC_MEMBIND_THREAD,
+						      HWLOC_MEMBIND_MIGRATE);
+#else
 			retval =
 			    hwloc_set_membind(topology, obj2->nodeset,
 					      HWLOC_MEMBIND_THREAD,
-					      HWLOC_MEMBIND_MIGRATE);
+					      HWLOC_MEMBIND_MIGRATE |
+					      HWLOC_MEMBIND_BYNODESET);
+#endif
 			ON_ERR_GOTO(retval, out_destroy_tok,
 				    "hwloc_set_membind");
 		}
@@ -544,10 +554,9 @@ int main(int argc, char *argv[])
 	buf_full_count = 0;
 #endif
 
-	res =
-	    fpgaDmaTransferSync(dma_h, 0x0 /*dst */ ,
-				(uint64_t) dma_buf_ptr /*src */ , count,
-				HOST_TO_FPGA_MM);
+	res = fpgaDmaTransferSync(dma_h, 0x0 /*dst */ ,
+				  (uint64_t) dma_buf_ptr /*src */ , count,
+				  HOST_TO_FPGA_MM);
 	ON_ERR_GOTO(res, out_dma_close, "fpgaDmaTransferSync HOST_TO_FPGA_MM");
 	clear_buffer((char *)dma_buf_ptr, count);
 
@@ -558,9 +567,8 @@ int main(int argc, char *argv[])
 #endif
 
 	// copy from fpga to host
-	res =
-	    fpgaDmaTransferSync(dma_h, (uint64_t) dma_buf_ptr /*dst */ ,
-				0x0 /*src */ , count, FPGA_TO_HOST_MM);
+	res = fpgaDmaTransferSync(dma_h, (uint64_t) dma_buf_ptr /*dst */ ,
+				  0x0 /*src */ , count, FPGA_TO_HOST_MM);
 	ON_ERR_GOTO(res, out_dma_close, "fpgaDmaTransferSync FPGA_TO_HOST_MM");
 
 #ifdef CHECK_DELAYS
@@ -575,9 +583,8 @@ int main(int argc, char *argv[])
 	clear_buffer((char *)dma_buf_ptr, count);
 
 	// copy from fpga to fpga
-	res =
-	    fpgaDmaTransferSync(dma_h, count /*dst */ , 0x0 /*src */ , count,
-				FPGA_TO_FPGA_MM);
+	res = fpgaDmaTransferSync(dma_h, count /*dst */ , 0x0 /*src */ , count,
+				  FPGA_TO_FPGA_MM);
 	ON_ERR_GOTO(res, out_dma_close, "fpgaDmaTransferSync FPGA_TO_FPGA_MM");
 
 #ifdef CHECK_DELAYS
@@ -587,9 +594,8 @@ int main(int argc, char *argv[])
 #endif
 
 	// copy from fpga to host
-	res =
-	    fpgaDmaTransferSync(dma_h, (uint64_t) dma_buf_ptr /*dst */ ,
-				count /*src */ , count, FPGA_TO_HOST_MM);
+	res = fpgaDmaTransferSync(dma_h, (uint64_t) dma_buf_ptr /*dst */ ,
+				  count /*src */ , count, FPGA_TO_HOST_MM);
 	ON_ERR_GOTO(res, out_dma_close, "fpgaDmaTransferSync FPGA_TO_HOST_MM");
 
 #ifdef CHECK_DELAYS

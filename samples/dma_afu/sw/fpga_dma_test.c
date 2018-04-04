@@ -477,17 +477,17 @@ int main(int argc, char *argv[])
 		printf("NODESET is %s\n", str);
 #endif
 		if (memory_affinity) {
-#ifndef HWLOC_MEMBIND_BYNODESET
-			retval =
-			    hwloc_set_membind_nodeset(topology, obj2->nodeset,
-						      HWLOC_MEMBIND_THREAD,
-						      HWLOC_MEMBIND_MIGRATE);
-#else
+#if HWLOC_API_VERSION > 0x00020000
 			retval =
 			    hwloc_set_membind(topology, obj2->nodeset,
 					      HWLOC_MEMBIND_THREAD,
 					      HWLOC_MEMBIND_MIGRATE |
 					      HWLOC_MEMBIND_BYNODESET);
+#else
+			retval =
+			    hwloc_set_membind_nodeset(topology, obj2->nodeset,
+						      HWLOC_MEMBIND_THREAD,
+						      HWLOC_MEMBIND_MIGRATE);
 #endif
 			ON_ERR_GOTO(retval, out_destroy_tok,
 				    "hwloc_set_membind");

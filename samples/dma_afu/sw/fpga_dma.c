@@ -1129,13 +1129,6 @@ static fpga_result _issue_magic(fpga_dma_handle dma_h)
 	fpga_result res = FPGA_OK;
 	*(dma_h->magic_buf) = 0x0ULL;
 
-	// TODO: Don't know why we read status here
-	msgdma_status_t status = { 0 };
-	res =
-	    MMIORead32Blk(dma_h, CSR_STATUS(dma_h), (uint64_t) & status.reg,
-			  sizeof(status.reg));
-	ON_ERR_RETURN(res, "MMIORead32Blk");
-
 	res =
 	    _do_dma(dma_h, dma_h->magic_iova | FPGA_DMA_WF_HOST_MASK,
 		    FPGA_DMA_WF_ROM_MAGIC_NO_MASK, 64, 1, FPGA_TO_HOST_MM,

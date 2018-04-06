@@ -488,7 +488,7 @@ static void *s2mTransactionWorker(void* dma_handle) {
 					}
 					issued_intr = 0;
 					if(eop_arrived == 1) {
-						debug_print("EOP Detected; Storing metadata - cur_pending_buf = %x, next_buf = %x\n", tail, head);
+						debug_print("EOP Detected; Storing metadata - cur_pending_buf = %08lx, next_buf = %08lx\n", tail, head);
 						dma_h->next_avail_desc_idx = tail % FPGA_DMA_MAX_BUF;
 						dma_h->unused_desc_count = head - tail;
 						break;

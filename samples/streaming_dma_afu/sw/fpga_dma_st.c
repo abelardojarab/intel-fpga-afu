@@ -350,7 +350,7 @@ static void *m2sTransactionWorker(void* dma_handle) {
 	fpga_result res = FPGA_OK;
 	fpga_dma_handle_t dma_h = (fpga_dma_handle_t )dma_handle;
 	uint64_t count;
-	int i;
+	uint64_t i;
 
 	while (1) {
 		int issued_intr = 0;
@@ -408,9 +408,9 @@ static void *s2mTransactionWorker(void* dma_handle) {
 	int j;
 	while (1) {
 		// Head moves forward when descriptors are pushed into the dispatch queue
-		int head = 0;
+		uint64_t head = 0;
 		// Tail moves forward when data gets copied to application buffer		
-		int tail = 0;
+		uint64_t tail = 0;
 
 		// Special Case: Set only for last desc of deterministic transfer when trasnfer length is unaligned(ie not multiple of 2*1023*1024)
 		int force_end_on_eop = 0;
@@ -454,7 +454,7 @@ static void *s2mTransactionWorker(void* dma_handle) {
 				break;
 
 			// case b: We haven't used up all descriptors in the queue, but current transfer ended early
-			if(head == (dma_chunks-1))
+			if(head == dma_chunks)
 				break;
 
 			// case c: We have used up all descriptors in the queue

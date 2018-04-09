@@ -829,7 +829,8 @@ static fpga_result _write_memory_mmio(fpga_dma_handle dma_h, uint64_t * dst_ptr,
 
 	// Write out blocks of 64-bit values
 	while (align_bytes >= QWORD_BYTES) {
-		uint64_t left_in_page = (-dst) & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
+		uint64_t left_in_page = DMA_ADDR_SPAN_EXT_WINDOW;
+		left_in_page -= dst & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
 		uint64_t size_to_copy =
 		    min(left_in_page, (align_bytes & ~(QWORD_BYTES - 1)));
 		if (size_to_copy < QWORD_BYTES)
@@ -974,7 +975,8 @@ static fpga_result _read_memory_mmio(fpga_dma_handle dma_h, uint64_t * src_ptr,
 
 	// Read blocks of 64-bit values
 	while (align_bytes >= QWORD_BYTES) {
-		uint64_t left_in_page = (-src) & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
+		uint64_t left_in_page = DMA_ADDR_SPAN_EXT_WINDOW;
+		left_in_page -= src & DMA_ADDR_SPAN_EXT_WINDOW_MASK;
 		uint64_t size_to_copy =
 		    min(left_in_page, (align_bytes & ~(QWORD_BYTES - 1)));
 		if (size_to_copy < QWORD_BYTES)

@@ -38,7 +38,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <assert.h>
-//#include <safe_string/safe_string.h>
 #include "fpga_dma_internal.h"
 #include "fpga_dma.h"
 

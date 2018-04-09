@@ -100,6 +100,7 @@
 #define FPGA_DMA_ALIGN_BYTES 64
 #define IS_DMA_ALIGNED(addr) (addr%FPGA_DMA_ALIGN_BYTES==0)
 
+// MIN_SSE2_SIZE is the minimum size in bytes of a memcpy where SSE2 copy benefits over movsb
 #define MIN_SSE2_SIZE 4096
 #define CACHE_LINE_SIZE 64
 #define ALIGN_TO_CL(x) ((uint64_t)(x) & ~(CACHE_LINE_SIZE - 1))

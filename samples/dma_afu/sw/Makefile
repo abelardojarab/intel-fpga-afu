@@ -24,11 +24,25 @@ CFLAGS+=-O2 -D_FORTIFY_SOURCE=2
 # format string vulnerabilities
 CFLAGS+=-Wformat -Wformat-security
 
+# More optimizations - dump unused code, spatial locality
+CFLAGS += -ffunction-sections -fdata-sections
+CFLAGS += -freorder-functions -freorder-blocks-and-partition
+CFLAGS += -Wl,--gc-sections
+
+# Use native memcpy()
+#CFLAGS += -DUSE_MEMCPY
+
+# Compile for ASE
+#CFLAGS += -DUSE_ASE
+
+# Expose and report poll and buffer full wait counts
+#CFLAGS += -DCHECK_DELAYS
+
 ############################################################
 
-CFLAGS += -Werror
+CFLAGS += -Werror -Wunused-variable
 
-CFLAGS += -g -O2
+CFLAGS += -g
 
 ifdef prefix
 CFLAGS += -I$(prefix)/include
@@ -37,7 +51,7 @@ endif
 
 #CFLAGS += -Wall -Werror -Wno-unknown-pragmas
 LDFLAGS += -luuid
-LDFLAGS += -lsafestr
+#LDFLAGS += -lsafestr
 LDFLAGS += -lrt
 
 ifeq ($(USE_ASE),1)
@@ -47,6 +61,7 @@ else
 	LDFLAGS += -ljson-c
 	LDFLAGS += -lopae-c
 	LDFLAGS += -pthread
+	LDFLAGS += -lhwloc
 endif
 
 all: fpga_dma_test
@@ -58,10 +73,13 @@ fpga_dma_test: fpga_dma_test.o fpga_dma.so
 fpga_dma_test.o: fpga_dma_test.c
 	gcc $(CFLAGS) -o $@ -c $^ 
 
-fpga_dma.so: fpga_dma.o
+fpga_dma.so: fpga_dma.o x86-sse2.o
 	gcc $(CFLAGS)  -o $@ $^ $(LDFLAGS) -shared
 
 fpga_dma.o: fpga_dma.c
+	gcc $(CFLAGS) -c -o $@ $^
+
+x86-sse2.o: x86-sse2.S
 	gcc $(CFLAGS) -c -o $@ $^
 
 clean:

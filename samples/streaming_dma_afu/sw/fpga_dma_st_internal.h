@@ -38,6 +38,8 @@
 #include <pthread.h>
 #include <semaphore.h>
 
+#define MIN(X,Y) (X<Y)?X:Y
+
 #define QWORD_BYTES 8
 #define DWORD_BYTES 4
 #define IS_ALIGNED_DWORD(addr) (addr%4==0)
@@ -48,9 +50,6 @@
 #define S2M_DMA_UUID_H                0xf118209ad59a4b3f
 #define S2M_DMA_UUID_L                0xa66cd700a658a015
 #define FPGA_DMA_HOST_MASK            0x2000000000000
-#define FPGA_DMA_WF_HOST_MASK         0x3000000000000
-#define FPGA_DMA_WF_ROM_MAGIC_NO_MASK 0x1000000000000
-
 
 #define AFU_DFH_REG 0x0
 #define AFU_DFH_NEXT_OFFSET 16
@@ -154,12 +153,15 @@ struct fpga_dma_handle {
 	uint64_t dma_rsp_base;
 	uint64_t dma_ase_cntl_base;
 	uint64_t dma_ase_data_base;
+	// Index of the next available descriptor in the dispatcher queue
+	uint64_t next_avail_desc_idx;
+	// Total number of unused descriptors in the dispatcher queue
+	// Leftover descriptors are reused for subsequent transfers
+	// Note: Count includes the next available descriptor in
+	// the dispatcher queue indexed by next_avail_desc_idx
+	uint64_t unused_desc_count;
 	// Interrupt event handle
 	fpga_event_handle eh;
-	// magic number buffer
-	volatile uint64_t *magic_buf;
-	uint64_t magic_iova;
-	uint64_t magic_wsid;
 	uint64_t *dma_buf_ptr[FPGA_DMA_MAX_BUF];
 	uint64_t dma_buf_wsid[FPGA_DMA_MAX_BUF];
 	uint64_t dma_buf_iova[FPGA_DMA_MAX_BUF];

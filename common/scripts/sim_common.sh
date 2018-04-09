@@ -33,6 +33,8 @@ parse_args() {
       s="vcs"
    elif [ -x "$(command -v vsim)" ] ; then
       s="questa"
+   else
+      s=""
    fi
 
    local OPTIND
@@ -90,12 +92,17 @@ parse_args() {
    fi
 
    # mandatory args
-   if [ -z "${a}" ] || [ -z "${s}" ] || [ -z "${r}" ]; then
+   if [ -z "${a}" ] || [ -z "${r}" ]; then
       usage;
    fi
 
-   if [[ "$sim" != "vcs" ]] && [[ "$sim" != "questa" ]] && [[ "$sim" != "modelsim" ]]   ; then
-      echo "Supported simulators are VCS, Modelsim and Questa. You specified $sim"
+   if [ -z "$sim" ]; then
+      echo "No RTL simulator detected or specified with -s."
+      echo ""
+      usage;
+   elif [[ "$sim" != "vcs" ]] && [[ "$sim" != "questa" ]] && [[ "$sim" != "modelsim" ]] ; then
+      echo "Supported simulators are vcs, modelsim and questa. You specified \"$sim\"."
+      echo ""
       usage;
    fi
 

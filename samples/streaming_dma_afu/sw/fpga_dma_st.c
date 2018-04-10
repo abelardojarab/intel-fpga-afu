@@ -66,6 +66,8 @@ do {\
     }\
 } while (0)
 
+#define USE_ASE 1
+
 // Internal Functions
 // End of feature list
 static bool _fpga_dma_feature_eol(uint64_t dfh) {
@@ -727,7 +729,7 @@ fpga_result fpgaCountDMAChannels(fpga_handle fpga, size_t *count) {
 	if(!fpga) {
 		return FPGA_INVALID_PARAM;
 	}
-
+	uint32_t mmio_no = 0;
 	uint64_t offset = 0;
 	uint64_t mmio_va;
 
@@ -738,14 +740,26 @@ fpga_result fpgaCountDMAChannels(fpga_handle fpga, size_t *count) {
 	bool end_of_list = false;
 	uint64_t dfh = 0;
 	do {
+		uint64_t feature_uuid_lo, feature_uuid_hi;
+#ifndef USE_ASE
 		// Read the next feature header
 		dfh = *((volatile uint64_t *)((uint64_t)mmio_va + (uint64_t)(offset)));
 
 		// Read the current feature's UUID
-		uint64_t feature_uuid_lo, feature_uuid_hi;
 		feature_uuid_lo = *((volatile uint64_t *)((uint64_t)mmio_va + (uint64_t)(offset + 8)));
 		feature_uuid_hi = *((volatile uint64_t *)((uint64_t)mmio_va + (uint64_t)(offset + 16)));
-	
+#else
+		// Read the next feature header
+		res = fpgaReadMMIO64(fpga, mmio_no, offset, &dfh);
+		ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
+
+		// Read the current feature's UUID
+		res = fpgaReadMMIO64(fpga, mmio_no, offset + 8, &feature_uuid_lo);
+		ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
+
+		res = fpgaReadMMIO64(fpga, mmio_no, offset + 16, &feature_uuid_hi);
+		ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
+#endif
 		if (_fpga_dma_feature_is_bbb(dfh) &&
 			(((feature_uuid_lo == M2S_DMA_UUID_L) && (feature_uuid_hi == M2S_DMA_UUID_H)) ||
 			((feature_uuid_lo == S2M_DMA_UUID_L) && (feature_uuid_hi == S2M_DMA_UUID_H)))) {

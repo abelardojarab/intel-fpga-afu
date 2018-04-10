@@ -58,6 +58,14 @@ do {\
 	}\
 } while (0)
 
+#define ON_ERR_RETURN(res, desc)\
+do {\
+    if ((res) != FPGA_OK) {\
+        error_print("Error %s: %s\n", (desc), fpgaErrStr(res));\
+        return(res);\
+    }\
+} while (0)
+
 // Internal Functions
 // End of feature list
 static bool _fpga_dma_feature_eol(uint64_t dfh) {
@@ -115,86 +123,259 @@ static void dequeue(qinfo_t *q, fpga_dma_transfer_t *tf) {
 	pthread_mutex_unlock(&q->qmutex);
 }
 
-// copy bytes to MMIO
-static fpga_result _copy_to_mmio(fpga_handle afc_handle, uint64_t mmio_dst, uint64_t *host_src, int len) {
-	int i=0;
-	fpga_result res = FPGA_OK;
-	//mmio requires 8 byte alignment
-	if(len % QWORD_BYTES != 0) return FPGA_INVALID_PARAM;
-	if(mmio_dst % QWORD_BYTES != 0) return FPGA_INVALID_PARAM;
-
-	uint64_t dev_addr = mmio_dst;
-	uint64_t *host_addr = host_src;
-
-	for(i = 0; i < len/QWORD_BYTES; i++) {
-		res = fpgaWriteMMIO64(afc_handle, 0, dev_addr, *host_addr);
-		if(res != FPGA_OK)
-			return res;
-
-		host_addr += 1;
-		dev_addr += QWORD_BYTES;
+/**
+* local_memcpy
+*
+* @brief                memcpy using SSE2 or REP MOVSB
+* @param[in] dst        Pointer to the destination memory
+* @param[in] src        Pointer to the source memory
+* @param[in] n          Size in bytes
+* @return dst
+*
+*/
+void *local_memcpy(void *dst, void *src, size_t n)
+{
+#ifdef USE_MEMCPY
+	return memcpy(dst, src, n);
+#else
+	void *ldst = dst;
+	void *lsrc = (void *)src;
+	if (n >= MIN_SSE2_SIZE) // Arbitrary crossover performance point
+	{
+		debug_print("copying 0x%lx bytes with SSE2\n", (uint64_t) ALIGN_TO_CL(n));
+		aligned_block_copy_sse2((int64_t * __restrict) dst, (int64_t * __restrict) src, ALIGN_TO_CL(n));
+		ldst = (void *)((uint64_t) dst + ALIGN_TO_CL(n));
+		lsrc = (void *)((uint64_t) src + ALIGN_TO_CL(n));
+		n -= ALIGN_TO_CL(n);
 	}
 
-	return FPGA_OK;
+	if (n)
+	{
+		register unsigned long int dummy;
+		debug_print("copying 0x%lx bytes with REP MOVSB\n", n);
+		__asm__ __volatile__("rep movsb\n":"=&D"(ldst), "=&S"(lsrc), "=&c"(dummy):"0"(ldst), "1"(lsrc), "2"(n):"memory");
+	}
+
+	return dst;
+#endif
 }
 
+/**
+* MMIOWrite64Blk
+*
+* @brief                Writes a block of 64-bit values to FPGA MMIO space
+* @param[in] dma        Handle to the FPGA DMA object
+* @param[in] device     FPGA address
+* @param[in] host       Host buffer address
+* @param[in] count      Size in bytes
+* @return fpga_result FPGA_OK on success, return code otherwise
+*
+*/
+static fpga_result MMIOWrite64Blk(fpga_dma_handle_t dma_h, uint64_t device,
+				uint64_t host, uint64_t bytes)
+{
+	assert(IS_ALIGNED_QWORD(device));
+	assert(IS_ALIGNED_QWORD(bytes));
+
+	uint64_t *haddr = (uint64_t *) host;
+	uint64_t i;
+	fpga_result res = FPGA_OK;
+
+#ifndef USE_ASE
+	volatile uint64_t *dev_addr = HOST_MMIO_64_ADDR(dma_h, device);
+#endif
+
+	//debug_print("copying %lld bytes from 0x%p to 0x%p\n",(long long int)bytes, haddr, (void *)device);
+	for (i = 0; i < bytes / sizeof(uint64_t); i++) {
+#ifdef USE_ASE
+		res = fpgaWriteMMIO64(dma_h->fpga_h, dma_h->mmio_num, device, *haddr);
+		ON_ERR_RETURN(res, "fpgaWriteMMIO64");
+		haddr++;
+		device += sizeof(uint64_t);
+#else
+		*dev_addr++ = *haddr++;
+#endif
+	}
+	return res;
+}
+
+/**
+* MMIOWrite32Blk
+*
+* @brief                Writes a block of 32-bit values to FPGA MMIO space
+* @param[in] dma        Handle to the FPGA DMA object
+* @param[in] device     FPGA address
+* @param[in] host       Host buffer address
+* @param[in] count      Size in bytes
+* @return fpga_result FPGA_OK on success, return code otherwise
+*
+*/
+static fpga_result MMIOWrite32Blk(fpga_dma_handle_t dma_h, uint64_t device,
+				uint64_t host, uint64_t bytes)
+{
+	assert(IS_ALIGNED_DWORD(device));
+	assert(IS_ALIGNED_DWORD(bytes));
+
+	uint32_t *haddr = (uint32_t *) host;
+	uint64_t i;
+	fpga_result res = FPGA_OK;
+
+#ifndef USE_ASE
+	volatile uint32_t *dev_addr = HOST_MMIO_32_ADDR(dma_h, device);
+#endif
+
+	//debug_print("copying %lld bytes from 0x%p to 0x%p\n", (long long int)bytes, haddr, (void *)device);
+	for (i = 0; i < bytes / sizeof(uint32_t); i++) {
+#ifdef USE_ASE
+		res = fpgaWriteMMIO32(dma_h->fpga_h, dma_h->mmio_num, device, *haddr);
+		ON_ERR_RETURN(res, "fpgaWriteMMIO32");
+		haddr++;
+		device += sizeof(uint32_t);
+#else
+		*dev_addr++ = *haddr++;
+#endif
+	}
+	return res;
+}
+
+/**
+* MMIORead64Blk
+*
+* @brief                Reads a block of 64-bit values from FPGA MMIO space
+* @param[in] dma        Handle to the FPGA DMA object
+* @param[in] device     FPGA address
+* @param[in] host       Host buffer address
+* @param[in] count      Size in bytes
+* @return fpga_result FPGA_OK on success, return code otherwise
+*
+*/
+static fpga_result MMIORead64Blk(fpga_dma_handle_t dma_h, uint64_t device,
+                 uint64_t host, uint64_t bytes)
+{
+	assert(IS_ALIGNED_QWORD(device));
+	assert(IS_ALIGNED_QWORD(bytes));
+
+	uint64_t *haddr = (uint64_t *) host;
+	uint64_t i;
+	fpga_result res = FPGA_OK;
+
+#ifndef USE_ASE
+	volatile uint64_t *dev_addr = HOST_MMIO_64_ADDR(dma_h, device);
+#endif
+
+	//debug_print("copying %lld bytes from 0x%p to 0x%p\n",(long long int)bytes, (void *)device, haddr);
+	for (i = 0; i < bytes / sizeof(uint64_t); i++) {
+#ifdef USE_ASE
+		res = fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, device, haddr);
+		ON_ERR_RETURN(res, "fpgaReadMMIO64");
+		haddr++;
+		device += sizeof(uint64_t);
+#else
+		*haddr++ = *dev_addr++;
+#endif
+	}
+	return res;
+}
+
+/**
+* MMIORead32Blk
+*
+* @brief                Reads a block of 32-bit values from FPGA MMIO space
+* @param[in] dma        Handle to the FPGA DMA object
+* @param[in] device     FPGA address
+* @param[in] host       Host buffer address
+* @param[in] count      Size in bytes
+* @return fpga_result FPGA_OK on success, return code otherwise
+*
+*/
+static fpga_result MMIORead32Blk(fpga_dma_handle_t dma_h, uint64_t device,
+				uint64_t host, uint64_t bytes)
+{
+	assert(IS_ALIGNED_DWORD(device));
+	assert(IS_ALIGNED_DWORD(bytes));
+
+	uint32_t *haddr = (uint32_t *) host;
+	uint64_t i;
+	fpga_result res = FPGA_OK;
+
+#ifndef USE_ASE
+	volatile uint32_t *dev_addr = HOST_MMIO_32_ADDR(dma_h, device);
+#endif
+
+	//debug_print("copying %lld bytes from 0x%p to 0x%p\n",(long long int)bytes, (void *)device, haddr);
+	for (i = 0; i < bytes / sizeof(uint32_t); i++) {
+#ifdef USE_ASE
+		res = fpgaReadMMIO32(dma_h->fpga_h, dma_h->mmio_num, device, haddr);
+		ON_ERR_RETURN(res, "fpgaReadMMIO32");
+		haddr++;
+		device += sizeof(uint32_t);
+#else
+		*haddr++ = *dev_addr++;
+#endif
+	}
+return res;
+}
 
 static fpga_result _pop_response_fifo(fpga_dma_handle_t dma_h, int *fill_level, uint32_t *tf_count, int *eop) {
 	fpga_result res = FPGA_OK;
 	msgdma_rsp_level_t rsp_level = {0};
-	uint32_t fill = 0;
+	uint16_t fill = 0;
 	uint32_t rsp_bytes = 0;
 	msgdma_rsp_status_t rsp_status = {0};
 	// fill level is the number of responses in response FIFO
 	*fill_level = 0;
 	*tf_count = 0;
 	*eop = 0;
+	uint8_t error = 0;
 
 	// Read S2M Response fill level Dispatcher register to find the no. of responses in the response FIFO
-	res = fpgaReadMMIO32(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_csr_base+offsetof(msgdma_csr_t, rsp_level), &rsp_level.reg);
-	ON_ERR_GOTO(res, out, "fpgaReadMMIO32");
-
+	res =	MMIORead32Blk(dma_h, CSR_RSP_FILL_LEVEL(dma_h), (uint64_t)&rsp_level.reg, sizeof(rsp_level.reg));
+	ON_ERR_GOTO(res, out, "MMIORead32Blk"); 
 	fill = rsp_level.rsp.rsp_fill_level;
-	
+
 	// Pop the responses to find no. of bytes trasnfered, status of transfer and to avoid deadlock of DMA
 	while (fill > 0 && *eop != 1) {
-		res = fpgaReadMMIO32(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_rsp_base+offsetof(msgdma_rsp_t, actual_bytes_tf), &rsp_bytes);
-		ON_ERR_GOTO(res, out, "fpgaReadMMIO32");
-		res = fpgaReadMMIO32(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_rsp_base+offsetof(msgdma_rsp_t, rsp_status), &rsp_status.reg);
-		ON_ERR_GOTO(res, out, "fpgaReadMMIO32");
+		res = MMIORead32Blk(dma_h, RSP_BYTES_TRANSFERRED(dma_h), (uint64_t)&rsp_bytes, sizeof(rsp_bytes));
+		ON_ERR_GOTO(res, out, "MMIORead32Blk");
+		res = MMIORead32Blk(dma_h, RSP_STATUS(dma_h), (uint64_t)&rsp_status.reg, sizeof(rsp_status.reg));
+		ON_ERR_GOTO(res, out, "MMIORead32Blk");
 		*tf_count += rsp_bytes;
+		error = rsp_status.rsp.error;
 		fill--;
 		if(rsp_status.rsp.eop_arrived == 1)
 			*eop = 1;
 		*fill_level += 1;
+		debug_print("fill level = %x, *eop = %d, tf_count = %x, error = %x\n", *fill_level, *eop, *tf_count, error);
 	}
 out:
 	return res;
 }
 
-static fpga_result _send_descriptor(fpga_dma_handle_t dma_h, msgdma_ext_desc_t desc) {
+static fpga_result _send_descriptor(fpga_dma_handle_t dma_h, msgdma_ext_desc_t *desc) {
 	fpga_result res = FPGA_OK;
 	msgdma_status_t status = {0};
 
-	debug_print("desc.rd_address = %x\n",desc.rd_address);
-	debug_print("desc.wr_address = %x\n",desc.wr_address);
-	debug_print("desc.len = %x\n",desc.len);
-	debug_print("desc.wr_burst_count = %x\n",desc.wr_burst_count);
-	debug_print("desc.rd_burst_count = %x\n",desc.rd_burst_count);
-	debug_print("desc.wr_stride %x\n",desc.wr_stride);
-	debug_print("desc.rd_stride %x\n",desc.rd_stride);
-	debug_print("desc.rd_address_ext %x\n",desc.rd_address_ext);
-	debug_print("desc.wr_address_ext %x\n",desc.wr_address_ext);
+	if(dma_h->ch_type == RX_ST) {
+	debug_print("desc.rd_address = %x\n",desc->rd_address);
+	debug_print("desc.wr_address = %x\n",desc->wr_address);
+	debug_print("desc.len = %x\n",desc->len);
+	debug_print("desc.wr_burst_count = %x\n",desc->wr_burst_count);
+	debug_print("desc.rd_burst_count = %x\n",desc->rd_burst_count);
+	debug_print("desc.wr_stride %x\n",desc->wr_stride);
+	debug_print("desc.rd_stride %x\n",desc->rd_stride);
+	debug_print("desc.rd_address_ext %x\n",desc->rd_address_ext);
+	debug_print("desc.wr_address_ext %x\n",desc->wr_address_ext);
 
 	debug_print("SGDMA_CSR_BASE = %lx SGDMA_DESC_BASE=%lx\n",dma_h->dma_csr_base, dma_h->dma_desc_base);
+	}
 
 	do {
-		res = fpgaReadMMIO32(dma_h->fpga_h, dma_h->mmio_num, dma_h->dma_csr_base+offsetof(msgdma_csr_t, status), &status.reg);
-		ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
-	} while(status.st.desc_buf_full);
+		res = MMIORead32Blk(dma_h, CSR_STATUS(dma_h), (uint64_t)&status.reg, sizeof(status.reg));
+		ON_ERR_GOTO(res, out, "MMIORead32Blk");
+	} while (status.st.desc_buf_full);
 
-	res = _copy_to_mmio(dma_h->fpga_h, dma_h->dma_desc_base, (uint64_t *)&desc, sizeof(desc));
-	ON_ERR_GOTO(res, out, "_copy_to_mmio");
+	res = MMIOWrite64Blk(dma_h, dma_h->dma_desc_base, (uint64_t)desc, sizeof(*desc));
+	ON_ERR_GOTO(res, out, "MMIOWrite64Blk");
 
 out:
 	return res;
@@ -241,7 +422,7 @@ static fpga_result _do_dma_tx(fpga_dma_handle_t dma_h, uint64_t dst, uint64_t sr
 	desc.rd_address_ext = (src >> 32) & FPGA_DMA_MASK_32_BIT;
 	desc.wr_address_ext = (dst >> 32) & FPGA_DMA_MASK_32_BIT;
 
-	res = _send_descriptor(dma_h, desc);
+	res = _send_descriptor(dma_h, &desc);
 	ON_ERR_GOTO(res, out, "_send_descriptor");
 
 out:
@@ -297,7 +478,7 @@ static fpga_result _do_dma_rx(fpga_dma_handle_t dma_h, uint64_t dst, uint64_t sr
 	desc.rd_address_ext = (src >> 32) & FPGA_DMA_MASK_32_BIT;
 	desc.wr_address_ext = (dst >> 32) & FPGA_DMA_MASK_32_BIT;
 
-	res = _send_descriptor(dma_h, desc);
+	res = _send_descriptor(dma_h, &desc);
 	ON_ERR_GOTO(res, out, "_send_descriptor");
 
 out:
@@ -310,8 +491,7 @@ static fpga_result clear_interrupt(fpga_dma_handle_t dma_h) {
 	msgdma_status_t status = {0};
 	status.st.irq = 1;
 
-	msgdma_csr_t *csr = (msgdma_csr_t*)(dma_h->dma_csr_base);
-	return fpgaWriteMMIO32(dma_h->fpga_h, dma_h->mmio_num, (uint64_t)((char*)csr+offsetof(msgdma_csr_t, status)), status.reg);
+	return MMIOWrite32Blk(dma_h, CSR_STATUS(dma_h), (uint64_t)&status.reg, sizeof(status.reg));
 }
 
 static fpga_result poll_interrupt(fpga_dma_handle_t dma_h) {
@@ -362,7 +542,7 @@ static void *m2sTransactionWorker(void* dma_handle) {
 		count -= (dma_chunks*FPGA_DMA_BUF_SIZE);
 		
 		for(i=0; i<dma_chunks; i++) {
-			memcpy(dma_h->dma_buf_ptr[i%FPGA_DMA_MAX_BUF], (void*)(m2s_transfer->src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);
+			local_memcpy(dma_h->dma_buf_ptr[i%FPGA_DMA_MAX_BUF], (void*)(m2s_transfer->src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);
 			if((i%(FPGA_DMA_MAX_BUF/2) == (FPGA_DMA_MAX_BUF/2)-1) || i == (dma_chunks - 1)/*last descriptor*/) {
 				if(issued_intr){
 					poll_interrupt(dma_h);
@@ -383,12 +563,11 @@ static void *m2sTransactionWorker(void* dma_handle) {
 			issued_intr = 0;
 		}
 		if(count > 0) {
-			memcpy(dma_h->dma_buf_ptr[0], (void*)(m2s_transfer->src+dma_chunks*FPGA_DMA_BUF_SIZE), count);
+			local_memcpy(dma_h->dma_buf_ptr[0], (void*)(m2s_transfer->src+dma_chunks*FPGA_DMA_BUF_SIZE), count);
 			res = _do_dma_tx(dma_h, 0, dma_h->dma_buf_iova[0] | 0x1000000000000, count, 1, m2s_transfer->transfer_type, true/*intr_en*/, GENERATE_EOP/*tx_ctrl*/);
 			ON_ERR_GOTO(res, out, "HOST_TO_FPGA_ST Transfer failed");
 			poll_interrupt(dma_h);
 		}
-
 		// transfer_complete, if a callback was registered, invoke it
 		if(m2s_transfer->cb)
 			m2s_transfer->cb(NULL);
@@ -441,7 +620,7 @@ static void *s2mTransactionWorker(void* dma_handle) {
 			_pop_response_fifo(dma_h, &fill_level, &tf_count, &eop_arrived);			
 			while(fill_level > 0) {
 				// If the queue has unused descriptors, use them for our transfer
-				memcpy((void*)(s2m_transfer->dst + head * FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[dma_h->next_avail_desc_idx], MIN(tf_count, FPGA_DMA_BUF_SIZE));
+				local_memcpy((void*)(s2m_transfer->dst + head * FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[dma_h->next_avail_desc_idx], MIN(tf_count, FPGA_DMA_BUF_SIZE));
 				tf_count -= MIN(tf_count, FPGA_DMA_BUF_SIZE);
 				dma_h->next_avail_desc_idx = (dma_h->next_avail_desc_idx+1) % FPGA_DMA_MAX_BUF;
 				dma_h->unused_desc_count--;
@@ -462,7 +641,6 @@ static void *s2mTransactionWorker(void* dma_handle) {
 				break;
 
 		} while(1);
-		
 		if(eop_arrived)
 			goto out_transf_complete;
 
@@ -481,7 +659,7 @@ static void *s2mTransactionWorker(void* dma_handle) {
 					poll_interrupt(dma_h);
 					_pop_response_fifo(dma_h, &fill_level, &tf_count, &eop_arrived);
 					for(j=0; j<fill_level; j++) {
-						memcpy((void*)(s2m_transfer->dst + tail * FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[tail % (FPGA_DMA_MAX_BUF)], MIN(tf_count, FPGA_DMA_BUF_SIZE));
+						local_memcpy((void*)(s2m_transfer->dst + tail * FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[tail % (FPGA_DMA_MAX_BUF)], MIN(tf_count, FPGA_DMA_BUF_SIZE));
 						tf_count -= MIN(tf_count, FPGA_DMA_BUF_SIZE);
 						// Increment tail when we memcpy data back to user-buffer
 						tail++;
@@ -519,10 +697,10 @@ static void *s2mTransactionWorker(void* dma_handle) {
 			poll_interrupt(dma_h);
 			do {
 				_pop_response_fifo(dma_h, &fill_level, &tf_count, &eop_arrived);
-				// clear out final dma memcpy operations
+				// clear out final dma local_memcpy operations
 				while(fill_level > 0){
 					// constant size transfer; no length check required
-					memcpy((void*)(s2m_transfer->dst + tail * FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[tail % (FPGA_DMA_MAX_BUF)], MIN(tf_count,FPGA_DMA_BUF_SIZE));
+					local_memcpy((void*)(s2m_transfer->dst + tail * FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[tail % (FPGA_DMA_MAX_BUF)], MIN(tf_count,FPGA_DMA_BUF_SIZE));
 					tail++;
 					fill_level -=1;
 					tf_count -= MIN(tf_count, FPGA_DMA_BUF_SIZE);
@@ -531,8 +709,9 @@ static void *s2mTransactionWorker(void* dma_handle) {
 		}
 	out_transf_complete:
 		//transfer complete
-		if(s2m_transfer->cb)
+		if(s2m_transfer->cb) {
 			s2m_transfer->cb(NULL);
+		}
 		sem_post(&s2m_transfer->tf_status);
 	}
 out:
@@ -548,26 +727,25 @@ fpga_result fpgaCountDMAChannels(fpga_handle fpga, size_t *count) {
 	if(!fpga) {
 		return FPGA_INVALID_PARAM;
 	}
-	uint32_t mmio_no = 0;
+
 	uint64_t offset = 0;
+	uint64_t mmio_va;
+
+	res = fpgaMapMMIO(fpga, 0, (uint64_t **)&mmio_va);
+	ON_ERR_GOTO(res, out, "fpgaMapMMIO");
 
 	// Discover DMA BBB channels by traversing the device feature list
 	bool end_of_list = false;
 	uint64_t dfh = 0;
 	do {
 		// Read the next feature header
-		res = fpgaReadMMIO64(fpga, mmio_no, offset, &dfh);
-		ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
+		dfh = *((volatile uint64_t *)((uint64_t)mmio_va + (uint64_t)(offset)));
 
 		// Read the current feature's UUID
 		uint64_t feature_uuid_lo, feature_uuid_hi;
-		res = fpgaReadMMIO64(fpga, mmio_no, offset + 8, &feature_uuid_lo);
-		ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
-
-		res = fpgaReadMMIO64(fpga, mmio_no, offset + 16,
-						&feature_uuid_hi);
-		ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
-
+		feature_uuid_lo = *((volatile uint64_t *)((uint64_t)mmio_va + (uint64_t)(offset + 8)));
+		feature_uuid_hi = *((volatile uint64_t *)((uint64_t)mmio_va + (uint64_t)(offset + 16)));
+	
 		if (_fpga_dma_feature_is_bbb(dfh) &&
 			(((feature_uuid_lo == M2S_DMA_UUID_L) && (feature_uuid_hi == M2S_DMA_UUID_H)) ||
 			((feature_uuid_lo == S2M_DMA_UUID_L) && (feature_uuid_hi == S2M_DMA_UUID_H)))) {
@@ -610,32 +788,29 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel_index, fpga_dma_handle
 
 	bool end_of_list = false;
 	bool dma_found = false;
-	uint64_t dfh = 0;
+
+#ifndef USE_ASE
+	res = fpgaMapMMIO(dma_h->fpga_h, 0, (uint64_t **)&dma_h->mmio_va);
+	ON_ERR_GOTO(res, out, "fpgaMapMMIO");
+#endif
+
+	dfh_feature_t dfh;
 	uint64_t offset = dma_h->mmio_offset;
 	do {
 		// Read the next feature header
-		res = fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, offset, &dfh);
-		ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
-		// Read the current feature's UUID
-		uint64_t feature_uuid_lo, feature_uuid_hi;
-		res = fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, offset + 8,
-					&feature_uuid_lo);
-		ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
-
-		res = fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, offset + 16,
-						&feature_uuid_hi);
-		ON_ERR_GOTO(res, out, "fpgaReadMMIO64");
-
-		if (_fpga_dma_feature_is_bbb(dfh) &&
-			(((feature_uuid_lo == M2S_DMA_UUID_L) && (feature_uuid_hi == M2S_DMA_UUID_H)) ||
-			((feature_uuid_lo == S2M_DMA_UUID_L) && (feature_uuid_hi == S2M_DMA_UUID_H))) ) {
+		res = MMIORead64Blk(dma_h, offset, (uint64_t)&dfh, sizeof(dfh));
+		ON_ERR_GOTO(res, out, "MMIORead64Blk");
+		
+		if (_fpga_dma_feature_is_bbb(dfh.dfh) &&
+			(((dfh.feature_uuid_lo == M2S_DMA_UUID_L) && (dfh.feature_uuid_hi == M2S_DMA_UUID_H)) ||
+			((dfh.feature_uuid_lo == S2M_DMA_UUID_L) && (dfh.feature_uuid_hi == S2M_DMA_UUID_H))) ) {
 
 			// Found one. Record it.
 			if(channel_index == dma_channel_index) {
 				dma_h->dma_base = offset;
-				if ((feature_uuid_lo == M2S_DMA_UUID_L) && (feature_uuid_hi == M2S_DMA_UUID_H))
+				if ((dfh.feature_uuid_lo == M2S_DMA_UUID_L) && (dfh.feature_uuid_hi == M2S_DMA_UUID_H))
 					dma_h->ch_type=TX_ST;
-				else if ((feature_uuid_lo == S2M_DMA_UUID_L) && (feature_uuid_hi == S2M_DMA_UUID_H)) {
+				else if ((dfh.feature_uuid_lo == S2M_DMA_UUID_L) && (dfh.feature_uuid_hi == S2M_DMA_UUID_H)) {
 					dma_h->ch_type=RX_ST;
 					dma_h->dma_rsp_base = dma_h->dma_base+FPGA_DMA_RESPONSE;
 				}
@@ -651,10 +826,11 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel_index, fpga_dma_handle
 		}
 
 		// End of the list?
-		end_of_list = _fpga_dma_feature_eol(dfh);
+		end_of_list = _fpga_dma_feature_eol(dfh.dfh);
 		// Move to the next feature header
-		offset = offset + _fpga_dma_feature_next(dfh);
+		offset = offset + _fpga_dma_feature_next(dfh.dfh);
 	} while(!end_of_list);
+
 	dma_h->next_avail_desc_idx = 0;
 	dma_h->unused_desc_count = 0;
 	if(dma_found) {
@@ -691,8 +867,8 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel_index, fpga_dma_handle
 	// turn on global interrupts
 	msgdma_ctrl_t ctrl = {0};
 	ctrl.ct.global_intr_en_mask = 1;
-	res = fpgaWriteMMIO32(dma_h->fpga_h, 0, dma_h->dma_csr_base+offsetof(msgdma_csr_t, ctrl), ctrl.reg);
-	ON_ERR_GOTO(res, rel_buf, "fpgaWriteMMIO32");
+	res = MMIOWrite32Blk(dma_h, CSR_CONTROL(dma_h), (uint64_t)&ctrl.reg, sizeof(ctrl.reg));
+	ON_ERR_GOTO(res, rel_buf, "MMIOWrite32Blk");
 
 	// register interrupt event handle
 	res = fpgaCreateEventHandle(&dma_h->eh);
@@ -717,40 +893,40 @@ out:
 	return res;
 }
 
-fpga_result fpgaDMAClose(fpga_dma_handle_t dma) {
+fpga_result fpgaDMAClose(fpga_dma_handle_t dma_h) {
 	fpga_result res = FPGA_OK;
 	int i = 0;
-	if(!dma) {
+	if(!dma_h) {
 		res = FPGA_INVALID_PARAM;
 		goto out;
 	}
 
-	if(!dma->fpga_h) {
+	if(!dma_h->fpga_h) {
 		res = FPGA_INVALID_PARAM;
 		goto out;
 	}
 
 	for(i=0; i<FPGA_DMA_MAX_BUF; i++) {
-		res = fpgaReleaseBuffer(dma->fpga_h, dma->dma_buf_wsid[i]);
+		res = fpgaReleaseBuffer(dma_h->fpga_h, dma_h->dma_buf_wsid[i]);
 		ON_ERR_GOTO(res, out, "fpgaReleaseBuffer failed");
 	}
 
-	fpgaUnregisterEvent(dma->fpga_h, FPGA_EVENT_INTERRUPT, dma->eh);
-	fpgaDestroyEventHandle(&dma->eh);
+	fpgaUnregisterEvent(dma_h->fpga_h, FPGA_EVENT_INTERRUPT, dma_h->eh);
+	fpgaDestroyEventHandle(&dma_h->eh);
 
 	// turn off global interrupts
 	msgdma_ctrl_t ctrl = {0};
 	ctrl.ct.global_intr_en_mask = 0;
-	res = fpgaWriteMMIO32(dma->fpga_h, 0, dma->dma_csr_base+offsetof(msgdma_csr_t, ctrl), ctrl.reg);
-	ON_ERR_GOTO(res, out, "fpgaReadMMIO32");
-	queueDestroy(&dma->qinfo);
-	if(pthread_cancel(dma->thread_id) != 0) {
+	res = MMIOWrite32Blk(dma_h, CSR_CONTROL(dma_h), (uint64_t)&ctrl.reg, sizeof(ctrl.reg));
+	ON_ERR_GOTO(res, out, "MMIOWrite32Blk");
+	queueDestroy(&dma_h->qinfo);
+	if(pthread_cancel(dma_h->thread_id) != 0) {
 		res = FPGA_EXCEPTION;
 		ON_ERR_GOTO(res, out, "pthread_cancel");
 	}
 
 out:
-	free((void*)dma);
+	free((void*)dma_h);
 	return res;
 }
 

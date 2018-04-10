@@ -37,6 +37,7 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include "x86-sse2.h"
 
 #define MIN(X,Y) (X<Y)?X:Y
 
@@ -66,11 +67,21 @@
 #define FPGA_DMA_CSR 0x40
 #define FPGA_DMA_DESC 0x60
 #define FPGA_DMA_RESPONSE 0x80
-#define FPGA_DMA_ADDR_SPAN_EXT_CNTL 0x200
-#define FPGA_DMA_ADDR_SPAN_EXT_DATA 0x1000
 
-#define DMA_ADDR_SPAN_EXT_WINDOW (4*1024)
-#define DMA_ADDR_SPAN_EXT_WINDOW_MASK ((uint64_t)(DMA_ADDR_SPAN_EXT_WINDOW-1))
+#define CSR_BASE(dma_handle) ((uint64_t)dma_handle->dma_csr_base)
+#define RSP_BASE(dma_handle) ((uint64_t)dma_handle->dma_rsp_base)
+#define HOST_MMIO_32_ADDR(dma_handle,offset) ((volatile uint32_t *)((uint64_t)(dma_handle)->mmio_va + (uint64_t)(offset)))
+#define HOST_MMIO_64_ADDR(dma_handle,offset) ((volatile uint64_t *)((uint64_t)(dma_handle)->mmio_va + (uint64_t)(offset)))
+#define HOST_MMIO_32(dma_handle,offset) (*HOST_MMIO_32_ADDR(dma_handle,offset))
+#define HOST_MMIO_64(dma_handle,offset) (*HOST_MMIO_64_ADDR(dma_handle,offset))
+
+#define CSR_STATUS(dma_h) (CSR_BASE(dma_h) + offsetof(msgdma_csr_t, status))
+#define CSR_CONTROL(dma_h) (CSR_BASE(dma_h) + offsetof(msgdma_csr_t, ctrl))
+#define CSR_FILL_LEVEL(dma_h) (CSR_BASE(dma_h) + offsetof(msgdma_csr_t, fill_level))
+#define CSR_RSP_FILL_LEVEL(dma_h) (CSR_BASE(dma_h) + offsetof(msgdma_csr_t, rsp_level))
+
+#define RSP_BYTES_TRANSFERRED(dma_h) (RSP_BASE(dma_h) + offsetof(msgdma_rsp_t, actual_bytes_tf))
+#define RSP_STATUS(dma_h) (RSP_BASE(dma_h) + offsetof(msgdma_rsp_t, rsp_status))
 
 #define FPGA_DMA_MASK_32_BIT 0xFFFFFFFF
 
@@ -86,12 +97,30 @@
 // transactions.
 #define FPGA_DMA_BUF_SIZE (2*1023*1024)
 #define FPGA_DMA_BUF_ALIGN_SIZE FPGA_DMA_BUF_SIZE
+
+#define MIN_SSE2_SIZE 4096
+#define CACHE_LINE_SIZE 64
+#define ALIGN_TO_CL(x) ((uint64_t)(x) & ~(CACHE_LINE_SIZE - 1))
+#define IS_CL_ALIGNED(x) (((uint64_t)(x) & (CACHE_LINE_SIZE - 1)) == 0)
+
 // Convenience macros
 #ifdef FPGA_DMA_DEBUG
-	#define debug_print(fmt, ...) \
-	do { if (FPGA_DMA_DEBUG) fprintf(stderr, fmt, ##__VA_ARGS__); } while (0)
+#define debug_print(fmt, ...) \
+do { \
+    if (FPGA_DMA_DEBUG) {\
+        fprintf(stderr, "%s (%d) : ", __FUNCTION__, __LINE__); \
+        fprintf(stderr, fmt, ##__VA_ARGS__); \
+    } \
+} while (0)
+#define error_print(fmt, ...) \
+do { \
+    fprintf(stderr, "%s (%d) : ", __FUNCTION__, __LINE__); \
+    fprintf(stderr, fmt, ##__VA_ARGS__); \
+    err_cnt++; \
+ } while (0)
 #else
-	#define debug_print(...)
+#define debug_print(...)
+#define error_print(...)
 #endif
 
 #define FPGA_DMA_MAX_BUF 8
@@ -120,6 +149,12 @@ struct fpga_dma_transfer {
 	sem_t tf_status; // When locked, the transfer in progress
 };
 
+typedef struct __attribute__ ((__packed__)) {
+    uint64_t dfh;
+    uint64_t feature_uuid_lo;
+    uint64_t feature_uuid_hi;
+} dfh_feature_t;
+
 typedef union {
 	uint64_t reg;
 	struct {
@@ -146,6 +181,7 @@ struct fpga_dma_handle {
 	fpga_handle fpga_h;
 	uint32_t mmio_num;
 	uint64_t mmio_offset;
+	uint64_t mmio_va;
 	uint64_t dma_base;
 	uint64_t dma_offset;
 	uint64_t dma_csr_base;

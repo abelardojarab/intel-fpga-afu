@@ -55,9 +55,7 @@ CFLAGS+=-Wformat -Wformat-security
 
 ############################################################
 
-CFLAGS += -Werror
-
-CFLAGS += -g -O2 -std=c99
+CFLAGS += -g -O2
 
 ifdef prefix
 CFLAGS += -I$(prefix)/include
@@ -66,7 +64,6 @@ AFU_JSON_MGR = $(prefix)/bin/afu_json_mgr
 else
 AFU_JSON_MGR = afu_json_mgr
 endif
-CFLAGS += -Wall -Werror -Wno-unknown-pragmas
 LDFLAGS += -luuid
 LDFLAGS += -lrt
 LDFLAGS += -lsafestr

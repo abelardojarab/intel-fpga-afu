@@ -358,17 +358,14 @@ fpga_result fpgaHssiClearChannelStats(fpga_hssi_handle hssi,
 
 	hssi_csr csr;
 
-	// Clear TX stats
 	if (type == TX) {
-		fpgaHssiFilterCsrByName(hssi, "tx_stats_clr", &csr);
+		fpgaHssiFilterCsrByName(hssi, "CNTR_TX_CONFIG", &csr);
 		fpgaHssiWriteCsr64(hssi, csr, (uint64_t)1);
-	}
-
-	// Clear RX stats
-	if (type == RX) {
-		fpgaHssiFilterCsrByName(hssi, "rx_stats_clr", &csr);
+	} else if (type == RX) {
+		fpgaHssiFilterCsrByName(hssi, "CNTR_RX_CONFIG", &csr);
 		fpgaHssiWriteCsr64(hssi, csr, (uint64_t)1);
-	}
+	} else
+		return FPGA_INVALID_PARAM;
 
 	return FPGA_OK;
 }

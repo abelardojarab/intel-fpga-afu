@@ -405,8 +405,8 @@ const struct _hssi_csr e10_csrs[] = {
 	"tx_stats_etherStats Pkts512to1023Octets",
 	0,
 	RO,
-	"Number of transmitted frames between the \
-	length of 512 and 1023 bytes"},
+	"Number of transmitted frames between the "
+	"length of 512 and 1023 bytes"},
 
 	{0x0C2C,
 	RX,
@@ -422,8 +422,8 @@ const struct _hssi_csr e10_csrs[] = {
 	"tx_stats_etherStats Pkts1024to1518Octets",
 	0,
 	RO,
-	"Number of transmitted frames between \
-	the length of 1024 and 1518 bytes"},
+	"Number of transmitted frames between "
+	"the length of 1024 and 1518 bytes"},
 
 	{0x0C2E,
 	RX,
@@ -495,9 +495,9 @@ const struct _hssi_csr e10_csrs[] = {
 	"rx_stats_etherStats CRCErr",
 	0,
 	RO,
-	"Number of receive frames between the length of 64 and \
-	the value configured in the \
-	rx_frame_maxlength register with CRC error"},
+	"Number of receive frames between the length of 64 and "
+	"the value configured in the "
+	"rx_frame_maxlength register with CRC error"},
 
 	{0x1C34,
 	TX,
@@ -505,8 +505,8 @@ const struct _hssi_csr e10_csrs[] = {
 	"tx_stats_etherStats CRCErr",
 	0,
 	RO,
-	"Number of transmit frames between the length of 64 and the \
-	value configured in the rx_frame_maxlength register with CRC error"},
+	"Number of transmit frames between the length of 64 and the "
+	"value configured in the rx_frame_maxlength register with CRC error"},
 
 	{0x0C36,
 	RX,

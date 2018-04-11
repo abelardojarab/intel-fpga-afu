@@ -42,7 +42,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#define NUM_PKT_TO_SEND 10000
+#define NUM_PKT_TO_SEND 0x10000
 #define MAX_STR_LEN 256
 
 static int err_cnt;
@@ -86,12 +86,12 @@ out:
 	return err_cnt;
 }
 
-static void printUsage(void)
+static void printUsage(char *prog)
 {
-	printf("Usage: pac_hssi_config [--help] [--list]\
+	printf("Usage: %s [--help] [--list]\
 		[--instance <instance #>] [--channel <channel #>]\
 		[--channel_action <stat|stat_clear|loopback_enable|\
-		loopback_disable|pkt_send]\n");
+		loopback_disable|pkt_send]\n", prog);
 }
 
 static int loc_strcmp_s(const char *dest, rsize_t dmax, const char *src) {
@@ -103,8 +103,8 @@ static int loc_strcmp_s(const char *dest, rsize_t dmax, const char *src) {
 int main(int argc, char *argv[])
 {
 	fpga_result res = FPGA_OK;
-	fpga_hssi_handle hssi_h;
-	fpga_handle afc_h;
+	fpga_hssi_handle hssi_h = NULL;
+	fpga_handle afc_h = NULL;
 	int instance_id = 0;
 	int channel_id = 0;
 
@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
 
 	strcpy_s(action, MAX_STR_LEN, "none");
 	// parse args
-	int c;
+	int c, i;
 
 	err_cnt = 0;
 	do {
@@ -131,14 +131,15 @@ int main(int argc, char *argv[])
 			{0, 0, 0, 0}
 		};
 
-		c = getopt_long(argc, argv, "l:i:p:a", options, NULL);
-		if (c == -1)
+		c = getopt_long(argc, argv, "hli:p:a", options, NULL);
+		if (c == -1) {
 			break;
+		}
 
 		switch (c) {
 		case 'h':
 			help_f = 1;
-			printUsage();
+			printUsage(argv[0]);
 			break;
 
 		case 'l':
@@ -166,11 +167,10 @@ int main(int argc, char *argv[])
 				break;
 			}
 			printf("Invalid channel_action specified\n");
-			printUsage();
+			printUsage(argv[0]);
 			return 1;
 
 		default:
-			printf("Aborting\n");
 			return 1;
 		}
 	} while(1);
@@ -190,14 +190,14 @@ int main(int argc, char *argv[])
 		if (!instance_f) {
 			fprintf(stderr, "No instance specified. Select an \
 				instance using --instance\n");
-			printUsage();
+			printUsage(argv[0]);
 			return 1;
 		}
 
 		if (!channel_f) {
 			fprintf(stderr, "No channel specified. Select a \
 				channel using --channel\n");
-			printUsage();
+			printUsage(argv[0]);
 			return 1;
 		}
 
@@ -269,7 +269,7 @@ int main(int argc, char *argv[])
 			goto out_hssi_close;
 		}
 		if (strcmp(action, "pkt_send") == 0) {
-			printf("Sent %d packets on channel %d\n",
+			printf("Sent 0x%x packets on channel %d\n",
 				NUM_PKT_TO_SEND, channel_id);
 			fpgaHssiSendPacket(hssi_h, channel_id, NUM_PKT_TO_SEND);
 		}
@@ -277,7 +277,7 @@ int main(int argc, char *argv[])
 
 out_hssi_close:
 	if (afc_tokens) {
-		for (int i = 0; i < instances; i++)
+		for (i = 0; i < instances; i++)
 			fpgaDestroyToken(&afc_tokens[i]);
 
 		free(afc_tokens);

@@ -29,6 +29,8 @@
 #include <opae/fpga.h>
 #include <time.h>
 #include "fpga_dma.h"
+#include "fpga_pattern_gen.h"
+#include "fpga_pattern_checker.h"
 #include <unistd.h>
 /**
  * \fpga_dma_st_test.c
@@ -37,14 +39,19 @@
 
 #include <stdlib.h>
 #include <assert.h>
-#include<semaphore.h>
+#include <semaphore.h>
 
 #define DMA_AFU_ID				"EB59BF9D-B211-4A4E-B3E3-753CE68634BA"
 #define TEST_BUF_SIZE (20*1024*1024)
 #define ASE_TEST_BUF_SIZE (4*1024)
+// Single pattern is represented as 64Bytes
+#define PATTERN_WIDTH 64
+// No. of Patterns
+#define PATTERN_LENGTH 32
 
 static uint64_t count=0;
-sem_t cb_status;
+sem_t rx_cb_status;
+sem_t tx_cb_status;
 static int err_cnt = 0;
 /*
  * macro for checking return codes
@@ -83,44 +90,151 @@ int sendtxTransfer(fpga_dma_handle_t dma_h, fpga_dma_transfer_t tx_transfer, uin
 	res = fpgaDMATransfer(dma_h, tx_transfer, (fpga_dma_transfer_cb)&cb, NULL);
 	return res;
 }
-fpga_result verify_buffer(char *buf, size_t size) {
-	size_t i, rnum=0;
-	srand(99);
-	for(i=0; i<size; i++) {
-		rnum = rand()%256;
-		if((*buf&0xFF) != rnum) {
-			printf("Invalid data at %zx Expected = %zx Actual = %x\n",i,rnum,(*buf&0xFF));
-			return FPGA_INVALID_PARAM;
+
+fpga_result verify_buffer(uint32_t *buf, size_t payload_size) {
+	size_t i,j,k;
+	uint32_t test_word = 0;
+	uint32_t pattern_repeat_loop = payload_size/((PATTERN_LENGTH)*(PATTERN_WIDTH/4));
+	for (i = 0; i < pattern_repeat_loop; i++) {
+		test_word = 0xABCDEF12;
+		for (j = 0; j < PATTERN_LENGTH; j++) {
+			for (k = 0; k < (PATTERN_WIDTH/4); k++) {
+				if((*buf) != test_word) {
+					printf("Invalid data at %zx Expected = %x Actual = %x\n",i,test_word,(*buf));
+					return FPGA_INVALID_PARAM;
+				}
+				buf++;
+				test_word += 0x10101010;
+			}
 		}
-		buf++;
 	}
-	printf("Buffer Verification Success!\n");
+	printf("S2M: Data Verification Success!\n");
 	return FPGA_OK;
 }
 
-void clear_buffer(char *buf, size_t size) {
+void clear_buffer(uint32_t *buf, size_t size) {
 	memset(buf, 0, size);
 }
 
 // Callback
 static void rxtransferComplete(void *ctx) {
-	sem_post(&cb_status);
+	sem_post(&rx_cb_status);
 }
 
 static void txtransferComplete(void *ctx) {
-	return;
+	sem_post(&tx_cb_status);
 }
 
 
-static void fill_buffer(char *buf, size_t size) {
-	size_t i=0;
-	// use a deterministic seed to generate pseudo-random numbers
-	srand(99);
-
-	for(i=0; i<size; i++) {
-		*buf = rand()%256;
-		buf++;
+static void fill_buffer(uint32_t *buf, size_t payload_size) {
+	size_t i,j,k;
+	uint32_t test_word = 0;
+	uint32_t pattern_repeat_loop = payload_size/((PATTERN_LENGTH)*(PATTERN_WIDTH/4));
+	for (i = 0; i < pattern_repeat_loop; i++) {
+		test_word = 0xABCDEF12;
+		for (j = 0; j < PATTERN_LENGTH; j++) {
+			for (k = 0; k < (PATTERN_WIDTH/4); k++) {
+				*buf = test_word;
+				buf++;
+				test_word += 0x10101010;
+			}
+		}
 	}
+}
+
+void report_bandwidth(size_t size, double seconds) {
+	double throughput = (double)size/((double)seconds*1000*1000);
+	printf("\rMeasured bandwidth = %lf Megabytes/sec\n", throughput);
+}
+
+// return elapsed time
+double getTime(struct timespec start, struct timespec end) {
+	uint64_t diff = 1000000000L * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+	return (double) diff/(double)1000000000L;
+}
+
+fpga_result run_bw_test(fpga_handle afc_h, fpga_dma_handle_t dma_m2s_h, fpga_dma_handle_t dma_s2m_h) {
+	int res;
+	struct timespec start, end;
+	uint64_t *dma_tx_buf_ptr;
+	uint64_t *dma_rx_buf_ptr;
+
+	ssize_t total_mem_size = (uint64_t)(4*1024)*(uint64_t)(1024*1024);
+
+	dma_tx_buf_ptr = (uint64_t*)malloc(total_mem_size);
+	dma_rx_buf_ptr = (uint64_t*)malloc(total_mem_size);
+	if(!dma_tx_buf_ptr || !dma_rx_buf_ptr) {
+		res = FPGA_NO_MEMORY;
+		goto out;
+	}
+
+	fill_buffer((uint32_t*)dma_tx_buf_ptr, total_mem_size/4);
+	
+	fpga_dma_transfer_t rx_transfer;
+	fpgaDMATransferInit(&rx_transfer);
+	fpga_dma_transfer_t tx_transfer;
+	fpgaDMATransferInit(&tx_transfer);
+
+	printf("Streaming from host memory to FPGA..\n");
+	res = populate_pattern_checker(afc_h);
+	ON_ERR_GOTO(res, out, "populate_pattern_checker");
+
+	res = stop_checker(afc_h);
+	ON_ERR_GOTO(res, out, "prepare_checker");
+
+	res = start_checker(afc_h, total_mem_size);
+	ON_ERR_GOTO(res, out, "start checker");
+	
+	clock_gettime(CLOCK_MONOTONIC, &start);
+	res = sendtxTransfer(dma_m2s_h, tx_transfer, (uint64_t)dma_tx_buf_ptr, 0, total_mem_size, HOST_MM_TO_FPGA_ST, TX_NO_PACKET, txtransferComplete);
+	if(res != FPGA_OK) {
+		printf(" sendtxTransfer Host to FPGA failed with error %s", fpgaErrStr(res));
+		free(dma_tx_buf_ptr);
+		return FPGA_EXCEPTION;
+	}
+
+	sem_wait(&tx_cb_status);
+	clock_gettime(CLOCK_MONOTONIC, &end);
+	res = wait_for_checker_complete(afc_h);
+	ON_ERR_GOTO(res, out, "wait_for_checker_complete");
+	report_bandwidth(total_mem_size, getTime(start,end));
+
+	printf("Streaming from FPGA to host memory..\n");
+	clear_buffer((uint32_t*)dma_rx_buf_ptr, total_mem_size/4);
+	
+	res = populate_pattern_generator(afc_h);
+	ON_ERR_GOTO(res, out, "populate_pattern_generator");
+
+	res = stop_generator(afc_h);
+	ON_ERR_GOTO(res, out, "prepare_checker");
+
+	res = start_generator(afc_h, total_mem_size, 0);
+	ON_ERR_GOTO(res, out, "start checker");
+	
+	clock_gettime(CLOCK_MONOTONIC, &start);
+	res = sendrxTransfer(dma_s2m_h, rx_transfer, 0, (uint64_t)dma_rx_buf_ptr, total_mem_size, FPGA_ST_TO_HOST_MM, RX_NO_PACKET, rxtransferComplete);
+	if(res != FPGA_OK) {
+		printf(" sendrxTransfer FPGA to Host failed with error %s", fpgaErrStr(res));
+		free(dma_rx_buf_ptr);
+		return FPGA_EXCEPTION;
+	}
+
+	sem_wait(&rx_cb_status);
+	clock_gettime(CLOCK_MONOTONIC, &end);
+	res = wait_for_generator_complete(afc_h);
+	ON_ERR_GOTO(res, out, "wait_for_checker_complete");
+	printf("Verifying buffer..\n");
+	verify_buffer((uint32_t*)dma_rx_buf_ptr, total_mem_size/4);
+	clear_buffer((uint32_t*)dma_rx_buf_ptr, total_mem_size/4);
+	report_bandwidth(total_mem_size, getTime(start,end));
+
+out:
+	if(dma_tx_buf_ptr)
+		free(dma_tx_buf_ptr);
+	if(dma_rx_buf_ptr)
+		free(dma_rx_buf_ptr);
+
+	return FPGA_OK;
 }
 
 int main(int argc, char *argv[]) {
@@ -137,6 +251,7 @@ int main(int argc, char *argv[]) {
 	uint64_t *dma_tx_buf_ptr = NULL;
 	uint64_t *dma_rx_buf_ptr = NULL;
 	uint32_t use_ase;
+	int pkt_transfer=0;
 
 	if(argc < 2) {
 		printf("Usage: fpga_dma_test <use_ase = 1 (simulation only), 0 (hardware)>");
@@ -155,7 +270,8 @@ int main(int argc, char *argv[]) {
 	if(uuid_parse(DMA_AFU_ID, guid) < 0) {
 		return 1;
 	}
-	sem_init(&cb_status, 0, 0);
+	sem_init(&tx_cb_status, 0, 0);
+	sem_init(&rx_cb_status, 0, 0);
 	res = fpgaGetProperties(NULL, &filter);
 	ON_ERR_GOTO(res, out, "fpgaGetProperties");
 
@@ -211,60 +327,98 @@ int main(int argc, char *argv[]) {
 		ON_ERR_GOTO(res, out_dma_close, "Error allocating memory");
 	}
 
-	fill_buffer((char*)dma_tx_buf_ptr, transfer_len);
-	
 	// Example DMA transfer (host to fpga, asynchronous)
 	fpga_dma_transfer_t rx_transfer;
 	fpgaDMATransferInit(&rx_transfer);
 	fpga_dma_transfer_t tx_transfer;
 	fpgaDMATransferInit(&tx_transfer);
 
-	// deterministic length transfer
-	res = sendrxTransfer(dma_h[1], rx_transfer, 0, (uint64_t)dma_rx_buf_ptr, transfer_len, FPGA_ST_TO_HOST_MM, RX_NO_PACKET, rxtransferComplete);
-	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransfer");
+	fill_buffer((uint32_t*)dma_tx_buf_ptr, transfer_len/4);
 
-	res = sendtxTransfer(dma_h[0], tx_transfer, (uint64_t)dma_tx_buf_ptr, 0, transfer_len, HOST_MM_TO_FPGA_ST, TX_NO_PACKET, txtransferComplete);
-	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransfer");
+	// M2S deterministic length transfer
+	res = populate_pattern_checker(afc_h);
+	ON_ERR_GOTO(res, out_dma_close, "populate_pattern_checker");
 
-	sem_wait(&cb_status);
-	verify_buffer((char*)dma_rx_buf_ptr, transfer_len);
-	clear_buffer((char*)dma_rx_buf_ptr, transfer_len);
+	res = stop_checker(afc_h);
+	ON_ERR_GOTO(res, out_dma_close, "stop_checker");
 
-	// nondeterministic length transfer
-	res = sendrxTransfer(dma_h[1], rx_transfer, 0, (uint64_t)dma_rx_buf_ptr, transfer_len, FPGA_ST_TO_HOST_MM, END_ON_EOP, rxtransferComplete);
-	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransfer");
-
-	res = sendtxTransfer(dma_h[0], tx_transfer, (uint64_t)dma_tx_buf_ptr, 0, transfer_len, HOST_MM_TO_FPGA_ST, GENERATE_EOP, txtransferComplete);
-	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransfer");
+	res = start_checker(afc_h, transfer_len);
+	ON_ERR_GOTO(res, out_dma_close, "start checker");
 	
-	sem_wait(&cb_status);
-	verify_buffer((char*)dma_rx_buf_ptr, transfer_len);
-	clear_buffer((char*)dma_rx_buf_ptr, transfer_len);
+	res = sendtxTransfer(dma_h[0], tx_transfer, (uint64_t)dma_tx_buf_ptr, 0, transfer_len, HOST_MM_TO_FPGA_ST, TX_NO_PACKET, txtransferComplete);
+	ON_ERR_GOTO(res, out_dma_close, "sendtxTransfer");
 
-	// non deterministic length transfer 2
+	sem_wait(&tx_cb_status);
+	res = wait_for_checker_complete(afc_h);
+	ON_ERR_GOTO(res, out_dma_close, "wait_for_checker_complete");
+
+	// M2S non-deterministic length transfer
+	res = populate_pattern_checker(afc_h);
+	ON_ERR_GOTO(res, out_dma_close, "populate_pattern_checker");
+
+	res = stop_checker(afc_h);
+	ON_ERR_GOTO(res, out_dma_close, "stop_checker");
+
+	res = start_checker(afc_h, transfer_len);
+	ON_ERR_GOTO(res, out_dma_close, "start checker");
+
 	res = sendtxTransfer(dma_h[0], tx_transfer, (uint64_t)dma_tx_buf_ptr, 0, transfer_len, HOST_MM_TO_FPGA_ST, GENERATE_EOP, txtransferComplete);
-	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransfer");
+	ON_ERR_GOTO(res, out_dma_close, "sendtxTransfer");
+
+	sem_wait(&tx_cb_status);
+	res = wait_for_checker_complete(afc_h);
+	ON_ERR_GOTO(res, out_dma_close, "wait_for_checker_complete");
+	
+	// S2M deterministic length transfer
+	pkt_transfer = 0;
+	res = populate_pattern_generator(afc_h);
+	ON_ERR_GOTO(res, out_dma_close, "populate_pattern_generator");
+
+	res = stop_generator(afc_h);
+	ON_ERR_GOTO(res, out_dma_close, "stop generator");
+
+	res = start_generator(afc_h, transfer_len, pkt_transfer/*Not PACKET TRANSFER*/);
+	ON_ERR_GOTO(res, out_dma_close, "start pattern generator");
+
+	res = sendrxTransfer(dma_h[1], rx_transfer, 0, (uint64_t)dma_rx_buf_ptr, transfer_len, FPGA_ST_TO_HOST_MM, RX_NO_PACKET, rxtransferComplete);
+	ON_ERR_GOTO(res, out_dma_close, "sendrxTransfer");
+
+	res = wait_for_generator_complete(afc_h);
+	ON_ERR_GOTO(res, out_dma_close, "wait_for_generator_complete");
+
+	sem_wait(&rx_cb_status);
+	verify_buffer((uint32_t*)dma_rx_buf_ptr, transfer_len/4);
+	clear_buffer((uint32_t*)dma_rx_buf_ptr, transfer_len/4);
+
+	// S2M non-deterministic length transfer
+	pkt_transfer = 1;
+	res = populate_pattern_generator(afc_h);
+	ON_ERR_GOTO(res, out_dma_close, "populate_pattern_generator");
+
+	res = stop_generator(afc_h);
+	ON_ERR_GOTO(res, out_dma_close, "stop_generator");
+
+	res = start_generator(afc_h, transfer_len, pkt_transfer/*PACKET TRANSFER*/);
+	ON_ERR_GOTO(res, out_dma_close, "start pattern generator");
 
 	res = sendrxTransfer(dma_h[1], rx_transfer, 0, (uint64_t)dma_rx_buf_ptr, transfer_len, FPGA_ST_TO_HOST_MM, END_ON_EOP, rxtransferComplete);
-	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransfer");
+	ON_ERR_GOTO(res, out_dma_close, "sendrxTransfer");
 
-	sem_wait(&cb_status);
-	verify_buffer((char*)dma_rx_buf_ptr, transfer_len);
-	clear_buffer((char*)dma_rx_buf_ptr, transfer_len);		
+	res = wait_for_generator_complete(afc_h);
+	ON_ERR_GOTO(res, out_dma_close, "wait_for_generator_complete");
 
-	// deterministic length transfer 
-	res = sendrxTransfer(dma_h[1], rx_transfer, 0, (uint64_t)dma_rx_buf_ptr, transfer_len, FPGA_ST_TO_HOST_MM, RX_NO_PACKET, rxtransferComplete);
-	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransfer");
-
-	res = sendtxTransfer(dma_h[0], tx_transfer, (uint64_t)dma_tx_buf_ptr, 0, transfer_len, HOST_MM_TO_FPGA_ST, TX_NO_PACKET, txtransferComplete);
-	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransfer");
-
-	sem_wait(&cb_status);
-	verify_buffer((char*)dma_rx_buf_ptr, transfer_len);
-	clear_buffer((char*)dma_rx_buf_ptr, transfer_len);
-
+	sem_wait(&rx_cb_status);
+	verify_buffer((uint32_t*)dma_rx_buf_ptr, transfer_len/4);
+	clear_buffer((uint32_t*)dma_rx_buf_ptr, transfer_len/4);
+	
 	fpgaDMATransferDestroy(rx_transfer);
 	fpgaDMATransferDestroy(tx_transfer);
+
+	if(!use_ase) {
+		printf("Running Bandwidth Tests..\n");
+		res = run_bw_test(afc_h, dma_h[0], dma_h[1]);
+		ON_ERR_GOTO(res, out_dma_close, "run_bw_test");
+	}
 
 out_dma_close:
 	free(dma_tx_buf_ptr);

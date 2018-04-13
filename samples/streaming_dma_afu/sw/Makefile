@@ -24,7 +24,7 @@ LDFLAGS += -lm
 all: fpga_dma_st_test
 
 # FPGA DMA Driver
-fpga_dma_st_test: fpga_dma_st_test.o fpga_dma_st.so
+fpga_dma_st_test: fpga_dma_st_test.o fpga_dma_st.so fpga_pattern_gen.o fpga_pattern_checker.o
 	gcc -o $@ $^ $(LDFLAGS)
 
 fpga_dma_st_test.o: fpga_dma_st_test.c
@@ -36,6 +36,12 @@ fpga_dma_st.so: fpga_dma_st.o x86-sse2.o
 fpga_dma_st.o: fpga_dma_st.c
 	gcc $(CFLAGS) -c -o $@ $^
 
+fpga_pattern_gen.o: fpga_pattern_gen.c
+	gcc $(CFLAGS) -c -o $@ $^
+
+fpga_pattern_checker.o: fpga_pattern_checker.c
+	gcc $(CFLAGS) -c -o $@ $^
+	 
 x86-sse2.o: x86-sse2.S
 	gcc $(CFLAGS) -c -o $@ $^
 

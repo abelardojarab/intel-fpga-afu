@@ -44,7 +44,7 @@
 #include "fpga_dma.h"
 
 static int err_cnt = 0;
-
+#define USE_ASE 1
 /*
  * macro for checking return codes
  */
@@ -65,8 +65,6 @@ do {\
         return(res);\
     }\
 } while (0)
-
-#define USE_ASE 1
 
 // Internal Functions
 // End of feature list
@@ -729,7 +727,6 @@ fpga_result fpgaCountDMAChannels(fpga_handle fpga, size_t *count) {
 	if(!fpga) {
 		return FPGA_INVALID_PARAM;
 	}
-	uint32_t mmio_no = 0;
 	uint64_t offset = 0;
 	uint64_t mmio_va;
 
@@ -749,6 +746,7 @@ fpga_result fpgaCountDMAChannels(fpga_handle fpga, size_t *count) {
 		feature_uuid_lo = *((volatile uint64_t *)((uint64_t)mmio_va + (uint64_t)(offset + 8)));
 		feature_uuid_hi = *((volatile uint64_t *)((uint64_t)mmio_va + (uint64_t)(offset + 16)));
 #else
+		uint32_t mmio_no = 0;
 		// Read the next feature header
 		res = fpgaReadMMIO64(fpga, mmio_no, offset, &dfh);
 		ON_ERR_GOTO(res, out, "fpgaReadMMIO64");

@@ -44,6 +44,14 @@ qsys/dispatcher/dcp_write_signal_breakout.v
 qsys/write_response_bridge/Write_Response_Bridge_hw.tcl
 qsys/write_response_bridge/write_response_bridge.v
 
+# Pattern checker
+qsys/custom_pattern_checker/custom_pattern_checker_hw.tcl
+qsys/custom_pattern_checker/mtm_custom_pattern_checker.v
+
+# Pattern generator
+qsys/custom_pattern_generator/custom_pattern_generator_hw.tcl
+qsys/custom_pattern_generator/mtm_custom_pattern_generator.v
+
 # Streamimg DMA AFU Qsys system .ip files
 qsys/ip/streaming_dma_test_system/dma_clock.ip
 qsys/ip/streaming_dma_test_system/emif_B_clock.ip
@@ -53,11 +61,11 @@ qsys/ip/streaming_dma_test_system/host_rd_bridge.ip
 qsys/ip/streaming_dma_test_system/streaming_dma_test_system_reset_in.ip
 qsys/ip/streaming_dma_test_system/emif_A_clock.ip
 qsys/ip/streaming_dma_test_system/emif_B_bridge.ip
-
 qsys/ip/streaming_dma_test_system/mmio_bridge.ip
 qsys/ip/streaming_dma_test_system/null_dfh.ip
-
 qsys/ip/streaming_dma_test_system/streaming_dma_test_system_host_wr_bridge.ip
+qsys/ip/streaming_dma_test_system/s2m_custom_pattern_generator.ip
+qsys/ip/streaming_dma_test_system/m2s_custom_pattern_checker.ip
 
 
 # Memory to streaming DMA BBB Qsys system .ip files

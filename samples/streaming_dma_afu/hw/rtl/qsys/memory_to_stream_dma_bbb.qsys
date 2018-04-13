@@ -196,7 +196,7 @@
 }
 ]]></parameter>
  <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
- <parameter name="device" value="10AX115N3F40E2SG" />
+ <parameter name="device" value="10AX115N2F40E2LG" />
  <parameter name="deviceFamily" value="Arria 10" />
  <parameter name="deviceSpeedGrade" value="2" />
  <parameter name="fabricMode" value="QSYS" />
@@ -4133,14 +4133,6 @@
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
-                    <port>
-                        <name>src_channel</name>
-                        <role>channel</role>
-                        <direction>Output</direction>
-                        <width>8</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC_VECTOR</vhdlType>
-                    </port>
                 </ports>
                 <assignments>
                     <assignmentValueMap/>
@@ -4180,7 +4172,7 @@
                         </entry>
                         <entry>
                             <key>maxChannel</key>
-                            <value>255</value>
+                            <value>0</value>
                         </entry>
                         <entry>
                             <key>packetDescription</key>

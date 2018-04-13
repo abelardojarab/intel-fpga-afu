@@ -39,6 +39,9 @@
 #include <semaphore.h>
 #include "x86-sse2.h"
 
+#define FPGA_DMA_ST_ERR(msg_str) \
+		fprintf(stderr, "Error %s: %s\n", __FUNCTION__, msg_str);
+
 #define MIN(X,Y) (X<Y)?X:Y
 
 #define QWORD_BYTES 8

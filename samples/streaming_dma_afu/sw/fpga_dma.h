@@ -67,7 +67,7 @@ fpga_result fpgaCountDMAChannels(fpga_handle fpga, size_t *count);
 * @param[out] dma             DMA object handle
 * @returns                    FPGA_OK on success, return code otherwise
 */
-fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel_idx, fpga_dma_handle_t *dma);
+fpga_result fpgaDMAOpen(fpga_handle fpga, uint64_t dma_channel_idx, fpga_dma_handle_t *dma);
 
 /**
 * fpgaDMAClose

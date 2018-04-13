@@ -60,10 +60,10 @@ do {\
 
 #define ON_ERR_RETURN(res, desc)\
 do {\
-    if ((res) != FPGA_OK) {\
-        error_print("Error %s: %s\n", (desc), fpgaErrStr(res));\
-        return(res);\
-    }\
+	if ((res) != FPGA_OK) {\
+		error_print("Error %s: %s\n", (desc), fpgaErrStr(res));\
+		return(res);\
+	}\
 } while (0)
 
 // Internal Functions
@@ -330,7 +330,7 @@ static fpga_result _pop_response_fifo(fpga_dma_handle_t dma_h, int *fill_level, 
 
 	// Read S2M Response fill level Dispatcher register to find the no. of responses in the response FIFO
 	res =	MMIORead32Blk(dma_h, CSR_RSP_FILL_LEVEL(dma_h), (uint64_t)&rsp_level.reg, sizeof(rsp_level.reg));
-	ON_ERR_GOTO(res, out, "MMIORead32Blk"); 
+	ON_ERR_GOTO(res, out, "MMIORead32Blk");
 	fill = rsp_level.rsp.rsp_fill_level;
 
 	// Pop the responses to find no. of bytes trasnfered, status of transfer and to avoid deadlock of DMA
@@ -724,9 +724,17 @@ fpga_result fpgaCountDMAChannels(fpga_handle fpga, size_t *count) {
 	// We may encounter one or more BBBs during discovery
 	// Populate the count
 	fpga_result res = FPGA_OK;
+
 	if(!fpga) {
+		FPGA_DMA_ST_ERR("Invalid FPGA handle");
 		return FPGA_INVALID_PARAM;
 	}
+
+	if(!count) {
+		FPGA_DMA_ST_ERR("Invalid pointer to count");
+		return FPGA_INVALID_PARAM;
+	}
+
 	uint64_t offset = 0;
 	uint64_t mmio_va;
 
@@ -775,17 +783,22 @@ out:
 	return res;
 }
 
-fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel_index, fpga_dma_handle_t *dma) {
+fpga_result fpgaDMAOpen(fpga_handle fpga, uint64_t dma_channel_index, fpga_dma_handle_t *dma) {
 	fpga_result res = FPGA_OK;
 	fpga_dma_handle_t dma_h;
 	int channel_index = 0;
 	int i = 0;
+
 	if(!fpga) {
+		FPGA_DMA_ST_ERR("Invalid FPGA handle");
 		return FPGA_INVALID_PARAM;
 	}
+
 	if(!dma) {
+		FPGA_DMA_ST_ERR("Invalid pointer to DMA handle");
 		return FPGA_INVALID_PARAM;
 	}
+
 	// init the dma handle
 	dma_h = (fpga_dma_handle_t)malloc(sizeof(struct fpga_dma_handle));
 	if(!dma_h) {
@@ -909,8 +922,8 @@ fpga_result fpgaDMAClose(fpga_dma_handle_t dma_h) {
 	fpga_result res = FPGA_OK;
 	int i = 0;
 	if(!dma_h) {
-		res = FPGA_INVALID_PARAM;
-		goto out;
+		FPGA_DMA_ST_ERR("Invalid DMA handle");
+		return FPGA_INVALID_PARAM;
 	}
 
 	if(!dma_h->fpga_h) {
@@ -943,10 +956,14 @@ out:
 }
 
 fpga_result fpgaGetDMAChannelType(fpga_dma_handle_t dma, fpga_dma_channel_type_t *ch_type) {
-	fpga_result res = FPGA_OK;
 	if(!dma) {
-		res = FPGA_INVALID_PARAM;
-		return res;
+		FPGA_DMA_ST_ERR("Invalid DMA handle");
+		return FPGA_INVALID_PARAM;
+	}
+
+	if(!ch_type) {
+		FPGA_DMA_ST_ERR("Invalid pointer to channel type");
+		return FPGA_INVALID_PARAM;
 	}
 
 	*ch_type = dma->ch_type;
@@ -957,15 +974,16 @@ fpga_result fpgaDMATransferInit(fpga_dma_transfer_t *transfer) {
 	fpga_result res = FPGA_OK;
 
 	if(!transfer) {
-		res = FPGA_INVALID_PARAM;
-		return res;
+		FPGA_DMA_ST_ERR("Invalid pointer to DMA transfer");
+		return FPGA_INVALID_PARAM;
 	}
 
 	*transfer = (fpga_dma_transfer_t)malloc(sizeof(struct fpga_dma_transfer));
-	if(!transfer) {
+	if(!*transfer) {
 		res = FPGA_NO_MEMORY;
 		return res;
 	}
+
 	pthread_mutex_init(&(*transfer)->tf_mutex, NULL);
 	sem_init(&(*transfer)->tf_status, 0, TRANSFER_NOT_IN_PROGRESS);
 
@@ -976,10 +994,10 @@ fpga_result fpgaDMATransferDestroy(fpga_dma_transfer_t transfer) {
 	fpga_result res = FPGA_OK;
 
 	if(!transfer) {
-		res = FPGA_INVALID_PARAM;
-		return res;
+		FPGA_DMA_ST_ERR("Invalid DMA transfer");
+		return FPGA_INVALID_PARAM;
 	}
-	
+
 	sem_destroy(&transfer->tf_status);
 	pthread_mutex_destroy(&transfer->tf_mutex);
 	free(transfer);
@@ -989,9 +1007,10 @@ fpga_result fpgaDMATransferDestroy(fpga_dma_transfer_t transfer) {
 
 fpga_result fpgaDMATransferSetSrc(fpga_dma_transfer_t transfer, uint64_t src) {
 	fpga_result res = FPGA_OK;
+
 	if(!transfer) {
-		res = FPGA_INVALID_PARAM;
-		return res;
+		FPGA_DMA_ST_ERR("Invalid DMA transfer");
+		return FPGA_INVALID_PARAM;
 	}
 
 	pthread_mutex_lock(&transfer->tf_mutex);
@@ -1002,9 +1021,10 @@ fpga_result fpgaDMATransferSetSrc(fpga_dma_transfer_t transfer, uint64_t src) {
 
 fpga_result fpgaDMATransferSetDst(fpga_dma_transfer_t transfer, uint64_t dst) {
 	fpga_result res = FPGA_OK;
+
 	if(!transfer) {
-		res = FPGA_INVALID_PARAM;
-		return res;
+		FPGA_DMA_ST_ERR("Invalid DMA transfer");
+		return FPGA_INVALID_PARAM;
 	}
 
 	pthread_mutex_lock(&transfer->tf_mutex);
@@ -1015,9 +1035,10 @@ fpga_result fpgaDMATransferSetDst(fpga_dma_transfer_t transfer, uint64_t dst) {
 
 fpga_result fpgaDMATransferSetLen(fpga_dma_transfer_t transfer, uint64_t len) {
 	fpga_result res = FPGA_OK;
+
 	if(!transfer) {
-		res = FPGA_INVALID_PARAM;
-		return res;
+		FPGA_DMA_ST_ERR("Invalid DMA transfer");
+		return FPGA_INVALID_PARAM;
 	}
 
 	pthread_mutex_lock(&transfer->tf_mutex);
@@ -1028,9 +1049,15 @@ fpga_result fpgaDMATransferSetLen(fpga_dma_transfer_t transfer, uint64_t len) {
 
 fpga_result fpgaDMATransferSetTransferType(fpga_dma_transfer_t transfer, fpga_dma_transfer_type_t type) {
 	fpga_result res = FPGA_OK;
+
 	if(!transfer) {
-		res = FPGA_INVALID_PARAM;
-		return res;
+		FPGA_DMA_ST_ERR("Invalid DMA transfer");
+		return FPGA_INVALID_PARAM;
+	}
+
+	if(type >= FPGA_MAX_TRANSFER_TYPE) {
+		FPGA_DMA_ST_ERR("Invalid DMA transfer type");
+		return FPGA_INVALID_PARAM;
 	}
 
 	pthread_mutex_lock(&transfer->tf_mutex);
@@ -1041,9 +1068,15 @@ fpga_result fpgaDMATransferSetTransferType(fpga_dma_transfer_t transfer, fpga_dm
 
 fpga_result fpgaDMATransferSetTxControl(fpga_dma_transfer_t transfer, fpga_dma_tx_ctrl_t tx_ctrl) {
 	fpga_result res = FPGA_OK;
+
 	if(!transfer) {
-		res = FPGA_INVALID_PARAM;
-		return res;
+		FPGA_DMA_ST_ERR("Invalid DMA transfer");
+		return FPGA_INVALID_PARAM;
+	}
+
+	if(tx_ctrl >= FPGA_MAX_TX_CTRL) {
+		FPGA_DMA_ST_ERR("Invalid TX Ctrl");
+		return FPGA_INVALID_PARAM;
 	}
 
 	pthread_mutex_lock(&transfer->tf_mutex);
@@ -1054,9 +1087,15 @@ fpga_result fpgaDMATransferSetTxControl(fpga_dma_transfer_t transfer, fpga_dma_t
 
 fpga_result fpgaDMATransferSetRxControl(fpga_dma_transfer_t transfer, fpga_dma_rx_ctrl_t rx_ctrl) {
 	fpga_result res = FPGA_OK;
+
 	if(!transfer) {
-		res = FPGA_INVALID_PARAM;
-		return res;
+		FPGA_DMA_ST_ERR("Invalid DMA transfer");
+		return FPGA_INVALID_PARAM;
+	}
+
+	if(rx_ctrl >= FPGA_MAX_RX_CTRL) {
+		FPGA_DMA_ST_ERR("Invalid RX Ctrl");
+		return FPGA_INVALID_PARAM;
 	}
 
 	pthread_mutex_lock(&transfer->tf_mutex);
@@ -1067,9 +1106,15 @@ fpga_result fpgaDMATransferSetRxControl(fpga_dma_transfer_t transfer, fpga_dma_r
 
 fpga_result fpgaDMATransferSetTransferCallback(fpga_dma_transfer_t transfer, fpga_dma_transfer_cb cb) {
 	fpga_result res = FPGA_OK;
+
 	if(!transfer) {
-		res = FPGA_INVALID_PARAM;
-		return res;
+		FPGA_DMA_ST_ERR("Invalid DMA transfer");
+		return FPGA_INVALID_PARAM;
+	}
+
+	if(!cb) {
+		FPGA_DMA_ST_ERR("Invalid DMA transfer callback");
+		return FPGA_INVALID_PARAM;
 	}
 
 	pthread_mutex_lock(&transfer->tf_mutex);
@@ -1079,54 +1124,68 @@ fpga_result fpgaDMATransferSetTransferCallback(fpga_dma_transfer_t transfer, fpg
 }
 
 fpga_result fpgaDMATransferGetBytesTransferred(fpga_dma_transfer_t transfer, size_t *rx_bytes) {
-	fpga_result res = FPGA_OK;
+
 	if(!transfer) {
-		res = FPGA_INVALID_PARAM;
-		return res;
+		FPGA_DMA_ST_ERR("Invalid DMA transfer");
+		return FPGA_INVALID_PARAM;
+	}
+
+	if(!rx_bytes) {
+		FPGA_DMA_ST_ERR("Invalid pointer to transferred bytes");
+		return FPGA_INVALID_PARAM;
 	}
 
 	return transfer->rx_bytes;
 }
 
+
 fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, fpga_dma_transfer_t transfer,
 							fpga_dma_transfer_cb cb, void *context) {
 	fpga_result res = FPGA_OK;
-	fpga_dma_transfer_type_t type;
-	type = transfer->transfer_type;
 	bool ret;
 
-	if(!dma)
+	if(!dma) {
+		FPGA_DMA_ST_ERR("Invalid DMA handle");
 		return FPGA_INVALID_PARAM;
-	if(type >= FPGA_MAX_TRANSFER_TYPE)
+	}
+
+	if(!transfer) {
+		FPGA_DMA_ST_ERR("Invalid DMA transfer");
 		return FPGA_INVALID_PARAM;
-	if(!( type == HOST_MM_TO_FPGA_ST || type == FPGA_ST_TO_HOST_MM))
+	}
+
+	if(!(transfer->transfer_type == HOST_MM_TO_FPGA_ST || transfer->transfer_type == FPGA_ST_TO_HOST_MM)) {
+		FPGA_DMA_ST_ERR("Transfer unsupported");
 		return FPGA_NOT_SUPPORTED;
-	if(!dma->fpga_h)
+	}
+
+	if(dma->ch_type == RX_ST && transfer->transfer_type == HOST_MM_TO_FPGA_ST) {
+		FPGA_DMA_ST_ERR("Incompatible transfer on stream to memory DMA channel");
 		return FPGA_INVALID_PARAM;
-
-	if(type == HOST_MM_TO_FPGA_ST && !IS_DMA_ALIGNED(transfer->dst)) {
-		res = FPGA_INVALID_PARAM;
-		ON_ERR_GOTO(res, out, "Dst Address Unaligned"); 
-	}
-	if(type == HOST_MM_TO_FPGA_ST && transfer->tx_ctrl > FPGA_MAX_TX_CTRL) {
-		res = FPGA_INVALID_PARAM;
-		ON_ERR_GOTO(res, out, "Invalid TxControl"); 
 	}
 
-
-	if(type == FPGA_ST_TO_HOST_MM && !IS_DMA_ALIGNED(transfer->src)) {
-		res = FPGA_INVALID_PARAM;
-		ON_ERR_GOTO(res, out, "Src Address Unaligned");
-	}
-	 
-	if(type == FPGA_ST_TO_HOST_MM && transfer->rx_ctrl > FPGA_MAX_RX_CTRL) {
-		res = FPGA_INVALID_PARAM;
-		ON_ERR_GOTO(res, out, "Invalid RxControl");
+	if(dma->ch_type == TX_ST && transfer->transfer_type == FPGA_ST_TO_HOST_MM) {
+		FPGA_DMA_ST_ERR("Incompatible transfer on memory to stream DMA channel");
+		return FPGA_INVALID_PARAM;
 	}
 
+	if(transfer->transfer_type == HOST_MM_TO_FPGA_ST && !IS_DMA_ALIGNED(transfer->dst)) {
+		FPGA_DMA_ST_ERR("Memory to stream transfer must use 64-byte aligned destination address");
+		return FPGA_INVALID_PARAM;
+	}
+
+	if(transfer->transfer_type == FPGA_ST_TO_HOST_MM && !IS_DMA_ALIGNED(transfer->src)) {
+		FPGA_DMA_ST_ERR("Stream to memory transfer must use 64-byte aligned source address");
+		return FPGA_INVALID_PARAM;
+	}
+
+	// Lock transfer in preparation for transfer
 	pthread_mutex_lock(&transfer->tf_mutex);
+
+	// Transfer in progress
 	sem_wait(&transfer->tf_status);
 
+	// Enqueue the transfer, transfer will be processed in worker thread
 	do {
 		ret = enqueue(&dma->qinfo, transfer);
 	} while(ret != true);
@@ -1136,8 +1195,8 @@ fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, fpga_dma_transfer_t transfer,
 		sem_wait(&transfer->tf_status);
 		sem_post(&transfer->tf_status);
 	}
+
 	pthread_mutex_unlock(&transfer->tf_mutex);
 
-out:
 	return res;
 }

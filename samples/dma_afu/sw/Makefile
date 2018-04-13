@@ -46,7 +46,7 @@ CFLAGS += -g
 
 ifdef prefix
 CFLAGS += -I$(prefix)/include
-LDFLAGS += -L$(prefix)/lib
+LDFLAGS += -L$(prefix)/lib -L$(prefix)/lib64
 endif
 
 #CFLAGS += -Wall -Werror -Wno-unknown-pragmas
@@ -71,7 +71,7 @@ fpga_dma_test: fpga_dma_test.o fpga_dma.so
 	gcc -o $@ $^ $(LDFLAGS)
 
 fpga_dma_test.o: fpga_dma_test.c
-	gcc $(CFLAGS) -o $@ -c $^ 
+	gcc $(CFLAGS) -o $@ -c $^
 
 fpga_dma.so: fpga_dma.o x86-sse2.o
 	gcc $(CFLAGS)  -o $@ $^ $(LDFLAGS) -shared

@@ -3,7 +3,7 @@ CFLAGS = -g -O2 -fPIC
 CFLAGS += -D FPGA_DMA_DEBUG=0
 ifdef prefix
 CFLAGS += -I$(prefix)/include
-LDFLAGS += -L$(prefix)/lib
+LDFLAGS += -L$(prefix)/lib -L$(prefix)/lib64
 endif
 
 CFLAGS += -Wall -Werror -Wno-unknown-pragmas

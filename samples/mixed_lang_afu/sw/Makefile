@@ -32,7 +32,7 @@ CFLAGS += -g -O2 -std=c99
 
 ifdef prefix
 CFLAGS += -I$(prefix)/include
-LDFLAGS += -L$(prefix)/lib
+LDFLAGS += -L$(prefix)/lib -L$(prefix)/lib64
 endif
 LDFLAGS += -luuid
 

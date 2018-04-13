@@ -28,11 +28,11 @@ CFLAGS+=-Wformat -Wformat-security
 
 CFLAGS += -Werror
 
-CFLAGS += -g -O2 
+CFLAGS += -g -O2
 
 ifdef prefix
 CFLAGS += -I$(prefix)/include
-LDFLAGS += -L$(prefix)/lib
+LDFLAGS += -L$(prefix)/lib -L$(prefix)/lib64
 endif
 
 LDFLAGS += -luuid
@@ -63,6 +63,6 @@ clean:
 
 
 run: all
-	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(prefix)/build/lib ./user_clock_test
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(prefix)/build/lib:$(prefix)/build/lib64 ./user_clock_test
 
 .PHONY:all clean

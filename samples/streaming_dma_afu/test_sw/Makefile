@@ -3,7 +3,7 @@ CFLAGS = -g -O2 -fPIC
 
 CFLAGS += -I$(prefix)/include
 CFLAGS += -D FPGA_DMA_DEBUG=0
-LDFLAGS += -L$(prefix)/lib -luuid -lrt
+LDFLAGS += -L$(prefix)/lib -L$(prefix)/lib64 -luuid -lrt
 
 GTEST_INC += -I$(drv_path)
 

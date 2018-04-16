@@ -247,24 +247,22 @@ int main(int argc, char *argv[]) {
 	fpga_handle afc_h;
 	fpga_guid guid;
 	uint32_t num_matches;
+
+#ifndef USE_ASE
 	volatile uint64_t *mmio_ptr = NULL;
+#endif
+
 	uint64_t *dma_tx_buf_ptr = NULL;
 	uint64_t *dma_rx_buf_ptr = NULL;
-	uint32_t use_ase;
 	int pkt_transfer=0;
 
-	if(argc < 2) {
-		printf("Usage: fpga_dma_test <use_ase = 1 (simulation only), 0 (hardware)>");
-		return 1;
-	}
-	use_ase = atoi(argv[1]);
-	if(use_ase) {
+	#ifdef USE_ASE
 		printf("Running test in ASE mode\n");
 		transfer_len = ASE_TEST_BUF_SIZE;
-	} else {
+	#else
 		printf("Running test in HW mode\n");
 		transfer_len = TEST_BUF_SIZE;
-	}
+	#endif
 
 	// enumerate the afc
 	if(uuid_parse(DMA_AFU_ID, guid) < 0) {
@@ -293,10 +291,10 @@ int main(int argc, char *argv[]) {
 	res = fpgaOpen(afc_token, &afc_h, 0);
 	ON_ERR_GOTO(res, out_destroy_tok, "fpgaOpen");
 
-	if(!use_ase) {
+	#ifndef USE_ASE
 		res = fpgaMapMMIO(afc_h, 0, (uint64_t**)&mmio_ptr);
 		ON_ERR_GOTO(res, out_close, "fpgaMapMMIO");
-	}
+	#endif
 
 	// reset AFC
 	res = fpgaReset(afc_h);
@@ -414,11 +412,11 @@ int main(int argc, char *argv[]) {
 	fpgaDMATransferDestroy(rx_transfer);
 	fpgaDMATransferDestroy(tx_transfer);
 
-	if(!use_ase) {
+	#ifndef USE_ASE
 		printf("Running Bandwidth Tests..\n");
 		res = run_bw_test(afc_h, dma_h[0], dma_h[1]);
 		ON_ERR_GOTO(res, out_dma_close, "run_bw_test");
-	}
+	#endif
 
 out_dma_close:
 	free(dma_tx_buf_ptr);
@@ -432,12 +430,14 @@ out_dma_close:
 	free(dma_h);
 
 out_unmap:
-	if(!use_ase) {
+	//if(!use_ase) {
+	#ifndef USE_ASE
 		res = fpgaUnmapMMIO(afc_h, 0);
 		ON_ERR_GOTO(res, out_close, "fpgaUnmapMMIO");
-	}
+	#endif
+	//}
 
-out_close:
+//out_close:
 	res = fpgaClose(afc_h);
 	ON_ERR_GOTO(res, out_destroy_tok, "fpgaClose");
 

@@ -30,7 +30,7 @@ fpga_dma_st_gtest.o: fpga_dma_st_gtest.cpp
 	g++ -o $@ -c $^ $(CFLAGS) -I$(drv_path) -I$(gtest_include)
 
 %.o: %.cpp
-	g++ $(CFLAGS) -c -o $@ $<
+	g++ $(CFLAGS) $(GTEST_INC) -c -o $@ $<
 
 clean:
 	$(RM) fpga_dma_st_gtest *.o *.so

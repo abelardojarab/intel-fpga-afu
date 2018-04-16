@@ -574,6 +574,7 @@ static void *m2sTransactionWorker(void* dma_handle) {
 		
 		// Mark transfer complete
 		sem_post(&m2s_transfer->tf_status);
+		pthread_mutex_unlock(&m2s_transfer->tf_mutex);
 	}
 out:
 	return NULL;
@@ -713,6 +714,7 @@ static void *s2mTransactionWorker(void* dma_handle) {
 			s2m_transfer->cb(NULL);
 		}
 		sem_post(&s2m_transfer->tf_status);
+		pthread_mutex_unlock(&s2m_transfer->tf_mutex);
 	}
 out:
 	return NULL;
@@ -1180,6 +1182,7 @@ fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, fpga_dma_transfer_t transfer,
 	}
 
 	// Lock transfer in preparation for transfer
+	// Mutex will be unlocked from the worker thread once transfer is complete
 	pthread_mutex_lock(&transfer->tf_mutex);
 
 	// Transfer in progress
@@ -1195,8 +1198,6 @@ fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, fpga_dma_transfer_t transfer,
 		sem_wait(&transfer->tf_status);
 		sem_post(&transfer->tf_status);
 	}
-
-	pthread_mutex_unlock(&transfer->tf_mutex);
 
 	return res;
 }

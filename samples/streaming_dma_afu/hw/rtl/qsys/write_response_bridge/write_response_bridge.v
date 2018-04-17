@@ -104,7 +104,7 @@ begin
   end
   else if (load_burst_counter)
   begin
-    burst_counter <= burst_counter - s_burst - 1'b1;
+    burst_counter <= s_burst - 1'b1;
   end
   else if (dec_burst_counter)
   begin

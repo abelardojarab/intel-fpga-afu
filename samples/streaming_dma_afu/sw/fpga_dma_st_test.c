@@ -430,14 +430,12 @@ out_dma_close:
 	free(dma_h);
 
 out_unmap:
-	//if(!use_ase) {
 	#ifndef USE_ASE
 		res = fpgaUnmapMMIO(afc_h, 0);
 		ON_ERR_GOTO(res, out_close, "fpgaUnmapMMIO");
-	#endif
-	//}
 
-//out_close:
+out_close:
+	#endif
 	res = fpgaClose(afc_h);
 	ON_ERR_GOTO(res, out_destroy_tok, "fpgaClose");
 

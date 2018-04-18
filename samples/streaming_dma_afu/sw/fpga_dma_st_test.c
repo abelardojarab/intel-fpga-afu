@@ -92,22 +92,25 @@ int sendtxTransfer(fpga_dma_handle_t dma_h, fpga_dma_transfer_t tx_transfer, uin
 }
 
 fpga_result verify_buffer(uint32_t *buf, size_t payload_size) {
-	size_t i,j,k;
+	size_t i,j;
 	uint32_t test_word = 0;
-	uint32_t pattern_repeat_loop = payload_size/((PATTERN_LENGTH)*(PATTERN_WIDTH/4));
-	for (i = 0; i < pattern_repeat_loop; i++) {
-		test_word = 0xABCDEF12;
-		for (j = 0; j < PATTERN_LENGTH; j++) {
-			for (k = 0; k < (PATTERN_WIDTH/4); k++) {
+	while(payload_size) {
+		test_word = 0x04030201;
+		for (i = 0; i < PATTERN_LENGTH; i++) {
+			for (j = 0; j < (PATTERN_WIDTH/sizeof(test_word)); j++) {
+				if(!payload_size)
+					goto out;
 				if((*buf) != test_word) {
 					printf("Invalid data at %zx Expected = %x Actual = %x\n",i,test_word,(*buf));
 					return FPGA_INVALID_PARAM;
 				}
+				payload_size -= sizeof(test_word);
 				buf++;
-				test_word += 0x10101010;
+				test_word += 0x01010101;
 			}
 		}
 	}
+out:
 	printf("S2M: Data Verification Success!\n");
 	return FPGA_OK;
 }
@@ -127,16 +130,18 @@ static void txtransferComplete(void *ctx) {
 
 
 static void fill_buffer(uint32_t *buf, size_t payload_size) {
-	size_t i,j,k;
+	size_t i,j;
 	uint32_t test_word = 0;
-	uint32_t pattern_repeat_loop = payload_size/((PATTERN_LENGTH)*(PATTERN_WIDTH/4));
-	for (i = 0; i < pattern_repeat_loop; i++) {
-		test_word = 0xABCDEF12;
-		for (j = 0; j < PATTERN_LENGTH; j++) {
-			for (k = 0; k < (PATTERN_WIDTH/4); k++) {
+	while(payload_size) {
+		test_word = 0x04030201;
+		for (i = 0; i < PATTERN_LENGTH; i++) {
+			for (j = 0; j < (PATTERN_WIDTH/sizeof(test_word)); j++) {
+				if(!payload_size)
+					return;
 				*buf = test_word;
+				payload_size -= sizeof(test_word);
 				buf++;
-				test_word += 0x10101010;
+				test_word += 0x01010101;
 			}
 		}
 	}
@@ -168,7 +173,7 @@ fpga_result run_bw_test(fpga_handle afc_h, fpga_dma_handle_t dma_m2s_h, fpga_dma
 		goto out;
 	}
 
-	fill_buffer((uint32_t*)dma_tx_buf_ptr, total_mem_size/4);
+	fill_buffer((uint32_t*)dma_tx_buf_ptr, total_mem_size);
 	
 	fpga_dma_transfer_t rx_transfer;
 	fpgaDMATransferInit(&rx_transfer);
@@ -200,7 +205,7 @@ fpga_result run_bw_test(fpga_handle afc_h, fpga_dma_handle_t dma_m2s_h, fpga_dma
 	report_bandwidth(total_mem_size, getTime(start,end));
 
 	printf("Streaming from FPGA to host memory..\n");
-	clear_buffer((uint32_t*)dma_rx_buf_ptr, total_mem_size/4);
+	clear_buffer((uint32_t*)dma_rx_buf_ptr, total_mem_size);
 	
 	res = populate_pattern_generator(afc_h);
 	ON_ERR_GOTO(res, out, "populate_pattern_generator");
@@ -224,8 +229,8 @@ fpga_result run_bw_test(fpga_handle afc_h, fpga_dma_handle_t dma_m2s_h, fpga_dma
 	res = wait_for_generator_complete(afc_h);
 	ON_ERR_GOTO(res, out, "wait_for_checker_complete");
 	printf("Verifying buffer..\n");
-	verify_buffer((uint32_t*)dma_rx_buf_ptr, total_mem_size/4);
-	clear_buffer((uint32_t*)dma_rx_buf_ptr, total_mem_size/4);
+	verify_buffer((uint32_t*)dma_rx_buf_ptr, total_mem_size);
+	clear_buffer((uint32_t*)dma_rx_buf_ptr, total_mem_size);
 	report_bandwidth(total_mem_size, getTime(start,end));
 
 out:
@@ -331,7 +336,7 @@ int main(int argc, char *argv[]) {
 	fpga_dma_transfer_t tx_transfer;
 	fpgaDMATransferInit(&tx_transfer);
 
-	fill_buffer((uint32_t*)dma_tx_buf_ptr, transfer_len/4);
+	fill_buffer((uint32_t*)dma_tx_buf_ptr, transfer_len);
 
 	// M2S deterministic length transfer
 	res = populate_pattern_checker(afc_h);
@@ -385,8 +390,8 @@ int main(int argc, char *argv[]) {
 	ON_ERR_GOTO(res, out_dma_close, "wait_for_generator_complete");
 
 	sem_wait(&rx_cb_status);
-	verify_buffer((uint32_t*)dma_rx_buf_ptr, transfer_len/4);
-	clear_buffer((uint32_t*)dma_rx_buf_ptr, transfer_len/4);
+	verify_buffer((uint32_t*)dma_rx_buf_ptr, transfer_len);
+	clear_buffer((uint32_t*)dma_rx_buf_ptr, transfer_len);
 
 	// S2M non-deterministic length transfer
 	pkt_transfer = 1;
@@ -406,8 +411,8 @@ int main(int argc, char *argv[]) {
 	ON_ERR_GOTO(res, out_dma_close, "wait_for_generator_complete");
 
 	sem_wait(&rx_cb_status);
-	verify_buffer((uint32_t*)dma_rx_buf_ptr, transfer_len/4);
-	clear_buffer((uint32_t*)dma_rx_buf_ptr, transfer_len/4);
+	verify_buffer((uint32_t*)dma_rx_buf_ptr, transfer_len);
+	clear_buffer((uint32_t*)dma_rx_buf_ptr, transfer_len);
 	
 	fpgaDMATransferDestroy(rx_transfer);
 	fpgaDMATransferDestroy(tx_transfer);

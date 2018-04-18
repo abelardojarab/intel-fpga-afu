@@ -51,14 +51,14 @@ fpga_result populate_pattern_checker(fpga_handle fpga_h) {
 
 	fpga_result res = FPGA_OK;
 	uint64_t custom_checker_addr = (uint64_t)M2S_PATTERN_CHECKER_MEMORY_SLAVE;
-	uint32_t test_word = 0xABCDEF12;
+	uint32_t test_word = 0x04030201;
 	for (i = 0; i < PATTERN_LENGTH; i++) {
-		for (j = 0; j < (PATTERN_WIDTH/4); j++) {
+		for (j = 0; j < (PATTERN_WIDTH/sizeof(test_word)); j++) {
 			res = fpgaWriteMMIO32(fpga_h, 0, custom_checker_addr, test_word);
 			if(res != FPGA_OK)
 				return res;
-			custom_checker_addr += sizeof(uint32_t);
-			test_word += 0x10101010;
+			custom_checker_addr += sizeof(test_word);
+			test_word += 0x01010101;
 		}
 	}
 	return res;
@@ -129,7 +129,7 @@ out:
 fpga_result stop_checker(fpga_handle fpga_h) {
 	fpga_result res = FPGA_OK;
 
-	res = fpgaWriteMMIO32(fpga_h, 0, M2S_PATTERN_CHECKER_CSR+offsetof(pattern_checker_control_t, control), 0x7FFFFFFF);
+	res = fpgaWriteMMIO32(fpga_h, 0, M2S_PATTERN_CHECKER_CSR+offsetof(pattern_checker_control_t, control), 0x0);
 	ON_ERR_GOTO(res, out, "fpgaWriteMMIO32");
 out:
 	return res;

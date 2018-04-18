@@ -51,14 +51,14 @@ fpga_result populate_pattern_generator(fpga_handle fpga_h) {
 	}
 	fpga_result res = FPGA_OK;
 	uint64_t custom_generator_mem_addr = (uint64_t)S2M_PATTERN_GENERATOR_MEMORY_SLAVE;
-	uint32_t test_word = 0xABCDEF12;
+	uint32_t test_word = 0x04030201;
 	for (i = 0; i < PATTERN_LENGTH; i++) {
-		for (j = 0; j < (PATTERN_WIDTH/4); j++) {
+		for (j = 0; j < (PATTERN_WIDTH/sizeof(test_word)); j++) {
 			res = fpgaWriteMMIO32(fpga_h, 0, custom_generator_mem_addr, test_word);
 			if(res != FPGA_OK)
 				return res;
-			custom_generator_mem_addr += sizeof(uint32_t);
-			test_word += 0x10101010;
+			custom_generator_mem_addr += sizeof(test_word);
+			test_word += 0x01010101;
 		}
 	}
 	return res;
@@ -93,8 +93,8 @@ fpga_result start_generator(fpga_handle fpga_h, uint64_t transfer_len, int pkt_t
 	generator_ctrl.pattern_len = PATTERN_LENGTH;
 	generator_ctrl.pattern_pos = 0;
 	if(pkt_transfer) {
-		generator_ctrl.control.generate_sop = 0;
-		generator_ctrl.control.generate_eop = 0;
+		generator_ctrl.control.generate_sop = 1;
+		generator_ctrl.control.generate_eop = 1;
 	} else {
 		generator_ctrl.control.generate_sop = 0;
 		generator_ctrl.control.generate_eop = 0;
@@ -134,7 +134,7 @@ out:
 fpga_result stop_generator(fpga_handle fpga_h) {
 	fpga_result res = FPGA_OK;
 
-	res = fpgaWriteMMIO32(fpga_h, 0, S2M_PATTERN_GENERATOR_CSR+offsetof(pattern_gen_control_t, control), 0x7FFFFFFF);
+	res = fpgaWriteMMIO32(fpga_h, 0, S2M_PATTERN_GENERATOR_CSR+offsetof(pattern_gen_control_t, control), 0x0);
 	ON_ERR_GOTO(res, out, "fpgaWriteMMIO32");
 out:
 	return res;

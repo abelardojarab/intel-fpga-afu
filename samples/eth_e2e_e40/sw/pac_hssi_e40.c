@@ -47,17 +47,155 @@
 
 static int err_cnt;
 
+#define CONFIG_UNINIT (-1)
+static struct config {
+	int bus;
+	int device;
+	int function;
+	int instance;
+	int channel;
+	char action[MAX_STR_LEN];
+} config = {
+	.bus = CONFIG_UNINIT,
+	.device = CONFIG_UNINIT,
+	.function = CONFIG_UNINIT,
+	.instance = CONFIG_UNINIT,
+	.channel = 0,
+	.action = {0},
+};
 
-// Enumerate all HSSI instances
-static fpga_result enumerateInstances(uint64_t *instances, fpga_token *tokens)
+static void printUsage(char *prog)
 {
-	fpga_result res = FPGA_OK;
-	fpga_properties filter = NULL;
-	fpga_guid guid;
-	uint32_t num_matches;
-	*instances = 0;
+	printf(
+"%s\n"
+"PAC HSSI configuration utility\n"
+"Usage:\n" 
+"     pac_hssi_e40 [-h] [-b <bus>] [-d <device>] [-f <function>] -a action\n\n"
+"         -h,--help           Print this help\n"
+"         -b,--bus            Set target bus number\n"
+"         -d,--device         Set target device number\n"
+"         -f,--function       Set target function number\n"
+"         -a,--action         Perform action:\n\n"
+"           stat              Print channel statistics\n"
+"           stat_clear        Clear channel statistics\n"
+"           loopback_enable   Enable internal channel loopback\n"
+"           loopback_disable  Disable internal channel loopback\n"
+"           pkt_send          Send 0x%x packets\n"
+, prog, NUM_PKT_TO_SEND);
 
-	if (uuid_parse(E40_AFU_ID, guid) < 0)
+	exit(1);
+}
+
+static int loc_strcmp_s(const char *dest, rsize_t dmax, const char *src) {
+	int indicator;
+	strcmp_s(dest, dmax, src, &indicator);
+	return indicator;
+}
+
+static void parse_args(struct config *config, int argc, char *argv[])
+{
+	int c;
+	do {
+		static const struct option options[] = {
+			{"help", no_argument, 0, 'h'},
+			{"bus",           required_argument, NULL, 'b'},
+			{"device",        required_argument, NULL, 'd'},
+			{"function",      required_argument, NULL, 'f'},
+			{"action", required_argument, 0, 'a'},
+			{0, 0, 0, 0}
+		};
+		char *endptr;
+		const char *tmp_optarg;
+
+		c = getopt_long(argc, argv, "hlb:d:f:a:", options, NULL);
+		if (c == -1) {
+			break;
+		}
+
+		endptr = NULL;
+		tmp_optarg = optarg;
+		if ((optarg) && ('=' == *tmp_optarg)) {
+			++tmp_optarg;
+		}
+
+		switch (c) {
+		case 'h':
+			printUsage(argv[0]);
+			break;
+
+		case 'b':    /* bus */
+			if (NULL == tmp_optarg)
+				break;
+			endptr = NULL;
+			config->bus = (int) strtoul(tmp_optarg, &endptr, 0);
+			if (endptr != tmp_optarg + strlen(tmp_optarg)) {
+				fprintf(stderr, "invalid bus: %s\n",
+					tmp_optarg);
+				printUsage(argv[0]);
+			}
+			break;
+
+		case 'd':    /* device */
+			if (NULL == tmp_optarg)
+				break;
+			endptr = NULL;
+			config->device = (int) strtoul(tmp_optarg, &endptr, 0);
+			if (endptr != tmp_optarg + strlen(tmp_optarg)) {
+				fprintf(stderr, "invalid device: %s\n",
+					tmp_optarg);
+				printUsage(argv[0]);
+			}
+			break;
+
+		case 'f':    /* function */
+			if (NULL == tmp_optarg)
+				break;
+			endptr = NULL;
+			config->function = (int) strtoul(tmp_optarg, &endptr, 0);
+			if (endptr != tmp_optarg + strlen(tmp_optarg)) {
+				fprintf(stderr, "invalid function: %s\n",
+					tmp_optarg);
+				printUsage(argv[0]);
+			}
+			break;
+
+
+		case 'a':
+			if (!loc_strcmp_s(optarg, MAX_STR_LEN, "stat") ||
+			!loc_strcmp_s(optarg, MAX_STR_LEN, "stat_clear") ||
+			!loc_strcmp_s(optarg, MAX_STR_LEN, "loopback_enable") ||
+			!loc_strcmp_s(optarg, MAX_STR_LEN, "loopback_disable")||
+			!loc_strcmp_s(optarg, MAX_STR_LEN, "pkt_send")) {
+				printf("found action %s\n", optarg);
+				strcpy_s(config->action, MAX_STR_LEN, optarg);
+				break;
+			}
+			printf("Invalid action specified: %s\n", optarg);
+			printUsage(argv[0]);
+			break;
+
+		default:
+			fprintf(stderr, "unknown op %c\n", c);
+			printUsage(argv[0]);
+			break;
+		} //end case
+	} while(1);
+
+	if (!strlen(config->action)) {
+		fprintf(stderr, "no action specified\n");
+		printUsage(argv[0]);
+	}
+}
+
+static int find_accelerator(const char *afu_id, struct config *config,
+			    fpga_token *afu_tok)
+{
+	fpga_guid guid;
+	fpga_properties filter = NULL;
+	uint32_t num_matches = 0;
+        fpga_result res;
+
+	if (uuid_parse(afu_id, guid) < 0)
 		return FPGA_EXCEPTION;
 
 	res = fpgaGetProperties(NULL, &filter);
@@ -69,220 +207,112 @@ static fpga_result enumerateInstances(uint64_t *instances, fpga_token *tokens)
 	res = fpgaPropertiesSetGUID(filter, guid);
 	ON_ERR_GOTO(res, out_destroy_prop, "fpgaPropertiesSetGUID");
 
-	if (!tokens)
-		res = fpgaEnumerate(&filter, 1, NULL, 0, &num_matches);
-	else
-		res = fpgaEnumerate(&filter, 1, tokens, UINT_MAX, &num_matches);
+	if (CONFIG_UNINIT != config->bus) {
+		res = fpgaPropertiesSetBus(filter, config->bus);
+		ON_ERR_GOTO(res, out_destroy_prop, "setting bus");
+	}
 
-	ON_ERR_GOTO(res, out_destroy_prop, "fpgaEnumerate");
+	if (CONFIG_UNINIT != config->device) {
+		res = fpgaPropertiesSetDevice(filter, config->device);
+		ON_ERR_GOTO(res, out_destroy_prop, "setting device");
+	}
+
+	if (CONFIG_UNINIT != config->function) {
+		res = fpgaPropertiesSetFunction(filter, config->function);
+		ON_ERR_GOTO(res, out_destroy_prop, "setting function");
+	}
+
+	res = fpgaEnumerate(&filter, 1, afu_tok, 1, &num_matches);
+	ON_ERR_GOTO(res, out_destroy_prop, "enumerating FPGAs");
 
 out_destroy_prop:
 	res = fpgaDestroyProperties(&filter);
 	ON_ERR_GOTO(res, out, "fpgaDestroyProperties");
 
 out:
-	*instances = num_matches;
 
-	return err_cnt;
+	if (num_matches > 0)
+		return (int)num_matches;
+	else
+		return 0;
 }
 
-static void printUsage(char *prog)
+static int do_action(struct config *config, fpga_token afc_tok)
 {
-	printf("Usage: %s [--help] [--list]\
-[--instance <instance #>] [--channel <channel #>]\
-[--channel_action <stat|stat_clear|loopback_enable|\
-loopback_disable|pkt_send]\n", prog);
-}
-
-static int loc_strcmp_s(const char *dest, rsize_t dmax, const char *src) {
-	int indicator;
-	strcmp_s(dest, dmax, src, &indicator);
-	return indicator;
-}
-
-int main(int argc, char *argv[])
-{
-	fpga_result res = FPGA_OK;
 	fpga_hssi_handle hssi_h = NULL;
 	fpga_handle afc_h = NULL;
-	int instance_id = 0;
-	int channel_id = 0;
-
-	int help_f = 0;
-	int list_f = 0;
-	int instance_f = 0;
-	int channel_f = 0;
-	int channel_action_f = 0;
-	char action[MAX_STR_LEN];
-	fpga_token *afc_tokens = NULL;
-
-	strcpy_s(action, MAX_STR_LEN, "none");
-	// parse args
-	int c;
-	int i;
-
-	err_cnt = 0;
-	do {
-		static struct option options[] = {
-			{"help", no_argument, 0, 'h'},
-			{"list", no_argument, 0, 'l'},
-			{"instance", required_argument, 0, 'i'},
-			{"channel", required_argument, 0, 'c'},
-			{"channel_action", required_argument, 0, 'a'},
-			{0, 0, 0, 0}
-		};
-
-		c = getopt_long(argc, argv, "hli:c:a", options, NULL);
-		if (c == -1) {
-			break;
-		}
-
-		switch (c) {
-		case 'h':
-			help_f = 1;
-			printUsage(argv[0]);
-			break;
-
-		case 'l':
-			list_f = 1;
-			break;
-
-		case 'i':
-			instance_f = 1;
-			instance_id = atoi(optarg);
-			break;
-
-		case 'c':
-			channel_f = 1;
-			channel_id = atoi(optarg);
-			break;
-
-		case 'a':
-			if (loc_strcmp_s(optarg, MAX_STR_LEN, "stat") == 0 ||
-			loc_strcmp_s(optarg, MAX_STR_LEN, "stat_clear") == 0 ||
-			loc_strcmp_s(optarg, MAX_STR_LEN, "loopback_enable") == 0 ||
-			loc_strcmp_s(optarg, MAX_STR_LEN, "loopback_disable") == 0 ||
-			loc_strcmp_s(optarg, MAX_STR_LEN, "pkt_send") == 0) {
-				channel_action_f = 1;
-				strcpy_s(action, MAX_STR_LEN, optarg);
-				break;
-			}
-			printf("Invalid channel_action specified\n");
-			printUsage(argv[0]);
-			return 1;
-
-		default:
-			return 1;
-		} //end case
-	} while(1);
-
-	if (help_f)
-		return 0;
-
-	uint64_t instances = 0;
-
-	if (list_f) {
-		enumerateInstances(&instances, NULL);
-		printf("Found %ld instances\n", instances);
-		return 0;
+	fpga_result res;
+	int ret = 0;
+	res = fpgaOpen(afc_tok, &afc_h, 0);
+	if (res != FPGA_OK) {
+		fprintf(stderr, "Unable to open instance error=%s\n",
+			fpgaErrStr(res));
+		return 1;
 	}
 
-	if (channel_action_f) {
-		if (!instance_f) {
-			fprintf(stderr, "No instance specified. Select an \
-				instance using --instance\n");
-			printUsage(argv[0]);
-			return 1;
-		}
+	res = fpgaHssiOpen(afc_h, &hssi_h);
+	ON_ERR_GOTO(res, out_hssi_close, "fpgaHssiOpen");
+	if (!hssi_h) {
+		res = FPGA_EXCEPTION;
+		ON_ERR_GOTO(res, out_hssi_close, "Invaid HSSI Handle");
+	}
 
-		if (!channel_f) {
-			fprintf(stderr, "No channel specified. Select a \
-				channel using --channel\n");
-			printUsage(argv[0]);
-			return 1;
-		}
-
-		enumerateInstances(&instances, NULL);
-		if (instances == 0) {
-			fprintf(stderr, "No valid instances available\n");
-			return 1;
-		}
-
-		afc_tokens = (fpga_token *)malloc(instances *
-			sizeof(fpga_token));
-		if (!afc_tokens) {
-			fprintf(stderr, "Unable to alloc tokens\n");
-			return 1;
-		}
-		if (enumerateInstances(&instances, afc_tokens) != FPGA_OK) {
-			fprintf(stderr, "Unable to enumerate instances\n");
-			return 1;
-		}
-
-		if (instance_id >= instances) {
-			fprintf(stderr, "Specified instance (--instance=%d) \
-				not available\n", instance_id);
-			return 1;
-		}
-
-		// open the AFC
-		res = fpgaOpen(afc_tokens[instance_id], &afc_h, 0);
-		if (res != FPGA_OK) {
-			fprintf(stderr, "Unable to open instance %d error=%s\n",
-				instance_id, fpgaErrStr(res));
-			return 1;
-		}
-
-		res = fpgaHssiOpen(afc_h, &hssi_h);
-		ON_ERR_GOTO(res, out_hssi_close, "fpgaHssiOpen");
-		if (!hssi_h) {
-			res = FPGA_EXCEPTION;
-			ON_ERR_GOTO(res, out_hssi_close, "Invaid HSSI Handle");
-		}
-
-		if (strcmp(action, "stat") == 0) {
-			fpgaHssiPrintChannelStats(hssi_h, PHY, channel_id);
-			fpgaHssiPrintChannelStats(hssi_h, TX, channel_id);
-			fpgaHssiPrintChannelStats(hssi_h, RX, channel_id);
-			goto out_hssi_close;
-		}
-		if (strcmp(action, "stat_clear") == 0) {
-			fpgaHssiClearChannelStats(hssi_h, TX, channel_id);
-			printf("Cleared TX stats on channel %d\n", channel_id);
-			fpgaHssiClearChannelStats(hssi_h, RX, channel_id);
-			printf("Cleared RX stats on channel %d\n", channel_id);
-			goto out_hssi_close;
-		}
-		if (strcmp(action, "loopback_enable") == 0) {
-			fpgaHssiCtrlLoopback(hssi_h, channel_id, true);
-			printf("Enabled loopback on channel %d\n", channel_id);
-			goto out_hssi_close;
-		}
-		if (strcmp(action, "loopback_disable") == 0) {
-			fpgaHssiCtrlLoopback(hssi_h, channel_id, false);
-			printf("Disabled loopback on channel %d\n", channel_id);
-			goto out_hssi_close;
-		}
-		if (strcmp(action, "pkt_send") == 0) {
-			printf("Sent 0x%x packets on channel %d\n",
-				NUM_PKT_TO_SEND, channel_id);
-			fpgaHssiSendPacket(hssi_h, channel_id, NUM_PKT_TO_SEND);
-		}
+	if (strcmp(config->action, "stat") == 0) {
+		fpgaHssiPrintChannelStats(hssi_h, PHY, config->channel);
+		fpgaHssiPrintChannelStats(hssi_h, TX, config->channel);
+		fpgaHssiPrintChannelStats(hssi_h, RX, config->channel);
+	} else if (strcmp(config->action, "stat_clear") == 0) {
+		fpgaHssiClearChannelStats(hssi_h, TX, config->channel);
+		printf("Cleared TX stats on channel %d\n", config->channel);
+		fpgaHssiClearChannelStats(hssi_h, RX, config->channel);
+		printf("Cleared RX stats on channel %d\n", config->channel);
+	} else if (strcmp(config->action, "loopback_enable") == 0) {
+		fpgaHssiCtrlLoopback(hssi_h, config->channel, true);
+		printf("Enabled loopback on channel %d\n", config->channel);
+	} else if (strcmp(config->action, "loopback_disable") == 0) {
+		fpgaHssiCtrlLoopback(hssi_h, config->channel, false);
+		printf("Disabled loopback on channel %d\n", config->channel);
+	} else if (strcmp(config->action, "pkt_send") == 0) {
+		printf("Sent 0x%x packets on channel %d\n",
+			NUM_PKT_TO_SEND, config->channel);
+		fpgaHssiSendPacket(hssi_h, config->channel, NUM_PKT_TO_SEND);
+	} else {
+		fprintf(stderr, "unknown action, %s\n", config->action);
+		ret = 1;
 	}
 
 out_hssi_close:
-	if (afc_tokens) {
-		for (i = 0; i < instances; i++)
-			fpgaDestroyToken(&afc_tokens[i]);
-
-		free(afc_tokens);
-	}
-
 	if (hssi_h)
 		fpgaHssiClose(hssi_h);
 
 	if (afc_h)
 		fpgaClose(afc_h);
 
-	return err_cnt;
+	return ret;
+}
+
+
+int main(int argc, char *argv[])
+{
+	fpga_token afc_tok;
+	int ret;
+
+	parse_args(&config, argc, argv);
+
+	ret = find_accelerator(E40_AFU_ID, &config, &afc_tok);
+	if (ret < 0) {
+		fprintf(stderr, "failed to find accelerator\n");
+		exit(1);
+	} else if (ret == 0) {
+		fprintf(stderr, "no suitable accelerators found\n");
+		exit(1);
+	} else if (ret > 1) {
+		fprintf(stderr, "Found more than one suitable slot, "
+			"please be more specific.\n");
+	} else {
+		ret = do_action(&config, afc_tok);
+	}
+	fpgaDestroyToken(&afc_tok);
+
+	exit(ret);
 }

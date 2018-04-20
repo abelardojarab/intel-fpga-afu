@@ -13,8 +13,10 @@ nlb_gram_sdp.v
 local_mem.sv
 resync.v
 altera_std_synchronizer_nocut.v
-QSYS_IPs/RAM/req_C1TxRAM2PORT.qsys
-QSYS_IPs/RAM/lpbk1_RdRspRAM2PORT.qsys
+
+QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/RAM/req_C1TxRAM2PORT.qsys
+QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/RAM/lpbk1_RdRspRAM2PORT.qsys
+
 include_files/common
 nlb_400.json
 ../par/stp_basic.stp

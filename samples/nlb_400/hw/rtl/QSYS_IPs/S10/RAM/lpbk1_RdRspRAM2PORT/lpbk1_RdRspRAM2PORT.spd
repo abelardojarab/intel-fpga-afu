@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file
+   path="ram_2port_171/sim/lpbk1_RdRspRAM2PORT_ram_2port_171_h6g6kyy.v"
+   type="VERILOG"
+   library="ram_2port_171" />
+ <file
+   path="sim/lpbk1_RdRspRAM2PORT.v"
+   type="VERILOG"
+   library="lpbk1_RdRspRAM2PORT"
+   hasInlineConfiguration="true" />
+ <topLevel name="lpbk1_RdRspRAM2PORT.lpbk1_RdRspRAM2PORT" />
+ <deviceFamily name="stratix10" />
+</simPackage>

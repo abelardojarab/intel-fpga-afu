@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file
+   path="ram_2port_171/sim/req_C1TxRAM2PORT_ram_2port_171_sku4qca.v"
+   type="VERILOG"
+   library="ram_2port_171" />
+ <file
+   path="sim/req_C1TxRAM2PORT.v"
+   type="VERILOG"
+   library="req_C1TxRAM2PORT"
+   hasInlineConfiguration="true" />
+ <topLevel name="req_C1TxRAM2PORT.req_C1TxRAM2PORT" />
+ <deviceFamily name="stratix10" />
+</simPackage>

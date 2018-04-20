@@ -12,6 +12,7 @@
                   {
                      "class": "local-memory",
                      "optional": true,
+                     "max-entries": 32,
                      "params":
                         {
                            "clock": "pClk"

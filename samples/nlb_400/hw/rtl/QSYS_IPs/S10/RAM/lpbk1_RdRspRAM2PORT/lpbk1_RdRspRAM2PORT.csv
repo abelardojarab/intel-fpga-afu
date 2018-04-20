@@ -1,0 +1,18 @@
+# system info lpbk1_RdRspRAM2PORT on 2017.12.11.11:16:28
+system_info:
+name,value
+DEVICE,1SG280LN2F43E2VGS2
+DEVICE_FAMILY,Stratix 10
+GENERATION_ID,0
+#
+#
+# Files generated for lpbk1_RdRspRAM2PORT on 2017.12.11.11:16:28
+files:
+filepath,kind,attributes,module,is_top
+sim/lpbk1_RdRspRAM2PORT.v,VERILOG,CONTAINS_INLINE_CONFIGURATION,lpbk1_RdRspRAM2PORT,true
+ram_2port_171/sim/lpbk1_RdRspRAM2PORT_ram_2port_171_h6g6kyy.v,VERILOG,,lpbk1_RdRspRAM2PORT_ram_2port_171_h6g6kyy,false
+#
+# Map from instance-path to kind of module
+instances:
+instancePath,module
+lpbk1_RdRspRAM2PORT.ram_2port_0,lpbk1_RdRspRAM2PORT_ram_2port_171_h6g6kyy

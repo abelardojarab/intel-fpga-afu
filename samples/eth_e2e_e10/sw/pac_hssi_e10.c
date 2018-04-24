@@ -165,7 +165,7 @@ static void parse_args(struct config *config, int argc, char *argv[])
 			break;
 
 
-		case 'c':    /* function */
+		case 'c':    /* channel */
 			if (NULL == tmp_optarg)
 				break;
 			endptr = NULL;

@@ -224,11 +224,19 @@ int run_basic_ddr_dma_test(fpga_handle afc_handle)
 	//magic rom test
 	memset((void *)dma_buf_ptr, 0x55, TEST_BUFFER_SIZE);
 	copy_dev_to_dev_with_dma(afc_handle, MSGDMA_BBB_MAGIC_ROM_ADDR, dma_buf_iova | MSGDMA_BBB_HOST_MASK, 64);
-	printf("magic rom rading: ");
+	//need sleep for race condition between simulator and dma write completion
+	//dummy mmio reads are better to use instead of sleep because it scales with sim speed
+	#define DUMMY_READ_COUNT 32
+	//read afu id a bunch of times to spin sim cycles
+	for(int i = 0; i < DUMMY_READ_COUNT; i++) {
+		uint64_t dummy_read;
+		res = fpgaReadMMIO64(afc_handle, 0, 0, &dummy_read);
+	}
+	printf("magic rom reading: ");
 	for(int i = 0; i < 2; i++)
 		printf("%.8x ", ((uint32_t *)dma_buf_ptr)[i]);
 	printf("\n");
-	if(((uint64_t *)dma_buf_ptr)[0] != 0x5772745F53796E63)
+	if(((uint64_t *)dma_buf_ptr)[0] != MSGDNA_BBB_MAGIC_ROM_VAL)
 	{
 		printf("ERROR: magic number doesn't match\n");
 		num_errors++;

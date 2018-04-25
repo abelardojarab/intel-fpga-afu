@@ -147,7 +147,6 @@ struct fpga_dma_transfer {
 	fpga_dma_transfer_cb cb;
 	void *context;
 	size_t rx_bytes;
-	bool is_blocking;
 	pthread_mutex_t tf_mutex;	
 	sem_t tf_status; // When locked, the transfer in progress
 };

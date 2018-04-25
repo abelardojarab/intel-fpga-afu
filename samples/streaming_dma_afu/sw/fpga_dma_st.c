@@ -737,7 +737,7 @@ fpga_result fpgaCountDMAChannels(fpga_handle fpga, size_t *count) {
 	}
 
 	uint64_t offset = 0;
-#if !defined(USE_PTR_MMIO_ACCESS) && !defined(USE_ASE)
+#if defined(USE_PTR_MMIO_ACCESS) && !defined(USE_ASE)
 	uint64_t mmio_va;
 
 	res = fpgaMapMMIO(fpga, 0, (uint64_t **)&mmio_va);
@@ -816,7 +816,7 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, uint64_t dma_channel_index, fpga_dma_h
 	bool end_of_list = false;
 	bool dma_found = false;
 
-#if !defined(USE_PTR_MMIO_ACCESS) && !defined(USE_ASE)
+#if defined(USE_PTR_MMIO_ACCESS) && !defined(USE_ASE)
 	res = fpgaMapMMIO(dma_h->fpga_h, 0, (uint64_t **)&dma_h->mmio_va);
 	ON_ERR_GOTO(res, out, "fpgaMapMMIO");
 #endif
@@ -974,31 +974,31 @@ fpga_result fpgaGetDMAChannelType(fpga_dma_handle_t dma, fpga_dma_channel_type_t
 
 fpga_result fpgaDMATransferInit(fpga_dma_transfer_t *transfer) {
 	fpga_result res = FPGA_OK;
-
+	fpga_dma_transfer_t tmp; 
 	if(!transfer) {
 		FPGA_DMA_ST_ERR("Invalid pointer to DMA transfer");
 		return FPGA_INVALID_PARAM;
 	}
 
-	*transfer = (fpga_dma_transfer_t)malloc(sizeof(struct fpga_dma_transfer));
-	if(!*transfer) {
+	tmp = (fpga_dma_transfer_t)malloc(sizeof(struct fpga_dma_transfer));
+	if(!tmp) {
 		res = FPGA_NO_MEMORY;
 		return res;
 	}
 
 	// Initialize default transfer attributes
-	transfer->src = 0;
-	transfer->dst = 0;
-	transfer->len = 0;
-	transfer->transfer_type = HOST_MM_TO_FPGA_ST;
-	transfer->tx_ctrl = TX_NO_PACKET; // deterministic length
-	transfer->rx_ctrl = RX_NO_PACKET; // deterministic length
-	transfer->cb = NULL;
-	transfer->context = NULL;
-	transfer->rx_bytes = 0;
-	pthread_mutex_init(&(*transfer)->tf_mutex, NULL);
-	sem_init(&(*transfer)->tf_status, 0, TRANSFER_NOT_IN_PROGRESS);
-
+	tmp->src = 0;
+	tmp->dst = 0;
+	tmp->len = 0;
+	tmp->transfer_type = HOST_MM_TO_FPGA_ST;
+	tmp->tx_ctrl = TX_NO_PACKET; // deterministic length
+	tmp->rx_ctrl = RX_NO_PACKET; // deterministic length
+	tmp->cb = NULL;
+	tmp->context = NULL;
+	tmp->rx_bytes = 0;
+	pthread_mutex_init(&(tmp)->tf_mutex, NULL);
+	sem_init(&(tmp)->tf_status, 0, TRANSFER_NOT_IN_PROGRESS);
+	*transfer = tmp;
 	return res;
 }
 

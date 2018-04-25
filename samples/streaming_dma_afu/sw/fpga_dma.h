@@ -248,7 +248,7 @@ fpga_result fpgaDMATransferSetRxControl(fpga_dma_transfer_t transfer, fpga_dma_r
 *                         transfer completion
 *
 * @param[in]  transfer    Pointer to transfer attribute struct
-* @param[in]  cb          Notification callback
+* @param[in]  cb          Notification callback; set to NULL for blocking transfer 
 
 * @returns                FPGA_OK on success, return code otherwise
 */

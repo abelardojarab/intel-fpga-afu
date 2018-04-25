@@ -1114,11 +1114,6 @@ fpga_result fpgaDMATransferSetTransferCallback(fpga_dma_transfer_t transfer, fpg
 		return FPGA_INVALID_PARAM;
 	}
 
-	if(!cb) {
-		FPGA_DMA_ST_ERR("Invalid DMA transfer callback");
-		return FPGA_INVALID_PARAM;
-	}
-
 	pthread_mutex_lock(&transfer->tf_mutex);
 	transfer->cb = cb;
 	pthread_mutex_unlock(&transfer->tf_mutex);

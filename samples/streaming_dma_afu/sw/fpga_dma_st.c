@@ -986,6 +986,16 @@ fpga_result fpgaDMATransferInit(fpga_dma_transfer_t *transfer) {
 		return res;
 	}
 
+	// Initialize default transfer attributes
+	transfer->src = 0;
+	transfer->dst = 0;
+	transfer->len = 0;
+	transfer->transfer_type = HOST_MM_TO_FPGA_ST;
+	transfer->tx_ctrl = TX_NO_PACKET; // deterministic length
+	transfer->rx_ctrl = RX_NO_PACKET; // deterministic length
+	transfer->cb = NULL;
+	transfer->context = NULL;
+	transfer->rx_bytes = 0;
 	pthread_mutex_init(&(*transfer)->tf_mutex, NULL);
 	sem_init(&(*transfer)->tf_status, 0, TRANSFER_NOT_IN_PROGRESS);
 
@@ -1111,11 +1121,6 @@ fpga_result fpgaDMATransferSetTransferCallback(fpga_dma_transfer_t transfer, fpg
 
 	if(!transfer) {
 		FPGA_DMA_ST_ERR("Invalid DMA transfer");
-		return FPGA_INVALID_PARAM;
-	}
-
-	if(!cb) {
-		FPGA_DMA_ST_ERR("Invalid DMA transfer callback");
 		return FPGA_INVALID_PARAM;
 	}
 

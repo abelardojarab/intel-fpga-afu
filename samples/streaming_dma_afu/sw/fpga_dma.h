@@ -248,7 +248,8 @@ fpga_result fpgaDMATransferSetRxControl(fpga_dma_transfer_t transfer, fpga_dma_r
 *                         transfer completion
 *
 * @param[in]  transfer    Pointer to transfer attribute struct
-* @param[in]  cb          Notification callback
+* @param[in]  cb          Notification callback; You must set notification
+*                         callback to NULL for synchronous transfers
 
 * @returns                FPGA_OK on success, return code otherwise
 */

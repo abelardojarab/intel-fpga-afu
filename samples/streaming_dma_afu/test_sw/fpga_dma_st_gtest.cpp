@@ -134,45 +134,45 @@ class DmaAfuTest : public ::testing::Test {
 	}
 
 	void fill_buffer(uint32_t *buf, size_t payload_size) {
-   	size_t i,j;
-   	uint32_t test_word = 0;
-   	while(payload_size) {
-      	test_word = 0x04030201;
-      	for (i = 0; i < PATTERN_LENGTH; i++) {
-         	for (j = 0; j < (PATTERN_WIDTH/sizeof(test_word)); j++) {
-            	if(!payload_size)
-            	   return;
-            	*buf = test_word;
-            	payload_size -= sizeof(test_word);
-            	buf++;
-            	test_word += 0x01010101;
-         	}
-      	}
-   	}
+		size_t i,j;
+		uint32_t test_word = 0;
+		while(payload_size) {
+			test_word = 0x04030201;
+			for (i = 0; i < PATTERN_LENGTH; i++) {
+				for (j = 0; j < (PATTERN_WIDTH/sizeof(test_word)); j++) {
+					if(!payload_size)
+					return;
+					*buf = test_word;
+					payload_size -= sizeof(test_word);
+					buf++;
+					test_word += 0x01010101;
+				}
+			}
+		}
 	}
 	
 	fpga_result verify_buffer(uint32_t *buf, size_t payload_size) {
-   	size_t i,j;
-   	uint32_t test_word = 0;
-   	while(payload_size) {
-   	   test_word = 0x04030201;
-   	   for (i = 0; i < PATTERN_LENGTH; i++) {
-   	      for (j = 0; j < (PATTERN_WIDTH/sizeof(test_word)); j++) {
-      	      if(!payload_size)
-         	      goto out;
-         	   if((*buf) != test_word) {
-            	   printf("Invalid data at %zx Expected = %x Actual = %x\n",i,test_word,(*buf));
-            	   return FPGA_INVALID_PARAM;
-            	}
-            	payload_size -= sizeof(test_word);
-            	buf++;
-            	test_word += 0x01010101;
-         	}
-      	}
-   	}
+	size_t i,j;
+	uint32_t test_word = 0;
+	while(payload_size) {
+		test_word = 0x04030201;
+		for (i = 0; i < PATTERN_LENGTH; i++) {
+			for (j = 0; j < (PATTERN_WIDTH/sizeof(test_word)); j++) {
+				if(!payload_size)
+					goto out;
+				if((*buf) != test_word) {
+					printf("Invalid data at %zx Expected = %x Actual = %x\n",i,test_word,(*buf));
+					return FPGA_INVALID_PARAM;
+				}
+				payload_size -= sizeof(test_word);
+				buf++;
+				test_word += 0x01010101;
+			}
+		}
+	}
 	out:
-   	printf("S2M: Data Verification Success!\n");
-   	return FPGA_OK;
+	printf("S2M: Data Verification Success!\n");
+	return FPGA_OK;
 	}
 
 	void clear_buffer(char *buf, uint64_t size) {
@@ -232,22 +232,22 @@ class DmaAfuTest : public ::testing::Test {
 
 		// copy from host to fpga
 		res = populate_pattern_checker(dma_h->fpga_h);
-	   ON_ERR(res, out, "populate_pattern_checker");
+		ON_ERR(res, out, "populate_pattern_checker");
 
-	   res = stop_checker(dma_h->fpga_h);
-	   ON_ERR(res, out, "stop_checker");
+		res = stop_checker(dma_h->fpga_h);
+		ON_ERR(res, out, "stop_checker");
 
-	   res = start_checker(dma_h->fpga_h, transfer_len);
-	   ON_ERR(res, out, "start checker");
+		res = start_checker(dma_h->fpga_h, transfer_len);
+		ON_ERR(res, out, "start checker");
 
 		fpgaDMATransferInit(&tx_transfer);
 		gettimeofday(&start, NULL);
 		res = sendtxTransfer(dma_h, tx_transfer, (uint64_t)dma_tx_buf_ptr, 0, transfer_len, HOST_MM_TO_FPGA_ST, TX_NO_PACKET, cb);
-	   ON_ERR(res, out, "sendtxTransfer");
+		ON_ERR(res, out, "sendtxTransfer");
 		if(cb)
 			sem_wait(&tx_cb_status);
-	   res = wait_for_checker_complete(dma_h->fpga_h);
-	   ON_ERR(res, out, "wait_for_checker_complete");
+		res = wait_for_checker_complete(dma_h->fpga_h);
+		ON_ERR(res, out, "wait_for_checker_complete");
 		gettimeofday(&stop, NULL);
 		secs = ((double)(stop.tv_usec - start.tv_usec) / 1000000) + (double)(stop.tv_sec - start.tv_sec);
 		if(secs>0){
@@ -256,7 +256,7 @@ class DmaAfuTest : public ::testing::Test {
 		}
 		fpgaDMATransferDestroy(tx_transfer);
 		res = stop_checker(dma_h->fpga_h);
-      ON_ERR(res, out, "stop_checker");
+		ON_ERR(res, out, "stop_checker");
 	out:
 		free(dma_tx_buf_ptr);
 		return (fpga_result)err_cnt;
@@ -272,14 +272,14 @@ class DmaAfuTest : public ::testing::Test {
 			ON_ERR(res, out, "Error allocating memory");
 		}
 		gettimeofday(&start, NULL);
-	   res = populate_pattern_generator(dma_h->fpga_h);
-	   ON_ERR(res, out, "populate_pattern_generator");
+		res = populate_pattern_generator(dma_h->fpga_h);
+		ON_ERR(res, out, "populate_pattern_generator");
 
-	   res = stop_generator(dma_h->fpga_h);
-	   ON_ERR(res, out, "stop generator");
+		res = stop_generator(dma_h->fpga_h);
+		ON_ERR(res, out, "stop generator");
 
-	   res = start_generator(dma_h->fpga_h, transfer_len, pkt_transfer/*Not PACKET TRANSFER*/);
-	   ON_ERR(res, out, "start pattern generator");
+		res = start_generator(dma_h->fpga_h, transfer_len, pkt_transfer/*Not PACKET TRANSFER*/);
+		ON_ERR(res, out, "start pattern generator");
 		fpgaDMATransferInit(&rx_transfer);
 		if(pkt_transfer == 1){
 			res = sendrxTransfer(dma_h, rx_transfer, 0, (uint64_t)dma_rx_buf_ptr, transfer_len, FPGA_ST_TO_HOST_MM, END_ON_EOP, cb);
@@ -289,8 +289,8 @@ class DmaAfuTest : public ::testing::Test {
 		ON_ERR(res, out, "fpgaDMATransfer");
 
 		res = wait_for_generator_complete(dma_h->fpga_h);
-	   ON_ERR(res, out, "wait_for_generator_complete");
-		if(cb)	
+		ON_ERR(res, out, "wait_for_generator_complete");
+		if(cb)
 			sem_wait(&rx_cb_status);
 		gettimeofday(&stop, NULL);
 		secs = ((double)(stop.tv_usec - start.tv_usec) / 1000000) + (double)(stop.tv_sec - start.tv_sec);
@@ -303,7 +303,7 @@ class DmaAfuTest : public ::testing::Test {
 		clear_buffer((char*)dma_rx_buf_ptr, transfer_len);
 		fpgaDMATransferDestroy(rx_transfer);
 		res = stop_generator(dma_h->fpga_h);
-      ON_ERR(res, out, "stop generator");	
+		ON_ERR(res, out, "stop generator");
 	out:
 		free(dma_rx_buf_ptr);
 		
@@ -546,10 +546,6 @@ TEST_F(DmaAfuTest, fpgaDMATransfer_ValidLen)
 {
 	// Deterministic DMA transfer must pass for all valid transfer types 
 	// where length is < 1CL, 1CL, 2CL, 3CL and 4CL and any multiple of those lengths +- < 1CL
-	count = 20*1024*1024;
-   debug_printk("count = %08lx \n", count);
-   EXPECT_EQ(0,M2S_transfer(dma_h[0], count, txtransferComplete));
-   err_cnt = 0;
 }
 #endif
 
@@ -557,21 +553,20 @@ TEST_F(DmaAfuTest, fpgaDMATransfer_M2SBasicDeterministic)
 {	
 	// fpgaDMATransfer for any transfer type must return only after completion of the transfer if cb is set to NULL
 	count = 20*1024*1024;
-   debug_printk("count = %08lx \n", count);
-   EXPECT_EQ(0,M2S_transfer(dma_h[0], count, txtransferComplete));
-   err_cnt = 0;
+	debug_printk("count = %08lx \n", count);
+	EXPECT_EQ(0,M2S_transfer(dma_h[0], count, NULL));
+	err_cnt = 0;
 
 }
 
 TEST_F(DmaAfuTest, fpgaDMATransfer_S2MBasicDeterministic)
-{  
-   // fpgaDMATransfer for any transfer type must return only after completion of the transfer if cb is set to NULL
-   count = 10*1024*1024;
-   debug_printk("count = %08lx \n", count);
+{
+	// fpgaDMATransfer for any transfer type must return only after completion of the transfer if cb is set to NULL
+	count = 10*1024*1024;
+	debug_printk("count = %08lx \n", count);
 	pkt_transfer = 0;
-   EXPECT_EQ(0,S2M_transfer(dma_h[1], count, pkt_transfer, rxtransferComplete));
-   err_cnt = 0;
-
+	EXPECT_EQ(0,S2M_transfer(dma_h[1], count, pkt_transfer, NULL));
+	err_cnt = 0;
 }
 
 TEST_F(DmaAfuTest, fpgaDMATransfer_StressDeterministic)
@@ -583,20 +578,10 @@ TEST_F(DmaAfuTest, fpgaDMATransfer_S2MBasicNonDeterministic)
 {
 	// fpgaDMATransfer for any transfer type must return immediately if cb is not set to NULL. Cb must get called
 	count = 15*1024*1024;
-   debug_printk("count = %08lx \n", count);
-   pkt_transfer = 1;
-   EXPECT_EQ(0,S2M_transfer(dma_h[1], count, pkt_transfer, rxtransferComplete));
-   err_cnt = 0;
-}
-
-TEST_F(DmaAfuTest, fpgaDMATransfer_S2MBasicNonDeterministic_Blocking)
-{
-   // fpgaDMATransfer for any transfer type must return immediately if cb is not set to NULL. Cb must get called
-   count = 2*1024*1024;
-   debug_printk("count = %08lx \n", count);
-   pkt_transfer = 1;
-   EXPECT_EQ(0,S2M_transfer(dma_h[1], count, pkt_transfer, NULL));
-   err_cnt = 0;
+	debug_printk("count = %08lx \n", count);
+	pkt_transfer = 1;
+	EXPECT_EQ(0,S2M_transfer(dma_h[1], count, pkt_transfer, rxtransferComplete));
+	err_cnt = 0;
 }
 
 #if 0

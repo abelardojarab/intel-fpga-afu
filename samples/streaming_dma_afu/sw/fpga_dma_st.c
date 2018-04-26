@@ -1176,16 +1176,6 @@ fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, fpga_dma_transfer_t transfer,
 		return FPGA_INVALID_PARAM;
 	}
 
-	if(transfer->transfer_type == HOST_MM_TO_FPGA_ST && !IS_DMA_ALIGNED(transfer->dst)) {
-		FPGA_DMA_ST_ERR("Memory to stream transfer must use 64-byte aligned destination address");
-		return FPGA_INVALID_PARAM;
-	}
-
-	if(transfer->transfer_type == FPGA_ST_TO_HOST_MM && !IS_DMA_ALIGNED(transfer->src)) {
-		FPGA_DMA_ST_ERR("Stream to memory transfer must use 64-byte aligned source address");
-		return FPGA_INVALID_PARAM;
-	}
-
 	// Lock transfer in preparation for transfer
 	// Mutex will be unlocked from the worker thread once transfer is complete
 	pthread_mutex_lock(&transfer->tf_mutex);

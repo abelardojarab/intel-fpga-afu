@@ -253,3 +253,22 @@ public:
 		printf("\n");
 	}
 };
+
+class ClearMemtest
+{
+public:
+	ClearMemtest() {}
+	virtual ~ClearMemtest() {}
+	
+	static inline int check_bytes(char *buf, int length)
+	{
+		int errors = 0;
+		for(int mem_index = 0; mem_index < length; mem_index++)
+		{
+			if(buf[mem_index] != (char)0x0)
+				errors++;
+		}
+		
+		return errors;
+	}
+};

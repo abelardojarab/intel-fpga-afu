@@ -333,6 +333,65 @@ int dma_write_test(
 	s_error_count += num_errors;
 }
 
+int dma_clear_test(
+	fpga_handle afc_handle,
+	uint64_t dma_buf_iova,
+	volatile uint64_t *dma_buf_ptr,
+	long mem_size,
+	int test_count = 1
+)
+{
+
+	int num_errors = 0;
+	
+#ifdef USE_ASE
+	const long DMA_BUF_SIZE = 256;
+#else
+	const long DMA_BUF_SIZE = 512*1024;
+#endif
+
+	ClearMemtest rc4_obj;
+	long byte_errors = 0;
+	long page_errors = 0;
+	
+	
+	assert(mem_size % DMA_BUF_SIZE == 0);
+	
+	const long NUM_DMA_TRANSFERS = mem_size/DMA_BUF_SIZE;
+	printf("Starting DDR clar memtest...\n");
+	for(int j = 0; j < test_count; j++)
+	{
+		if(test_count != 1)
+			printf("test count=%d\n", j);
+		
+		printf("Starting transfer from DDR to host - size %d MBytes\n", (int)(mem_size/(1024l*1024l)));
+		for(long i = 0; i < NUM_DMA_TRANSFERS; i++)
+		{
+			uint64_t dev_addr = i*DMA_BUF_SIZE;
+			copy_dev_to_dev_with_dma(afc_handle, dev_addr, dma_buf_iova | MSGDMA_BBB_HOST_MASK, DMA_BUF_SIZE);
+			long errors = rc4_obj.check_bytes((char *)dma_buf_ptr, (int)DMA_BUF_SIZE);
+			if(errors)
+				page_errors++;
+			byte_errors += errors;
+		}
+		printf("Finished transfer from DDR to host\n");
+		
+		printf("mem_size=%ld dma_buf_size=%ld num_dma_buf=%ld\n", mem_size, DMA_BUF_SIZE, NUM_DMA_TRANSFERS);
+		printf("byte_errors=%ld, page_errors=%ld\n", byte_errors, page_errors);
+		if(byte_errors)
+		{
+			printf("ERROR: memtest FAILED!\n");
+			s_error_count += 1;
+			return 0;
+		}
+	}
+
+	printf("num_errors = %d\n", num_errors);
+	s_error_count += num_errors;
+}
+
+
+
 class DMABuffer
 {
 private:
@@ -505,7 +564,8 @@ int test_main(int argc, char *argv[], fpga_handle afc_handle)
 		MEMTEST_MODE,
 		MEMWRITE_TEST,
 		MEMREAD_TEST,
-		MEMREAD_FAST_TEST
+		MEMREAD_FAST_TEST,
+		MEMCLEAR_TEST
 	} test_mode = MEMTEST_MODE;
 	
 	while(current_arg < argc)
@@ -532,6 +592,8 @@ int test_main(int argc, char *argv[], fpga_handle afc_handle)
 				test_mode = MEMREAD_TEST;
 			else if(strcmp(argv[current_arg], "memread_fast") == 0)
 				test_mode = MEMREAD_FAST_TEST;
+			else if(strcmp(argv[current_arg], "memclear") == 0)
+				test_mode = MEMCLEAR_TEST;
 			else
 			{
 				printf("ERROR: Unexpected mode '%s'\n", argv[current_arg]);
@@ -571,6 +633,9 @@ int test_main(int argc, char *argv[], fpga_handle afc_handle)
 		break;
 	case MEMREAD_FAST_TEST:
 		dma_read_test_fast(afc_handle, dma_buf.dma_buf_iova, dma_buf.dma_buf_ptr, mem_size, repeat);
+		break;
+	case MEMCLEAR_TEST:
+		dma_clear_test(afc_handle, dma_buf.dma_buf_iova, dma_buf.dma_buf_ptr, mem_size, repeat);
 		break;
 	}
 }

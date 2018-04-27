@@ -249,7 +249,7 @@ static fpga_result MMIOWrite32Blk(fpga_dma_handle_t dma_h, uint64_t device,
 *
 */
 static fpga_result MMIORead64Blk(fpga_dma_handle_t dma_h, uint64_t device,
-                 uint64_t host, uint64_t bytes)
+					uint64_t host, uint64_t bytes)
 {
 	assert(IS_ALIGNED_QWORD(device));
 	assert(IS_ALIGNED_QWORD(bytes));
@@ -603,7 +603,7 @@ static void *s2mTransactionWorker(void* dma_handle) {
 		} else {
 			dma_chunks = count/FPGA_DMA_BUF_SIZE;
 			// calculate unaligned leftover bytes to be transferred
-         count -= (dma_chunks*FPGA_DMA_BUF_SIZE);
+			count -= (dma_chunks*FPGA_DMA_BUF_SIZE);
 		}
 
 		int issued_intr = 0;

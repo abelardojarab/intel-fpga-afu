@@ -485,8 +485,8 @@ endgenerate
   assign set_first_beat = (set_running == 1);
   assign clear_first_beat = (running == 1) & (src_ready == 1) & (first_beat == 1);  // as soon as the first beat enters the pipeline we disable the first_beat register
 
-  assign sop = (first_beat == 1);
-  assign eop = (set_complete == 1);
+  assign sop = (first_beat == 1) & (control[2] == 1);
+  assign eop = (set_complete == 1)& (control[3] == 1);
   assign empty = (eop == 1)? ((DATA_WIDTH/8) - control[15:8]) : 'h0;  // empty must be 0 except on the last beat
 
   assign load_payload_length_counter = (set_running == 1);

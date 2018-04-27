@@ -123,8 +123,12 @@ fpga_result fpgaHssiOpen(fpga_handle fpga, fpga_hssi_handle *hssi)
 	if (memcmp(guid, &(h->dfl->afu_id_lo), sizeof(h->dfl->afu_id_lo)) ||
 		memcmp(&guid[sizeof(h->dfl->afu_id_lo)], &(h->dfl->afu_id_hi),
 			sizeof(h->dfl->afu_id_hi))
-	)
-		ON_ERR_GOTO(FPGA_EXCEPTION, out_csr, "Invalid UUID");
+	) {
+		res = FPGA_EXCEPTION;
+		fpgaUnmapMMIO(fpga, 0);
+		ON_ERR_GOTO(res, out_csr, "Invalid UUID");
+	}
+	h->fpga_h = fpga;
 
 	*hssi = h;
 	return FPGA_OK;

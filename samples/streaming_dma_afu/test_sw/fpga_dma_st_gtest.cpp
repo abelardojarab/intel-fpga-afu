@@ -14,7 +14,7 @@ extern "C" {
 #define ASE_TEST_BUF_SIZE (4*1024)
 #define MAX_ST_DMA_CHANNELS 2
 // Single pattern is represented as 64Bytes
-#define PATTERN_WIDTH 64
+#define PATTERN_WIDTH_BYTES 64
 // No. of Patterns
 #define PATTERN_LENGTH 32
 
@@ -139,7 +139,7 @@ class DmaAfuTest : public ::testing::Test {
 		while(payload_size) {
 			test_word = 0x04030201;
 			for (i = 0; i < PATTERN_LENGTH; i++) {
-				for (j = 0; j < (PATTERN_WIDTH/sizeof(test_word)); j++) {
+				for (j = 0; j < (PATTERN_WIDTH_BYTES/sizeof(test_word)); j++) {
 					if(!payload_size)
 					return;
 					*buf = test_word;
@@ -157,7 +157,7 @@ class DmaAfuTest : public ::testing::Test {
 	while(payload_size) {
 		test_word = 0x04030201;
 		for (i = 0; i < PATTERN_LENGTH; i++) {
-			for (j = 0; j < (PATTERN_WIDTH/sizeof(test_word)); j++) {
+			for (j = 0; j < (PATTERN_WIDTH_BYTES/sizeof(test_word)); j++) {
 				if(!payload_size)
 					goto out;
 				if((*buf) != test_word) {

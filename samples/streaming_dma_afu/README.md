@@ -1,13 +1,16 @@
 ### README
 
 ### Streaming DMA AFU
-The streaming DMA AFU implements a read-master (TX) and
-write-master (RX) DMA channel in loopback configuration.
+The streaming DMA AFU implements read-master and
+write-master DMA channels.
 The read-master DMA issues reads on the Avalon-MM port and
 writes on the Avalon-ST port. The write-master DMA issues
 reads on the Avalon-MM port and writes on the Avalon-ST port.
-In the loopback configuration, Avalon-ST port of the read
-master DMA drives the Avalon-ST port of the write master DMA.
+In the reference configuration provided, Avalon-ST port of the read
+master DMA drives a pattern checker and Avalon-ST port of the 
+write master DMA is driven from a pattern generator. Refer to the
+Streaming DMA user guide for a detailed description of the
+hardware architecture.
 
 ### Software Driver Model
 Each master appears to the software driver as a DMA channel.

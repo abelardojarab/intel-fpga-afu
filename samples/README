@@ -43,8 +43,8 @@ The following are provided as components for other projects:
 
 - eth_e2e_e40 is a 40G Ethernet MAC.
 
-
-
+- streaming_dma_afu streams data back and forth between host memory
+  and DMA streaming port
 
 Configuring the Build Environment:
 

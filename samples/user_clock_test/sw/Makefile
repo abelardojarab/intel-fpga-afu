@@ -33,6 +33,9 @@ CFLAGS += -g -O2
 ifdef prefix
 CFLAGS += -I$(prefix)/include
 LDFLAGS += -L$(prefix)/lib -L$(prefix)/lib64
+AFU_JSON_MGR = $(prefix)/bin/afu_json_mgr
+else
+AFU_JSON_MGR = afu_json_mgr
 endif
 
 LDFLAGS += -luuid
@@ -52,6 +55,11 @@ endif
 
 all: user_clock_test
 
+afu_json_info.h: ../hw/rtl/user_clock_test.json
+	$(AFU_JSON_MGR) json-info --afu-json=$^ --c-hdr=$@
+
+user_clock_test.o: afu_json_info.h
+
 user_clock_test: user_clock_test.o
 	g++ $(CFLAGS) -o user_clock_test user_clock_test.o $(LDFLAGS)
 
@@ -59,7 +67,7 @@ user_clock_test.o: user_clock_test.c  Makefile
 	g++ $(CFLAGS) -c -o user_clock_test.o user_clock_test.c
 
 clean:
-	$(RM) user_clock_test user_clock_test.o
+	$(RM) user_clock_test user_clock_test.o afu_json_info.h
 
 
 run: all

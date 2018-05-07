@@ -1,5 +1,5 @@
 // ***************************************************************************
-// Copyright (c) 2013-2016, Intel Corporation
+// Copyright (c) 2013-2018, Intel Corporation
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -25,70 +25,76 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
-// Module Name :	  ccip_std_afu
-// Project :        ccip afu top 
+// Module Name :    ccip_std_afu
+// Project :        ccip afu top
 // Description :    This module instantiates CCI-P compliant AFU
 
 // ***************************************************************************
-`default_nettype none
-import ccip_if_pkg::*;
-module ccip_std_afu(
-  // CCI-P Clocks and Resets
-  pClk,                      // 400MHz - CCI-P clock domain. Primary interface clock
-  pClkDiv2,                  // 200MHz - CCI-P clock domain.
-  pClkDiv4,                  // 100MHz - CCI-P clock domain.
-  uClk_usr,                  // User clock domain. Refer to clock programming guide  ** Currently provides fixed 300MHz clock **
-  uClk_usrDiv2,              // User clock domain. Half the programmed frequency  ** Currently provides fixed 150MHz clock **
-  pck_cp2af_softReset,       // CCI-P ACTIVE HIGH Soft Reset
-  pck_cp2af_pwrState,        // CCI-P AFU Power State
-  pck_cp2af_error,           // CCI-P Protocol Error Detected
 
-  // Interface structures
-  pck_cp2af_sRx,             // CCI-P Rx Port
-  pck_af2cp_sTx              // CCI-P Tx Port
-);
-  input           wire             pClk;                     // 400MHz - CCI-P clock domain. Primary interface clock
-  input           wire             pClkDiv2;                 // 200MHz - CCI-P clock domain.
-  input           wire             pClkDiv4;                 // 100MHz - CCI-P clock domain.
-  input           wire             uClk_usr;                 // User clock domain. Refer to clock programming guide  ** Currently provides fixed 300MHz clock **
-  input           wire             uClk_usrDiv2;             // User clock domain. Half the programmed frequency  ** Currently provides fixed 150MHz clock **
-  input           wire             pck_cp2af_softReset;      // CCI-P ACTIVE HIGH Soft Reset
-  input           wire [1:0]       pck_cp2af_pwrState;       // CCI-P AFU Power State
-  input           wire             pck_cp2af_error;          // CCI-P Protocol Error Detected
+`include "platform_if.vh"
 
-  // Interface structures
-  input           t_if_ccip_Rx     pck_cp2af_sRx;           // CCI-P Rx Port
-  output          t_if_ccip_Tx     pck_af2cp_sTx;           // CCI-P Tx Port
+module ccip_std_afu
+   (
+    // CCI-P Clocks and Resets
+    input  logic        pClk,                 // Primary CCI-P interface clock.
+    input  logic        pClkDiv2,             // Aligned, pClk divided by 2.
+    input  logic        pClkDiv4,             // Aligned, pClk divided by 4.
+    input  logic        uClk_usr,             // User clock domain. Refer to clock programming guide.
+    input  logic        uClk_usrDiv2,         // Aligned, user clock divided by 2.
+    input  logic        pck_cp2af_softReset,  // CCI-P ACTIVE HIGH Soft Reset
+
+    input  logic [1:0]  pck_cp2af_pwrState,   // CCI-P AFU Power State
+    input  logic        pck_cp2af_error,      // CCI-P Protocol Error Detected
+
+    // CCI-P structures
+    input  t_if_ccip_Rx pck_cp2af_sRx,        // CCI-P Rx Port
+    output t_if_ccip_Tx pck_af2cp_sTx         // CCI-P Tx Port
+    );
 
 
-// =============================================================
-// Register SR <--> PR signals at interface before consuming it
-// =============================================================
+    // ====================================================================
+    // Pick the proper clk and reset, as chosen by the AFU's JSON file
+    // ====================================================================
 
-(* noprune *) logic [1:0]  pck_cp2af_pwrState_T1;
-(* noprune *) logic        pck_cp2af_error_T1;
+    // The platform may transform the CCI-P clock from pClk to a clock
+    // chosen in the AFU's JSON file.
+    logic clk;
+    assign clk = `PLATFORM_PARAM_CCI_P_CLOCK;
 
-// NOTE: All inputs and outputs in PR region (AFU) must be registered
-// Registering Inputs to AFU
-logic          pck_cp2af_softReset_T1;
-t_if_ccip_Rx   pck_cp2af_sRx_T1;
+    logic reset;
+    assign reset = `PLATFORM_PARAM_CCI_P_RESET;
 
-always@(posedge pClk)
-begin
-    pck_cp2af_sRx_T1           <= pck_cp2af_sRx;
-    pck_cp2af_softReset_T1     <= pck_cp2af_softReset;
-end
 
-afu afu(
-  .pClk(pClk) ,
-  .pClkDiv2(pClkDiv2),
-  .pClkDiv4(pClkDiv4),
-  .uClk_usr(uClk_usr),
-  .uClk_usrDiv2(uClk_usrDiv2),
-  .SoftReset           ( pck_cp2af_softReset_T1 ) ,
+    // =============================================================
+    // Register SR <--> PR signals at interface before consuming it
+    // =============================================================
 
-  .cp2af_sRxPort       ( pck_cp2af_sRx_T1 ) ,
-  .af2cp_sTxPort       ( pck_af2cp_sTx )
-);
+    (* noprune *) logic [1:0]  cp2af_pwrState_T1;
+    (* noprune *) logic        cp2af_error_T1;
 
+    // NOTE: All inputs and outputs in PR region (AFU) must be registered
+    // Registering Inputs to AFU
+    logic        reset_T1;
+    t_if_ccip_Rx cp2af_sRx_T1;
+
+    always_ff @(posedge clk)
+    begin
+        cp2af_sRx_T1 <= pck_cp2af_sRx;
+        reset_T1 <= reset;
+    end
+
+    afu afu
+       (
+        .clk(clk),
+        .reset(reset_T1),
+
+        .pClk(pClk),
+        .pClkDiv2(pClkDiv2),
+        .pClkDiv4(pClkDiv4),
+        .uClk_usr(uClk_usr),
+        .uClk_usrDiv2(uClk_usrDiv2),
+
+        .cp2af_sRx(cp2af_sRx_T1),
+        .af2cp_sTx(pck_af2cp_sTx)
+        );
 endmodule

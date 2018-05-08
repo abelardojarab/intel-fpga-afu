@@ -47,6 +47,15 @@
 
 static int err_cnt;
 
+enum eth_action {
+	ETH_ACT_NONE,
+	ETH_ACT_STAT,
+	ETH_ACT_STAT_CLR,
+	ETH_ACT_LOOP_ENABLE,
+	ETH_ACT_LOOP_DISABLE,
+	ETH_ACT_PKT_SEND,
+};
+
 #define CONFIG_UNINIT (-1)
 static struct config {
 	int bus;
@@ -54,14 +63,14 @@ static struct config {
 	int function;
 	int instance;
 	int channel;
-	char action[MAX_STR_LEN];
+	enum eth_action action;
 } config = {
 	.bus = CONFIG_UNINIT,
 	.device = CONFIG_UNINIT,
 	.function = CONFIG_UNINIT,
 	.instance = CONFIG_UNINIT,
 	.channel = 0,
-	.action = {0},
+	.action = ETH_ACT_NONE,
 };
 
 static void printUsage(char *prog)
@@ -86,11 +95,7 @@ static void printUsage(char *prog)
 	exit(1);
 }
 
-static int loc_strcmp_s(const char *dest, rsize_t dmax, const char *src) {
-	int indicator;
-	strcmp_s(dest, dmax, src, &indicator);
-	return indicator;
-}
+#define STR_CONST_CMP(str, str_const) strncmp(str, str_const, sizeof(str_const))
 
 static void parse_args(struct config *config, int argc, char *argv[])
 {
@@ -151,7 +156,7 @@ static void parse_args(struct config *config, int argc, char *argv[])
 			if (NULL == tmp_optarg)
 				break;
 			endptr = NULL;
-			config->function = (int) strtoul(tmp_optarg, &endptr, 0);
+			config->function = (int)strtoul(tmp_optarg, &endptr, 0);
 			if (endptr != tmp_optarg + strlen(tmp_optarg)) {
 				fprintf(stderr, "invalid function: %s\n",
 					tmp_optarg);
@@ -161,17 +166,20 @@ static void parse_args(struct config *config, int argc, char *argv[])
 
 
 		case 'a':
-			if (!loc_strcmp_s(optarg, MAX_STR_LEN, "stat") ||
-			!loc_strcmp_s(optarg, MAX_STR_LEN, "stat_clear") ||
-			!loc_strcmp_s(optarg, MAX_STR_LEN, "loopback_enable") ||
-			!loc_strcmp_s(optarg, MAX_STR_LEN, "loopback_disable")||
-			!loc_strcmp_s(optarg, MAX_STR_LEN, "pkt_send")) {
-				printf("found action %s\n", optarg);
-				strcpy_s(config->action, MAX_STR_LEN, optarg);
-				break;
+			if (!STR_CONST_CMP(optarg, "stat"))
+				config->action = ETH_ACT_STAT;
+			else if (!STR_CONST_CMP(optarg, "stat_clear"))
+				config->action = ETH_ACT_STAT_CLR;
+			else if (!STR_CONST_CMP(optarg, "loopback_enable"))
+				config->action = ETH_ACT_LOOP_ENABLE;
+			else if (!STR_CONST_CMP(optarg, "loopback_disable"))
+				config->action = ETH_ACT_LOOP_DISABLE;
+			else if (!STR_CONST_CMP(optarg, "pkt_send"))
+				config->action = ETH_ACT_PKT_SEND;
+			else {
+				printf("Invalid action specified\n");
+				printUsage(argv[0]);
 			}
-			printf("Invalid action specified: %s\n", optarg);
-			printUsage(argv[0]);
 			break;
 
 		default:
@@ -181,7 +189,7 @@ static void parse_args(struct config *config, int argc, char *argv[])
 		} //end case
 	} while(1);
 
-	if (!strlen(config->action)) {
+	if (config->action == ETH_ACT_NONE) {
 		fprintf(stderr, "no action specified\n");
 		printUsage(argv[0]);
 	}
@@ -257,27 +265,33 @@ static int do_action(struct config *config, fpga_token afc_tok)
 		ON_ERR_GOTO(res, out_hssi_close, "Invaid HSSI Handle");
 	}
 
-	if (strcmp(config->action, "stat") == 0) {
+	switch (config->action) {
+	case ETH_ACT_STAT:
 		fpgaHssiPrintChannelStats(hssi_h, PHY, config->channel);
 		fpgaHssiPrintChannelStats(hssi_h, TX, config->channel);
 		fpgaHssiPrintChannelStats(hssi_h, RX, config->channel);
-	} else if (strcmp(config->action, "stat_clear") == 0) {
+		break;
+	case ETH_ACT_STAT_CLR:
 		fpgaHssiClearChannelStats(hssi_h, TX, config->channel);
 		printf("Cleared TX stats on channel %d\n", config->channel);
 		fpgaHssiClearChannelStats(hssi_h, RX, config->channel);
 		printf("Cleared RX stats on channel %d\n", config->channel);
-	} else if (strcmp(config->action, "loopback_enable") == 0) {
+		break;
+	case ETH_ACT_LOOP_ENABLE:
 		fpgaHssiCtrlLoopback(hssi_h, config->channel, true);
 		printf("Enabled loopback on channel %d\n", config->channel);
-	} else if (strcmp(config->action, "loopback_disable") == 0) {
+		break;
+	case ETH_ACT_LOOP_DISABLE:
 		fpgaHssiCtrlLoopback(hssi_h, config->channel, false);
 		printf("Disabled loopback on channel %d\n", config->channel);
-	} else if (strcmp(config->action, "pkt_send") == 0) {
+		break;
+	case ETH_ACT_PKT_SEND:
 		printf("Sent 0x%x packets on channel %d\n",
 			NUM_PKT_TO_SEND, config->channel);
 		fpgaHssiSendPacket(hssi_h, config->channel, NUM_PKT_TO_SEND);
-	} else {
-		fprintf(stderr, "unknown action, %s\n", config->action);
+		break;
+	default:
+		fprintf(stderr, "unknown action, %d\n", config->action);
 		ret = 1;
 	}
 

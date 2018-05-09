@@ -258,6 +258,9 @@ wait_for_sim_ready() {
 setup_app_env() {
    # setup env variables
    export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$app_base
+   if [[ $opae_install ]]; then
+      export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$opae_install/lib64
+   fi
    export ASE_WORKDIR=`readlink -m ${rtl_sim_dir}/work`
    echo "ASE workdir is $ASE_WORKDIR"
 

@@ -22,16 +22,16 @@ qsys/memory_to_stream_dma_bbb.qsys
 qsys/stream_to_memory_dma_bbb.qsys
 
 # Modified mSGDMA write master
-qsys/afu_id_avmm_slave/afu_id_avmm_slave_hw.tcl
+#qsys/afu_id_avmm_slave/afu_id_avmm_slave_hw.tcl
 qsys/afu_id_avmm_slave/afu_id_avmm_slave.sv
-qsys/write_master/dcp_write_master_hw.tcl
+#qsys/write_master/dcp_write_master_hw.tcl
 qsys/write_master/dcp_byte_enable_generator.v
 qsys/write_master/dcp_write_burst_control.v
 qsys/write_master/dcp_write_master.v
 qsys/write_master/dcp_ST_to_MM_Adapter.v
 
 # Modified mSGDMA dispatcher
-qsys/dispatcher/dcp_dispatcher_hw.tcl
+#qsys/dispatcher/dcp_dispatcher_hw.tcl
 qsys/dispatcher/dcp_csr_block.v
 qsys/dispatcher/dcp_fifo_with_byteenables.v
 qsys/dispatcher/dcp_descriptor_buffers.v
@@ -41,15 +41,15 @@ qsys/dispatcher/dcp_dispatcher.v
 qsys/dispatcher/dcp_write_signal_breakout.v
 
 # new write only pipeline bridge that supports Avalon write responses
-qsys/write_response_bridge/Write_Response_Bridge_hw.tcl
+#qsys/write_response_bridge/Write_Response_Bridge_hw.tcl
 qsys/write_response_bridge/write_response_bridge.v
 
 # Pattern checker
-qsys/custom_pattern_checker/custom_pattern_checker_hw.tcl
+#qsys/custom_pattern_checker/custom_pattern_checker_hw.tcl
 qsys/custom_pattern_checker/mtm_custom_pattern_checker.v
 
 # Pattern generator
-qsys/custom_pattern_generator/custom_pattern_generator_hw.tcl
+#qsys/custom_pattern_generator/custom_pattern_generator_hw.tcl
 qsys/custom_pattern_generator/mtm_custom_pattern_generator.v
 
 # Streamimg DMA AFU Qsys system .ip files

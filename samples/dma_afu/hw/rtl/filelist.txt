@@ -16,9 +16,9 @@ ccip_std_afu.sv
 qsys/components.ipx
 qsys/dma_test_system.qsys
 qsys/msgdma_bbb.qsys
-qsys/afu_id_avmm_slave/afu_id_avmm_slave_hw.tcl
+#qsys/afu_id_avmm_slave/afu_id_avmm_slave_hw.tcl
 qsys/afu_id_avmm_slave/afu_id_avmm_slave.sv
-qsys/magic_number_rom/magic_number_rom_hw.tcl
+#qsys/magic_number_rom/magic_number_rom_hw.tcl
 #qsys/magic_number_rom/magic_number_rom.v
 qsys/ip/dma_test_system/ddr4a_mm_bridge.ip
 qsys/ip/dma_test_system/ddr4a_mm_bridge_0.ip

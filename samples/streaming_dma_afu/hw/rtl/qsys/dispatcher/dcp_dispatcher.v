@@ -278,7 +278,12 @@ module dcp_dispatcher (
   wire [DESCRIPTOR_BYTEENABLE_WIDTH-1:0] descriptor_byteenable_int;
   wire descriptor_write_int;
   wire descriptor_waitrequest_int;
-  
+  wire flush_descriptors;
+  wire flush_read_master;
+  wire flush_write_master;
+
+
+
   /************************************************ REGISTERS *******************************************************/
   always @ (posedge clk)
   begin
@@ -328,7 +333,10 @@ module dcp_dispatcher (
     .eop_received_IRQ_mask (eop_received_IRQ_mask),
     .transfer_complete_IRQ_mask (transfer_complete_IRQ_mask),
     .early_termination_IRQ_mask (early_termination_IRQ_mask),
-    .error_IRQ_mask (error_IRQ_mask)
+    .error_IRQ_mask (error_IRQ_mask),
+    .flush_descriptors (flush_descriptors),
+    .flush_read_master (flush_read_master),
+    .flush_write_master (flush_write_master)
   );
   defparam the_dcp_descriptor_buffers.MODE = MODE;
   defparam the_dcp_descriptor_buffers.DATA_WIDTH = DESCRIPTOR_WIDTH;
@@ -375,7 +383,10 @@ module dcp_dispatcher (
     .early_termination_IRQ_mask (early_termination_IRQ_mask),
     .error (response_error),
     .early_termination (response_early_termination),
-    .eop_received (response_eop_received)
+    .eop_received (response_eop_received),
+    .flush_descriptors (flush_descriptors),
+    .flush_read_master (flush_read_master),
+    .flush_write_master (flush_write_master)
   );
   defparam the_dcp_csr_block.ADDRESS_WIDTH = CSR_ADDRESS_WIDTH;
   defparam the_dcp_csr_block.BURST_ENABLE = BURST_ENABLE;

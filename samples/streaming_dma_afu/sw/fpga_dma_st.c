@@ -525,6 +525,37 @@ out:
 	return res;
 }
 
+static fpga_result s2m_pending_desc_flush(fpga_dma_handle_t dma_h) {
+	fpga_result res = FPGA_OK;
+	msgdma_ctrl_t control = {0};
+	// Flush Pending Descriptors and stop S2M DMA
+	control.ct.flush_descriptors = 1;
+	control.ct.stop_dispatcher = 1;
+	res = MMIOWrite32Blk(dma_h, CSR_CONTROL(dma_h), (uint64_t)&control.reg, sizeof(control.reg));
+	ON_ERR_GOTO(res, out, "MMIOWrite32Blk");
+	control.ct.flush_descriptors = 0;
+	// Poll to check if S2M DMA was stopped
+	msgdma_status_t status = {0};
+	do {
+		res = MMIORead32Blk(dma_h, CSR_STATUS(dma_h), (uint64_t)&status.reg, sizeof(status.reg));
+		ON_ERR_GOTO(res, out, "MMIORead32Blk");
+	} while (!status.st.stopped);
+	// Flush Write master; This is to flush any descriptors that sneaked in after the initial descriptor flush
+	control.ct.flush_descriptors = 0;
+	control.ct.stop_dispatcher = 0;
+	control.ct.flush_wr_master = 1;
+	res = MMIOWrite32Blk(dma_h, CSR_CONTROL(dma_h), (uint64_t)&control.reg, sizeof(control.reg));
+	ON_ERR_GOTO(res, out, "MMIOWrite32Blk");
+	// Re-enable global interrupts
+	control.ct.global_intr_en_mask = 1;
+	res = MMIOWrite32Blk(dma_h, CSR_CONTROL(dma_h), (uint64_t)&control.reg, sizeof(control.reg));
+	ON_ERR_GOTO(res, out, "MMIOWrite32Blk");	
+out:
+	return res;
+}
+
+
+	 
 static void *m2sTransactionWorker(void* dma_handle) {
 	fpga_result res = FPGA_OK;
 	fpga_dma_handle_t dma_h = (fpga_dma_handle_t )dma_handle;
@@ -543,7 +574,7 @@ static void *m2sTransactionWorker(void* dma_handle) {
 		for(i=0; i<dma_chunks; i++) {
 			local_memcpy(dma_h->dma_buf_ptr[i%FPGA_DMA_MAX_BUF], (void*)(m2s_transfer->src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);
 			if((i%(FPGA_DMA_MAX_BUF/2) == (FPGA_DMA_MAX_BUF/2)-1) || i == (dma_chunks - 1)/*last descriptor*/) {
-				if(issued_intr){
+				if(issued_intr) {
 					poll_interrupt(dma_h);
 				}
 				if(count == 0 && i == (dma_chunks-1) && m2s_transfer->tx_ctrl == GENERATE_EOP)
@@ -568,8 +599,9 @@ static void *m2sTransactionWorker(void* dma_handle) {
 			poll_interrupt(dma_h);
 		}
 		// transfer_complete, if a callback was registered, invoke it
-		if(m2s_transfer->cb)
+		if(m2s_transfer->cb) {
 			m2s_transfer->cb(NULL);
+		}
 		
 		// Mark transfer complete
 		sem_post(&m2s_transfer->tf_status);
@@ -597,15 +629,32 @@ static void *s2mTransactionWorker(void* dma_handle) {
 		count = s2m_transfer->len;
 		uint64_t dma_chunks;
 		int eop_arrived = 0;
+		
+		//	Control streaming valve; Added to S2M write master so that when EOP arrives no more streaming data will be allowed into the DMA giving the driver time to flush out the previous descriptors
+		msgdma_st_valve_ctrl_t ctrl = {0};
+		// Set streaming valve to enable data flow
+		ctrl.ct.en_data_flow = 1;
 		if(s2m_transfer->rx_ctrl == END_ON_EOP) {
 			dma_chunks = UINTMAX_MAX;
 			count = 0;
+			// Set to indicate transfer type. Streaming valve will stop accepting data after EOP has arrived.
+			ctrl.ct.en_non_det_tf = 1;
 		} else {
 			dma_chunks = count/FPGA_DMA_BUF_SIZE;
 			// calculate unaligned leftover bytes to be transferred
 			count -= (dma_chunks*FPGA_DMA_BUF_SIZE);
+			// Set to indicate transfer type.
+			ctrl.ct.en_det_tf = 1;
+			// Flush descriptors only while switching from Non-deterministic to deterministic tf
+			if(dma_h->unused_desc_count) {
+				s2m_pending_desc_flush(dma_h);
+				dma_h->unused_desc_count = 0;
+				dma_h->next_avail_desc_idx = 0;
+			}
 		}
-
+		res = MMIOWrite32Blk(dma_h, ST_VALVE_CONTROL(dma_h), (uint64_t)&ctrl.reg, sizeof(ctrl.reg));
+		ON_ERR_GOTO(res, out, "MMIOWrite32Blk");
+		
 		int issued_intr = 0;
 		int fill_level = 0;
 		uint32_t tf_count = 0;
@@ -635,8 +684,10 @@ static void *s2mTransactionWorker(void* dma_handle) {
 				break;
 
 			// case c: We have used up all descriptors in the queue
-			if(dma_h->unused_desc_count <= 0)
+			if(dma_h->unused_desc_count <= 0) {
+				dma_h->next_avail_desc_idx = 0;
 				break;
+			}
 
 		} while(1);
 		if(eop_arrived)
@@ -664,13 +715,11 @@ static void *s2mTransactionWorker(void* dma_handle) {
 					}
 					issued_intr = 0;
 					if(eop_arrived == 1) {
-						debug_print("EOP Detected; Storing metadata - cur_pending_buf = %08lx, next_buf = %08lx\n", tail, head);
 						dma_h->next_avail_desc_idx = tail % FPGA_DMA_MAX_BUF;
-						dma_h->unused_desc_count = head - tail;
+						dma_h->unused_desc_count = head - tail;	
 						break;
 					}
 				}
-
 				res = _do_dma_rx(dma_h, dma_h->dma_buf_iova[head % (FPGA_DMA_MAX_BUF)] | 0x1000000000000, 0, FPGA_DMA_BUF_SIZE, 1, s2m_transfer->transfer_type, true/*intr_en*/, s2m_transfer->rx_ctrl/*rx_ctrl*/);
 				ON_ERR_GOTO(res, out, "FPGA_ST_TO_HOST_MM Transfer failed");
 				issued_intr = 1;
@@ -691,7 +740,7 @@ static void *s2mTransactionWorker(void* dma_handle) {
 				do {
 					_pop_response_fifo(dma_h, &fill_level, &tf_count, &eop_arrived);
 					// clear out final dma local_memcpy operations
-					while(fill_level > 0){
+					while(fill_level > 0) {
 						// constant size transfer; no length check required
 						local_memcpy((void*)(s2m_transfer->dst + tail * FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[tail % (FPGA_DMA_MAX_BUF)], MIN(tf_count,FPGA_DMA_BUF_SIZE));
 						tail++;
@@ -706,7 +755,7 @@ static void *s2mTransactionWorker(void* dma_handle) {
 				poll_interrupt(dma_h);
 				do {
 					_pop_response_fifo(dma_h, &fill_level, &tf_count, &eop_arrived);
-					if(fill_level > 0){
+					if(fill_level > 0) {
 						local_memcpy((void*)(s2m_transfer->dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[0], tf_count);
 						count -= tf_count;
 					}
@@ -846,12 +895,13 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, uint64_t dma_channel_index, fpga_dma_h
 				else if ((dfh.feature_uuid_lo == S2M_DMA_UUID_L) && (dfh.feature_uuid_hi == S2M_DMA_UUID_H)) {
 					dma_h->ch_type=RX_ST;
 					dma_h->dma_rsp_base = dma_h->dma_base+FPGA_DMA_RESPONSE;
+					dma_h->dma_streaming_valve_base = dma_h->dma_base+FPGA_DMA_STREAMING_VALVE;
 				}
 				dma_h->dma_csr_base = dma_h->dma_base+FPGA_DMA_CSR;
 				dma_h->dma_desc_base = dma_h->dma_base+FPGA_DMA_DESC;
 				dma_found = true;
 				dma_h->dma_channel = dma_channel_index;
-				printf("DMA Base Addr = %08lx\n", dma_h->dma_base);
+				debug_print("DMA Base Addr = %08lx\n", dma_h->dma_base);
 				break;
 			} else {
 				channel_index += 1;

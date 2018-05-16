@@ -81,7 +81,10 @@ module dcp_descriptor_buffers (
   eop_received_IRQ_mask,
   transfer_complete_IRQ_mask,
   early_termination_IRQ_mask,
-  error_IRQ_mask
+  error_IRQ_mask,
+  flush_descriptors,
+  flush_read_master,
+  flush_write_master
 );
 
   parameter MODE = 0;
@@ -120,6 +123,9 @@ module dcp_descriptor_buffers (
   output wire transfer_complete_IRQ_mask;
   output wire early_termination_IRQ_mask;
   output wire [7:0] error_IRQ_mask;
+  input flush_descriptors;
+  input flush_read_master;
+  input flush_write_master;
 
 
   /* Internal wires and registers */
@@ -256,7 +262,7 @@ module dcp_descriptor_buffers (
     .write_stride (write_stride),
     .write_sequence_number (write_sequence_number),
     .write_stop (stop),
-    .write_sw_reset (sw_reset)
+    .write_sw_reset (sw_reset | flush_write_master)
   );
   defparam the_dcp_write_signal_breakout.DATA_WIDTH = DATA_WIDTH;
 
@@ -282,7 +288,7 @@ module dcp_descriptor_buffers (
     .read_transmit_error (read_transmit_error),
     .read_early_done_enable (read_early_done_enable),
     .read_stop (stop),
-    .read_sw_reset (sw_reset)
+    .read_sw_reset (sw_reset | flush_read_master)
   );
   defparam the_dcp_read_signal_breakout.DATA_WIDTH = DATA_WIDTH;
 
@@ -292,7 +298,7 @@ module dcp_descriptor_buffers (
   dcp_fifo_with_byteenables the_dcp_read_command_FIFO (
     .clk (clk),
     .areset (reset),
-    .sreset (sw_reset),
+    .sreset (sw_reset | flush_descriptors),
     .write_data (writedata),
     .write_byteenables (byteenable),
     .write (write_en),
@@ -314,7 +320,7 @@ module dcp_descriptor_buffers (
   dcp_fifo_with_byteenables the_dcp_write_command_FIFO (
     .clk (clk),
     .areset (reset),
-    .sreset (sw_reset),
+    .sreset (sw_reset | flush_descriptors),
     .write_data (writedata),
     .write_byteenables (byteenable),
     .write (write_en),

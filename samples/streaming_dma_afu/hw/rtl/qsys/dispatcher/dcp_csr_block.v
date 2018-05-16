@@ -132,7 +132,10 @@ module dcp_csr_block (
   early_termination_IRQ_mask,
   error,
   early_termination,
-  eop_received
+  eop_received,
+  flush_descriptors,
+  flush_read_master,
+  flush_write_master
 );
 
   parameter ADDRESS_WIDTH = 3;
@@ -195,6 +198,9 @@ module dcp_csr_block (
   input [7:0] error;
   input early_termination;
   input eop_received;
+  output reg flush_descriptors;
+  output reg flush_read_master;
+  output reg flush_write_master;
 
   /* Internal wires and registers */
   wire [31:0] status;
@@ -321,11 +327,13 @@ module dcp_csr_block (
       begin
         if ((csr_address == CONTROL_REGISTER_ADDRESS) & (csr_write == 1) & (csr_byteenable[0] == 1))
         begin
-          control[7:1] <= csr_writedata[7:1];  // stop bit will be handled seperately since it can be set by the csr slave port access or the SGDMA hitting an error condition
+          // stop bit will be handled seperately since it can be set by the csr slave port access or the SGDMA hitting an error condition, control[6] and control[7] is handled by flush_descriptors and flush_read_master
+          control[7:1] <= {2'b0, csr_writedata[5:1]};  
         end
         if ((csr_address == CONTROL_REGISTER_ADDRESS) & (csr_write == 1) & (csr_byteenable[1] == 1))
         begin
-          control[15:8] <= csr_writedata[15:8];
+          // control[8] is handled by flush_write_master
+          control[15:8] <= {csr_writedata[15:9], 1'b0};
         end
         if ((csr_address == CONTROL_REGISTER_ADDRESS) & (csr_write == 1) & (csr_byteenable[2] == 1))
         begin
@@ -444,6 +452,15 @@ module dcp_csr_block (
         endcase
       end
     end
+  end
+
+  // when a 1 is written to control bit 6 a one clock cycle descriptor flush will occur
+  always @ (posedge clk)
+  begin
+    flush_descriptors <= (csr_address == CONTROL_REGISTER_ADDRESS) & (csr_write == 1) & (csr_byteenable[0] == 1) & (csr_writedata[6] == 1);
+    // the read and write masters have to be stopped before they are flushed since these will trigger a 1 cycle reset to each
+    flush_read_master <= (csr_address == CONTROL_REGISTER_ADDRESS) & (csr_write == 1) & (csr_byteenable[0] == 1) & (csr_writedata[7] == 1);
+    flush_write_master <= (csr_address == CONTROL_REGISTER_ADDRESS) & (csr_write == 1) & (csr_byteenable[1] == 1) & (csr_writedata[8] == 1);
   end
   /******************************************** End Registers *************************************************/
 

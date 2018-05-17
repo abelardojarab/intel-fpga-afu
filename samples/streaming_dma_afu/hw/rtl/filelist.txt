@@ -45,7 +45,7 @@ qsys/dispatcher/dcp_write_signal_breakout.v
 qsys/write_response_bridge/write_response_bridge.v
 
 # streaming valve used in the stream-to-memory DMA to prohibit additional data entering DMA after an EOP
-qsys/streaming_valve/m2s_streaming_valve_hw.tcl
+#qsys/streaming_valve/m2s_streaming_valve_hw.tcl
 qsys/streaming_valve/s2m_streaming_valve.sv
 
 # Pattern checker

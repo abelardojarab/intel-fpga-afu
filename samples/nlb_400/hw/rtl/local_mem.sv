@@ -25,13 +25,15 @@ module local_mem
     );
 
     localparam MEM_BANK_IDX_WIDTH = $clog2(NUM_LOCAL_MEM_BANKS);
+    localparam MEM_DATA_WORDS = local_mem_cfg_pkg::LOCAL_MEM_DATA_WIDTH / 64;
+    localparam MEM_DATA_SELECT_WIDTH = $clog2(MEM_DATA_WORDS);
     typedef logic [MEM_BANK_IDX_WIDTH-1:0] t_mem_bank_idx;
 
     typedef logic [ADDR_WIDTH-1:0] t_addr;
     typedef logic [DATA_WIDTH-1:0] t_data;
     typedef logic [BURSTCOUNT_WIDTH-1:0] t_burstcount;
     typedef logic [BYTEEN_WIDTH-1:0] t_byte_en;
-    typedef logic [2:0] t_word_idx;
+    typedef logic [MEM_DATA_SELECT_WIDTH-1:0] t_word_idx;
 
 
     // Pick a 64 bit word from a memory line
@@ -101,7 +103,7 @@ module local_mem
         begin
             mem_rd_en <= 1'b1;
             mem_rd_bank_idx <= t_mem_bank_idx'(cr2mem_ctrl_d1[3:2]);
-            mem_rd_word_select <= cr2mem_ctrl_d1[18:16];
+            mem_rd_word_select <= cr2mem_ctrl_d1[16+:MEM_DATA_SELECT_WIDTH];
         end
         else if (! mem_waitrequests[mem_rd_bank_idx])
         begin
@@ -122,7 +124,7 @@ module local_mem
         mem_addr = t_addr'(cr2mem_address_d1);
         mem_wr_data = cr2mem_writedata_d1;
         mem_burstcount = cr2mem_ctrl_d1[26:20];
-        mem_wr_byteenable = {8{cr2mem_ctrl_d1[11:4]}};
+        mem_wr_byteenable = {MEM_DATA_WORDS{cr2mem_ctrl_d1[11:4]}};
     end
 
     always_ff @(posedge clk)
@@ -183,7 +185,7 @@ module local_mem
                 local_mem[b].read = mem_rd_en && (mem_rd_bank_idx == t_mem_bank_idx'(b));
 
                 local_mem[b].address = mem_addr;
-                local_mem[b].writedata = {8{mem_wr_data}};
+                local_mem[b].writedata = {MEM_DATA_WORDS{mem_wr_data}};
                 local_mem[b].byteenable = mem_wr_byteenable;
                 local_mem[b].burstcount = mem_burstcount;
 

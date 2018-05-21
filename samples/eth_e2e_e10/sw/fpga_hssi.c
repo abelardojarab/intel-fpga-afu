@@ -107,7 +107,8 @@ fpga_result fpgaHssiOpen(fpga_handle fpga, fpga_hssi_handle *hssi)
 	h->csrs = malloc(sizeof(struct _hssi_csr *) * h->csr_cnt);
 	if(!h->csrs) {
 		res = FPGA_NO_MEMORY;
-		ON_ERR_GOTO(res, out_h, "Unable to allocate CSR memory in handle");
+		ON_ERR_GOTO(res, out_h,
+			    "Unable to allocate CSR memory in handle");
 	}
 
 	for (i = 0; i < h->csr_cnt; i++)
@@ -134,10 +135,10 @@ fpga_result fpgaHssiOpen(fpga_handle fpga, fpga_hssi_handle *hssi)
 	return FPGA_OK;
 
 out_csr:
-	if (!h->csrs)
+	if (h->csrs)
 		free(h->csrs);
 out_h:
-	if (!h)
+	if (h)
 		free(h);
 
 	return res;
@@ -150,7 +151,7 @@ fpga_result fpgaHssiClose(fpga_hssi_handle hssi)
 
 	fpgaUnmapMMIO(hssi->fpga_h, 0);
 
-	if (!hssi->csrs)
+	if (hssi->csrs)
 		free(hssi->csrs);
 
 	free(hssi);

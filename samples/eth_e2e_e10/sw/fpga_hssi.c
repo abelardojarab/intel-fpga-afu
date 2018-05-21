@@ -375,9 +375,17 @@ fpga_result fpgaHssiSendPacket(fpga_hssi_handle hssi,
 	prMgmtWrite(hssi->dfl, PR_MGMT_PORT_SEL, wr_data);
 
 	fpgaHssiFilterCsrByName(hssi, "number_of_packets", &csr);
+
+	if (!csr)
+		return FPGA_INVALID_PARAM;
+
 	fpgaHssiWriteCsr64(hssi, csr, num_packets);
 
 	fpgaHssiFilterCsrByName(hssi, "start", &csr);
+
+	if (!csr)
+		return FPGA_INVALID_PARAM;
+
 	fpgaHssiWriteCsr64(hssi, csr, (uint64_t)1);
 	return FPGA_OK;
 }
@@ -434,9 +442,17 @@ fpga_result fpgaHssiClearChannelStats(fpga_hssi_handle hssi,
 
 	if (type == TX) {
 		fpgaHssiFilterCsrByName(hssi, "tx_stats_clr", &csr);
+
+		if (!csr)
+			return FPGA_INVALID_PARAM;
+
 		fpgaHssiWriteCsr64(hssi, csr, (uint64_t)1);
 	} else if (type == RX) {
 		fpgaHssiFilterCsrByName(hssi, "rx_stats_clr", &csr);
+
+		if (!csr)
+			return FPGA_INVALID_PARAM;
+
 		fpgaHssiWriteCsr64(hssi, csr, (uint64_t)1);
 	} else
 		return FPGA_INVALID_PARAM;

@@ -184,6 +184,10 @@ static void parse_args(struct config *config, int argc, char *argv[])
 			break;
 
 		case 'a':
+			if (NULL == optarg) {
+				printf("unexpected NULL action");
+				printUsage(argv[0]);
+			}
 			if (!STR_CONST_CMP(optarg, "stat"))
 				config->action = ETH_ACT_STAT;
 			else if (!STR_CONST_CMP(optarg, "stat_clear"))

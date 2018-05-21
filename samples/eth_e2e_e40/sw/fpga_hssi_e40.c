@@ -204,6 +204,10 @@ fpga_result fpgaHssiCtrlLoopback(fpga_hssi_handle hssi,
 
 	hssi_csr csr;
 	fpgaHssiFilterCsrByName(hssi, "PHY_PMA_SLOOP", &csr);
+
+	if (!csr)
+		return FPGA_INVALID_PARAM;
+
 	if (loopback_en)
 		fpgaHssiWriteCsr64(hssi, csr, (uint64_t)0x3ff);	
 	else
@@ -221,6 +225,10 @@ fpga_result fpgaHssiGetLoopbackStatus(fpga_hssi_handle hssi,
 	hssi_csr csr;
 	uint64_t val;
 	fpgaHssiFilterCsrByName(hssi, "PHY_PMA_SLOOP", &csr);
+
+	if (!csr)
+		return FPGA_INVALID_PARAM;
+
 	fpgaHssiReadCsr64(hssi, csr, &val);
 
 	if(val == 0x3ff)
@@ -240,6 +248,10 @@ fpga_result fpgaHssiGetFreqLockStatus(fpga_hssi_handle hssi,
 	hssi_csr csr;
 	uint64_t val;
 	fpgaHssiFilterCsrByName(hssi, "PHY_EIOFREQ_LOCKED", &csr);
+
+	if (!csr)
+		return FPGA_INVALID_PARAM;
+
 	fpgaHssiReadCsr64(hssi, csr, &val);
 	if(val == 0xf)
 		*freq_locked = true;
@@ -259,6 +271,10 @@ fpga_result fpgaHssiGetWordLockStatus(fpga_hssi_handle hssi,
 	uint64_t val;
 
 	fpgaHssiFilterCsrByName(hssi, "PHY_TX_PLL_LOCKED", &csr);
+
+	if (!csr)
+		return FPGA_INVALID_PARAM;
+
 	fpgaHssiReadCsr64(hssi, csr, &val);
 	if(val == 0xf)
 		*word_locked = true;
@@ -365,9 +381,17 @@ fpga_result fpgaHssiClearChannelStats(fpga_hssi_handle hssi,
 
 	if (type == TX) {
 		fpgaHssiFilterCsrByName(hssi, "CNTR_TX_CONFIG", &csr);
+
+		if (!csr)
+			return FPGA_INVALID_PARAM;
+
 		fpgaHssiWriteCsr64(hssi, csr, (uint64_t)1);
 	} else if (type == RX) {
 		fpgaHssiFilterCsrByName(hssi, "CNTR_RX_CONFIG", &csr);
+
+		if (!csr)
+			return FPGA_INVALID_PARAM;
+
 		fpgaHssiWriteCsr64(hssi, csr, (uint64_t)1);
 	} else
 		return FPGA_INVALID_PARAM;

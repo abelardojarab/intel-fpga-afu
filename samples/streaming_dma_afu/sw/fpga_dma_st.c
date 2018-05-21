@@ -624,6 +624,8 @@ static void *s2mTransactionWorker(void* dma_handle) {
 
 		fpga_dma_transfer_t s2m_transfer;
 		dequeue(&dma_h->qinfo, &s2m_transfer);
+		//Initialize bytes received before every transfer
+		s2m_transfer->rx_bytes = 0;
 		debug_print("FPGA to HOST --- src_addr = %08lx, dst_addr = %08lx\n", s2m_transfer->src, s2m_transfer->dst);
 		count = s2m_transfer->len;
 		uint64_t dma_chunks;
@@ -663,7 +665,8 @@ static void *s2mTransactionWorker(void* dma_handle) {
 		// or has one or more unused descriptors left from prior transfer(s)
 		do {
 			// The latter case
-			_pop_response_fifo(dma_h, &fill_level, &tf_count, &eop_arrived);			
+			_pop_response_fifo(dma_h, &fill_level, &tf_count, &eop_arrived);		
+			s2m_transfer->rx_bytes += tf_count;	
 			while(fill_level > 0) {
 				// If the queue has unused descriptors, use them for our transfer
 				local_memcpy((void*)(s2m_transfer->dst + head * FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[dma_h->next_avail_desc_idx], MIN(tf_count, FPGA_DMA_BUF_SIZE));
@@ -706,6 +709,7 @@ static void *s2mTransactionWorker(void* dma_handle) {
 				if(issued_intr) {
 					poll_interrupt(dma_h);
 					_pop_response_fifo(dma_h, &fill_level, &tf_count, &eop_arrived);
+					s2m_transfer->rx_bytes += tf_count;
 					for(j=0; j<fill_level; j++) {
 						local_memcpy((void*)(s2m_transfer->dst + tail * FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[tail % (FPGA_DMA_MAX_BUF)], MIN(tf_count, FPGA_DMA_BUF_SIZE));
 						tf_count -= MIN(tf_count, FPGA_DMA_BUF_SIZE);
@@ -738,6 +742,7 @@ static void *s2mTransactionWorker(void* dma_handle) {
 				poll_interrupt(dma_h);
 				do {
 					_pop_response_fifo(dma_h, &fill_level, &tf_count, &eop_arrived);
+					s2m_transfer->rx_bytes += tf_count;
 					// clear out final dma local_memcpy operations
 					while(fill_level > 0) {
 						// constant size transfer; no length check required
@@ -754,6 +759,7 @@ static void *s2mTransactionWorker(void* dma_handle) {
 				poll_interrupt(dma_h);
 				do {
 					_pop_response_fifo(dma_h, &fill_level, &tf_count, &eop_arrived);
+					s2m_transfer->rx_bytes += tf_count;
 					if(fill_level > 0) {
 						local_memcpy((void*)(s2m_transfer->dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[0], tf_count);
 						count -= tf_count;
@@ -1197,8 +1203,8 @@ fpga_result fpgaDMATransferGetBytesTransferred(fpga_dma_transfer_t transfer, siz
 		FPGA_DMA_ST_ERR("Invalid pointer to transferred bytes");
 		return FPGA_INVALID_PARAM;
 	}
-
-	return transfer->rx_bytes;
+	*rx_bytes = transfer->rx_bytes;
+	return FPGA_OK;
 }
 
 

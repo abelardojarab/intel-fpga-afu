@@ -249,7 +249,7 @@ int main(int argc, char *argv[]) {
 	fpga_handle afc_h;
 	fpga_guid guid;
 	uint32_t num_matches;
-
+	uint64_t bytes_rcvd;
 #ifndef USE_ASE
 	volatile uint64_t *mmio_ptr = NULL;
 #endif
@@ -387,8 +387,12 @@ int main(int argc, char *argv[]) {
 	ON_ERR_GOTO(res, out_dma_close, "wait_for_generator_complete");
 
 	sem_wait(&rx_cb_status);
-	verify_buffer((uint32_t*)dma_rx_buf_ptr, transfer_len);
-	clear_buffer((uint32_t*)dma_rx_buf_ptr, transfer_len);
+
+	res = fpgaDMATransferGetBytesTransferred(rx_transfer, &bytes_rcvd);
+	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransferGetBytesTransferred");
+
+	verify_buffer((uint32_t*)dma_rx_buf_ptr, bytes_rcvd);
+	clear_buffer((uint32_t*)dma_rx_buf_ptr, bytes_rcvd);
 
 	// S2M non-deterministic length transfer
 	pkt_transfer = 1;
@@ -408,9 +412,12 @@ int main(int argc, char *argv[]) {
 	ON_ERR_GOTO(res, out_dma_close, "wait_for_generator_complete");
 
 	sem_wait(&rx_cb_status);
-	verify_buffer((uint32_t*)dma_rx_buf_ptr, transfer_len);
-	clear_buffer((uint32_t*)dma_rx_buf_ptr, transfer_len);
-	
+	res = fpgaDMATransferGetBytesTransferred(rx_transfer, &bytes_rcvd);
+	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransferGetBytesTransferred");
+
+	verify_buffer((uint32_t*)dma_rx_buf_ptr, bytes_rcvd);
+	clear_buffer((uint32_t*)dma_rx_buf_ptr, bytes_rcvd);
+
 	fpgaDMATransferDestroy(rx_transfer);
 	fpgaDMATransferDestroy(tx_transfer);
 

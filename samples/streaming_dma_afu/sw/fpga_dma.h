@@ -229,14 +229,21 @@ fpga_result fpgaDMATransferSetRxControl(fpga_dma_transfer_t transfer, fpga_dma_r
 *
 * @brief                  Register callback for notification on asynchronous
 *                         transfer completion
+*                         If a callback is specified, fpgaDMATransfer
+*                         returns immediately (asynchronous transfer).
+*
+*                         If a callback is not specified, fpgaDMATransfer
+*                         returns after the transfer is complete (synchronous/
+*                         blocking transfer).
+*
 *
 * @param[in]  transfer    Pointer to transfer attribute struct
 * @param[in]  cb          Notification callback; You must set notification
 *                         callback to NULL for synchronous transfers
-
+* @param[in]  ctxt        Callback context
 * @returns                FPGA_OK on success, return code otherwise
 */
-fpga_result fpgaDMATransferSetTransferCallback(fpga_dma_transfer_t transfer, fpga_dma_transfer_cb cb);
+fpga_result fpgaDMATransferSetTransferCallback(fpga_dma_transfer_t transfer, fpga_dma_transfer_cb cb, void* ctxt);
 
 /**
 * fpgaDMATransferGetBytesTransferred
@@ -261,22 +268,12 @@ fpga_result fpgaDMATransferGetBytesTransferred(fpga_dma_transfer_t transfer, siz
 *
 * @brief                  Perform a DMA transfer
 *                         
-*                         If a callback is specified, fpgaDMATransfer
-*                         returns immediately (asynchronous transfer).
-*
-*                         If a callback is not specified, fpgaDMATransfer
-*                         returns after the transfer is complete (synchronous/
-*                         blocking transfer).
-*
 * @param[dma] dma         DMA handle
 * @param[in]  transfer    Transfer attribute object
-* @param[in]  cb          Callback
-* @param[in]  context     
 *
 * @returns                FPGA_OK on success, return code otherwise
 */
-fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, const fpga_dma_transfer_t transfer,
-						fpga_dma_transfer_cb cb, void *context);
+fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, const fpga_dma_transfer_t transfer);
 
 
 #ifdef __cplusplus

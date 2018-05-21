@@ -102,7 +102,6 @@ static bool enqueue(qinfo_t *q, fpga_dma_transfer_t tf) {
 		pthread_mutex_unlock(&q->qmutex);
 		return false;
 	}
-
 	// Increment tail index
 	q->write_index = (q->write_index+1)%FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS;
 	// Add the item to the Queue
@@ -600,7 +599,7 @@ static void *m2sTransactionWorker(void* dma_handle) {
 		}
 		// transfer_complete, if a callback was registered, invoke it
 		if(m2s_transfer->cb) {
-			m2s_transfer->cb(NULL);
+			m2s_transfer->cb(m2s_transfer->context);
 		}
 		
 		// Mark transfer complete
@@ -765,7 +764,7 @@ static void *s2mTransactionWorker(void* dma_handle) {
 	out_transf_complete:
 		//transfer complete
 		if(s2m_transfer->cb) {
-			s2m_transfer->cb(NULL);
+			s2m_transfer->cb(s2m_transfer->context);
 		}
 		sem_post(&s2m_transfer->tf_status);
 		pthread_mutex_unlock(&s2m_transfer->tf_mutex);
@@ -1172,7 +1171,7 @@ fpga_result fpgaDMATransferSetRxControl(fpga_dma_transfer_t transfer, fpga_dma_r
 	return res;
 }
 
-fpga_result fpgaDMATransferSetTransferCallback(fpga_dma_transfer_t transfer, fpga_dma_transfer_cb cb) {
+fpga_result fpgaDMATransferSetTransferCallback(fpga_dma_transfer_t transfer, fpga_dma_transfer_cb cb, void *ctxt) {
 	fpga_result res = FPGA_OK;
 
 	if(!transfer) {
@@ -1182,6 +1181,7 @@ fpga_result fpgaDMATransferSetTransferCallback(fpga_dma_transfer_t transfer, fpg
 
 	pthread_mutex_lock(&transfer->tf_mutex);
 	transfer->cb = cb;
+	transfer->context = ctxt;
 	pthread_mutex_unlock(&transfer->tf_mutex);
 	return res;
 }
@@ -1202,8 +1202,7 @@ fpga_result fpgaDMATransferGetBytesTransferred(fpga_dma_transfer_t transfer, siz
 }
 
 
-fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, fpga_dma_transfer_t transfer,
-							fpga_dma_transfer_cb cb, void *context) {
+fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, fpga_dma_transfer_t transfer) {
 	fpga_result res = FPGA_OK;
 	bool ret;
 
@@ -1243,9 +1242,8 @@ fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, fpga_dma_transfer_t transfer,
 	do {
 		ret = enqueue(&dma->qinfo, transfer);
 	} while(ret != true);
-
 	// Blocking transfer
-	if(!cb) {
+	if(!transfer->cb) {
 		sem_wait(&transfer->tf_status);
 		sem_post(&transfer->tf_status);
 	}

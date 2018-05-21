@@ -187,11 +187,8 @@ class DmaAfuTest : public ::testing::Test {
 		fpgaDMATransferSetLen(rx_transfer, tf_len);
 		fpgaDMATransferSetTransferType(rx_transfer, tf_type);
 		fpgaDMATransferSetRxControl(rx_transfer, rx_ctrl);
-		fpgaDMATransferSetTransferCallback(rx_transfer, cb);
-		if(cb)
-			res = fpgaDMATransfer(dma_h, rx_transfer, (fpga_dma_transfer_cb)&cb, NULL);
-		else
-			res = fpgaDMATransfer(dma_h, rx_transfer, NULL, NULL);
+		fpgaDMATransferSetTransferCallback(rx_transfer, cb, NULL);
+		res = fpgaDMATransfer(dma_h, rx_transfer);
 		return res;
 	}
 
@@ -203,11 +200,8 @@ class DmaAfuTest : public ::testing::Test {
 		fpgaDMATransferSetLen(tx_transfer, tf_len);
 		fpgaDMATransferSetTransferType(tx_transfer, tf_type);
 		fpgaDMATransferSetTxControl(tx_transfer, tx_ctrl);
-		fpgaDMATransferSetTransferCallback(tx_transfer, cb);
-		if(cb)
-			res = fpgaDMATransfer(dma_h, tx_transfer, (fpga_dma_transfer_cb)&cb, NULL);
-		else
-			res = fpgaDMATransfer(dma_h, tx_transfer, NULL, NULL);
+		fpgaDMATransferSetTransferCallback(tx_transfer, cb, NULL);
+		res = fpgaDMATransfer(dma_h, tx_transfer);
 		return res;
 	}
 

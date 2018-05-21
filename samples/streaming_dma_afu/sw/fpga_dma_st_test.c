@@ -64,30 +64,27 @@ static int err_cnt = 0;
 			goto label;\
 		}\
 	} while (0)
-
 int sendrxTransfer(fpga_dma_handle_t dma_h, fpga_dma_transfer_t rx_transfer, uint64_t src, uint64_t dst, uint64_t tf_len,fpga_dma_transfer_type_t tf_type, fpga_dma_rx_ctrl_t rx_ctrl, fpga_dma_transfer_cb cb) {
 	fpga_result res = FPGA_OK;
-
 	fpgaDMATransferSetSrc(rx_transfer, src);
 	fpgaDMATransferSetDst(rx_transfer, dst);
 	fpgaDMATransferSetLen(rx_transfer, tf_len);
 	fpgaDMATransferSetTransferType(rx_transfer, tf_type);
 	fpgaDMATransferSetRxControl(rx_transfer, rx_ctrl);
-	fpgaDMATransferSetTransferCallback(rx_transfer, cb);
-	res = fpgaDMATransfer(dma_h, rx_transfer, (fpga_dma_transfer_cb)&cb, NULL);
+	fpgaDMATransferSetTransferCallback(rx_transfer, cb, NULL);
+	res = fpgaDMATransfer(dma_h, rx_transfer);
 	return res;
 }
 
 int sendtxTransfer(fpga_dma_handle_t dma_h, fpga_dma_transfer_t tx_transfer, uint64_t src, uint64_t dst, uint64_t tf_len,fpga_dma_transfer_type_t tf_type, fpga_dma_tx_ctrl_t tx_ctrl, fpga_dma_transfer_cb cb) {
 	fpga_result res = FPGA_OK;
-
 	fpgaDMATransferSetSrc(tx_transfer, src);
 	fpgaDMATransferSetDst(tx_transfer, dst);
 	fpgaDMATransferSetLen(tx_transfer, tf_len);
 	fpgaDMATransferSetTransferType(tx_transfer, tf_type);
 	fpgaDMATransferSetTxControl(tx_transfer, tx_ctrl);
-	fpgaDMATransferSetTransferCallback(tx_transfer, cb);
-	res = fpgaDMATransfer(dma_h, tx_transfer, (fpga_dma_transfer_cb)&cb, NULL);
+	fpgaDMATransferSetTransferCallback(tx_transfer, cb, NULL);
+	res = fpgaDMATransfer(dma_h, tx_transfer);
 	return res;
 }
 
@@ -367,7 +364,7 @@ int main(int argc, char *argv[]) {
 
 	res = sendtxTransfer(dma_h[0], tx_transfer, (uint64_t)dma_tx_buf_ptr, 0, transfer_len, HOST_MM_TO_FPGA_ST, GENERATE_EOP, txtransferComplete);
 	ON_ERR_GOTO(res, out_dma_close, "sendtxTransfer");
-
+		
 	sem_wait(&tx_cb_status);
 	res = wait_for_checker_complete(afc_h);
 	ON_ERR_GOTO(res, out_dma_close, "wait_for_checker_complete");

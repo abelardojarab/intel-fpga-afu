@@ -1132,7 +1132,12 @@ fpga_result fpgaDMATransferSetTransferType(fpga_dma_transfer_t transfer, fpga_dm
 		FPGA_DMA_ST_ERR("Invalid DMA transfer type");
 		return FPGA_INVALID_PARAM;
 	}
-
+	
+	if(!(type == HOST_MM_TO_FPGA_ST || type == FPGA_ST_TO_HOST_MM)) {
+		FPGA_DMA_ST_ERR("Transfer unsupported");
+		return FPGA_NOT_SUPPORTED;
+	}
+	
 	pthread_mutex_lock(&transfer->tf_mutex);
 	transfer->transfer_type = type;
 	pthread_mutex_unlock(&transfer->tf_mutex);

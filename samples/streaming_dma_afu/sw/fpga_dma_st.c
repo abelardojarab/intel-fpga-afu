@@ -697,9 +697,6 @@ static void *s2mTransactionWorker(void* dma_handle) {
 			FPGA_DMA_ST_ERR("dequeue failed");
 			return NULL;
 		}
-		//Initialize bytes received before every transfer
-		s2m_transfer->rx_bytes = 0;
-
 		debug_print("FPGA to HOST --- src_addr = %08lx, dst_addr = %08lx\n", s2m_transfer->src, s2m_transfer->dst);
 		count = s2m_transfer->len;
 		uint64_t dma_chunks;
@@ -709,15 +706,14 @@ static void *s2mTransactionWorker(void* dma_handle) {
 		msgdma_st_valve_ctrl_t ctrl = {0};
 		// Set streaming valve to enable data flow
 		ctrl.ct.en_data_flow = 1;
+		
+		dma_chunks = count/FPGA_DMA_BUF_SIZE;
+		// calculate unaligned leftover bytes to be transferred
+		count -= (dma_chunks*FPGA_DMA_BUF_SIZE);
 		if(s2m_transfer->rx_ctrl == END_ON_EOP) {
-			dma_chunks = UINTMAX_MAX;
-			count = 0;
 			// Set to indicate transfer type. Streaming valve will stop accepting data after EOP has arrived.
 			ctrl.ct.en_non_det_tf = 1;
 		} else {
-			dma_chunks = count/FPGA_DMA_BUF_SIZE;
-			// calculate unaligned leftover bytes to be transferred
-			count -= (dma_chunks*FPGA_DMA_BUF_SIZE);
 			// Set to indicate transfer type.
 			ctrl.ct.en_det_tf = 1;
 			// Flush descriptors only while switching from Non-deterministic to deterministic tf
@@ -791,10 +787,8 @@ static void *s2mTransactionWorker(void* dma_handle) {
 						tail++;
 					}
 					issued_intr = 0;
-					if(eop_arrived == 1) {
-						dma_h->next_avail_desc_idx = tail % FPGA_DMA_MAX_BUF;
-						dma_h->unused_desc_count = head - tail;
-						break;
+					if(eop_arrived) {
+						goto out_transf_complete;
 					}
 				}
 				res = _do_dma_rx(dma_h, dma_h->dma_buf_iova[head % (FPGA_DMA_MAX_BUF)] | 0x1000000000000, 0, FPGA_DMA_BUF_SIZE, 1, s2m_transfer->transfer_type, true/*intr_en*/, s2m_transfer->rx_ctrl/*rx_ctrl*/);
@@ -809,53 +803,59 @@ static void *s2mTransactionWorker(void* dma_handle) {
 			head++;
 		}
 
-		if(eop_arrived)
-			goto out_transf_complete;
-		if(s2m_transfer->rx_ctrl != END_ON_EOP) {
-			if(issued_intr) {
-				poll_interrupt(dma_h);
-				do {
-					_pop_response_fifo(dma_h, &fill_level, &tf_count, &eop_arrived);
-					s2m_transfer->rx_bytes += tf_count;
-					// clear out final dma local_memcpy operations
-					while(fill_level > 0) {
-						// constant size transfer; no length check required
-						local_memcpy((void*)(s2m_transfer->dst + tail * FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[tail % (FPGA_DMA_MAX_BUF)], MIN(tf_count,FPGA_DMA_BUF_SIZE));
-						tail++;
-						fill_level -=1;
-						tf_count -= MIN(tf_count, FPGA_DMA_BUF_SIZE);
-					}
-				} while(tail < dma_chunks);
-			}
-			if(count > 0) {
-				res = _do_dma_rx(dma_h, dma_h->dma_buf_iova[0] | 0x1000000000000, 0, count, 1, s2m_transfer->transfer_type, true/*intr_en*/, s2m_transfer->rx_ctrl/*rx_ctrl*/);
-				ON_ERR_GOTO(res, out, "FPGA_TO_HOST_ST Transfer failed");
-				poll_interrupt(dma_h);
-				do {
-					_pop_response_fifo(dma_h, &fill_level, &tf_count, &eop_arrived);
-					s2m_transfer->rx_bytes += tf_count;
-					if(fill_level > 0) {
-						local_memcpy((void*)(s2m_transfer->dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[0], tf_count);
-						count -= tf_count;
-					}
-				} while(count != 0);
-			}
+		if(issued_intr) {
+			poll_interrupt(dma_h);
+			do {
+				_pop_response_fifo(dma_h, &fill_level, &tf_count, &eop_arrived);
+				s2m_transfer->rx_bytes += tf_count;
+				// clear out final dma local_memcpy operations
+				while(fill_level > 0) {
+					// constant size transfer; no length check required
+					local_memcpy((void*)(s2m_transfer->dst + tail * FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[tail % (FPGA_DMA_MAX_BUF)], MIN(tf_count,FPGA_DMA_BUF_SIZE));
+					tail++;
+					fill_level -=1;
+					tf_count -= MIN(tf_count, FPGA_DMA_BUF_SIZE);
+				}
+			} while(tail < dma_chunks && eop_arrived == 0);
+			if(eop_arrived)
+				goto out_transf_complete;
+		}
+		if(count > 0) {
+			res = _do_dma_rx(dma_h, dma_h->dma_buf_iova[0] | 0x1000000000000, 0, count, 1, s2m_transfer->transfer_type, true/*intr_en*/, s2m_transfer->rx_ctrl/*rx_ctrl*/);
+			ON_ERR_GOTO(res, out, "FPGA_TO_HOST_ST Transfer failed");
+			poll_interrupt(dma_h);
+			do {
+				_pop_response_fifo(dma_h, &fill_level, &tf_count, &eop_arrived);
+				s2m_transfer->rx_bytes += tf_count;
+				if(fill_level > 0) {
+					local_memcpy((void*)(s2m_transfer->dst+dma_chunks*FPGA_DMA_BUF_SIZE), dma_h->dma_buf_ptr[0], tf_count);
+					count -= tf_count;
+				}
+			} while(count != 0 && eop_arrived == 0);
+			if(eop_arrived)
+				goto out_transf_complete;
 		}
 	out_transf_complete:
-		//transfer complete
-		if(s2m_transfer->cb) {
-			s2m_transfer->cb(s2m_transfer->context);
+		if(eop_arrived) {
+			dma_h->next_avail_desc_idx = tail % FPGA_DMA_MAX_BUF;
+			dma_h->unused_desc_count = head - tail;
+			s2m_transfer->eop_status = 1;
 		}
-
+		
 		if(sem_post(&s2m_transfer->tf_status)) {
 			FPGA_DMA_ST_ERR("sem_post failed");
-			if(pthread_mutex_unlock(&s2m_transfer->tf_mutex))
+			if(pthread_mutex_unlock(&s2m_transfer->tf_mutex)) 
 				FPGA_DMA_ST_ERR("pthread_mutex_unlock failed");
 			return NULL;
 		}
 
 		if(pthread_mutex_unlock(&s2m_transfer->tf_mutex)) {
 			FPGA_DMA_ST_ERR("pthread_mutex_unlock failed");
+		}
+		
+		//transfer complete
+		if(s2m_transfer->cb) {
+			s2m_transfer->cb(s2m_transfer->context);
 		}
 	}
 out:
@@ -1061,7 +1061,7 @@ rel_buf:
 		ON_ERR_GOTO(res, out, "fpgaReleaseBuffer");
 	}
 out:
-	res = queueDestroy(&dma_h->qinfo);
+	queueDestroy(&dma_h->qinfo);
 
 free_dma_h:
 	if(!dma_found)
@@ -1154,6 +1154,7 @@ fpga_result fpgaDMATransferInit(fpga_dma_transfer_t *transfer) {
 	tmp->cb = NULL;
 	tmp->context = NULL;
 	tmp->rx_bytes = 0;
+	tmp->eop_status = 0;
 
 	if(sem_init(&tmp->tf_status, 0, TRANSFER_NOT_IN_PROGRESS)) {
 		free(tmp);
@@ -1165,6 +1166,38 @@ fpga_result fpgaDMATransferInit(fpga_dma_transfer_t *transfer) {
 	}
 
 	*transfer = tmp;
+	return res;
+}
+
+fpga_result fpgaDMATransferReset(fpga_dma_transfer_t transfer) {
+	fpga_result res = FPGA_OK;
+
+	if(!transfer) {
+		FPGA_DMA_ST_ERR("Invalid DMA transfer");
+		return FPGA_INVALID_PARAM;
+	}
+
+	if(pthread_mutex_lock(&transfer->tf_mutex)) {
+		FPGA_DMA_ST_ERR("pthread_mutex_lock failed");
+		return FPGA_EXCEPTION;
+	}
+
+	transfer->src = 0;
+	transfer->dst = 0;
+	transfer->len = 0;
+	transfer->transfer_type = HOST_MM_TO_FPGA_ST;
+	transfer->tx_ctrl = TX_NO_PACKET; // deterministic length
+	transfer->rx_ctrl = RX_NO_PACKET; // deterministic length
+	transfer->cb = NULL;
+	transfer->context = NULL;
+	transfer->rx_bytes = 0;
+	transfer->eop_status = 0;
+
+	if(pthread_mutex_unlock(&transfer->tf_mutex)) {
+		FPGA_DMA_ST_ERR("pthread_mutex_unlock failed");
+		return FPGA_EXCEPTION;
+	}
+
 	return res;
 }
 
@@ -1265,7 +1298,7 @@ fpga_result fpgaDMATransferSetTransferType(fpga_dma_transfer_t transfer, fpga_dm
 		return FPGA_INVALID_PARAM;
 	}
 
-  if(!(type == HOST_MM_TO_FPGA_ST || type == FPGA_ST_TO_HOST_MM)) {
+	if(!(type == HOST_MM_TO_FPGA_ST || type == FPGA_ST_TO_HOST_MM)) {
 		FPGA_DMA_ST_ERR("Transfer unsupported");
 		return FPGA_NOT_SUPPORTED;
 	}
@@ -1368,10 +1401,48 @@ fpga_result fpgaDMATransferGetBytesTransferred(fpga_dma_transfer_t transfer, siz
 		FPGA_DMA_ST_ERR("Invalid pointer to transferred bytes");
 		return FPGA_INVALID_PARAM;
 	}
+
+	if(pthread_mutex_lock(&transfer->tf_mutex)) {
+		FPGA_DMA_ST_ERR("pthread_mutex_lock failed");
+		return FPGA_EXCEPTION;
+	}
+
 	*rx_bytes = transfer->rx_bytes;
+
+	if(pthread_mutex_unlock(&transfer->tf_mutex)) {
+		FPGA_DMA_ST_ERR("pthread_mutex_unlock failed");
+		return FPGA_EXCEPTION;
+	}
+
 	return FPGA_OK;
 }
 
+fpga_result fpgaDMATransferCheckEopArrived(fpga_dma_transfer_t transfer, bool *eop_arrived) {
+
+	if(!transfer) {
+		FPGA_DMA_ST_ERR("Invalid DMA transfer");
+		return FPGA_INVALID_PARAM;
+	}
+
+	if(!eop_arrived) {
+		FPGA_DMA_ST_ERR("Invalid pointer to eop status");
+		return FPGA_INVALID_PARAM;
+	}
+
+	if(pthread_mutex_lock(&transfer->tf_mutex)) {
+		FPGA_DMA_ST_ERR("pthread_mutex_lock failed");
+		return FPGA_EXCEPTION;
+	}
+	
+	*eop_arrived = transfer->eop_status;
+
+	if(pthread_mutex_unlock(&transfer->tf_mutex)) {
+		FPGA_DMA_ST_ERR("pthread_mutex_unlock failed");
+		return FPGA_EXCEPTION;
+	}
+
+	return FPGA_OK;
+}
 
 fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, fpga_dma_transfer_t transfer) {
 	fpga_result res = FPGA_OK;

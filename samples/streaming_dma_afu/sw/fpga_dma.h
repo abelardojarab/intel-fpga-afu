@@ -106,14 +106,26 @@ fpga_result fpgaGetDMAChannelType(fpga_dma_handle_t dma, fpga_dma_channel_type_t
 */
 fpga_result fpgaDMATransferInit(fpga_dma_transfer_t *transfer);
 
+/**
+* fpgaDMATransferReset
+*
+* @brief                  Reset DMA transfer attribute object to default values.
+*
+*                         If same transfer object is reused for transfers, the stale values
+*                         need to be reset to default values. Eg: rx_bytes, eop_status
+*
+* @param[in]  transfer    Pointer to transfer attribute struct
+* @returns                FPGA_OK on success, return code otherwise
+*/
+fpga_result fpgaDMATransferReset(fpga_dma_transfer_t transfer);
 
 /**
 * fpgaDMATransferDestroy
 *
-* @brief                  Destroy DMA transfer attribute object.
+* @brief                 Destroy DMA transfer attribute object.
 *
-* @param[out]  transfer   Pointer to transfer attribute struct
-* @returns                FPGA_OK on success, return code otherwise
+* @param[in]  transfer   Pointer to transfer attribute struct
+* @returns               FPGA_OK on success, return code otherwise
 */
 fpga_result fpgaDMATransferDestroy(fpga_dma_transfer_t transfer);
 
@@ -262,6 +274,22 @@ fpga_result fpgaDMATransferSetTransferCallback(fpga_dma_transfer_t transfer, fpg
 * @returns                FPGA_OK on success, return code otherwise
 */
 fpga_result fpgaDMATransferGetBytesTransferred(fpga_dma_transfer_t transfer, size_t *rx_bytes);
+
+/**
+* fpgaDMATransferCheckEopArrived
+*
+* @brief                  Retrieve EOP status
+*
+*                         Legal value are:     
+*                         0: EOP not arrived
+*                         1: EOP arrived
+*
+* @param[in]  transfer    Pointer to transfer attribute struct
+* @param[out] eop_arrived Pointer to the eop status
+*
+* @returns                FPGA_OK on success, return code otherwise
+*/
+fpga_result fpgaDMATransferCheckEopArrived(fpga_dma_transfer_t transfer, bool *eop_arrived);
 
 /**
 * fpgaDMATransfer

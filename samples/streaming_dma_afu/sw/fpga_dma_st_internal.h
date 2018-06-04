@@ -147,6 +147,7 @@ struct fpga_dma_transfer {
 	fpga_dma_tx_ctrl_t tx_ctrl;
 	fpga_dma_rx_ctrl_t rx_ctrl;
 	fpga_dma_transfer_cb cb;
+	bool eop_status;
 	void *context;
 	size_t rx_bytes;
 	pthread_mutex_t tf_mutex;	

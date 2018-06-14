@@ -1,3 +1,4 @@
++define+BIST_AFU
 test_sw1.sv
 test_rdwr.sv
 test_lpbk1.sv
@@ -10,7 +11,9 @@ ccip_interface_reg.sv
 ccip_debug.sv
 arbiter.sv
 nlb_gram_sdp.v
-local_mem.sv
+pipeline.sv
+platform/${OPAE_PLATFORM_FPGA_FAMILY}/local_mem.sv
+platform/${OPAE_PLATFORM_FPGA_FAMILY}/nlb_400.json
 resync.v
 altera_std_synchronizer_nocut.v
 
@@ -18,5 +21,5 @@ QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/RAM/req_C1TxRAM2PORT.qsys
 QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/RAM/lpbk1_RdRspRAM2PORT.qsys
 
 include_files/common
-nlb_400.json
 ../par/stp_basic.stp
+../par/nlb_0_stp.sdc

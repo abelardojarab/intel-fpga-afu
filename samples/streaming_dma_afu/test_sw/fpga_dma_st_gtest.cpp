@@ -513,8 +513,6 @@ TEST_F(DmaAfuTest, fpgaDMAOpen_IndexOutOfRange)
 TEST_F(DmaAfuTest, fpgaDmaClose_InvalidDmaHandle)
 {
 	ASSERT_EQ(fpgaDMAClose(NULL), FPGA_INVALID_PARAM);
-	// Try closing uninitialized DMA handle
-	ASSERT_EQ(fpgaDMAClose(dma_h[0]), FPGA_INVALID_PARAM);
 }
 
 TEST_F(DmaAfuTest, fpgaDmaClose_ValidDmaHandle)

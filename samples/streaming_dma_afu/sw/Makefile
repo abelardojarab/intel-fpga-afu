@@ -26,7 +26,7 @@ all: fpga_dma_st_test
 
 # FPGA DMA Driver
 fpga_dma_st_test: fpga_dma_st_test.o fpga_dma_st.so fpga_pattern_gen.o fpga_pattern_checker.o
-	gcc -o $@ $^ $(LDFLAGS)
+	gcc -o $@ $^ $(LDFLAGS) -Wl,-rpath,$(PWD)
 
 fpga_dma_st_test.o: fpga_dma_st_test.c
 	gcc $(CFLAGS) -o $@ -c $^

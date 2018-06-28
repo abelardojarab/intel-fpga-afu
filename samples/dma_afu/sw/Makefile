@@ -68,7 +68,7 @@ all: fpga_dma_test
 
 # FPGA DMA Driver
 fpga_dma_test: fpga_dma_test.o fpga_dma.so
-	gcc -o $@ $^ $(LDFLAGS)
+	gcc -o $@ $^ $(LDFLAGS) -Wl,-rpath,$(PWD)
 
 fpga_dma_test.o: fpga_dma_test.c
 	gcc $(CFLAGS) -o $@ -c $^

@@ -237,18 +237,18 @@ static fpga_result MMIOWrite64Blk(fpga_dma_handle_t dma_h, uint64_t device,
 	uint64_t i;
 	fpga_result res = FPGA_OK;
 
-#if defined(USE_PTR_MMIO_ACCESS) && !defined(USE_ASE)
+#ifndef USE_ASE
 	volatile uint64_t *dev_addr = HOST_MMIO_64_ADDR(dma_h, device);
 #endif
 
 	//debug_print("copying %lld bytes from 0x%p to 0x%p\n",(long long int)bytes, haddr, (void *)device);
 	for (i = 0; i < bytes / sizeof(uint64_t); i++) {
-#if !defined(USE_PTR_MMIO_ACCESS) || defined(USE_ASE)
+#ifdef USE_ASE
 		res = fpgaWriteMMIO64(dma_h->fpga_h, dma_h->mmio_num, device, *haddr);
 		ON_ERR_RETURN(res, "fpgaWriteMMIO64");
 		haddr++;
 		device += sizeof(uint64_t);
-#elif defined(USE_PTR_MMIO_ACCESS) && !defined(USE_ASE)
+#else
 		*dev_addr++ = *haddr++;
 #endif
 	}
@@ -276,18 +276,18 @@ static fpga_result MMIOWrite32Blk(fpga_dma_handle_t dma_h, uint64_t device,
 	uint64_t i;
 	fpga_result res = FPGA_OK;
 
-#if defined(USE_PTR_MMIO_ACCESS) && !defined(USE_ASE)
+#ifndef USE_ASE
 	volatile uint32_t *dev_addr = HOST_MMIO_32_ADDR(dma_h, device);
 #endif
 
 	//debug_print("copying %lld bytes from 0x%p to 0x%p\n", (long long int)bytes, haddr, (void *)device);
 	for (i = 0; i < bytes / sizeof(uint32_t); i++) {
-#if !defined(USE_PTR_MMIO_ACCESS) || defined(USE_ASE)
+#ifdef USE_ASE
 		res = fpgaWriteMMIO32(dma_h->fpga_h, dma_h->mmio_num, device, *haddr);
 		ON_ERR_RETURN(res, "fpgaWriteMMIO32");
 		haddr++;
 		device += sizeof(uint32_t);
-#elif defined(USE_PTR_MMIO_ACCESS) && !defined(USE_ASE)
+#else
 		*dev_addr++ = *haddr++;
 #endif
 	}
@@ -315,18 +315,18 @@ static fpga_result MMIORead64Blk(fpga_dma_handle_t dma_h, uint64_t device,
 	uint64_t i;
 	fpga_result res = FPGA_OK;
 
-#if defined(USE_PTR_MMIO_ACCESS) && !defined(USE_ASE)
+#ifndef USE_ASE
 	volatile uint64_t *dev_addr = HOST_MMIO_64_ADDR(dma_h, device);
 #endif
 
 	//debug_print("copying %lld bytes from 0x%p to 0x%p\n",(long long int)bytes, (void *)device, haddr);
 	for (i = 0; i < bytes / sizeof(uint64_t); i++) {
-#if !defined(USE_PTR_MMIO_ACCESS) || defined(USE_ASE)
+#ifdef USE_ASE
 		res = fpgaReadMMIO64(dma_h->fpga_h, dma_h->mmio_num, device, haddr);
 		ON_ERR_RETURN(res, "fpgaReadMMIO64");
 		haddr++;
 		device += sizeof(uint64_t);
-#elif defined(USE_PTR_MMIO_ACCESS) && !defined(USE_ASE)
+#else
 		*haddr++ = *dev_addr++;
 #endif
 	}
@@ -354,18 +354,18 @@ static fpga_result MMIORead32Blk(fpga_dma_handle_t dma_h, uint64_t device,
 	uint64_t i;
 	fpga_result res = FPGA_OK;
 
-#if defined(USE_PTR_MMIO_ACCESS) && !defined(USE_ASE)
+#ifndef USE_ASE
 	volatile uint32_t *dev_addr = HOST_MMIO_32_ADDR(dma_h, device);
 #endif
 
 	//debug_print("copying %lld bytes from 0x%p to 0x%p\n",(long long int)bytes, (void *)device, haddr);
 	for (i = 0; i < bytes / sizeof(uint32_t); i++) {
-#if !defined(USE_PTR_MMIO_ACCESS) || defined(USE_ASE)
+#ifdef USE_ASE
 		res = fpgaReadMMIO32(dma_h->fpga_h, dma_h->mmio_num, device, haddr);
 		ON_ERR_RETURN(res, "fpgaReadMMIO32");
 		haddr++;
 		device += sizeof(uint32_t);
-#elif defined(USE_PTR_MMIO_ACCESS) && !defined(USE_ASE)
+#else
 		*haddr++ = *dev_addr++;
 #endif
 	}
@@ -880,7 +880,7 @@ fpga_result fpgaCountDMAChannels(fpga_handle fpga, size_t *count) {
 	}
 
 	uint64_t offset = 0;
-#if defined(USE_PTR_MMIO_ACCESS) && !defined(USE_ASE)
+#ifndef USE_ASE
 	uint64_t mmio_va;
 
 	res = fpgaMapMMIO(fpga, 0, (uint64_t **)&mmio_va);
@@ -891,7 +891,7 @@ fpga_result fpgaCountDMAChannels(fpga_handle fpga, size_t *count) {
 	uint64_t dfh = 0;
 	do {
 		uint64_t feature_uuid_lo, feature_uuid_hi;
-#if defined(USE_PTR_MMIO_ACCESS) && !defined(USE_ASE)
+#ifndef USE_ASE
 		// Read the next feature header
 		dfh = *((volatile uint64_t *)((uint64_t)mmio_va + (uint64_t)(offset)));
 
@@ -962,7 +962,7 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, uint64_t dma_channel_index, fpga_dma_h
 		ON_ERR_GOTO(FPGA_EXCEPTION, free_dma_h, "queueDestroy failed");
 	}
 
-#if defined(USE_PTR_MMIO_ACCESS) && !defined(USE_ASE)
+#ifndef USE_ASE
 	res = fpgaMapMMIO(dma_h->fpga_h, 0, (uint64_t **)&dma_h->mmio_va);
 	ON_ERR_GOTO(res, out, "fpgaMapMMIO");
 #endif

@@ -127,7 +127,7 @@ genvar b;
     wire [NUM_LOCAL_MEM_BANKS-1:0][BURSTCOUNT_WIDTH-1:0]  ddr4_bist_amm_burstcount;
     wire [NUM_LOCAL_MEM_BANKS-1:0][ADDR_WIDTH-1:0]        ddr4_bist_amm_address;
     wire [NUM_LOCAL_MEM_BANKS-1:0][BYTEEN_WIDTH-1:0]      ddr4_bist_amm_byteenable;
-    wire [NUM_LOCAL_MEM_BANKS-1:0][8*DATA_WIDTH-1:0]      ddr4_bist_amm_writedata;
+    wire [NUM_LOCAL_MEM_BANKS-1:0][MEM_DATA_WORDS*DATA_WIDTH-1:0]      ddr4_bist_amm_writedata;
     wire [NUM_LOCAL_MEM_BANKS-1:0]                        ddr4_bist_traffic_gen_pass;
     wire [NUM_LOCAL_MEM_BANKS-1:0]                        ddr4_bist_traffic_gen_fail;
     wire [NUM_LOCAL_MEM_BANKS-1:0]                        ddr4_bist_traffic_gen_timeout;

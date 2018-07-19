@@ -32,102 +32,51 @@
 // ***************************************************************************
 // Include MPF data types, including the CCI interface pacakge.
 `include "cci_mpf_if.vh"
+`include "platform_if.vh"
 import cci_mpf_csrs_pkg::*;
 
 `include "platform_if.vh"
 
 module ccip_std_afu
   #(
-    parameter DDR_ADDR_WIDTH = 26
+    parameter NUM_LOCAL_MEM_BANKS = 2
     )
  (
-  // CCI-P Clocks and Resets
-  pClk,                      // 400MHz - CCI-P clock domain. Primary interface clock
-  pClkDiv2,                  // 200MHz - CCI-P clock domain.
-  pClkDiv4,                  // 100MHz - CCI-P clock domain.
-  uClk_usr,                  // User clock domain. Refer to clock programming guide  ** Currently provides fixed 300MHz clock **
-  uClk_usrDiv2,              // User clock domain. Half the programmed frequency  ** Currently provides fixed 150MHz clock **
-  pck_cp2af_softReset,       // CCI-P ACTIVE HIGH Soft Reset
-  pck_cp2af_pwrState,        // CCI-P AFU Power State
-  pck_cp2af_error,           // CCI-P Protocol Error Detected
+    input  logic        pClk,                 // Primary CCI-P interface clock.
+    input  logic        pClkDiv2,             // Aligned, pClk divided by 2.
+    input  logic        pClkDiv4,             // Aligned, pClk divided by 4.
+    input  logic        uClk_usr,             // User clock domain. Refer to clock programming guide.
+    input  logic        uClk_usrDiv2,         // Aligned, user clock divided by 2.
+    input  logic        pck_cp2af_softReset,  // CCI-P ACTIVE HIGH Soft Reset
 
-`ifdef INCLUDE_DDR4
-  DDR4a_USERCLK,
-  DDR4a_waitrequest,
-  DDR4a_readdata,
-  DDR4a_readdatavalid,
-  DDR4a_burstcount,
-  DDR4a_writedata,
-  DDR4a_address,
-  DDR4a_write,
-  DDR4a_read,
-  DDR4a_byteenable,
-  DDR4b_USERCLK,
-  DDR4b_waitrequest,
-  DDR4b_readdata,
-  DDR4b_readdatavalid,
-  DDR4b_burstcount,
-  DDR4b_writedata,
-  DDR4b_address,
-  DDR4b_write,
-  DDR4b_read,
-  DDR4b_byteenable,
+    input  logic [1:0]  pck_cp2af_pwrState,   // CCI-P AFU Power State
+    input  logic        pck_cp2af_error,      // CCI-P Protocol Error Detected
+
+`ifdef PLATFORM_PROVIDES_LOCAL_MEMORY
+    // Local memory interface
+    avalon_mem_if.to_fiu local_mem[NUM_LOCAL_MEM_BANKS],
 `endif
 
-  // Interface structures
-  pck_cp2af_sRx,             // CCI-P Rx Port
-  pck_af2cp_sTx              // CCI-P Tx Port
-);
-  input           wire             pClk;                     // 400MHz - CCI-P clock domain. Primary interface clock
-  input           wire             pClkDiv2;                 // 200MHz - CCI-P clock domain.
-  input           wire             pClkDiv4;                 // 100MHz - CCI-P clock domain.
-  input           wire             uClk_usr;                 // User clock domain. Refer to clock programming guide  ** Currently provides fixed 300MHz clock **
-  input           wire             uClk_usrDiv2;             // User clock domain. Half the programmed frequency  ** Currently provides fixed 150MHz clock **
-  input           wire             pck_cp2af_softReset;      // CCI-P ACTIVE HIGH Soft Reset
-  input           wire [1:0]       pck_cp2af_pwrState;       // CCI-P AFU Power State
-  input           wire             pck_cp2af_error;          // CCI-P Protocol Error Detected
-`ifdef INCLUDE_DDR4
-  input   wire                          DDR4a_USERCLK;
-  input   wire                          DDR4a_waitrequest;
-  input   wire [511:0]                  DDR4a_readdata;
-  input   wire                          DDR4a_readdatavalid;
-  output  wire [6:0]                    DDR4a_burstcount;
-  output  wire [511:0]                  DDR4a_writedata;
-  output  wire [26:0]                   DDR4a_address;
-  output  wire                          DDR4a_write;
-  output  wire                          DDR4a_read;
-  output  wire [63:0]                   DDR4a_byteenable;
-  input   wire                          DDR4b_USERCLK;
-  input   wire                          DDR4b_waitrequest;
-  input   wire [511:0]                  DDR4b_readdata;
-  input   wire                          DDR4b_readdatavalid;
-  output  wire [6:0]                    DDR4b_burstcount;
-  output  wire [511:0]                  DDR4b_writedata;
-  output  wire [26:0]                   DDR4b_address;
-  output  wire                          DDR4b_write;
-  output  wire                          DDR4b_read;
-  output  wire [63:0]                   DDR4b_byteenable;
-`endif
+    // CCI-P structures
+    input  t_if_ccip_Rx pck_cp2af_sRx,        // CCI-P Rx Port
+    output t_if_ccip_Tx pck_af2cp_sTx         // CCI-P Tx Port
+    );
 
-    // Interface structures
-    input           t_if_ccip_Rx     pck_cp2af_sRx;           // CCI-P Rx Port
-    output          t_if_ccip_Tx     pck_af2cp_sTx;           // CCI-P Tx Port
-
-	//split c0rx into host and mmio
-	wire afu_clk;
+    //split c0rx into host and mmio
+    wire afu_clk;
     assign afu_clk = pClk ;
     t_if_ccip_Rx pck_cp2af_mmio_sRx;
     t_if_ccip_Rx pck_cp2af_host_sRx;
-	always_comb
-	begin
-		pck_cp2af_mmio_sRx = pck_cp2af_sRx;
-		pck_cp2af_host_sRx = pck_cp2af_sRx;
-		//disable rsp valid on mmio path
-		pck_cp2af_mmio_sRx.c0.rspValid = 0;
-		//disable mmio valid on host path
-		pck_cp2af_host_sRx.c0.mmioRdValid = 0;
-		pck_cp2af_host_sRx.c0.mmioWrValid = 0;
-	end
+    always_comb begin
+        pck_cp2af_mmio_sRx = pck_cp2af_sRx;
+        pck_cp2af_host_sRx = pck_cp2af_sRx;
+        //disable rsp valid on mmio path
+        pck_cp2af_mmio_sRx.c0.rspValid = 0;
+        //disable mmio valid on host path
+        pck_cp2af_host_sRx.c0.mmioRdValid = 0;
+        pck_cp2af_host_sRx.c0.mmioWrValid = 0;
+    end
+   
 
     // ====================================================================
     //
@@ -338,36 +287,21 @@ module ccip_std_afu
 // User AFU goes here
 //===============================================================================================
 
-afu afu_inst(
+afu
+  #(
+    .NUM_LOCAL_MEM_BANKS(NUM_LOCAL_MEM_BANKS)
+   )
+   afu_inst
+   (
     .afu_clk(afu_clk),
-    
-`ifdef INCLUDE_DDR4
-    .DDR4a_USERCLK(DDR4a_USERCLK),
-    .DDR4a_waitrequest(DDR4a_waitrequest),
-    .DDR4a_readdata(DDR4a_readdata),
-    .DDR4a_readdatavalid(DDR4a_readdatavalid),
-    .DDR4a_burstcount(DDR4a_burstcount),
-    .DDR4a_writedata(DDR4a_writedata),
-    .DDR4a_address(DDR4a_address),
-    .DDR4a_write(DDR4a_write),
-    .DDR4a_read(DDR4a_read),
-    .DDR4a_byteenable(DDR4a_byteenable),
-    .DDR4b_USERCLK(DDR4b_USERCLK),
-    .DDR4b_waitrequest(DDR4b_waitrequest),
-    .DDR4b_readdata(DDR4b_readdata),
-    .DDR4b_readdatavalid(DDR4b_readdatavalid),
-    .DDR4b_burstcount(DDR4b_burstcount),
-    .DDR4b_writedata(DDR4b_writedata),
-    .DDR4b_address(DDR4b_address),
-    .DDR4b_byteenable(DDR4b_byteenable),
-    .DDR4b_write(DDR4b_write),
-    .DDR4b_read(DDR4b_read),
+`ifdef PLATFORM_PROVIDES_LOCAL_MEMORY
+    // Local memory interface
+    .local_mem               (local_mem),
 `endif
-    
-	.reset           ( fiu.reset ) ,
-	.cp2af_sRxPort       ( mpf2af_sRxPort ) ,
-	.cp2af_mmio_c0rx     ( pck_cp2af_mmio_sRx.c0 ) ,
-	.af2cp_sTxPort       ( af2mpf_sTxPort ) 
+    .reset               ( fiu.reset ) ,
+    .cp2af_sRxPort       ( mpf2af_sRxPort ) ,
+    .cp2af_mmio_c0rx     ( pck_cp2af_mmio_sRx.c0 ) ,
+    .af2cp_sTxPort       ( af2mpf_sTxPort ) 
 );
 
 endmodule

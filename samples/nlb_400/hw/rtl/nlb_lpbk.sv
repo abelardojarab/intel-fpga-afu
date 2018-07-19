@@ -359,7 +359,7 @@ module nlb_lpbk
    end
 
 `ifdef INCLUDE_REMOTE_STP
-   wire Clk_100_SoftReset;
+   wire Clk_400_SoftReset;
 
    // Reset synchronizer
    resync #(
@@ -367,16 +367,16 @@ module nlb_lpbk
            .WIDTH(1),		 
            .INIT_VALUE(1)	 
    ) Clk_100_reset_sync (
-           .clk(Clk_100),
+           .clk(Clk_400),
            .reset(SoftReset),
            .d(1'b0),
-           .q(Clk_100_SoftReset)
+           .q(Clk_400_SoftReset)
    );
 
    //Counter to test signaltap
    (* noprune *) reg [15:0] out /* synthesis noprune */;
-   always @(posedge Clk_100) begin
-      if (Clk_100_SoftReset == 1'b1) begin
+   always @(posedge Clk_400) begin
+      if (Clk_400_SoftReset == 1'b1) begin
          out <= 16'd0;
       end else begin
          out <= out + 16'd1;

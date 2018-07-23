@@ -467,10 +467,19 @@ static fpga_result _do_dma_tx(fpga_dma_handle_t dma_h, uint64_t dst, uint64_t sr
 	else
 		desc.control.early_done_en = 0;
 
-	if(tx_ctrl == GENERATE_EOP)
-		desc.control.generate_eop = 1;
-	else
+	if(tx_ctrl == GENERATE_SOP) {
+		desc.control.generate_sop = 1;
 		desc.control.generate_eop = 0;
+	} else if (tx_ctrl == GENERATE_SOP_AND_EOP) {
+		desc.control.generate_sop = 1;
+		desc.control.generate_eop = 1;
+	} else if (tx_ctrl == GENERATE_EOP) {
+		desc.control.generate_sop = 0;
+		desc.control.generate_eop = 1;
+	} else {
+		desc.control.generate_sop = 0;
+		desc.control.generate_eop = 0;
+	}
 
 	desc.rd_address = src & FPGA_DMA_MASK_32_BIT;
 	desc.wr_address = dst & FPGA_DMA_MASK_32_BIT;
@@ -638,8 +647,12 @@ static void *m2sTransactionWorker(void* dma_handle) {
 				if(issued_intr) {
 					poll_interrupt(dma_h);
 				}
-				if(count == 0 && i == (dma_chunks-1) && m2s_transfer->tx_ctrl == GENERATE_EOP)
-					res = _do_dma_tx(dma_h, 0, dma_h->dma_buf_iova[i%FPGA_DMA_MAX_BUF] | 0x1000000000000, FPGA_DMA_BUF_SIZE, 1, m2s_transfer->transfer_type, true/*intr_en*/, GENERATE_EOP/*tx_ctrl*/);
+				if(count == 0 && i == (dma_chunks-1)) {
+					if(i == 0 || m2s_transfer->tx_ctrl == TX_NO_PACKET)
+						res = _do_dma_tx(dma_h, 0, dma_h->dma_buf_iova[i%FPGA_DMA_MAX_BUF] | 0x1000000000000, FPGA_DMA_BUF_SIZE, 1, m2s_transfer->transfer_type, true/*intr_en*/, m2s_transfer->tx_ctrl/*tx_ctrl*/);
+					else 
+						res = _do_dma_tx(dma_h, 0, dma_h->dma_buf_iova[i%FPGA_DMA_MAX_BUF] | 0x1000000000000, FPGA_DMA_BUF_SIZE, 1, m2s_transfer->transfer_type, true/*intr_en*/, GENERATE_EOP/*tx_ctrl*/);
+				}
 				else
 					res = _do_dma_tx(dma_h, 0, dma_h->dma_buf_iova[i%FPGA_DMA_MAX_BUF] | 0x1000000000000, FPGA_DMA_BUF_SIZE, 1, m2s_transfer->transfer_type, true/*intr_en*/, TX_NO_PACKET/*tx_ctrl*/);
 				ON_ERR_GOTO(res, out, "HOST_TO_FPGA_ST Transfer failed");
@@ -655,7 +668,10 @@ static void *m2sTransactionWorker(void* dma_handle) {
 		}
 		if(count > 0) {
 			local_memcpy(dma_h->dma_buf_ptr[0], (void*)(m2s_transfer->src+dma_chunks*FPGA_DMA_BUF_SIZE), count);
-			res = _do_dma_tx(dma_h, 0, dma_h->dma_buf_iova[0] | 0x1000000000000, count, 1, m2s_transfer->transfer_type, true/*intr_en*/, GENERATE_EOP/*tx_ctrl*/);
+			if(dma_chunks == 0 || m2s_transfer->tx_ctrl == TX_NO_PACKET)
+				res = _do_dma_tx(dma_h, 0, dma_h->dma_buf_iova[0] | 0x1000000000000, count, 1, m2s_transfer->transfer_type, true/*intr_en*/, m2s_transfer->tx_ctrl/*tx_ctrl*/);
+			else
+				res = _do_dma_tx(dma_h, 0, dma_h->dma_buf_iova[0] | 0x1000000000000, count, 1, m2s_transfer->transfer_type, true/*intr_en*/, GENERATE_EOP/*tx_ctrl*/);
 			ON_ERR_GOTO(res, out, "HOST_TO_FPGA_ST Transfer failed");
 			poll_interrupt(dma_h);
 		}

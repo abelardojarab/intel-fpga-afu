@@ -38,6 +38,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <assert.h>
+#include <inttypes.h>
 #include <safe_string/safe_string.h>
 #include "bist_afu_ase_internal.h"
 #include "bist_afu_ase.h"

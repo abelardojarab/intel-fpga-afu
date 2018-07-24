@@ -38,6 +38,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <assert.h>
+#include <inttypes.h>
 #include "fpga_dma_internal.h"
 #include "fpga_dma.h"
 

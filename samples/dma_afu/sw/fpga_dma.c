@@ -1588,8 +1588,7 @@ fpga_result fpgaDmaClose(fpga_dma_handle dma_h)
 	fpga_result res = FPGA_OK;
 	int i = 0;
 	if (!dma_h) {
-		res = FPGA_INVALID_PARAM;
-		goto out;
+		return FPGA_INVALID_PARAM;
 	}
 
 	if (!dma_h->fpga_h) {
@@ -1617,6 +1616,8 @@ fpga_result fpgaDmaClose(fpga_dma_handle dma_h)
 	ON_ERR_GOTO(res, out, "MMIOWrite32Blk");
 
  out:
+        // Ensure double close will fail
+        dma_h->fpga_h = 0;
 	free((void *)dma_h);
 	return res;
 }

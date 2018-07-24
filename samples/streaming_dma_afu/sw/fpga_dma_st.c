@@ -1041,6 +1041,7 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, uint64_t dma_channel_index, fpga_dma_h
 	dma_h->unused_desc_count = 0;
 	if(dma_found) {
 		*dma = dma_h;
+                res = FPGA_OK;
 	}
 	else {
 		*dma = NULL;

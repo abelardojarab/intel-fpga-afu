@@ -22,17 +22,20 @@ endif
 LDFLAGS += -pthread
 LDFLAGS += -lm
 
-all: fpga_dma_st_test
+all: fpga_dma_st_test fpga_dma_st.so
 
 # FPGA DMA Driver
-fpga_dma_st_test: fpga_dma_st_test.o fpga_dma_st.so fpga_pattern_gen.o fpga_pattern_checker.o
-	gcc -o $@ $^ $(LDFLAGS) -Wl,-rpath,$(PWD)
+fpga_dma_st_test: fpga_dma_st_test.o fpga_pattern_gen.o fpga_pattern_checker.o fpga_dma_st.a
+	gcc -o $@ $^ $(LDFLAGS)
 
 fpga_dma_st_test.o: fpga_dma_st_test.c
 	gcc $(CFLAGS) -o $@ -c $^
 
 fpga_dma_st.so: fpga_dma_st.o x86-sse2.o
 	gcc $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
+
+fpga_dma_st.a: fpga_dma_st.o x86-sse2.o
+	ar rcs $@ $^
 
 fpga_dma_st.o: fpga_dma_st.c
 	gcc $(CFLAGS) -c -o $@ $^

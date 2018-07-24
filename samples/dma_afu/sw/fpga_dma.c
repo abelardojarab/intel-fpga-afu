@@ -38,6 +38,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <assert.h>
+#include <inttypes.h>
 #include "fpga_dma_internal.h"
 #include "fpga_dma.h"
 
@@ -1174,10 +1175,10 @@ fpga_result transferHostToFpga(fpga_dma_handle dma_h, uint64_t dst,
 		}
 	}
 	if (count_left) {
-		uint32_t dma_chunks = count_left / FPGA_DMA_BUF_SIZE;
+		uint64_t dma_chunks = count_left / FPGA_DMA_BUF_SIZE;
 		count_left -= (dma_chunks * FPGA_DMA_BUF_SIZE);
 		debug_print
-		    ("DMA TX : dma chuncks = %d, count_left = %08lx, dst = %08lx, src = %08lx \n",
+		    ("DMA TX : dma chuncks = %" PRIu64 ", count_left = %08lx, dst = %08lx, src = %08lx \n",
 		     dma_chunks, count_left, dst, src);
 
 		for (i = 0; i < dma_chunks; i++) {
@@ -1309,10 +1310,10 @@ fpga_result transferFpgaToHost(fpga_dma_handle dma_h, uint64_t dst,
 		}
 	}
 	if (count_left) {
-		uint32_t dma_chunks = count_left / FPGA_DMA_BUF_SIZE;
+		uint64_t dma_chunks = count_left / FPGA_DMA_BUF_SIZE;
 		count_left -= (dma_chunks * FPGA_DMA_BUF_SIZE);
 		debug_print
-		    ("DMA TX : dma chunks = %d, count_left = %08lx, dst = %08lx, src = %08lx \n",
+		    ("DMA TX : dma chunks = %" PRIu64 ", count_left = %08lx, dst = %08lx, src = %08lx \n",
 		     dma_chunks, count_left, dst, src);
 		assert(FPGA_DMA_MAX_BUF >= 8);
 		uint64_t pending_buf = 0;
@@ -1437,10 +1438,10 @@ fpga_result transferFpgaToFpga(fpga_dma_handle dma_h, uint64_t dst,
 	uint64_t *tmp_buf = NULL;
 	if (IS_DMA_ALIGNED(dst) &&
 	    IS_DMA_ALIGNED(src) && IS_DMA_ALIGNED(count_left)) {
-		uint32_t dma_chunks = count_left / FPGA_DMA_BUF_SIZE;
+		uint64_t dma_chunks = count_left / FPGA_DMA_BUF_SIZE;
 		count_left -= (dma_chunks * FPGA_DMA_BUF_SIZE);
 		debug_print
-		    ("!!!FPGA to FPGA!!! TX :dma chunks = %d, count = %08lx, dst = %08lx, src = %08lx \n",
+		    ("!!!FPGA to FPGA!!! TX :dma chunks = %" PRIu64 ", count = %08lx, dst = %08lx, src = %08lx \n",
 		     dma_chunks, count_left, dst, src);
 
 		for (i = 0; i < dma_chunks; i++) {

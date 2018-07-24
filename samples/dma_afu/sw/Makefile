@@ -64,14 +64,17 @@ else
 	LDFLAGS += -lhwloc
 endif
 
-all: fpga_dma_test
+all: fpga_dma_test fpga_dma.so
 
 # FPGA DMA Driver
-fpga_dma_test: fpga_dma_test.o fpga_dma.so
-	gcc -o $@ $^ $(LDFLAGS) -Wl,-rpath,$(PWD)
+fpga_dma_test: fpga_dma_test.o fpga_dma.a
+	gcc -o $@ $^ $(LDFLAGS)
 
 fpga_dma_test.o: fpga_dma_test.c
 	gcc $(CFLAGS) -o $@ -c $^
+
+fpga_dma.a: fpga_dma.o x86-sse2.o
+	ar rcs $@ $^
 
 fpga_dma.so: fpga_dma.o x86-sse2.o
 	gcc $(CFLAGS)  -o $@ $^ $(LDFLAGS) -shared

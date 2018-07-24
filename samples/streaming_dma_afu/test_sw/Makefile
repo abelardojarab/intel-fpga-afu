@@ -24,7 +24,7 @@ endif
 all: fpga_dma_st_gtest
 
 fpga_dma_st_gtest: fpga_dma_st_gtest.o fpga_pattern_gen.o fpga_pattern_checker.o
-	g++ -o $@ $^ -L$(gtest_lib) -lgtest -L$(drv_path) -l:fpga_dma_st.so $(LDFLAGS) -Wl,-rpath,$(PWD)
+	g++ -o $@ $^ -L$(gtest_lib) -lgtest -L$(drv_path) -l:fpga_dma_st.a $(LDFLAGS)
 
 fpga_dma_st_gtest.o: fpga_dma_st_gtest.cpp
 	gcc -o $@ -c $^ $(CFLAGS) -I$(drv_path) -I$(gtest_include)

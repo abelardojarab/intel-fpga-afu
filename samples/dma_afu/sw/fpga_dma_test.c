@@ -101,7 +101,7 @@ config = {
 /*
  *  *  * Parse command line arguments
  *   *   */
-#define GETOPT_STRING "B"
+#define GETOPT_STRING "B:mpc2nayCM"
 fpga_result parse_args(int argc, char *argv[])
 {
   struct option longopts[] = {
@@ -133,37 +133,38 @@ fpga_result parse_args(int argc, char *argv[])
       }
       break;
     case 'm':
-                        use_malloc = true;
-                        break;
-                case 'p':
-                        use_malloc = false;
-                        break;
-                case 'c':
-                        use_memcpy = true;
-                        break;
-                case '2':
-                        use_memcpy = false;
-                        break;
-                case 'n':
-                        use_advise = false;
-                        break;
-                case 'a':
-                        use_advise = true;
-                        break;
-                case 'y':
-                        do_not_verify = true;
-                        break;
-                case 'C':
-                        cpu_affinity = true;
-                        break;
-                case 'M':
-                        memory_affinity = true;
-                        break;
+      use_malloc = true;
+      break;
+    case 'p':
+      use_malloc = false;
+      break;
+    case 'c':
+      use_memcpy = true;
+      break;
+    case '2':
+      use_memcpy = false;
+      break;
+    case 'n':
+      use_advise = false;
+      break;
+    case 'a':
+      use_advise = true;
+      break;
+    case 'y':
+      do_not_verify = true;
+      break;
+    case 'C':
+      cpu_affinity = true;
+      break;
+    case 'M':
+      memory_affinity = true;
+      break;
 
-        default: /* invalid option */
-      fprintf(stderr, "Invalid cmdline options\n");     return -1;
+    default: /* invalid option */
+      fprintf(stderr, "Invalid cmdline options\n");     
+      return -1;
     }
-  }
+ } 
 
   /* first non-option argument as hardware or simulation*/
   if (optind == argc) {
@@ -196,6 +197,17 @@ int find_fpga(fpga_guid interface_id, fpga_token *fpga, uint32_t *num_matches)
     res = fpgaPropertiesSetBus(filter, config.target.bus);
     ON_ERR_GOTO(res, out_destroy, "setting bus");
   }
+
+  res = fpgaEnumerate(&filter, 1, fpga, 1, num_matches);
+  ON_ERR_GOTO(res, out, "enumerating FPGAs");
+
+out_destroy:
+  res = fpgaDestroyProperties(&filter);
+  ON_ERR_GOTO(res, out, "destroying properties object");
+	
+out:
+   return err_cnt;
+}
 
 // Aligned malloc
 static inline void *malloc_aligned(uint64_t align, size_t size)
@@ -282,7 +294,7 @@ static inline fpga_result verify_buffer(char *buf, size_t size)
 	}
 
 	return FPGA_OK;
-}
+ }
 
 static inline void clear_buffer(char *buf, size_t size)
 {
@@ -828,3 +840,4 @@ int main(int argc, char *argv[])
  out:
 	return err_cnt;
 }
+

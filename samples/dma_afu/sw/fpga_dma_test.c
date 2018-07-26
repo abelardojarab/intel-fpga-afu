@@ -115,62 +115,62 @@ fpga_result parse_args(int argc, char *argv[])
 	while (-1 != (getopt_ret = getopt_long(argc, argv, GETOPT_STRING,
 			 longopts, &option_index))) {
 		const char *tmp_optarg = optarg;
-    /* Checks to see if optarg is null and if not goes to value of optarg */
+		/* Checks to see if optarg is null and if not goes to value of optarg */
 		if ((optarg) && ('=' == *tmp_optarg)){
 			++tmp_optarg;
 		}
 
 		switch (getopt_ret) {
 			case 'B':   /* bus */
-      			if (NULL == tmp_optarg)
-							break;
-      			endptr = NULL;
-      			config.target.bus = (int) strtoul(tmp_optarg, &endptr, 0);
-      			if (endptr != tmp_optarg + strnlen(tmp_optarg, 100)) {
-      						fprintf(stderr, "invalid bus: %s\n", tmp_optarg);
-        					return FPGA_EXCEPTION;
-      			}
-      			break;
+				if (NULL == tmp_optarg)
+					break;
+				endptr = NULL;
+				config.target.bus = (int) strtoul(tmp_optarg, &endptr, 0);
+				if (endptr != tmp_optarg + strnlen(tmp_optarg, 100)) {
+					fprintf(stderr, "invalid bus: %s\n", tmp_optarg);
+					return FPGA_EXCEPTION;
+				}
+				break;
 			case 'm':
-      			use_malloc = true;
-      			break;
-    		case 'p':
-      			use_malloc = false;
-      			break;
-    		case 'c':
-      			use_memcpy = true;
-      			break;
-    		case '2':
-      			use_memcpy = false;
-      			break;
-    		case 'n':
-      			use_advise = false;
-      			break;
-    		case 'a':
-      			use_advise = true;
-      			break;
-    		case 'y':
-      			do_not_verify = true;
-      			break;
-    		case 'C':
-      			cpu_affinity = true;
-      			break;
-    		case 'M':
-      			memory_affinity = true;
-      			break;
+				use_malloc = true;
+				break;
+			case 'p':
+				use_malloc = false;
+				break;
+		case 'c':
+				use_memcpy = true;
+				break;
+		case '2':
+				use_memcpy = false;
+				break;
+		case 'n':
+				use_advise = false;
+				break;
+		case 'a':
+				use_advise = true;
+				break;
+		case 'y':
+				do_not_verify = true;
+				break;
+		case 'C':
+				cpu_affinity = true;
+				break;
+		case 'M':
+				memory_affinity = true;
+				break;
 
-    		default: /* invalid option */
-      			fprintf(stderr, "Invalid cmdline options\n");     
-      			return -1;
-    }
- } 
+			default: /* invalid option */
+				fprintf(stderr, "Invalid cmdline options\n");     
+				return -1;
+		}
+	} 
 
-  /* first non-option argument as hardware or simulation*/
+	/* first non-option argument as hardware or simulation*/
 	if (optind == argc) {
 		fprintf(stderr, "Hardware (0) or simulation (1)?\n");
-   	return FPGA_EXCEPTION;
+		return FPGA_EXCEPTION;
 	}
-	
+
 	return FPGA_OK;
 }
 
@@ -179,7 +179,7 @@ int find_fpga(fpga_guid interface_id, fpga_token *fpga, uint32_t *num_matches)
 	fpga_properties filter = NULL;
 	fpga_result   res;
 
-  /* Get number of FPGAs in system*/
+	/* Get number of FPGAs in system*/
 	res = fpgaGetProperties(NULL, &filter);
 	ON_ERR_GOTO(res, out_destroy, "creating properties object");
 
@@ -200,11 +200,11 @@ int find_fpga(fpga_guid interface_id, fpga_token *fpga, uint32_t *num_matches)
 	res = fpgaEnumerate(&filter, 1, fpga, 1, num_matches);
 	ON_ERR_GOTO(res, out, "enumerating FPGAs");
 
-	out_destroy:
-		res = fpgaDestroyProperties(&filter);
-		ON_ERR_GOTO(res, out, "destroying properties object");	
-	out:
-   	return err_cnt;
+out_destroy:
+	res = fpgaDestroyProperties(&filter);
+	ON_ERR_GOTO(res, out, "destroying properties object");	
+out:
+	return err_cnt;
 }
 
 // Aligned malloc
@@ -353,12 +353,12 @@ fpga_result get_bus_info(fpga_token tok, struct bus_info *finfo){
 		return FPGA_EXCEPTION;
 	}
 
-	out_destroy:
-		res = fpgaDestroyProperties(&props);
-		ON_ERR_GOTO(res, out, "fpgaDestroyProps");
+out_destroy:
+	res = fpgaDestroyProperties(&props);
+	ON_ERR_GOTO(res, out, "fpgaDestroyProps");
 
-	out:
-		return res;
+out:
+	return res;
 }
 
 void print_bus_info(struct bus_info *info){

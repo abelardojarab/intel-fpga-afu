@@ -89,13 +89,14 @@ bool memory_affinity = true;
  *   *   * */
 struct config{
 	struct target {
-	int bus;
+		int bus;
 	} target;
-}
-	config = {
+	}
+
+config = {
 	.target = {
-	.bus = -1
-    }
+		.bus = -1
+	}
 };
 
 /*

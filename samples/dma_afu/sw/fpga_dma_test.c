@@ -91,7 +91,7 @@ struct config{
 	struct target {
 		int bus;
 	} target;
-	}
+}
 
 config = {
 	.target = {

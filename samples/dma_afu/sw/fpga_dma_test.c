@@ -88,14 +88,14 @@ bool memory_affinity = true;
  *  *  * Global configuration of bus, set during parse_args()
  *   *   * */
 struct config{
-  struct target {
-    int bus;
-    } target;
+	struct target {
+	int bus;
+   } target;
 }
-config = {
-  .target = {
-    .bus = -1
-  }
+	config = {
+   .target = {
+   	.bus = -1
+    }
 };
 
 /*
@@ -104,109 +104,107 @@ config = {
 #define GETOPT_STRING "B:mpc2nayCM"
 fpga_result parse_args(int argc, char *argv[])
 {
-  struct option longopts[] = {
+	struct option longopts[] = {
+		{"bus",          required_argument, NULL, 'B'}
+	};
 
-    {"bus",          required_argument, NULL, 'B'}
-  };
+	int getopt_ret;
+	int option_index;
+	char *endptr = NULL;
 
-  int getopt_ret;
-  int option_index;
-  char *endptr = NULL;
-
-  while (-1 != (getopt_ret = getopt_long(argc, argv, GETOPT_STRING,
-            longopts, &option_index))) {
-    const char *tmp_optarg = optarg;
+	while (-1 != (getopt_ret = getopt_long(argc, argv, GETOPT_STRING,
+			 longopts, &option_index))) {
+		const char *tmp_optarg = optarg;
     /* Checks to see if optarg is null and if not goes to value of optarg */
-    if ((optarg) && ('=' == *tmp_optarg)){
-      ++tmp_optarg;
-    }
+		if ((optarg) && ('=' == *tmp_optarg)){
+			++tmp_optarg;
+		}
 
-    switch (getopt_ret) {
-    case 'B':   /* bus */
-      if (NULL == tmp_optarg)
-        break;
-      endptr = NULL;
-      config.target.bus = (int) strtoul(tmp_optarg, &endptr, 0);
-      if (endptr != tmp_optarg + strnlen(tmp_optarg, 100)) {
-        fprintf(stderr, "invalid bus: %s\n", tmp_optarg);
-        return FPGA_EXCEPTION;
-      }
-      break;
-    case 'm':
-      use_malloc = true;
-      break;
-    case 'p':
-      use_malloc = false;
-      break;
-    case 'c':
-      use_memcpy = true;
-      break;
-    case '2':
-      use_memcpy = false;
-      break;
-    case 'n':
-      use_advise = false;
-      break;
-    case 'a':
-      use_advise = true;
-      break;
-    case 'y':
-      do_not_verify = true;
-      break;
-    case 'C':
-      cpu_affinity = true;
-      break;
-    case 'M':
-      memory_affinity = true;
-      break;
+		switch (getopt_ret) {
+			case 'B':   /* bus */
+      			if (NULL == tmp_optarg)
+							break;
+      			endptr = NULL;
+      			config.target.bus = (int) strtoul(tmp_optarg, &endptr, 0);
+      			if (endptr != tmp_optarg + strnlen(tmp_optarg, 100)) {
+      						fprintf(stderr, "invalid bus: %s\n", tmp_optarg);
+        					return FPGA_EXCEPTION;
+      			}
+      			break;
+			case 'm':
+      			use_malloc = true;
+      			break;
+    		case 'p':
+      			use_malloc = false;
+      			break;
+    		case 'c':
+      			use_memcpy = true;
+      			break;
+    		case '2':
+      			use_memcpy = false;
+      			break;
+    		case 'n':
+      			use_advise = false;
+      			break;
+    		case 'a':
+      			use_advise = true;
+      			break;
+    		case 'y':
+      			do_not_verify = true;
+      			break;
+    		case 'C':
+      			cpu_affinity = true;
+      			break;
+    		case 'M':
+      			memory_affinity = true;
+      			break;
 
-    default: /* invalid option */
-      fprintf(stderr, "Invalid cmdline options\n");     
-      return -1;
+    		default: /* invalid option */
+      			fprintf(stderr, "Invalid cmdline options\n");     
+      			return -1;
     }
  } 
 
   /* first non-option argument as hardware or simulation*/
-  if (optind == argc) {
-    fprintf(stderr, "Hardware (0) or simulation (1)?\n");
-    return FPGA_EXCEPTION;
-  }
-
-  return FPGA_OK;
+	if (optind == argc) {
+		fprintf(stderr, "Hardware (0) or simulation (1)?\n");
+   	return FPGA_EXCEPTION;
+	}
+	
+	return FPGA_OK;
 }
 
 int find_fpga(fpga_guid interface_id, fpga_token *fpga, uint32_t *num_matches)
 {
-  fpga_properties filter = NULL;
-  fpga_result   res;
+		fpga_properties filter = NULL;
+		fpga_result   res;
 
   /* Get number of FPGAs in system*/
-  res = fpgaGetProperties(NULL, &filter);
-  ON_ERR_GOTO(res, out_destroy, "creating properties object");
+	res = fpgaGetProperties(NULL, &filter);
+ 	ON_ERR_GOTO(res, out_destroy, "creating properties object");
 
-  res = fpgaPropertiesSetObjectType(filter, FPGA_DEVICE);
-  ON_ERR_GOTO(res, out_destroy, "setting interface ID");
+   res = fpgaPropertiesSetObjectType(filter, FPGA_DEVICE);
+   ON_ERR_GOTO(res, out_destroy, "setting interface ID");
 
-  res = fpgaPropertiesSetObjectType(filter, FPGA_ACCELERATOR);
-    ON_ERR_GOTO(res, out_destroy, "fpgaPropertiesSetObjectType");
+   res = fpgaPropertiesSetObjectType(filter, FPGA_ACCELERATOR);
+   ON_ERR_GOTO(res, out_destroy, "fpgaPropertiesSetObjectType");
 
-  res = fpgaPropertiesSetGUID(filter, interface_id);
-  ON_ERR_GOTO(res, out_destroy, "fpgaPropertiesSetGUID");
+   res = fpgaPropertiesSetGUID(filter, interface_id);
+   ON_ERR_GOTO(res, out_destroy, "fpgaPropertiesSetGUID");
 
-  if (-1 != config.target.bus) {
-    res = fpgaPropertiesSetBus(filter, config.target.bus);
-    ON_ERR_GOTO(res, out_destroy, "setting bus");
-  }
+   if (-1 != config.target.bus) {
+		res = fpgaPropertiesSetBus(filter, config.target.bus);
+      ON_ERR_GOTO(res, out_destroy, "setting bus");
+	}
 
-  res = fpgaEnumerate(&filter, 1, fpga, 1, num_matches);
-  ON_ERR_GOTO(res, out, "enumerating FPGAs");
+	res = fpgaEnumerate(&filter, 1, fpga, 1, num_matches);
+	ON_ERR_GOTO(res, out, "enumerating FPGAs");
 
-out_destroy:
-  res = fpgaDestroyProperties(&filter);
-  ON_ERR_GOTO(res, out, "destroying properties object");
-	
-out:
-   return err_cnt;
+	out_destroy:
+		res = fpgaDestroyProperties(&filter);
+		ON_ERR_GOTO(res, out, "destroying properties object");	
+	out:
+   	return err_cnt;
 }
 
 // Aligned malloc
@@ -220,13 +218,13 @@ static inline void *malloc_aligned(uint64_t align, size_t size)
 	} else {
 		align = getpagesize();
 		blk =
-		    mmap(NULL, size + align + 2 * sizeof(void *),
+			 mmap(NULL, size + align + 2 * sizeof(void *),
 			 PROT_READ | PROT_WRITE,
 			 MAP_SHARED | MAP_ANONYMOUS | MAP_POPULATE, 0, 0);
 	}
 	void **aptr =
-	    (void **)(((uint64_t) blk + 2 * sizeof(void *) + (align - 1)) &
-		      ~(align - 1));
+		 (void **)(((uint64_t) blk + 2 * sizeof(void *) + (align - 1)) &
+				~(align - 1));
 	aptr[-1] = blk;
 	aptr[-2] = (void *)(size + align + 2 * sizeof(void *));
 	return aptr;
@@ -285,8 +283,8 @@ static inline fpga_result verify_buffer(char *buf, size_t size)
 			rnum = rand() % 256;
 			if ((*buf & 0xFF) != rnum) {
 				printf
-				    ("Invalid data at %zx Expected = %zx Actual = %x\n",
-				     i, rnum, (*buf & 0xFF));
+					 ("Invalid data at %zx Expected = %zx Actual = %x\n",
+					  i, rnum, (*buf & 0xFF));
 				return FPGA_INVALID_PARAM;
 			}
 			buf++;
@@ -320,7 +318,7 @@ static inline void report_bandwidth(size_t size, double seconds)
 	char buf[2048];
 	double throughput = (double)size / ((double)seconds * 1000 * 1000);
 	printf("\rMeasured bandwidth = %lf Megabytes/sec %s\n", throughput,
-	       showDelays(buf));
+			 showDelays(buf));
 
 #ifdef CHECK_DELAYS
 	poll_wait_count = 0;
@@ -332,55 +330,55 @@ static inline void report_bandwidth(size_t size, double seconds)
 static inline double getTime(struct timespec start, struct timespec end)
 {
 	uint64_t diff =
-	    1000000000L * (end.tv_sec - start.tv_sec) + end.tv_nsec -
-	    start.tv_nsec;
+		 1000000000L * (end.tv_sec - start.tv_sec) + end.tv_nsec -
+		 start.tv_nsec;
 	return (double)diff / (double)1000000000L;
 }
 
 /* functions to get the bus number when there are multiple buses */
 struct bus_info{
-  uint8_t bus;
+	uint8_t bus;
 };
 
 fpga_result get_bus_info(fpga_token tok, struct bus_info *finfo){
-  fpga_result res = FPGA_OK;
-  fpga_properties props;
-  res = fpgaGetProperties(tok, &props);
-  ON_ERR_GOTO(res, out, "reading properties from Token");
+	fpga_result res = FPGA_OK;
+   fpga_properties props;
+   res = fpgaGetProperties(tok, &props);
+   ON_ERR_GOTO(res, out, "reading properties from Token");
 
-  res = fpgaPropertiesGetBus(props, &finfo->bus);
-  ON_ERR_GOTO(res, out_destroy, "Reading bus from properties");
+   res = fpgaPropertiesGetBus(props, &finfo->bus);
+   ON_ERR_GOTO(res, out_destroy, "Reading bus from properties");
 
-  if(res != FPGA_OK){
-    return FPGA_EXCEPTION;
-  }
+   if(res != FPGA_OK){
+		return FPGA_EXCEPTION;
+   }
 
-  out_destroy:
-    res = fpgaDestroyProperties(&props);
-    ON_ERR_GOTO(res, out, "fpgaDestroyProps");
+   out_destroy:
+		res = fpgaDestroyProperties(&props);
+		ON_ERR_GOTO(res, out, "fpgaDestroyProps");
 
-  out:
-    return res;
+   out:
+		return res;
 }
 
 void print_bus_info(struct bus_info *info){
-  printf("Running on bus 0x%02X. \n", info->bus);
+	printf("Running on bus 0x%02X. \n", info->bus);
 }
 
 
 fpga_result ddr_sweep(fpga_dma_handle dma_h, uint64_t ptr_align,
-		      uint64_t siz_align)
+				uint64_t siz_align)
 {
 	int res;
 	struct timespec start, end;
 
 	ssize_t total_mem_size =
-	    (uint64_t) (4 * 1024) * (uint64_t) (1024 * 1024);
+		 (uint64_t) (4 * 1024) * (uint64_t) (1024 * 1024);
 
 	uint64_t *dma_buf_ptr = malloc_aligned(getpagesize(), total_mem_size);
 	if (dma_buf_ptr == NULL) {
 		printf("Unable to allocate %ld bytes of memory",
-		       total_mem_size);
+				 total_mem_size);
 		return FPGA_NO_MEMORY;
 	}
 
@@ -394,8 +392,8 @@ fpga_result ddr_sweep(fpga_dma_handle dma_h, uint64_t ptr_align,
 	total_mem_size -= ptr_align + siz_align;
 
 	printf("Buffer pointer = %p, size = 0x%lx (%p through %p)\n",
-	       dma_buf_ptr, total_mem_size, dma_buf_ptr,
-	       (uint64_t *) ((uint64_t) dma_buf_ptr + total_mem_size));
+			 dma_buf_ptr, total_mem_size, dma_buf_ptr,
+			 (uint64_t *) ((uint64_t) dma_buf_ptr + total_mem_size));
 
 	printf("Allocated test buffer\n");
 	printf("Fill test buffer\n");
@@ -419,13 +417,13 @@ fpga_result ddr_sweep(fpga_dma_handle dma_h, uint64_t ptr_align,
 	for (i = 0; i < ITERS; i++) {
 		clock_gettime(CLOCK_MONOTONIC, &start);
 		res =
-		    fpgaDmaTransferSync(dma_h, dst, src, total_mem_size,
+			 fpgaDmaTransferSync(dma_h, dst, src, total_mem_size,
 					HOST_TO_FPGA_MM);
 		clock_gettime(CLOCK_MONOTONIC, &end);
 		if (res != FPGA_OK) {
 			printf
-			    (" fpgaDmaTransferSync Host to FPGA failed with error %s",
-			     fpgaErrStr(res));
+				 (" fpgaDmaTransferSync Host to FPGA failed with error %s",
+				  fpgaErrStr(res));
 			free_aligned(buf_to_free_ptr);
 			return FPGA_EXCEPTION;
 		}
@@ -456,14 +454,14 @@ fpga_result ddr_sweep(fpga_dma_handle dma_h, uint64_t ptr_align,
 	for (i = 0; i < ITERS; i++) {
 		clock_gettime(CLOCK_MONOTONIC, &start);
 		res =
-		    fpgaDmaTransferSync(dma_h, dst, src, total_mem_size,
+			 fpgaDmaTransferSync(dma_h, dst, src, total_mem_size,
 					FPGA_TO_HOST_MM);
 		clock_gettime(CLOCK_MONOTONIC, &end);
 
 		if (res != FPGA_OK) {
 			printf
-			    (" fpgaDmaTransferSync FPGA to Host failed with error %s",
-			     fpgaErrStr(res));
+				 (" fpgaDmaTransferSync FPGA to Host failed with error %s",
+				  fpgaErrStr(res));
 			free_aligned(buf_to_free_ptr);
 			return FPGA_EXCEPTION;
 		}
@@ -488,7 +486,7 @@ fpga_result ddr_sweep(fpga_dma_handle dma_h, uint64_t ptr_align,
 static void usage(void)
 {
 	printf
-	    ("Usage: fpga_dma_test <use_ase = 1 (simulation only), 0 (hardware)> [options]\n");
+		 ("Usage: fpga_dma_test <use_ase = 1 (simulation only), 0 (hardware)> [options]\n");
 	printf("Options are:\n");
 	printf("\t-m\tUse malloc (default)\n");
 	printf("\t-p\tUse mmap (Incompatible with -m)\n");
@@ -497,13 +495,13 @@ static void usage(void)
 	printf("\t-n\tDo not provide OS advice (default)\n");
 	printf("\t-a\tUse madvise (Incompatible with -n)\n");
 	printf
-	    ("\t-y\tDo not verify buffer contents - faster (default is to verify)\n");
+		 ("\t-y\tDo not verify buffer contents - faster (default is to verify)\n");
 	printf
-	    ("\t-C\tDo not restrict process to CPUs attached to DCP NUMA node\n");
+		 ("\t-C\tDo not restrict process to CPUs attached to DCP NUMA node\n");
 	printf
-	    ("\t-M\tDo not restrict process memory allocation to DCP NUMA node\n");
-        printf
-            ("\t-B\t Set a target bus number\n");
+		 ("\t-M\tDo not restrict process memory allocation to DCP NUMA node\n");
+   printf
+       ("\t-B\t Set a target bus number\n");
 }
 
 int main(int argc, char *argv[])
@@ -531,102 +529,43 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-  	res = parse_args(argc, argv);
-  	if (res == FPGA_EXCEPTION){
-    		return 1;
-  	}
-
-  	use_ase = atoi(argv[1]);
-  	if (use_ase == 0) {
-    		printf("Running test in HW mode\n");
-  	} else {
-    		printf("Running test in ASE mode\n");
-  	}
-
-/*
-	int x;
-	for (x = 2; x < argc; x++) {
-		char *str = argv[x];
-		if (str[0] != '-') {
-			usage();
+	res = parse_args(argc, argv);
+	if (res == FPGA_EXCEPTION){
 			return 1;
-		}
-
-		switch (str[1]) {
-		case 'm':
-			use_malloc = true;
-			break;
-		case 'p':
-			use_malloc = false;
-			break;
-		case 'c':
-			use_memcpy = true;
-			break;
-		case '2':
-			use_memcpy = false;
-			break;
-		case 'n':
-			use_advise = false;
-			break;
-		case 'a':
-			use_advise = true;
-			break;
-		case 'y':
-			do_not_verify = true;
-			break;
-		case 'C':
-			cpu_affinity = true;
-			break;
-		case 'M':
-			memory_affinity = true;
-			break;
-		default:
-			return 1;
-		}
 	}
-*/
+
+	use_ase = atoi(argv[1]);
+	if (use_ase == 0) {
+			printf("Running test in HW mode\n");
+	} else {
+			printf("Running test in ASE mode\n");
+	}
+
+
 	// enumerate the afc
 	if (uuid_parse(HELLO_AFU_ID, guid) < 0) {
 		return 1;
 	}
 
 	res = find_fpga(guid, &afc_token, &num_matches);
-  	if (num_matches == 0) {
-    		fprintf(stderr, "No suitable slots found.\n");
-    		return 1;
-    	}
-  	if (num_matches > 1) {
-     		fprintf(stderr, "Found more than one suitable slot. ");
-     		res = get_bus_info(afc_token, &info);
-     		ON_ERR_GOTO(res, out, "getting bus num");
-     		print_bus_info(&info);
-  	}
-
-  	if (num_matches < 1) {
-     		printf("Error: Number of matches < 1");
-     		ON_ERR_GOTO(FPGA_INVALID_PARAM, out, "num_matches<1");
-  	}
-
-
-/*
-	res = fpgaGetProperties(NULL, &filter);
-	ON_ERR_GOTO(res, out, "fpgaGetProperties");
-
-	res = fpgaPropertiesSetObjectType(filter, FPGA_ACCELERATOR);
-	ON_ERR_GOTO(res, out_destroy_prop, "fpgaPropertiesSetObjectType");
-
-	res = fpgaPropertiesSetGUID(filter, guid);
-	ON_ERR_GOTO(res, out_destroy_prop, "fpgaPropertiesSetGUID");
-
-	res = fpgaEnumerate(&filter, 1, &afc_token, 1, &num_matches);
-	ON_ERR_GOTO(res, out_destroy_prop, "fpgaEnumerate");
+	if (num_matches == 0) {
+			fprintf(stderr, "No suitable slots found.\n");
+			return 1;
+		}
+	if (num_matches > 1) {
+			fprintf(stderr, "Found more than one suitable slot. ");
+			res = get_bus_info(afc_token, &info);
+			ON_ERR_GOTO(res, out, "getting bus num");
+			print_bus_info(&info);
+	}
 
 	if (num_matches < 1) {
-		printf("Error: Number of matches < 1");
-		ON_ERR_GOTO(FPGA_INVALID_PARAM, out_destroy_prop,
-			    "num_matches<1");
+			printf("Error: Number of matches < 1");
+			ON_ERR_GOTO(FPGA_INVALID_PARAM, out, "num_matches<1");
 	}
-*/
+
+
+
 	// open the AFC
 	res = fpgaOpen(afc_token, &afc_h, 0);
 	ON_ERR_GOTO(res, out_destroy_tok, "fpgaOpen");
@@ -656,7 +595,7 @@ int main(int argc, char *argv[])
 					 HWLOC_TOPOLOGY_FLAG_IO_DEVICES);
 		hwloc_topology_load(topology);
 		hwloc_obj_t obj =
-		    hwloc_get_pcidev_by_busid(topology, dom, bus, dev, func);
+			 hwloc_get_pcidev_by_busid(topology, dom, bus, dev, func);
 		hwloc_obj_t obj2 = hwloc_get_non_io_ancestor_obj(topology, obj);
 #ifdef FPGA_DMA_DEBUG
 		hwloc_obj_type_snprintf(str, 4096, obj2, 1);
@@ -671,25 +610,25 @@ int main(int argc, char *argv[])
 		if (memory_affinity) {
 #if HWLOC_API_VERSION > 0x00020000
 			retval =
-			    hwloc_set_membind(topology, obj2->nodeset,
-					      HWLOC_MEMBIND_THREAD,
-					      HWLOC_MEMBIND_MIGRATE |
-					      HWLOC_MEMBIND_BYNODESET);
+				 hwloc_set_membind(topology, obj2->nodeset,
+							HWLOC_MEMBIND_THREAD,
+							HWLOC_MEMBIND_MIGRATE |
+							HWLOC_MEMBIND_BYNODESET);
 #else
 			retval =
-			    hwloc_set_membind_nodeset(topology, obj2->nodeset,
-						      HWLOC_MEMBIND_THREAD,
-						      HWLOC_MEMBIND_MIGRATE);
+				 hwloc_set_membind_nodeset(topology, obj2->nodeset,
+								HWLOC_MEMBIND_THREAD,
+								HWLOC_MEMBIND_MIGRATE);
 #endif
 			ON_ERR_GOTO(retval, out_destroy_tok,
-				    "hwloc_set_membind");
+					 "hwloc_set_membind");
 		}
 		if (cpu_affinity) {
 			retval =
-			    hwloc_set_cpubind(topology, obj2->cpuset,
-					      HWLOC_CPUBIND_STRICT);
+				 hwloc_set_cpubind(topology, obj2->cpuset,
+							HWLOC_CPUBIND_STRICT);
 			ON_ERR_GOTO(retval, out_destroy_tok,
-				    "hwloc_set_cpubind");
+					 "hwloc_set_cpubind");
 		}
 	}
 #endif
@@ -723,7 +662,7 @@ int main(int argc, char *argv[])
 	if (use_advise) {
 		int rr = madvise(dma_buf_ptr, count, MADV_SEQUENTIAL);
 		ON_ERR_GOTO((rr == 0) ? FPGA_OK : FPGA_EXCEPTION, out_dma_close,
-			    "Error madvise");
+				 "Error madvise");
 	}
 
 	fill_buffer((char *)dma_buf_ptr, count);

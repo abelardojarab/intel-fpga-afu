@@ -137,25 +137,25 @@ fpga_result parse_args(int argc, char *argv[])
 			case 'p':
 				use_malloc = false;
 				break;
-		case 'c':
+			case 'c':
 				use_memcpy = true;
 				break;
-		case '2':
+			case '2':
 				use_memcpy = false;
 				break;
-		case 'n':
+			case 'n':
 				use_advise = false;
 				break;
-		case 'a':
+			case 'a':
 				use_advise = true;
 				break;
-		case 'y':
+			case 'y':
 				do_not_verify = true;
 				break;
-		case 'C':
+			case 'C':
 				cpu_affinity = true;
 				break;
-		case 'M':
+			case 'M':
 				memory_affinity = true;
 				break;
 

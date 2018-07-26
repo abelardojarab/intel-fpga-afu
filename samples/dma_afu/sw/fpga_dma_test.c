@@ -90,11 +90,11 @@ bool memory_affinity = true;
 struct config{
 	struct target {
 	int bus;
-   } target;
+	} target;
 }
 	config = {
-   .target = {
-   	.bus = -1
+	.target = {
+	.bus = -1
     }
 };
 
@@ -176,25 +176,25 @@ fpga_result parse_args(int argc, char *argv[])
 
 int find_fpga(fpga_guid interface_id, fpga_token *fpga, uint32_t *num_matches)
 {
-		fpga_properties filter = NULL;
-		fpga_result   res;
+	fpga_properties filter = NULL;
+	fpga_result   res;
 
   /* Get number of FPGAs in system*/
 	res = fpgaGetProperties(NULL, &filter);
- 	ON_ERR_GOTO(res, out_destroy, "creating properties object");
+	ON_ERR_GOTO(res, out_destroy, "creating properties object");
 
-   res = fpgaPropertiesSetObjectType(filter, FPGA_DEVICE);
-   ON_ERR_GOTO(res, out_destroy, "setting interface ID");
+	res = fpgaPropertiesSetObjectType(filter, FPGA_DEVICE);
+	ON_ERR_GOTO(res, out_destroy, "setting interface ID");
 
-   res = fpgaPropertiesSetObjectType(filter, FPGA_ACCELERATOR);
-   ON_ERR_GOTO(res, out_destroy, "fpgaPropertiesSetObjectType");
+	res = fpgaPropertiesSetObjectType(filter, FPGA_ACCELERATOR);
+	ON_ERR_GOTO(res, out_destroy, "fpgaPropertiesSetObjectType");
 
-   res = fpgaPropertiesSetGUID(filter, interface_id);
-   ON_ERR_GOTO(res, out_destroy, "fpgaPropertiesSetGUID");
+	res = fpgaPropertiesSetGUID(filter, interface_id);
+	ON_ERR_GOTO(res, out_destroy, "fpgaPropertiesSetGUID");
 
-   if (-1 != config.target.bus) {
+	if (-1 != config.target.bus) {
 		res = fpgaPropertiesSetBus(filter, config.target.bus);
-      ON_ERR_GOTO(res, out_destroy, "setting bus");
+		ON_ERR_GOTO(res, out_destroy, "setting bus");
 	}
 
 	res = fpgaEnumerate(&filter, 1, fpga, 1, num_matches);
@@ -342,22 +342,22 @@ struct bus_info{
 
 fpga_result get_bus_info(fpga_token tok, struct bus_info *finfo){
 	fpga_result res = FPGA_OK;
-   fpga_properties props;
-   res = fpgaGetProperties(tok, &props);
-   ON_ERR_GOTO(res, out, "reading properties from Token");
+	fpga_properties props;
+	res = fpgaGetProperties(tok, &props);
+	ON_ERR_GOTO(res, out, "reading properties from Token");
 
-   res = fpgaPropertiesGetBus(props, &finfo->bus);
-   ON_ERR_GOTO(res, out_destroy, "Reading bus from properties");
+	res = fpgaPropertiesGetBus(props, &finfo->bus);
+	ON_ERR_GOTO(res, out_destroy, "Reading bus from properties");
 
-   if(res != FPGA_OK){
+	if(res != FPGA_OK){
 		return FPGA_EXCEPTION;
-   }
+	}
 
-   out_destroy:
+	out_destroy:
 		res = fpgaDestroyProperties(&props);
 		ON_ERR_GOTO(res, out, "fpgaDestroyProps");
 
-   out:
+	out:
 		return res;
 }
 
@@ -500,8 +500,8 @@ static void usage(void)
 		 ("\t-C\tDo not restrict process to CPUs attached to DCP NUMA node\n");
 	printf
 		 ("\t-M\tDo not restrict process memory allocation to DCP NUMA node\n");
-   printf
-       ("\t-B\t Set a target bus number\n");
+	printf
+		 ("\t-B\t Set a target bus number\n");
 }
 
 int main(int argc, char *argv[])

@@ -102,7 +102,7 @@ config = {
 /*
  *  *  * Parse command line arguments
  *   *   */
-#define GETOPT_STRING "B:mpc2nayCM"
+#define GETOPT_STRING ":B:mpc2nayCM"
 fpga_result parse_args(int argc, char *argv[])
 {
 	struct option longopts[] = {
@@ -182,7 +182,7 @@ int find_fpga(fpga_guid interface_id, fpga_token *fpga, uint32_t *num_matches)
 
 	/* Get number of FPGAs in system*/
 	res = fpgaGetProperties(NULL, &filter);
-	ON_ERR_GOTO(res, out_destroy, "creating properties object");
+	ON_ERR_GOTO(res, out, "creating properties object");
 
 	res = fpgaPropertiesSetObjectType(filter, FPGA_DEVICE);
 	ON_ERR_GOTO(res, out_destroy, "setting interface ID");
@@ -196,7 +196,7 @@ int find_fpga(fpga_guid interface_id, fpga_token *fpga, uint32_t *num_matches)
 	if (-1 != config.target.bus) {
 		res = fpgaPropertiesSetBus(filter, config.target.bus);
 		ON_ERR_GOTO(res, out_destroy, "setting bus");
-	}
+	}	
 
 	res = fpgaEnumerate(&filter, 1, fpga, 1, num_matches);
 	ON_ERR_GOTO(res, out, "enumerating FPGAs");
@@ -510,7 +510,7 @@ int main(int argc, char *argv[])
 	fpga_result res = FPGA_OK;
 	fpga_dma_handle dma_h;
 	uint64_t count;
-	fpga_properties filter = NULL;
+	//fpga_properties filter = NULL;
 	fpga_token afc_token;
 	fpga_handle afc_h;
 	fpga_guid guid;
@@ -525,17 +525,12 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	if (!isdigit(*argv[1])) {
-		usage();
-		return 1;
-	}
-
 	res = parse_args(argc, argv);
 	if (res == FPGA_EXCEPTION){
 			return 1;
 	}
 
-	use_ase = atoi(argv[1]);
+	use_ase = atoi(argv[optind]);
 	if (use_ase == 0) {
 			printf("Running test in HW mode\n");
 	} else {
@@ -771,11 +766,7 @@ int main(int argc, char *argv[])
 
  out_destroy_tok:
 	res = fpgaDestroyToken(&afc_token);
-	ON_ERR_GOTO(res, out_destroy_prop, "fpgaDestroyToken");
-
- out_destroy_prop:
-	res = fpgaDestroyProperties(&filter);
-	ON_ERR_GOTO(res, out, "fpgaDestroyProperties");
+	ON_ERR_GOTO(res, out, "fpgaDestroyToken");
 
  out:
 	return err_cnt;

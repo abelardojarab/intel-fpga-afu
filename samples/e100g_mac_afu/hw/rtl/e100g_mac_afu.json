@@ -11,7 +11,7 @@
             {
                "name": "e100g_mac_afu",
                "total-contexts": 1,
-               "accelerator-type-uuid": "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA"
+               "accelerator-type-uuid": "c44cd6fe-9829-44fe-840b-4a2e16c24185"
             }
          ]
    }

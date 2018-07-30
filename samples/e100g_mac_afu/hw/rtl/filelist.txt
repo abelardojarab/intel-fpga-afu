@@ -1,0 +1,11 @@
+e100g_mac_afu.json
+
+# CCI-P avmm shim
+QI:BBB_ccip_avmm/hw/par/ccip_avmm_addenda.qsf
+SI:BBB_ccip_avmm/hw/sim/ccip_avmm_sim_addenda.txt
+
+afu.sv
+ccip_interface_reg.sv
+ccip_std_afu.sv
+
+qsys/${OPAE_PLATFORM_FPGA_FAMILY}/components.ipx

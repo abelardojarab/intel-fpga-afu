@@ -78,10 +78,15 @@ module afu
     
     wire dma_irq;
     
-    dma_test_system_wrapper u0 (
+    dma_test_system_wrapper 
+    #(
+        .NUM_LOCAL_MEM_BANKS(NUM_LOCAL_MEM_BANKS)
+     )
+     u0 
+     (
 `ifdef PLATFORM_PROVIDES_LOCAL_MEMORY
-    // Local memory interface
-    .local_mem               (local_mem),
+        // Local memory interface
+        .local_mem               (local_mem),
 `endif    
         .ccip_avmm_mmio_waitrequest         (mmio_avmm_waitrequest),         //       ccip_avmm_mmio.waitrequest
         .ccip_avmm_mmio_readdata            (mmio_avmm_readdata),            //                    .readdata

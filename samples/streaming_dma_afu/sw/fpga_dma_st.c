@@ -1084,6 +1084,9 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, uint64_t dma_channel_index, fpga_dma_h
 
 	// Mark this channel as in-use
 	open_channels *chan = (open_channels *)calloc(1, sizeof(open_channels));
+	if (!chan) {
+		ON_ERR_GOTO(FPGA_NO_MEMORY, rel_buf, "allocating open_channels memory");
+	}
 	chan->ch_num = dma_h->dma_channel;
 	if(NULL == head) {
 		head = chan;

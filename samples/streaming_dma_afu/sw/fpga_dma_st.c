@@ -944,6 +944,13 @@ out:
 	return res;
 }
 
+typedef struct _open_channels {
+        struct _open_channels *next;
+        uint32_t ch_num;
+} open_channels;
+
+open_channels *head;
+
 fpga_result fpgaDMAOpen(fpga_handle fpga, uint64_t dma_channel_index, fpga_dma_handle_t *dma) {
 	fpga_result res = FPGA_OK;
 	fpga_dma_handle_t dma_h;
@@ -960,6 +967,15 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, uint64_t dma_channel_index, fpga_dma_h
 	if(!dma) {
 		FPGA_DMA_ST_ERR("Invalid pointer to DMA handle");
 		return FPGA_INVALID_PARAM;
+	}
+
+	open_channels *nxt = head;
+	while(NULL != nxt) {
+		if(nxt->ch_num == dma_channel_index) {
+			FPGA_DMA_ST_ERR("Attempt to open a channel that is already open");
+			return FPGA_BUSY;
+		}
+		nxt = nxt->next;
 	}
 
 	// init the dma handle
@@ -1025,7 +1041,7 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, uint64_t dma_channel_index, fpga_dma_h
 	dma_h->unused_desc_count = 0;
 	if(dma_found) {
 		*dma = dma_h;
-		res = FPGA_OK;
+                res = FPGA_OK;
 	}
 	else {
 		*dma = NULL;
@@ -1065,6 +1081,23 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, uint64_t dma_channel_index, fpga_dma_h
 	ON_ERR_GOTO(res, rel_buf, "fpgaCreateEventHandle");
 	res = fpgaRegisterEvent(dma_h->fpga_h, FPGA_EVENT_INTERRUPT, dma_h->eh, dma_h->dma_channel/*vector id*/);
 	ON_ERR_GOTO(res, destroy_eh, "fpgaRegisterEvent");
+
+	// Mark this channel as in-use
+	open_channels *chan = (open_channels *)calloc(1, sizeof(open_channels));
+	if (!chan) {
+		ON_ERR_GOTO(FPGA_NO_MEMORY, rel_buf, "allocating open_channels memory");
+	}
+	chan->ch_num = dma_h->dma_channel;
+	if(NULL == head) {
+		head = chan;
+	} else {
+		open_channels *nxt = head;
+		while(NULL != nxt->next) {
+			nxt = nxt->next;
+		}
+		nxt->next = chan;
+	}
+
 	return FPGA_OK;
 
 destroy_eh:
@@ -1099,6 +1132,35 @@ fpga_result fpgaDMAClose(fpga_dma_handle_t dma_h) {
 		goto out;
 	}
 
+	if(NULL == head) {
+		FPGA_DMA_ST_ERR("Attempt to close DMA channel that was not open");
+		return FPGA_INVALID_PARAM;
+	}
+
+	// Mark channel as no longer in use
+	open_channels *tmp = head;
+	open_channels *prev = NULL;
+	while(NULL != tmp) {
+		if(tmp->ch_num == dma_h->dma_channel) {
+			break;
+		}
+		prev = tmp;
+		tmp = tmp->next;
+	}
+
+	if(NULL == tmp) {
+		FPGA_DMA_ST_ERR("Attempt to close DMA channel that was not open");
+		return FPGA_INVALID_PARAM;
+	}
+
+	if(NULL == prev) {
+		head = NULL;
+	} else {
+		prev->next = tmp->next;
+	}
+	free(tmp);
+
+	// Free buffers
 	for(i=0; i<FPGA_DMA_MAX_BUF; i++) {
 		res = fpgaReleaseBuffer(dma_h->fpga_h, dma_h->dma_buf_wsid[i]);
 		ON_ERR_GOTO(res, out, "fpgaReleaseBuffer failed");
@@ -1127,6 +1189,8 @@ fpga_result fpgaDMAClose(fpga_dma_handle_t dma_h) {
 	}
 
 out:
+	// Make sure double-close fails
+	dma_h->dma_channel = INVALID_CHANNEL;
 	free((void*)dma_h);
 	return res;
 }

@@ -209,6 +209,7 @@ struct fpga_dma_handle {
 	uint64_t dma_buf_iova[FPGA_DMA_MAX_BUF];
 	// channel type
 	fpga_dma_channel_type_t ch_type;
+#define INVALID_CHANNEL (0x7fffffffffffffffULL)
 	uint64_t dma_channel;
 	pthread_t thread_id;
 	// Transaction queue (model as a fixed-size circular buffer)

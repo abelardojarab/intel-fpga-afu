@@ -32,6 +32,9 @@
 #include "fpga_pattern_gen.h"
 #include "fpga_pattern_checker.h"
 #include <unistd.h>
+#ifndef USE_ASE
+#include <hwloc.h>
+#endif
 /**
  * \fpga_dma_st_test.c
  * \brief Streaming DMA test
@@ -48,6 +51,9 @@
 #define PATTERN_WIDTH 64
 // No. of Patterns
 #define PATTERN_LENGTH 32
+
+bool cpu_affinity = true;
+bool memory_affinity = true;
 
 static uint64_t count=0;
 sem_t rx_cb_status;
@@ -297,6 +303,61 @@ int main(int argc, char *argv[]) {
 	// open the AFC
 	res = fpgaOpen(afc_token, &afc_h, 0);
 	ON_ERR_GOTO(res, out_destroy_tok, "fpgaOpen");
+
+#ifndef USE_ASE
+	// Set up proper affinity if requested
+	if (cpu_affinity || memory_affinity) {
+		unsigned dom = 0, bus = 0, dev = 0, func = 0;
+		fpga_properties props;
+		int retval;
+		#if(FPGA_DMA_DEBUG)
+				char str[4096];
+		#endif
+		res = fpgaGetProperties(afc_token, &props);
+		ON_ERR_GOTO(res, out_destroy_tok, "fpgaGetProperties");
+		res = fpgaPropertiesGetBus(props, (uint8_t *) & bus);
+		ON_ERR_GOTO(res, out_destroy_tok, "fpgaPropertiesGetBus");
+		res = fpgaPropertiesGetDevice(props, (uint8_t *) & dev);
+		ON_ERR_GOTO(res, out_destroy_tok, "fpgaPropertiesGetDevice");
+		res = fpgaPropertiesGetFunction(props, (uint8_t *) & func);
+		ON_ERR_GOTO(res, out_destroy_tok, "fpgaPropertiesGetFunction");
+
+		// Find the device from the topology
+		hwloc_topology_t topology;
+		hwloc_topology_init(&topology);
+		hwloc_topology_set_flags(topology,
+					HWLOC_TOPOLOGY_FLAG_IO_DEVICES);
+		hwloc_topology_load(topology);
+		hwloc_obj_t obj = hwloc_get_pcidev_by_busid(topology, dom, bus, dev, func);
+		hwloc_obj_t obj2 = hwloc_get_non_io_ancestor_obj(topology, obj);
+		#if (FPGA_DMA_DEBUG)
+			hwloc_obj_type_snprintf(str, 4096, obj2, 1);
+			printf("%s\n", str);
+			hwloc_obj_attr_snprintf(str, 4096, obj2, " :: ", 1);
+			printf("%s\n", str);
+			hwloc_bitmap_taskset_snprintf(str, 4096, obj2->cpuset);
+			printf("CPUSET is %s\n", str);
+			hwloc_bitmap_taskset_snprintf(str, 4096, obj2->nodeset);
+			printf("NODESET is %s\n", str);
+		#endif
+		if (memory_affinity) {
+			#if HWLOC_API_VERSION > 0x00020000
+				retval = hwloc_set_membind(topology, obj2->nodeset,
+								HWLOC_MEMBIND_THREAD, HWLOC_MEMBIND_MIGRATE | HWLOC_MEMBIND_BYNODESET);
+			#else
+				retval =
+				hwloc_set_membind_nodeset(topology, obj2->nodeset,
+								HWLOC_MEMBIND_THREAD,
+								HWLOC_MEMBIND_MIGRATE);
+			#endif
+			ON_ERR_GOTO(retval, out_destroy_tok, "hwloc_set_membind");
+		}
+		if (cpu_affinity) {
+			retval = hwloc_set_cpubind(topology, obj2->cpuset,	HWLOC_CPUBIND_STRICT);
+			ON_ERR_GOTO(retval, out_destroy_tok, "hwloc_set_cpubind");
+		}
+	}
+#endif
 
 	#ifndef USE_ASE
 		res = fpgaMapMMIO(afc_h, 0, (uint64_t**)&mmio_ptr);

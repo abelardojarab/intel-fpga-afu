@@ -17,6 +17,7 @@ ifeq ($(USE_ASE),1)
 else
 	LDFLAGS += -ljson-c
 	LDFLAGS += -lopae-c
+	LDFLAGS += -lhwloc
 endif
 
 LDFLAGS += -pthread

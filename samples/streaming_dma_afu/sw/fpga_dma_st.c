@@ -1154,7 +1154,7 @@ fpga_result fpgaDMAClose(fpga_dma_handle_t dma_h) {
 	}
 
 	if(NULL == prev) {
-		head = NULL;
+		head = tmp->next;
 	} else {
 		prev->next = tmp->next;
 	}

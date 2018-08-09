@@ -149,7 +149,7 @@
         <spirit:parameter>
           <spirit:name>device</spirit:name>
           <spirit:displayName>Device</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="device">1SX280HN3F43E3VGS1</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="device">1SX280HN3F43E3VG</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>deviceFamily</spirit:name>

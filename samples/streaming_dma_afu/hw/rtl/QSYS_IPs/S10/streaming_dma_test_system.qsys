@@ -341,7 +341,7 @@
 }
 ]]></parameter>
  <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
- <parameter name="device" value="1SX280HN3F43E3VGS1" />
+ <parameter name="device" value="1SX280HN2F43E2VGS1" />
  <parameter name="deviceFamily" value="Stratix 10" />
  <parameter name="deviceSpeedGrade" value="3" />
  <parameter name="fabricMode" value="QSYS" />
@@ -5426,7 +5426,7 @@
                 <systemInfotype>RESET_DOMAIN</systemInfotype>
             </descriptor>
             <descriptor>
-                <parameterDefaultValue>1SX280HN3F43E3VGS1</parameterDefaultValue>
+                <parameterDefaultValue>1SX280HN2F43E2VGS1</parameterDefaultValue>
                 <parameterName>AUTO_DEVICE</parameterName>
                 <parameterType>java.lang.String</parameterType>
                 <systemInfotype>DEVICE</systemInfotype>
@@ -8561,7 +8561,7 @@
                 <systemInfotype>RESET_DOMAIN</systemInfotype>
             </descriptor>
             <descriptor>
-                <parameterDefaultValue>1SX280HN3F43E3VGS1</parameterDefaultValue>
+                <parameterDefaultValue>1SX280HN2F43E2VGS1</parameterDefaultValue>
                 <parameterName>AUTO_DEVICE</parameterName>
                 <parameterType>java.lang.String</parameterType>
                 <systemInfotype>DEVICE</systemInfotype>

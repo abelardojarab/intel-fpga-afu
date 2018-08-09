@@ -1385,7 +1385,7 @@
         <spirit:parameter>
           <spirit:name>device</spirit:name>
           <spirit:displayName>Device</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="device">10AX115N3F40E2SG</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="device">1SX280HN2F43E2VG</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>deviceFamily</spirit:name>

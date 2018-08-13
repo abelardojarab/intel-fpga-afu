@@ -132,7 +132,7 @@ fpga_result fpgaHssiClose(fpga_hssi_handle hssi)
 
 	fpgaUnmapMMIO(hssi->fpga_h, 0);
 
-	if (!hssi->csrs)
+	if (hssi->csrs)
 		free(hssi->csrs);
 
 	free(hssi);
@@ -294,6 +294,23 @@ fpga_result fpgaHssiSendPacket(fpga_hssi_handle hssi,
 		return FPGA_INVALID_PARAM;
 
 	pr_mgmt_data_e40_t wr_data = { 0 };
+	// use broadcast traffic
+	wr_data.reg = 0;
+	wr_data.eth_traff_wdata = 0xFFFFFFFF;
+	prMgmtWrite(hssi->dfl, PR_MGMT_ETH_WR_DATA, wr_data);
+
+	wr_data.reg = 0;
+	wr_data.eth_traf.eth_traff_wr = 1;
+	wr_data.eth_traf.eth_traff_addr = 0x0;
+	prMgmtWrite(hssi->dfl, PR_MGMT_ETH_CTRL, wr_data);
+	wr_data.reg = 0;
+	wr_data.eth_traff_wdata = 0xFFFF;
+	prMgmtWrite(hssi->dfl, PR_MGMT_ETH_WR_DATA, wr_data);
+
+	wr_data.reg = 0;
+	wr_data.eth_traf.eth_traff_wr = 1;
+	wr_data.eth_traf.eth_traff_addr = 0x1;
+	prMgmtWrite(hssi->dfl, PR_MGMT_ETH_CTRL, wr_data);
 	wr_data.eth_traff_wdata = num_packets;
 
 	// number of packets

@@ -399,7 +399,12 @@ fpga_result fpgaHssiPrintChannelStats(fpga_hssi_handle hssi_h,
 	uint64_t val;
 	bool loopback_en, freq_locked, word_locked;
 	const char *type_str = (type == TX)?"TX":"RX";
-
+	pr_mgmt_data_t wr_data = {0};
+	
+	// Select channel
+	wr_data.port_sel.port = channel_num;
+	prMgmtWrite(hssi_h->dfl, PR_MGMT_PORT_SEL, wr_data);
+	
 	fpgaHssiEnumerateCsr(hssi_h, &csrs, &count);
 	fpgaHssiGetLoopbackStatus(hssi_h, channel_num, &loopback_en);
 	fpgaHssiGetFreqLockStatus(hssi_h, channel_num, &freq_locked);

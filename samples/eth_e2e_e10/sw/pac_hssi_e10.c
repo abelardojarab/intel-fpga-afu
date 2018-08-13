@@ -273,6 +273,7 @@ static int do_action(struct config *config, fpga_token afc_tok)
 	fpga_handle afc_h = NULL;
 	fpga_result res;
 	int ret = 0;
+	hssi_csr dest_mac0, dest_mac1;
 	res = fpgaOpen(afc_tok, &afc_h, 0);
 	if (res != FPGA_OK) {
 		fprintf(stderr, "Unable to open instance error=%s\n",
@@ -307,6 +308,19 @@ static int do_action(struct config *config, fpga_token afc_tok)
 		printf("Disabled loopback on channel %d\n", config->channel);
 		break;
 	case ETH_ACT_PKT_SEND:
+		// broadcast traffic
+	    fpgaHssiFilterCsrByName(hssi_h, "destination_addr0", &dest_mac0);
+		if (!dest_mac0) {
+			ret = 1;
+			break;
+		}
+	    fpgaHssiWriteCsr64(hssi_h, dest_mac0, 0xFFFFFFFF);	
+	    fpgaHssiFilterCsrByName(hssi_h, "destination_addr1", &dest_mac1);
+		if (!dest_mac1){
+			ret = 1;
+			break;
+		}
+		fpgaHssiWriteCsr64(hssi_h, dest_mac1, 0xFFFF);
 		fpgaHssiSendPacket(hssi_h, config->channel, NUM_PKT_TO_SEND);
 		printf("Sent 0x%x packets on channel %d\n",
 			NUM_PKT_TO_SEND, config->channel);

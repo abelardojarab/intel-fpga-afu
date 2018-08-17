@@ -39,6 +39,7 @@
 #include <unistd.h>
 #include <assert.h>
 #include <inttypes.h>
+#include <signal.h>
 #include "fpga_dma_internal.h"
 #include "fpga_dma.h"
 
@@ -50,6 +51,11 @@ static int err_cnt = 0;
 double poll_wait_count = 0;
 double buf_full_count = 0;
 #endif
+
+// For signal handler - need to properly handle HUP
+static struct sigaction old_action;
+static volatile uint32_t *CsrControl;
+static void sig_handler(int sig, siginfo_t *signfo, void *unused);
 
 /**
 * local_memcpy
@@ -665,6 +671,19 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle * dma_p)
 	    fpgaRegisterEvent(dma_h->fpga_h, FPGA_EVENT_INTERRUPT, dma_h->eh,
 			      0 /*vector id */ );
 	ON_ERR_GOTO(res, destroy_eh, "fpgaRegisterEvent");
+
+	struct sigaction sa;
+	int sigres;
+
+	memset_s(&sa, sizeof(sa), 0);
+	sa.sa_flags = SA_SIGINFO | SA_RESETHAND;
+	sa.sa_sigaction = sig_handler;
+
+	sigres = sigaction(SIGHUP, &sa, &old_action);
+        if (sigres < 0) {
+		ON_ERR_GOTO(sigres < 0, destroy_eh, "Error: failed to unregister signal handler.\n");
+	}
+	CsrControl = HOST_MMIO_32_ADDR(dma_h, CSR_CONTROL(dma_h));
 
 	return FPGA_OK;
 
@@ -1587,6 +1606,7 @@ fpga_result fpgaDmaClose(fpga_dma_handle dma_h)
 {
 	fpga_result res = FPGA_OK;
 	int i = 0;
+	int sigres;
 	if (!dma_h) {
 		return FPGA_INVALID_PARAM;
 	}
@@ -1594,6 +1614,14 @@ fpga_result fpgaDmaClose(fpga_dma_handle dma_h)
 	if (!dma_h->fpga_h) {
 		res = FPGA_INVALID_PARAM;
 		goto out;
+	}
+
+	if (CsrControl) {
+		sigres = sigaction(SIGHUP, &old_action, NULL);
+		if (sigres < 0) {
+			error_print("Error: failed to unregister signal handler.\n");
+		}
+		CsrControl = NULL;
 	}
 
 	for (i = 0; i < FPGA_DMA_MAX_BUF; i++) {
@@ -1620,4 +1648,29 @@ fpga_result fpgaDmaClose(fpga_dma_handle dma_h)
         dma_h->fpga_h = 0;
 	free((void *)dma_h);
 	return res;
+}
+
+void sig_handler(int sig, siginfo_t *info, void *unused)
+{
+	(void)(info);
+	(void)(unused);
+
+	if (CsrControl == NULL) {
+		return;
+	}
+
+	switch (sig) {
+	case SIGHUP: {
+		// Driver removed - shut down!
+		*CsrControl = DMA_SHUTDOWN_CTL_VAL;
+		ON_ERR_GOTO(FPGA_NO_DRIVER, out, "Got SIGHUP. Exiting.\n");
+out:
+		*CsrControl = DMA_SHUTDOWN_CTL_VAL;
+		usleep(1000);
+		exit(-1);
+		}
+		break;
+	default:
+		break;
+	}
 }

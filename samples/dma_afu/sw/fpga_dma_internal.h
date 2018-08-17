@@ -57,6 +57,8 @@
      _a < _b ? _a : _b; })
 #endif
 
+#define DMA_SHUTDOWN_CTL_VAL (0x21)
+
 #define FPGA_DMA_TIMEOUT_MSEC (120000)
 
 #define QWORD_BYTES 8

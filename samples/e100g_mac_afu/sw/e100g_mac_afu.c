@@ -1,4 +1,4 @@
-// Copyright(c) 2017, Intel Corporation
+// Copyright(c) 2014-2018, Intel Corporation
 //
 // Redistribution  and  use  in source  and  binary  forms,  with  or  without
 // modification, are permitted provided that the following conditions are met:
@@ -35,7 +35,9 @@
 #include <opae/utils.h>
 
 // State from the AFU's JSON file, extracted using OPAE's afu_json_mgr script
-#include "afu_json_info.h"
+#include "afu_json_info_eth.h"
+
+#define UNUSED_PARAM(x) (void) x
 
 int usleep(unsigned);
 
@@ -46,12 +48,11 @@ int usleep(unsigned);
 #define BYTE_OFFSET              8
 
 #define AFU_DFH_REG              0x0
-#define AFU_ID_LO                0x8 
+#define AFU_ID_LO                0x8
 #define AFU_ID_HI                0x10
-//#define AFU_ID_LO                0x4 
-//#define AFU_ID_HI                0x10
 #define AFU_NEXT                 0x18
 #define AFU_RESERVED             0x20
+#define AFU_ETH			 0x400
 
 static int s_error_count = 0;
 
@@ -80,7 +81,7 @@ static int s_error_count = 0;
 			goto label;                \
 		}                                  \
 	} while (0)
-		
+
 /* Type definitions */
 typedef struct {
 	uint32_t uint[16];
@@ -93,6 +94,10 @@ void print_err(const char *s, fpga_result res)
 
 int main(int argc, char *argv[])
 {
+
+	UNUSED_PARAM(argc);
+	UNUSED_PARAM(argv);
+
 	fpga_properties    filter = NULL;
 	fpga_token         afc_token;
 	fpga_handle        afc_handle;
@@ -145,37 +150,37 @@ int main(int argc, char *argv[])
 	res = fpgaReadMMIO64(afc_handle, 0, AFU_DFH_REG, &data);
 	ON_ERR_GOTO(res, out_close, "reading from MMIO");
 	printf("AFU DFH REG = %08lx\n", data);
-	
+
 	res = fpgaReadMMIO64(afc_handle, 0, AFU_ID_LO, &data);
 	ON_ERR_GOTO(res, out_close, "reading from MMIO");
 	printf("AFU ID LO = %08lx\n", data);
-	
+
 	res = fpgaReadMMIO64(afc_handle, 0, AFU_ID_HI, &data);
 	ON_ERR_GOTO(res, out_close, "reading from MMIO");
 	printf("AFU ID HI = %08lx\n", data);
-	
+
 	res = fpgaReadMMIO64(afc_handle, 0, AFU_NEXT, &data);
 	ON_ERR_GOTO(res, out_close, "reading from MMIO");
 	printf("AFU NEXT = %08lx\n", data);
-	
+
 	res = fpgaReadMMIO64(afc_handle, 0, AFU_RESERVED, &data);
 	ON_ERR_GOTO(res, out_close, "reading from MMIO");
 	printf("AFU RESERVED = %08lx\n", data);
-	
+
 	// Access AFU user scratch-pad register
 	res = fpgaReadMMIO64(afc_handle, 0, SCRATCH_REG, &data);
 	ON_ERR_GOTO(res, out_close, "reading from MMIO");
 	printf("Reading Scratch Register (Byte Offset=%08x) = %08lx\n", SCRATCH_REG, data);
-	
+
 	printf("MMIO Write to Scratch Register (Byte Offset=%08x) = %08lx\n", SCRATCH_REG, SCRATCH_VALUE);
 	res = fpgaWriteMMIO64(afc_handle, 0, SCRATCH_REG, SCRATCH_VALUE);
 	ON_ERR_GOTO(res, out_close, "writing to MMIO");
-	
+
 	res = fpgaReadMMIO64(afc_handle, 0, SCRATCH_REG, &data);
 	ON_ERR_GOTO(res, out_close, "reading from MMIO");
 	printf("Reading Scratch Register (Byte Offset=%08x) = %08lx\n", SCRATCH_REG, data);
 	ASSERT_GOTO(data == SCRATCH_VALUE, out_close, "MMIO mismatched expected result");
-	
+
 	// Set Scratch Register to 0
 	printf("Setting Scratch Register (Byte Offset=%08x) = %08x\n", SCRATCH_REG, SCRATCH_RESET);
 	res = fpgaWriteMMIO64(afc_handle, 0, SCRATCH_REG, SCRATCH_RESET);
@@ -185,12 +190,17 @@ int main(int argc, char *argv[])
 	printf("Reading Scratch Register (Byte Offset=%08x) = %08lx\n", SCRATCH_REG, data);
 	ASSERT_GOTO(data == SCRATCH_RESET, out_close, "MMIO mismatched expected result");
 
+	// Read AFU Ethernet space
+	res = fpgaReadMMIO64(afc_handle, 0, AFU_ETH, &data);
+        ON_ERR_GOTO(res, out_close, "Read AFU Ethernet space");
+        printf("Reading AFU Ethernet space (Byte Offset=%08x) = %08lx\n", AFU_ETH, data);
+
 	printf("Done Running Test\n");
 
 	/* Unmap MMIO space */
 	res = fpgaUnmapMMIO(afc_handle, 0);
 	ON_ERR_GOTO(res, out_close, "unmapping MMIO space");
-	
+
 	/* Release accelerator */
 out_close:
 	res = fpgaClose(afc_handle);

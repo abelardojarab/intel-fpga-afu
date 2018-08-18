@@ -125,7 +125,7 @@ ccip_interface_reg.sv
 ./mac/ex_100g/alt_e100s10_180/synth/alt_e100s10_extended_stats_vector.v
 ./mac/ex_100g/alt_e100s10_180/synth/alt_e100s10_fc_csr.v
 ./mac/ex_100g/alt_e100s10_180/synth/alt_e100s10_fc_top.v
-./mac/ex_100g/alt_e100s10_180/sim/alt_e100s10_fecpll.v
+./mac/ex_100g/alt_e100s10_180/synth/alt_e100s10_fecpll.v
 ./mac/ex_100g/alt_e100s10_180/synth/alt_e100s10_fmon8.v
 ./mac/ex_100g/alt_e100s10_180/synth/alt_e100s10_gpx4.v
 ./mac/ex_100g/alt_e100s10_180/synth/alt_e100s10_gray4t1.v
@@ -221,7 +221,7 @@ ccip_interface_reg.sv
 ./mac/ex_100g/alt_e100s10_180/synth/alt_e100s10_shft.v
 ./mac/ex_100g/alt_e100s10_180/synth/alt_e100s10_shft_w.v
 ./mac/ex_100g/alt_e100s10_180/synth/alt_e100s10_stat_ram_16x64b.v
-./mac/ex_100g/alt_e100s10_180/sim/alt_e100s10_stats_counters.v
+./mac/ex_100g/alt_e100s10_180/synth/alt_e100s10_stats_counters.v
 ./mac/ex_100g/alt_e100s10_180/synth/alt_e100s10_status_sync.v
 ./mac/ex_100g/alt_e100s10_180/synth/alt_e100s10_subc2h0t1.v
 ./mac/ex_100g/alt_e100s10_180/synth/alt_e100s10_sv.v
@@ -281,10 +281,10 @@ ccip_interface_reg.sv
 ./mac/ex_100g/alt_e100s10_180/synth/alt_e100s10_xor8t1.v
 ./mac/ex_100g/alt_e100s10_180/synth/alt_e100s10_xor9t1.v
 ./mac/ex_100g/alt_e100s10_180/synth/alt_e100_sync1r2.v
-./mac/ex_100g/alt_e100s10_180/sim/altera_xcvr_fpll_s10_tx_ext.v
+./mac/ex_100g/alt_e100s10_180/synth/altera_xcvr_fpll_s10_tx_ext.v
 ./mac/ex_100g/alt_e100s10_180/synth/aneb_18.v
-./mac/ex_100g/alt_e100s10_180/sim/atx_pll_s100.v
-./mac/ex_100g/alt_e100s10_180/sim/caui4_xcvr_644.v
+./mac/ex_100g/alt_e100s10_180/synth/atx_pll_s100.v
+./mac/ex_100g/alt_e100s10_180/synth/caui4_xcvr_644.v
 ./mac/ex_100g/alt_e100s10_180/synth/crc32_byte_roll.v
 ./mac/ex_100g/alt_e100s10_180/synth/crc32_d64_sig.v
 ./mac/ex_100g/alt_e100s10_180/synth/crc32_rev_1.v
@@ -310,7 +310,7 @@ ccip_interface_reg.sv
 ./mac/ex_100g/alt_e100s10_180/synth/mx5r.v
 ./mac/ex_100g/alt_e100s10_180/synth/reverse_bits.v
 ./mac/ex_100g/alt_e100s10_180/synth/reverse_bytes.v
-./mac/ex_100g/alt_e100s10_180/sim/s10_xcvr_reset_controller.v
+./mac/ex_100g/alt_e100s10_180/synth/s10_xcvr_reset_controller.v
 ./mac/ex_100g/alt_e100s10_180/synth/s5mlab.v
 ./mac/ex_100g/alt_e100s10_180/synth/scfifo_mlab.v
 ./mac/ex_100g/alt_e100s10_180/synth/sync_regs_m2.v

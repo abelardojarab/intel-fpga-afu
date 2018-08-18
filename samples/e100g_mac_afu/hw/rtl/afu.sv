@@ -209,7 +209,7 @@ logic [255:0] rx_data_out, pcs_din_d, pcs_dout_d;
 logic [31:0] pcs_din_c, pcs_dout_c, rx_ctl_out, rx_last_data;
 logic rx_data_out_valid, rx_fcs_error, rx_fcs_valid;
 logic [3:0] rx_first_data, rx_mii_start;
-logic [1:0] pause_insert_tx0, pause_insert_tx1, pause_receive_rx;
+logic pause_insert_tx0, pause_insert_tx1, pause_receive_rx;
 logic [31:0] avmm_din;
 logic [7:0] avmm_addr;
 logic avmm_mac_tx_write, avmm_mac_rx_write, avmm_fc_tx_write, avmm_fc_rx_write, avmm_mac_tx_stats_write, avmm_mac_rx_stats_write;
@@ -217,8 +217,8 @@ logic avmm_mac_tx_read, avmm_mac_rx_read, avmm_fc_tx_read, avmm_fc_rx_read, avmm
 logic avmm_mac_tx_dval, avmm_mac_rx_dval, avmm_fc_tx_dval, avmm_fc_rx_dval, avmm_mac_tx_stats_dval, avmm_mac_rx_stats_dval;
 logic [31:0] avmm_mac_tx_dout, avmm_mac_rx_dout, avmm_fc_tx_dout, avmm_fc_rx_dout, avmm_mac_tx_stats_dout, avmm_mac_rx_stats_dout;
 
-assign pause_insert_tx0 = 2'b0;
-assign pause_insert_tx1 = 2'b0;
+assign pause_insert_tx0 = 1'b0;
+assign pause_insert_tx1 = 1'b0;
 
 alt_e100s10_mac mac(
     // clocks 

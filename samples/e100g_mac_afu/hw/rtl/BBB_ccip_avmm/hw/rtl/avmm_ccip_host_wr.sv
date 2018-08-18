@@ -52,7 +52,7 @@ module avmm_ccip_host_wr #(
 	// ---------------------------IF signals between CCI and AFU  --------------------------------
 	input c1TxAlmFull,
 	//for write response.  don't need for now.  not using avmm write response
-	//input t_if_ccip_c1_Rx      c1rx,
+	input t_if_ccip_c1_Rx      c1rx,
 
 	//write request
 	output t_if_ccip_c1_Tx c1tx

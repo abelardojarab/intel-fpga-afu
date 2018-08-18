@@ -69,6 +69,12 @@ module ccip_avmm_mmio #(
 	// cast c0 header into ReqMmioHdr
 	t_ccip_c0_ReqMmioHdr mmioHdr;
 	assign mmioHdr = t_ccip_c0_ReqMmioHdr'(c0rx.hdr);
+
+	/* This causes error in compile
+	always_comb @ (*) begin
+		mmioHdr = t_ccip_c0_ReqMmioHdr'(c0rx.hdr);
+	end*/
+
 	wire mmio32_req = (mmioHdr.length == 2'b00);
 	wire mmio32_highword_req = mmio32_req & mmioHdr.address[0];
 	
@@ -120,7 +126,8 @@ module ccip_avmm_mmio #(
 		
 		//MMIO request (read or write)
 		mmio_cmd_valid <= reset ? 1'b0 : (c0rx.mmioRdValid || c0rx.mmioWrValid) && mmio_address_valid;
-		mmio_cmd_data.addr <= {mmioHdr.address, 2'b00};
+		//mmio_cmd_data.addr <= {mmioHdr.address, 2'b00};
+		mmio_cmd_data.addr <= {2'b00, mmioHdr.address};
 		mmio_cmd_data.is_32bit <= mmio32_req;
 		mmio_cmd_data.is_read <= c0rx.mmioRdValid && mmio_address_valid;
 

@@ -35,7 +35,7 @@
 
 module ccip_std_afu
   #(
-    parameter NUM_LOCAL_MEM_BANKS = 2
+    parameter NUM_LOCAL_MEM_BANKS = 0
     )
  (
     input  logic        pClk,                 // Primary CCI-P interface clock.
@@ -58,22 +58,18 @@ module ccip_std_afu
     output t_if_ccip_Tx pck_af2cp_sTx         // CCI-P Tx Port
     );
 
-    //split c0rx into host and mmio
-    wire afu_clk;
-    assign afu_clk = pClk ;
+    wire afu_clk;       // 200MHz
+    wire avmm_clk;      // 100MHz
+    assign afu_clk = pClk;
+    assign avmm_clk = pClkDiv2;
+
     t_if_ccip_Rx pck_cp2af_mmio_sRx;
-    t_if_ccip_Rx pck_cp2af_host_sRx;
     always_comb begin
         pck_cp2af_mmio_sRx = pck_cp2af_sRx;
-        pck_cp2af_host_sRx = pck_cp2af_sRx;
         //disable rsp valid on mmio path
-        pck_cp2af_mmio_sRx.c0.rspValid = 0;
-        //disable mmio valid on host path
-        pck_cp2af_host_sRx.c0.mmioRdValid = 0;
-        pck_cp2af_host_sRx.c0.mmioWrValid = 0;
+        //pck_cp2af_mmio_sRx.c0.rspValid = 0;
     end
-   
-   
+
 //===============================================================================================
 // User AFU goes here
 //===============================================================================================
@@ -84,15 +80,14 @@ afu #(
     afu_inst
    (
     .afu_clk(afu_clk),
+    .avmm_clk(avmm_clk),
     `ifdef PLATFORM_PROVIDES_LOCAL_MEMORY
     // Local memory interface
     .local_mem               (local_mem),
 `endif
-    //.reset               ( fiu.reset ) , 
     .reset               ( pck_cp2af_softReset ) ,
-    .cp2af_sRxPort       ( mpf2af_sRxPort ) ,
     .cp2af_mmio_c0rx     ( pck_cp2af_mmio_sRx.c0 ) ,
-    .af2cp_sTxPort       ( af2mpf_sTxPort ) 
+    .af2cp_sTxPort       ( pck_af2cp_sTx ) 
 );
 
 endmodule

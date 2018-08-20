@@ -26,7 +26,7 @@ module altera_xcvr_fpll_s10_tx_ext #(
 		parameter hssi_avmm2_if_pldadapt_avmm_testbus_sel                                 = "avmm1_transfer_testbus",
 		parameter hssi_avmm2_if_hssiadapt_hip_mode                                        = "disable_hip",
 		parameter hssi_avmm2_if_pldadapt_hip_mode                                         = "disable_hip",
-		parameter hssi_avmm2_if_silicon_rev                                               = "14nm5cr2",
+		parameter hssi_avmm2_if_silicon_rev                                               = "14nm5bcr2ea",
 		parameter hssi_avmm2_if_calibration_type                                          = "one_time",
 		parameter cmu_fpll_analog_mode                                                    = "analog_off",
 		parameter cmu_fpll_bonding                                                        = "bond_off",
@@ -234,7 +234,7 @@ module altera_xcvr_fpll_s10_tx_ext #(
 		parameter cmu_fpll_ctrl_test_enable                                               = "pll_testen_off",
 		parameter cmu_fpll_ctrl_plniotri_override                                         = "plniotri_ctrl_disable",
 		parameter cmu_fpll_ctrl_vccr_pd                                                   = "vccd_powerup",
-		parameter cmu_fpll_silicon_rev                                                    = "14nm5cr2",
+		parameter cmu_fpll_silicon_rev                                                    = "14nm5bcr2ea",
 		parameter cmu_fpll_pll_op_mode                                                    = "false",
 		parameter cmu_fpll_bw_sel                                                         = "auto",
 		parameter cmu_fpll_compensation_mode                                              = "direct",
@@ -282,7 +282,7 @@ module altera_xcvr_fpll_s10_tx_ext #(
 		parameter cmu_fpll_refclk_select_mux_xpm_clkin_fpll_xpm_pll_so_pll_clk_sw_dly     = 0,
 		parameter cmu_fpll_refclk_select_mux_xpm_clkin_fpll_xpm_pll_so_pll_manu_clk_sw_en = "pll_manu_clk_sw_disabled",
 		parameter cmu_fpll_refclk_select_mux_xpm_clkin_fpll_xpm_pll_so_pll_sw_refclk_src  = "pll_sw_refclk_src_clk_0",
-		parameter cmu_fpll_refclk_select_mux_silicon_rev                                  = "14nm5cr2",
+		parameter cmu_fpll_refclk_select_mux_silicon_rev                                  = "14nm5bcr2ea",
 		parameter cmu_fpll_refclk_select_mux_refclk_select0                               = "ref_iqclk0",
 		parameter cmu_fpll_refclk_select_mux_refclk_select1                               = "ref_iqclk0",
 		parameter cmu_fpll_refclk_select_mux_mux0_inclk0_logical_to_physical_mapping      = "ref_iqclk0",
@@ -299,14 +299,14 @@ module altera_xcvr_fpll_s10_tx_ext #(
 		parameter test_mode                                                               = "false",
 		parameter hip_cal_en                                                              = "disable",
 		parameter enable_dps                                                              = 0,
-		parameter direct_dps                                                              = 0,
+		parameter direct_dps                                                              = 1,
 		parameter calibration_en                                                          = "enable",
 		parameter enable_pcie_hip_connectivity                                            = 0,
 		parameter enable_mcgb                                                             = 0,
 		parameter enable_mcgb_reset                                                       = 0,
 		parameter enable_mcgb_debug_ports_parameters                                      = 0,
 		parameter hssi_pma_cgb_master_prot_mode                                           = "basic_tx",
-		parameter hssi_pma_cgb_master_silicon_rev                                         = "14nm5cr2",
+		parameter hssi_pma_cgb_master_silicon_rev                                         = "14nm5bcr2ea",
 		parameter hssi_pma_cgb_master_x1_div_m_sel                                        = "divbypass",
 		parameter hssi_pma_cgb_master_cgb_enable_iqtxrxclk                                = "disable_iqtxrxclk",
 		parameter hssi_pma_cgb_master_ser_mode                                            = "sixty_four_bit",
@@ -528,7 +528,7 @@ module altera_xcvr_fpll_s10_tx_ext #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_avmm2_if_pldadapt_hip_mode_check ( .error(1'b1) );
 		end
-		if (hssi_avmm2_if_silicon_rev != "14nm5cr2")
+		if (hssi_avmm2_if_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -2400,7 +2400,7 @@ module altera_xcvr_fpll_s10_tx_ext #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					cmu_fpll_ctrl_vccr_pd_check ( .error(1'b1) );
 		end
-		if (cmu_fpll_silicon_rev != "14nm5cr2")
+		if (cmu_fpll_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -2832,7 +2832,7 @@ module altera_xcvr_fpll_s10_tx_ext #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					cmu_fpll_refclk_select_mux_xpm_clkin_fpll_xpm_pll_so_pll_sw_refclk_src_check ( .error(1'b1) );
 		end
-		if (cmu_fpll_refclk_select_mux_silicon_rev != "14nm5cr2")
+		if (cmu_fpll_refclk_select_mux_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -2985,7 +2985,7 @@ module altera_xcvr_fpll_s10_tx_ext #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					enable_dps_check ( .error(1'b1) );
 		end
-		if (direct_dps != 0)
+		if (direct_dps != 1)
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -3048,7 +3048,7 @@ module altera_xcvr_fpll_s10_tx_ext #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_pma_cgb_master_prot_mode_check ( .error(1'b1) );
 		end
-		if (hssi_pma_cgb_master_silicon_rev != "14nm5cr2")
+		if (hssi_pma_cgb_master_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -3149,7 +3149,7 @@ module altera_xcvr_fpll_s10_tx_ext #(
 		end
 	endgenerate
 
-	ex_100g_altera_xcvr_fpll_s10_htile_180_5guwkiq #(
+	ex_100g_altera_xcvr_fpll_s10_htile_180_udefj3a #(
 		.rcfg_enable                                                             (0),
 		.rcfg_jtag_enable                                                        (0),
 		.rcfg_separate_avmm_busy                                                 (0),
@@ -3172,7 +3172,7 @@ module altera_xcvr_fpll_s10_tx_ext #(
 		.hssi_avmm2_if_pldadapt_avmm_testbus_sel                                 ("avmm1_transfer_testbus"),
 		.hssi_avmm2_if_hssiadapt_hip_mode                                        ("disable_hip"),
 		.hssi_avmm2_if_pldadapt_hip_mode                                         ("disable_hip"),
-		.hssi_avmm2_if_silicon_rev                                               ("14nm5cr2"),
+		.hssi_avmm2_if_silicon_rev                                               ("14nm5bcr2ea"),
 		.hssi_avmm2_if_calibration_type                                          ("one_time"),
 		.cmu_fpll_analog_mode                                                    ("analog_off"),
 		.cmu_fpll_bonding                                                        ("bond_off"),
@@ -3380,7 +3380,7 @@ module altera_xcvr_fpll_s10_tx_ext #(
 		.cmu_fpll_ctrl_test_enable                                               ("pll_testen_off"),
 		.cmu_fpll_ctrl_plniotri_override                                         ("plniotri_ctrl_disable"),
 		.cmu_fpll_ctrl_vccr_pd                                                   ("vccd_powerup"),
-		.cmu_fpll_silicon_rev                                                    ("14nm5cr2"),
+		.cmu_fpll_silicon_rev                                                    ("14nm5bcr2ea"),
 		.cmu_fpll_pll_op_mode                                                    ("false"),
 		.cmu_fpll_bw_sel                                                         ("auto"),
 		.cmu_fpll_compensation_mode                                              ("direct"),
@@ -3428,7 +3428,7 @@ module altera_xcvr_fpll_s10_tx_ext #(
 		.cmu_fpll_refclk_select_mux_xpm_clkin_fpll_xpm_pll_so_pll_clk_sw_dly     (0),
 		.cmu_fpll_refclk_select_mux_xpm_clkin_fpll_xpm_pll_so_pll_manu_clk_sw_en ("pll_manu_clk_sw_disabled"),
 		.cmu_fpll_refclk_select_mux_xpm_clkin_fpll_xpm_pll_so_pll_sw_refclk_src  ("pll_sw_refclk_src_clk_0"),
-		.cmu_fpll_refclk_select_mux_silicon_rev                                  ("14nm5cr2"),
+		.cmu_fpll_refclk_select_mux_silicon_rev                                  ("14nm5bcr2ea"),
 		.cmu_fpll_refclk_select_mux_refclk_select0                               ("ref_iqclk0"),
 		.cmu_fpll_refclk_select_mux_refclk_select1                               ("ref_iqclk0"),
 		.cmu_fpll_refclk_select_mux_mux0_inclk0_logical_to_physical_mapping      ("ref_iqclk0"),
@@ -3445,14 +3445,14 @@ module altera_xcvr_fpll_s10_tx_ext #(
 		.test_mode                                                               ("false"),
 		.hip_cal_en                                                              ("disable"),
 		.enable_dps                                                              (0),
-		.direct_dps                                                              (0),
+		.direct_dps                                                              (1),
 		.calibration_en                                                          ("enable"),
 		.enable_pcie_hip_connectivity                                            (0),
 		.enable_mcgb                                                             (0),
 		.enable_mcgb_reset                                                       (0),
 		.enable_mcgb_debug_ports_parameters                                      (0),
 		.hssi_pma_cgb_master_prot_mode                                           ("basic_tx"),
-		.hssi_pma_cgb_master_silicon_rev                                         ("14nm5cr2"),
+		.hssi_pma_cgb_master_silicon_rev                                         ("14nm5bcr2ea"),
 		.hssi_pma_cgb_master_x1_div_m_sel                                        ("divbypass"),
 		.hssi_pma_cgb_master_cgb_enable_iqtxrxclk                                ("disable_iqtxrxclk"),
 		.hssi_pma_cgb_master_ser_mode                                            ("sixty_four_bit"),

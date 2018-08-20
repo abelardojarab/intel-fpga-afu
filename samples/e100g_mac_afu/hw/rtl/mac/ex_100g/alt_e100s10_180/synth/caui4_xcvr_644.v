@@ -14,8 +14,8 @@ module caui4_xcvr_644 #(
 		parameter dbg_ctrl_soft_logic_enable                                                      = 1,
 		parameter rcfg_emb_strm_enable                                                            = 0,
 		parameter rcfg_profile_cnt                                                                = 2,
-		parameter device_revision                                                                 = "14nm5cr2",
-		parameter silicon_revision                                                                = "14nm5cr2",
+		parameter device_revision                                                                 = "14nm5bcr2ea",
+		parameter silicon_revision                                                                = "14nm5bcr2ea",
 		parameter reduced_reset_sim_time                                                          = 0,
 		parameter duplex_mode                                                                     = "duplex",
 		parameter channels                                                                        = 4,
@@ -129,7 +129,7 @@ module caui4_xcvr_644 #(
 		parameter hssi_rx_pld_pcs_interface_hd_krfec_test_bus_mode                                = "tx",
 		parameter hssi_rx_pld_pcs_interface_hd_pcs10g_test_bus_mode                               = "rx",
 		parameter hssi_rx_pld_pcs_interface_hd_pcs_channel_transparent_pcs_rx                     = "disable",
-		parameter hssi_rx_pld_pcs_interface_silicon_rev                                           = "14nm5cr2",
+		parameter hssi_rx_pld_pcs_interface_silicon_rev                                           = "14nm5bcr2ea",
 		parameter hssi_tx_pld_pcs_interface_hd_pcs10g_advanced_user_mode_tx                       = "disable",
 		parameter hssi_tx_pld_pcs_interface_hd_krfec_channel_operation_mode                       = "tx_rx_pair_enabled",
 		parameter hssi_tx_pld_pcs_interface_hd_pcs10g_channel_operation_mode                      = "tx_rx_pair_enabled",
@@ -199,7 +199,7 @@ module caui4_xcvr_644 #(
 		parameter hssi_tx_pld_pcs_interface_hd_pcs_channel_pld_if_sup_mode                        = "user_mode",
 		parameter hssi_tx_pld_pcs_interface_hd_pcs_channel_pma_if_sup_mode                        = "user_mode",
 		parameter hssi_tx_pld_pcs_interface_hd_pcs_channel_share_fifo_mem_sup_mode                = "user_mode",
-		parameter hssi_tx_pld_pcs_interface_silicon_rev                                           = "14nm5cr2",
+		parameter hssi_tx_pld_pcs_interface_silicon_rev                                           = "14nm5bcr2ea",
 		parameter hssi_10g_tx_pcs_advanced_user_mode                                              = "disable",
 		parameter hssi_10g_tx_pcs_bitslip_en                                                      = "bitslip_dis",
 		parameter hssi_10g_tx_pcs_bonding_dft_en                                                  = "dft_dis",
@@ -275,7 +275,7 @@ module caui4_xcvr_644 #(
 		parameter hssi_10g_tx_pcs_txfifo_pfull                                                    = 11,
 		parameter hssi_10g_tx_pcs_wr_clk_sel                                                      = "wr_tx_pma_clk",
 		parameter hssi_10g_tx_pcs_wrfifo_clken                                                    = "wrfifo_clk_en",
-		parameter hssi_10g_tx_pcs_silicon_rev                                                     = "14nm5cr2",
+		parameter hssi_10g_tx_pcs_silicon_rev                                                     = "14nm5bcr2ea",
 		parameter hssi_8g_rx_pcs_auto_error_replacement                                           = "dis_err_replace",
 		parameter hssi_8g_rx_pcs_bit_reversal                                                     = "dis_bit_reversal",
 		parameter hssi_8g_rx_pcs_bonding_dft_en                                                   = "dft_dis",
@@ -353,7 +353,7 @@ module caui4_xcvr_644 #(
 		parameter hssi_8g_rx_pcs_wa_rvnumber_data                                                 = 0,
 		parameter hssi_8g_rx_pcs_wa_sync_sm_ctrl                                                  = "gige_sync_sm",
 		parameter hssi_8g_rx_pcs_wait_cnt                                                         = 0,
-		parameter hssi_8g_rx_pcs_silicon_rev                                                      = "14nm5cr2",
+		parameter hssi_8g_rx_pcs_silicon_rev                                                      = "14nm5bcr2ea",
 		parameter hssi_8g_tx_pcs_bit_reversal                                                     = "dis_bit_reversal",
 		parameter hssi_8g_tx_pcs_bonding_dft_en                                                   = "dft_dis",
 		parameter hssi_8g_tx_pcs_bonding_dft_val                                                  = "dft_0",
@@ -388,7 +388,7 @@ module caui4_xcvr_644 #(
 		parameter hssi_8g_tx_pcs_tx_fast_pld_reg                                                  = "dis_tx_fast_pld_reg",
 		parameter hssi_8g_tx_pcs_txclk_freerun                                                    = "en_freerun_tx",
 		parameter hssi_8g_tx_pcs_txpcs_urst                                                       = "en_txpcs_urst",
-		parameter hssi_8g_tx_pcs_silicon_rev                                                      = "14nm5cr2",
+		parameter hssi_8g_tx_pcs_silicon_rev                                                      = "14nm5bcr2ea",
 		parameter hssi_avmm1_if_pcs_arbiter_ctrl                                                  = "avmm1_arbiter_uc_sel",
 		parameter hssi_avmm1_if_pcs_cal_done                                                      = "avmm1_cal_done_deassert",
 		parameter hssi_avmm1_if_pcs_cal_reserved                                                  = 0,
@@ -407,7 +407,7 @@ module caui4_xcvr_644 #(
 		parameter hssi_avmm1_if_pldadapt_avmm_testbus_sel                                         = "avmm1_transfer_testbus",
 		parameter hssi_avmm1_if_hssiadapt_hip_mode                                                = "disable_hip",
 		parameter hssi_avmm1_if_pldadapt_hip_mode                                                 = "disable_hip",
-		parameter hssi_avmm1_if_silicon_rev                                                       = "14nm5cr2",
+		parameter hssi_avmm1_if_silicon_rev                                                       = "14nm5bcr2ea",
 		parameter hssi_avmm1_if_calibration_type                                                  = "one_time",
 		parameter pma_cgb_bitslip_enable                                                          = "disable_bitslip",
 		parameter pma_cgb_bti_protected                                                           = "false",
@@ -431,7 +431,7 @@ module caui4_xcvr_644 #(
 		parameter pma_cgb_vccdreg_output                                                          = "vccdreg_nominal",
 		parameter pma_cgb_vreg_sel_ref                                                            = "sel_vccer_4ref",
 		parameter pma_cgb_x1_div_m_sel                                                            = "divbypass",
-		parameter pma_cgb_silicon_rev                                                             = "14nm5cr2",
+		parameter pma_cgb_silicon_rev                                                             = "14nm5bcr2ea",
 		parameter pma_cgb_input_select_x1                                                         = "fpll_bot",
 		parameter pma_cgb_input_select_gen3                                                       = "not_used",
 		parameter pma_cgb_input_select_xn                                                         = "not_used",
@@ -468,7 +468,7 @@ module caui4_xcvr_644 #(
 		parameter pma_tx_buf_duty_cycle_setting                                                   = "dcc_t32",
 		parameter pma_tx_buf_duty_cycle_setting_aux                                               = "dcc2_t32",
 		parameter pma_tx_buf_pm_cr2_tx_path_gt_enabled                                            = "enable",
-		parameter pma_tx_buf_idle_ctrl                                                            = "id_cpen_off",
+		parameter pma_tx_buf_idle_ctrl                                                            = "id_cpen_on",
 		parameter pma_tx_buf_initial_settings                                                     = "true",
 		parameter pma_tx_buf_pm_cr2_tx_path_initial_settings                                      = "true",
 		parameter pma_tx_buf_jtag_drv_sel                                                         = "drv1",
@@ -512,7 +512,7 @@ module caui4_xcvr_644 #(
 		parameter pma_tx_buf_pm_cr2_tx_path_sup_mode                                              = "user_mode",
 		parameter pma_tx_buf_swing_level                                                          = "hv",
 		parameter pma_tx_buf_pm_cr2_tx_path_swing_level                                           = "hv",
-		parameter pma_tx_buf_term_code                                                            = "rterm_code7",
+		parameter pma_tx_buf_term_code                                                            = "rterm_code0",
 		parameter pma_tx_buf_term_n_tune                                                          = "rterm_n7",
 		parameter pma_tx_buf_term_p_tune                                                          = "rterm_p7",
 		parameter pma_tx_buf_term_sel                                                             = "r_r2",
@@ -529,11 +529,11 @@ module caui4_xcvr_644 #(
 		parameter pma_tx_buf_user_fir_coeff_ctrl_sel                                              = "ram_ctl",
 		parameter pma_tx_buf_vod_output_swing_ctrl                                                = 31,
 		parameter pma_tx_buf_vreg_output                                                          = "vccdreg_nominal",
-		parameter pma_tx_buf_silicon_rev                                                          = "14nm5cr2",
+		parameter pma_tx_buf_silicon_rev                                                          = "14nm5bcr2ea",
 		parameter pma_tx_sequencer_tx_path_rstn_overrideb                                         = "use_sequencer",
 		parameter pma_tx_sequencer_xtx_path_xcgb_tx_ucontrol_en                                   = "disable",
 		parameter pma_tx_sequencer_xrx_path_uc_cal_clk_bypass                                     = "cal_clk_0",
-		parameter pma_tx_sequencer_silicon_rev                                                    = "14nm5cr2",
+		parameter pma_tx_sequencer_silicon_rev                                                    = "14nm5bcr2ea",
 		parameter hssi_10g_rx_pcs_advanced_user_mode                                              = "disable",
 		parameter hssi_10g_rx_pcs_align_del                                                       = "align_del_dis",
 		parameter hssi_10g_rx_pcs_ber_bit_err_total_cnt                                           = "bit_err_total_cnt_10g",
@@ -616,7 +616,7 @@ module caui4_xcvr_644 #(
 		parameter hssi_10g_rx_pcs_sup_mode                                                        = "user_mode",
 		parameter hssi_10g_rx_pcs_test_mode                                                       = "test_off",
 		parameter hssi_10g_rx_pcs_wrfifo_clken                                                    = "wrfifo_clk_en",
-		parameter hssi_10g_rx_pcs_silicon_rev                                                     = "14nm5cr2",
+		parameter hssi_10g_rx_pcs_silicon_rev                                                     = "14nm5bcr2ea",
 		parameter hssi_pldadapt_rx_aib_clk1_sel                                                   = "aib_clk1_pld_pcs_rx_clk_out",
 		parameter hssi_pldadapt_rx_aib_clk2_sel                                                   = "aib_clk2_pld_pma_clkdiv_rx_user",
 		parameter hssi_pldadapt_rx_hdpldadapt_aib_fabric_pld_pma_hclk_hz                          = 0,
@@ -713,7 +713,7 @@ module caui4_xcvr_644 #(
 		parameter hssi_pldadapt_rx_us_bypass_pipeln                                               = "us_bypass_pipeln_dis",
 		parameter hssi_pldadapt_rx_word_align                                                     = "wa_en",
 		parameter hssi_pldadapt_rx_word_align_enable                                              = "enable",
-		parameter hssi_pldadapt_rx_silicon_rev                                                    = "14nm5cr2",
+		parameter hssi_pldadapt_rx_silicon_rev                                                    = "14nm5bcr2ea",
 		parameter hssi_pldadapt_tx_aib_clk1_sel                                                   = "aib_clk1_pld_pcs_tx_clk_out",
 		parameter hssi_pldadapt_tx_aib_clk2_sel                                                   = "aib_clk2_pld_pma_clkdiv_tx_user",
 		parameter hssi_pldadapt_tx_hdpldadapt_aib_fabric_pld_pma_hclk_hz                          = 0,
@@ -806,7 +806,7 @@ module caui4_xcvr_644 #(
 		parameter hssi_pldadapt_tx_us_bypass_pipeln                                               = "us_bypass_pipeln_dis",
 		parameter hssi_pldadapt_tx_word_align_enable                                              = "enable",
 		parameter hssi_pldadapt_tx_word_mark                                                      = "wm_en",
-		parameter hssi_pldadapt_tx_silicon_rev                                                    = "14nm5cr2",
+		parameter hssi_pldadapt_tx_silicon_rev                                                    = "14nm5bcr2ea",
 		parameter cdr_pll_analog_mode                                                             = "user_custom",
 		parameter cdr_pll_atb_select_control                                                      = "atb_off",
 		parameter cdr_pll_auto_reset_on                                                           = "auto_reset_off",
@@ -908,24 +908,24 @@ module caui4_xcvr_644 #(
 		parameter cdr_pll_vreg_output                                                             = "vccdreg_nominal",
 		parameter cdr_pll_direct_fb                                                               = "direct_fb",
 		parameter cdr_pll_iqclk_sel                                                               = "power_down",
-		parameter cdr_pll_silicon_rev                                                             = "14nm5cr2",
+		parameter cdr_pll_silicon_rev                                                             = "14nm5bcr2ea",
 		parameter cdr_pll_pma_width                                                               = 64,
 		parameter cdr_pll_cgb_div                                                                 = 1,
 		parameter cdr_pll_is_cascaded_pll                                                         = "false",
 		parameter pma_rx_buf_act_isource_disable                                                  = "isrc_dis",
 		parameter pma_rx_buf_advanced_mode                                                        = "false",
 		parameter pma_rx_buf_pm_cr2_rx_path_analog_mode                                           = "user_custom",
-		parameter pma_rx_buf_bodybias_enable                                                      = "bodybias_dis",
+		parameter pma_rx_buf_bodybias_enable                                                      = "bodybias_en",
 		parameter pma_rx_buf_bodybias_select                                                      = "bodybias_sel1",
 		parameter pma_rx_buf_bypass_ctle_rf_cal                                                   = "use_dprio_rfcal",
 		parameter pma_rx_buf_clk_divrx_en                                                         = "normal_clk",
-		parameter pma_rx_buf_const_gm_en                                                          = "cgm_en_1",
+		parameter pma_rx_buf_const_gm_en                                                          = "cgm_en_3",
 		parameter pma_rx_buf_ctle_ac_gain                                                         = 0,
 		parameter pma_rx_buf_ctle_eq_gain                                                         = 0,
 		parameter pma_rx_buf_ctle_hires_bypass                                                    = "ctle_hires_en",
 		parameter pma_rx_buf_ctle_oc_ib_sel                                                       = "ib_oc_bw3",
 		parameter pma_rx_buf_ctle_oc_sign                                                         = "add_i_2_p_eq",
-		parameter pma_rx_buf_ctle_rf_cal                                                          = 1,
+		parameter pma_rx_buf_ctle_rf_cal                                                          = 5,
 		parameter pma_rx_buf_ctle_tia_isel                                                        = "ib_tia_bw3",
 		parameter pma_rx_buf_pm_cr2_tx_rx_cvp_mode                                                = "cvp_off",
 		parameter pma_rx_buf_datarate_bps                                                         = "25781250000",
@@ -995,7 +995,7 @@ module caui4_xcvr_644 #(
 		parameter pma_rx_buf_vga_halfbw_en                                                        = "vga_half_bw_disabled",
 		parameter pma_rx_buf_vga_ib_max_en                                                        = "vga_ib_max_enable",
 		parameter pma_rx_buf_vga_mode                                                             = "vga_off",
-		parameter pma_rx_buf_silicon_rev                                                          = "14nm5cr2",
+		parameter pma_rx_buf_silicon_rev                                                          = "14nm5bcr2ea",
 		parameter hssi_adapt_rx_adapter_lpbk_mode                                                 = "disable",
 		parameter hssi_adapt_rx_hd_hssiadapt_aib_hssi_pld_sclk_hz                                 = 0,
 		parameter hssi_adapt_rx_aib_lpbk_mode                                                     = "disable",
@@ -1114,11 +1114,11 @@ module caui4_xcvr_644 #(
 		parameter hssi_adapt_rx_us_bypass_pipeln                                                  = "us_bypass_pipeln_dis",
 		parameter hssi_adapt_rx_word_align_enable                                                 = "enable",
 		parameter hssi_adapt_rx_word_mark                                                         = "wm_en",
-		parameter hssi_adapt_rx_silicon_rev                                                       = "14nm5cr2",
+		parameter hssi_adapt_rx_silicon_rev                                                       = "14nm5bcr2ea",
 		parameter pma_reset_sequencer_rx_path_rstn_overrideb                                      = "use_sequencer",
 		parameter pma_reset_sequencer_xrx_path_uc_cal_clk_bypass                                  = "cal_clk_0",
 		parameter pma_reset_sequencer_xrx_path_uc_cal_enable                                      = "rx_cal_off",
-		parameter pma_reset_sequencer_silicon_rev                                                 = "14nm5cr2",
+		parameter pma_reset_sequencer_silicon_rev                                                 = "14nm5bcr2ea",
 		parameter pma_tx_ser_bti_protected                                                        = "false",
 		parameter pma_tx_ser_control_clks_divtx_aibtx                                             = "no_dft_control_clkdivtx_clkaibtx",
 		parameter pma_tx_ser_datarate_bps                                                         = "0",
@@ -1139,7 +1139,7 @@ module caui4_xcvr_644 #(
 		parameter pma_tx_ser_ser_preset_bti_en                                                    = "ser_preset_bti_disable",
 		parameter pma_tx_ser_sup_mode                                                             = "user_mode",
 		parameter pma_tx_ser_uc_vcc_setting                                                       = "vcc_setting2",
-		parameter pma_tx_ser_silicon_rev                                                          = "14nm5cr2",
+		parameter pma_tx_ser_silicon_rev                                                          = "14nm5bcr2ea",
 		parameter pma_rx_deser_bitslip_bypass                                                     = "bs_bypass_yes",
 		parameter pma_rx_deser_bti_protected                                                      = "false",
 		parameter pma_rx_deser_clkdiv_source                                                      = "vco_bypass_normal",
@@ -1166,7 +1166,7 @@ module caui4_xcvr_644 #(
 		parameter pma_rx_deser_sd_clk                                                             = "sd_clk_disabled",
 		parameter pma_rx_deser_sup_mode                                                           = "user_mode",
 		parameter pma_rx_deser_tdr_mode                                                           = "select_bbpd_data",
-		parameter pma_rx_deser_silicon_rev                                                        = "14nm5cr2",
+		parameter pma_rx_deser_silicon_rev                                                        = "14nm5bcr2ea",
 		parameter pma_txpath_chnsequencer_pcie_gen                                                = "non_pcie",
 		parameter pma_txpath_chnsequencer_prot_mode                                               = "basic_tx",
 		parameter pma_txpath_chnsequencer_sup_mode                                                = "sup_off",
@@ -1227,7 +1227,7 @@ module caui4_xcvr_644 #(
 		parameter hssi_aibcr_rx_powermode_dc                                                      = "powerup",
 		parameter hssi_aibcr_rx_redundancy_en                                                     = "disable",
 		parameter hssi_aibcr_rx_sup_mode                                                          = "user_mode",
-		parameter hssi_aibcr_rx_silicon_rev                                                       = "14nm5cr2",
+		parameter hssi_aibcr_rx_silicon_rev                                                       = "14nm5bcr2ea",
 		parameter hssi_aibcr_tx_aib_datasel_gr0                                                   = "aib_datasel0_setting0",
 		parameter hssi_aibcr_tx_aib_datasel_gr1                                                   = "aib_datasel1_setting1",
 		parameter hssi_aibcr_tx_aib_datasel_gr2                                                   = "aib_datasel2_setting0",
@@ -1282,7 +1282,7 @@ module caui4_xcvr_644 #(
 		parameter hssi_aibcr_tx_powermode_dc                                                      = "powerup",
 		parameter hssi_aibcr_tx_redundancy_en                                                     = "disable",
 		parameter hssi_aibcr_tx_sup_mode                                                          = "user_mode",
-		parameter hssi_aibcr_tx_silicon_rev                                                       = "14nm5cr2",
+		parameter hssi_aibcr_tx_silicon_rev                                                       = "14nm5bcr2ea",
 		parameter hssi_aibnd_rx_aib_datasel_gr0                                                   = "aib_datasel0_setting0",
 		parameter hssi_aibnd_rx_aib_datasel_gr1                                                   = "aib_datasel1_setting1",
 		parameter hssi_aibnd_rx_aib_datasel_gr2                                                   = "aib_datasel2_setting1",
@@ -1323,10 +1323,10 @@ module caui4_xcvr_644 #(
 		parameter hssi_aibnd_rx_dft_hssitestip_dll_dcc_en                                         = "disable_dft",
 		parameter hssi_aibnd_rx_op_mode                                                           = "rx_dll_enable",
 		parameter hssi_aibnd_rx_powermode_ac                                                      = "rxdatapath_high_speed_pwr",
-		parameter hssi_aibnd_rx_powermode_dc                                                      = "rxdatapath_powerup",
+		parameter hssi_aibnd_rx_powermode_dc                                                      = "powerup",
 		parameter hssi_aibnd_rx_redundancy_en                                                     = "disable",
 		parameter hssi_aibnd_rx_sup_mode                                                          = "user_mode",
-		parameter hssi_aibnd_rx_silicon_rev                                                       = "14nm5cr2",
+		parameter hssi_aibnd_rx_silicon_rev                                                       = "14nm5bcr2ea",
 		parameter hssi_aibnd_tx_aib_datasel_gr0                                                   = "aib_datasel0_setting0",
 		parameter hssi_aibnd_tx_aib_datasel_gr1                                                   = "aib_datasel1_setting0",
 		parameter hssi_aibnd_tx_aib_datasel_gr2                                                   = "aib_datasel2_setting1",
@@ -1384,10 +1384,10 @@ module caui4_xcvr_644 #(
 		parameter hssi_aibnd_tx_dft_hssitestip_dll_dcc_en                                         = "disable_dft",
 		parameter hssi_aibnd_tx_op_mode                                                           = "tx_dcc_enable",
 		parameter hssi_aibnd_tx_powermode_ac                                                      = "txdatapath_high_speed_pwr",
-		parameter hssi_aibnd_tx_powermode_dc                                                      = "txdatapath_powerup",
+		parameter hssi_aibnd_tx_powermode_dc                                                      = "powerup",
 		parameter hssi_aibnd_tx_redundancy_en                                                     = "disable",
 		parameter hssi_aibnd_tx_sup_mode                                                          = "user_mode",
-		parameter hssi_aibnd_tx_silicon_rev                                                       = "14nm5cr2",
+		parameter hssi_aibnd_tx_silicon_rev                                                       = "14nm5bcr2ea",
 		parameter hssi_pipe_gen3_bypass_rx_detection_enable                                       = "false",
 		parameter hssi_pipe_gen3_bypass_rx_preset                                                 = 0,
 		parameter hssi_pipe_gen3_bypass_rx_preset_enable                                          = "false",
@@ -1403,7 +1403,7 @@ module caui4_xcvr_644 #(
 		parameter hssi_pipe_gen3_rate_match_pad_insertion                                         = "dis_rm_fifo_pad_ins",
 		parameter hssi_pipe_gen3_sup_mode                                                         = "user_mode",
 		parameter hssi_pipe_gen3_test_out_sel                                                     = "disable_test_out",
-		parameter hssi_pipe_gen3_silicon_rev                                                      = "14nm5cr2",
+		parameter hssi_pipe_gen3_silicon_rev                                                      = "14nm5bcr2ea",
 		parameter hssi_gen3_rx_pcs_block_sync                                                     = "bypass_block_sync",
 		parameter hssi_gen3_rx_pcs_block_sync_sm                                                  = "disable_blk_sync_sm",
 		parameter hssi_gen3_rx_pcs_cdr_ctrl_force_unalgn                                          = "disable",
@@ -1418,13 +1418,13 @@ module caui4_xcvr_644 #(
 		parameter hssi_gen3_rx_pcs_rx_num_fixed_pat                                               = 0,
 		parameter hssi_gen3_rx_pcs_rx_test_out_sel                                                = "rx_test_out0",
 		parameter hssi_gen3_rx_pcs_sup_mode                                                       = "user_mode",
-		parameter hssi_gen3_rx_pcs_silicon_rev                                                    = "14nm5cr2",
+		parameter hssi_gen3_rx_pcs_silicon_rev                                                    = "14nm5bcr2ea",
 		parameter hssi_gen3_tx_pcs_mode                                                           = "disable_pcs",
 		parameter hssi_gen3_tx_pcs_reverse_lpbk                                                   = "rev_lpbk_dis",
 		parameter hssi_gen3_tx_pcs_sup_mode                                                       = "user_mode",
 		parameter hssi_gen3_tx_pcs_tx_bitslip                                                     = 0,
 		parameter hssi_gen3_tx_pcs_tx_gbox_byp                                                    = "bypass_gbox",
-		parameter hssi_gen3_tx_pcs_silicon_rev                                                    = "14nm5cr2",
+		parameter hssi_gen3_tx_pcs_silicon_rev                                                    = "14nm5bcr2ea",
 		parameter hssi_adapt_tx_aib_clk_sel                                                       = "aib_clk_pma_aib_tx_clk",
 		parameter hssi_adapt_tx_hd_hssiadapt_aib_hssi_pld_sclk_hz                                 = 0,
 		parameter hssi_adapt_tx_hd_hssiadapt_aib_hssi_tx_transfer_clk_hz                          = 805664062,
@@ -1502,7 +1502,7 @@ module caui4_xcvr_644 #(
 		parameter hssi_adapt_tx_txqpi_pullup_rst_val                                              = "reset_to_zero_txqpiu",
 		parameter hssi_adapt_tx_word_align                                                        = "wa_en",
 		parameter hssi_adapt_tx_word_align_enable                                                 = "enable",
-		parameter hssi_adapt_tx_silicon_rev                                                       = "14nm5cr2",
+		parameter hssi_adapt_tx_silicon_rev                                                       = "14nm5bcr2ea",
 		parameter hssi_krfec_rx_pcs_blksync_cor_en                                                = "detect",
 		parameter hssi_krfec_rx_pcs_bypass_gb                                                     = "bypass_dis",
 		parameter hssi_krfec_rx_pcs_clr_ctrl                                                      = "both_enabled",
@@ -1530,7 +1530,7 @@ module caui4_xcvr_644 #(
 		parameter hssi_krfec_rx_pcs_rx_testbus_sel                                                = "overall",
 		parameter hssi_krfec_rx_pcs_signal_ok_en                                                  = "sig_ok_en",
 		parameter hssi_krfec_rx_pcs_sup_mode                                                      = "user_mode",
-		parameter hssi_krfec_rx_pcs_silicon_rev                                                   = "14nm5cr2",
+		parameter hssi_krfec_rx_pcs_silicon_rev                                                   = "14nm5bcr2ea",
 		parameter hssi_krfec_tx_pcs_burst_err                                                     = "burst_err_dis",
 		parameter hssi_krfec_tx_pcs_burst_err_len                                                 = "burst_err_len1",
 		parameter hssi_krfec_tx_pcs_ctrl_bit_reverse                                              = "ctrl_bit_reverse_en",
@@ -1544,7 +1544,7 @@ module caui4_xcvr_644 #(
 		parameter hssi_krfec_tx_pcs_transcode_err                                                 = "trans_err_dis",
 		parameter hssi_krfec_tx_pcs_transmit_order                                                = "transmit_lsb",
 		parameter hssi_krfec_tx_pcs_tx_testbus_sel                                                = "overall",
-		parameter hssi_krfec_tx_pcs_silicon_rev                                                   = "14nm5cr2",
+		parameter hssi_krfec_tx_pcs_silicon_rev                                                   = "14nm5bcr2ea",
 		parameter hssi_pipe_gen1_2_elec_idle_delay_val                                            = 0,
 		parameter hssi_pipe_gen1_2_error_replace_pad                                              = "replace_edb",
 		parameter hssi_pipe_gen1_2_hip_mode                                                       = "dis_hip",
@@ -1568,12 +1568,12 @@ module caui4_xcvr_644 #(
 		parameter hssi_pipe_gen1_2_sup_mode                                                       = "user_mode",
 		parameter hssi_pipe_gen1_2_tx_pipe_enable                                                 = "dis_pipe_tx",
 		parameter hssi_pipe_gen1_2_txswing                                                        = "dis_txswing",
-		parameter hssi_pipe_gen1_2_silicon_rev                                                    = "14nm5cr2",
+		parameter hssi_pipe_gen1_2_silicon_rev                                                    = "14nm5bcr2ea",
 		parameter hssi_common_pld_pcs_interface_dft_clk_out_en                                    = "dft_clk_out_disable",
 		parameter hssi_common_pld_pcs_interface_dft_clk_out_sel                                   = "teng_rx_dft_clk",
 		parameter hssi_common_pld_pcs_interface_hrdrstctrl_en                                     = "hrst_dis",
 		parameter hssi_common_pld_pcs_interface_pcs_testbus_block_sel                             = "pma_if",
-		parameter hssi_common_pld_pcs_interface_silicon_rev                                       = "14nm5cr2",
+		parameter hssi_common_pld_pcs_interface_silicon_rev                                       = "14nm5bcr2ea",
 		parameter hssi_common_pcs_pma_interface_asn_clk_enable                                    = "false",
 		parameter hssi_common_pcs_pma_interface_asn_enable                                        = "dis_asn",
 		parameter hssi_common_pcs_pma_interface_block_sel                                         = "eight_g_pcs",
@@ -1618,7 +1618,7 @@ module caui4_xcvr_644 #(
 		parameter hssi_common_pcs_pma_interface_wait_clk_on_off_timer                             = 0,
 		parameter hssi_common_pcs_pma_interface_wait_pipe_synchronizing                           = 0,
 		parameter hssi_common_pcs_pma_interface_wait_send_syncp_fbkp                              = 0,
-		parameter hssi_common_pcs_pma_interface_silicon_rev                                       = "14nm5cr2",
+		parameter hssi_common_pcs_pma_interface_silicon_rev                                       = "14nm5bcr2ea",
 		parameter hssi_rx_pcs_pma_interface_block_sel                                             = "ten_g_pcs",
 		parameter hssi_rx_pcs_pma_interface_channel_operation_mode                                = "tx_rx_pair_enabled",
 		parameter hssi_rx_pcs_pma_interface_clkslip_sel                                           = "pld",
@@ -1641,7 +1641,7 @@ module caui4_xcvr_644 #(
 		parameter hssi_rx_pcs_pma_interface_rx_static_polarity_inversion                          = "rx_stat_polinv_dis",
 		parameter hssi_rx_pcs_pma_interface_rx_uhsif_lpbk_en                                      = "uhsif_lpbk_dis",
 		parameter hssi_rx_pcs_pma_interface_sup_mode                                              = "user_mode",
-		parameter hssi_rx_pcs_pma_interface_silicon_rev                                           = "14nm5cr2",
+		parameter hssi_rx_pcs_pma_interface_silicon_rev                                           = "14nm5bcr2ea",
 		parameter hssi_tx_pcs_pma_interface_bypass_pma_txelecidle                                 = "true",
 		parameter hssi_tx_pcs_pma_interface_channel_operation_mode                                = "tx_rx_pair_enabled",
 		parameter hssi_tx_pcs_pma_interface_lpbk_en                                               = "disable",
@@ -1682,16 +1682,16 @@ module caui4_xcvr_644 #(
 		parameter hssi_tx_pcs_pma_interface_uhsif_lock_det_thresh_cnt_before_lock_value           = 0,
 		parameter hssi_tx_pcs_pma_interface_uhsif_lock_det_thresh_diff_after_lock_value           = 0,
 		parameter hssi_tx_pcs_pma_interface_uhsif_lock_det_thresh_diff_before_lock_value          = 0,
-		parameter hssi_tx_pcs_pma_interface_silicon_rev                                           = "14nm5cr2",
+		parameter hssi_tx_pcs_pma_interface_silicon_rev                                           = "14nm5bcr2ea",
 		parameter hssi_fifo_rx_pcs_double_read_mode                                               = "double_read_dis",
 		parameter hssi_fifo_rx_pcs_prot_mode                                                      = "teng_mode",
-		parameter hssi_fifo_rx_pcs_silicon_rev                                                    = "14nm5cr2",
+		parameter hssi_fifo_rx_pcs_silicon_rev                                                    = "14nm5bcr2ea",
 		parameter hssi_fifo_tx_pcs_double_write_mode                                              = "double_write_dis",
 		parameter hssi_fifo_tx_pcs_prot_mode                                                      = "teng_mode",
-		parameter hssi_fifo_tx_pcs_silicon_rev                                                    = "14nm5cr2",
+		parameter hssi_fifo_tx_pcs_silicon_rev                                                    = "14nm5bcr2ea",
 		parameter pma_cdr_refclk_powerdown_mode                                                   = "powerup",
 		parameter pma_cdr_refclk_receiver_detect_src                                              = "iqclk_src",
-		parameter pma_cdr_refclk_silicon_rev                                                      = "14nm5cr2",
+		parameter pma_cdr_refclk_silicon_rev                                                      = "14nm5bcr2ea",
 		parameter pma_cdr_refclk_refclk_select                                                    = "ref_iqclk0",
 		parameter pma_rx_odi_datarate_bps                                                         = "25781250000",
 		parameter pma_rx_odi_enable_cdr_lpbk                                                      = "disable_lpbk",
@@ -1707,9 +1707,9 @@ module caui4_xcvr_644 #(
 		parameter pma_rx_odi_sup_mode                                                             = "user_mode",
 		parameter pma_rx_odi_vert_threshold                                                       = "vert_0",
 		parameter pma_rx_odi_vreg_voltage_sel                                                     = "vreg3",
-		parameter pma_rx_odi_silicon_rev                                                          = "14nm5cr2",
+		parameter pma_rx_odi_silicon_rev                                                          = "14nm5bcr2ea",
 		parameter pma_adapt_sequencer_rx_path_rstn_overrideb                                      = "use_sequencer",
-		parameter pma_adapt_sequencer_silicon_rev                                                 = "14nm5cr2",
+		parameter pma_adapt_sequencer_silicon_rev                                                 = "14nm5bcr2ea",
 		parameter pma_adapt_adapt_mode                                                            = "ctle_dfe",
 		parameter pma_adapt_adp_ac_ctle_cal_win                                                   = "radp_ac_ctle_cal_win_4",
 		parameter pma_adapt_adp_ac_ctle_cocurrent_mode_sel                                        = "radp_ac_ctle_cocurrent_mode_sel_mode_1",
@@ -1826,7 +1826,7 @@ module caui4_xcvr_644 #(
 		parameter pma_adapt_power_mode                                                            = "powsav_disable",
 		parameter pma_adapt_prot_mode                                                             = "basic_rx",
 		parameter pma_adapt_sup_mode                                                              = "user_mode",
-		parameter pma_adapt_silicon_rev                                                           = "14nm5cr2",
+		parameter pma_adapt_silicon_rev                                                           = "14nm5bcr2ea",
 		parameter pma_rx_dfe_adapt_bti_en                                                         = "adapt_bti_disable",
 		parameter pma_rx_dfe_atb_select                                                           = "atb_disable",
 		parameter pma_rx_dfe_bti_protected                                                        = "false",
@@ -1914,7 +1914,7 @@ module caui4_xcvr_644 #(
 		parameter pma_rx_dfe_tap9_sgn                                                             = "tap9_sign_0",
 		parameter pma_rx_dfe_tapsum_bw_sel                                                        = "tapsum_hibw",
 		parameter pma_rx_dfe_vref_coeff                                                           = 0,
-		parameter pma_rx_dfe_silicon_rev                                                          = "14nm5cr2",
+		parameter pma_rx_dfe_silicon_rev                                                          = "14nm5bcr2ea",
 		parameter pma_rx_sd_link                                                                  = "sr",
 		parameter pma_rx_sd_optimal                                                               = "true",
 		parameter pma_rx_sd_power_mode                                                            = "high_perf",
@@ -1924,8 +1924,8 @@ module caui4_xcvr_644 #(
 		parameter pma_rx_sd_sd_pdb                                                                = "sd_off",
 		parameter pma_rx_sd_sd_threshold                                                          = "sdlv_3",
 		parameter pma_rx_sd_sup_mode                                                              = "user_mode",
-		parameter pma_rx_sd_silicon_rev                                                           = "14nm5cr2",
-		parameter pma_pcie_gen_switch_silicon_rev                                                 = "14nm5cr2"
+		parameter pma_rx_sd_silicon_rev                                                           = "14nm5bcr2ea",
+		parameter pma_pcie_gen_switch_silicon_rev                                                 = "14nm5bcr2ea"
 	) (
 		input  wire [3:0]   tx_analogreset,          //          tx_analogreset.tx_analogreset
 		input  wire [3:0]   rx_analogreset,          //          rx_analogreset.rx_analogreset
@@ -2082,7 +2082,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					rcfg_profile_cnt_check ( .error(1'b1) );
 		end
-		if (device_revision != "14nm5cr2")
+		if (device_revision != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -2091,7 +2091,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					device_revision_check ( .error(1'b1) );
 		end
-		if (silicon_revision != "14nm5cr2")
+		if (silicon_revision != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -3117,7 +3117,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_rx_pld_pcs_interface_hd_pcs_channel_transparent_pcs_rx_check ( .error(1'b1) );
 		end
-		if (hssi_rx_pld_pcs_interface_silicon_rev != "14nm5cr2")
+		if (hssi_rx_pld_pcs_interface_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -3747,7 +3747,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_tx_pld_pcs_interface_hd_pcs_channel_share_fifo_mem_sup_mode_check ( .error(1'b1) );
 		end
-		if (hssi_tx_pld_pcs_interface_silicon_rev != "14nm5cr2")
+		if (hssi_tx_pld_pcs_interface_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -4431,7 +4431,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_10g_tx_pcs_wrfifo_clken_check ( .error(1'b1) );
 		end
-		if (hssi_10g_tx_pcs_silicon_rev != "14nm5cr2")
+		if (hssi_10g_tx_pcs_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -5133,7 +5133,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_8g_rx_pcs_wait_cnt_check ( .error(1'b1) );
 		end
-		if (hssi_8g_rx_pcs_silicon_rev != "14nm5cr2")
+		if (hssi_8g_rx_pcs_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -5448,7 +5448,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_8g_tx_pcs_txpcs_urst_check ( .error(1'b1) );
 		end
-		if (hssi_8g_tx_pcs_silicon_rev != "14nm5cr2")
+		if (hssi_8g_tx_pcs_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -5619,7 +5619,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_avmm1_if_pldadapt_hip_mode_check ( .error(1'b1) );
 		end
-		if (hssi_avmm1_if_silicon_rev != "14nm5cr2")
+		if (hssi_avmm1_if_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -5835,7 +5835,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					pma_cgb_x1_div_m_sel_check ( .error(1'b1) );
 		end
-		if (pma_cgb_silicon_rev != "14nm5cr2")
+		if (pma_cgb_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -6168,7 +6168,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					pma_tx_buf_pm_cr2_tx_path_gt_enabled_check ( .error(1'b1) );
 		end
-		if (pma_tx_buf_idle_ctrl != "id_cpen_off")
+		if (pma_tx_buf_idle_ctrl != "id_cpen_on")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -6564,7 +6564,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					pma_tx_buf_pm_cr2_tx_path_swing_level_check ( .error(1'b1) );
 		end
-		if (pma_tx_buf_term_code != "rterm_code7")
+		if (pma_tx_buf_term_code != "rterm_code0")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -6717,7 +6717,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					pma_tx_buf_vreg_output_check ( .error(1'b1) );
 		end
-		if (pma_tx_buf_silicon_rev != "14nm5cr2")
+		if (pma_tx_buf_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -6753,7 +6753,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					pma_tx_sequencer_xrx_path_uc_cal_clk_bypass_check ( .error(1'b1) );
 		end
-		if (pma_tx_sequencer_silicon_rev != "14nm5cr2")
+		if (pma_tx_sequencer_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -7500,7 +7500,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_10g_rx_pcs_wrfifo_clken_check ( .error(1'b1) );
 		end
-		if (hssi_10g_rx_pcs_silicon_rev != "14nm5cr2")
+		if (hssi_10g_rx_pcs_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -8373,7 +8373,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_pldadapt_rx_word_align_enable_check ( .error(1'b1) );
 		end
-		if (hssi_pldadapt_rx_silicon_rev != "14nm5cr2")
+		if (hssi_pldadapt_rx_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -9210,7 +9210,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_pldadapt_tx_word_mark_check ( .error(1'b1) );
 		end
-		if (hssi_pldadapt_tx_silicon_rev != "14nm5cr2")
+		if (hssi_pldadapt_tx_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -10128,7 +10128,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					cdr_pll_iqclk_sel_check ( .error(1'b1) );
 		end
-		if (cdr_pll_silicon_rev != "14nm5cr2")
+		if (cdr_pll_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -10191,7 +10191,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					pma_rx_buf_pm_cr2_rx_path_analog_mode_check ( .error(1'b1) );
 		end
-		if (pma_rx_buf_bodybias_enable != "bodybias_dis")
+		if (pma_rx_buf_bodybias_enable != "bodybias_en")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -10227,7 +10227,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					pma_rx_buf_clk_divrx_en_check ( .error(1'b1) );
 		end
-		if (pma_rx_buf_const_gm_en != "cgm_en_1")
+		if (pma_rx_buf_const_gm_en != "cgm_en_3")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -10281,7 +10281,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					pma_rx_buf_ctle_oc_sign_check ( .error(1'b1) );
 		end
-		if (pma_rx_buf_ctle_rf_cal != 1)
+		if (pma_rx_buf_ctle_rf_cal != 5)
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -10911,7 +10911,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					pma_rx_buf_vga_mode_check ( .error(1'b1) );
 		end
-		if (pma_rx_buf_silicon_rev != "14nm5cr2")
+		if (pma_rx_buf_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -11982,7 +11982,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_adapt_rx_word_mark_check ( .error(1'b1) );
 		end
-		if (hssi_adapt_rx_silicon_rev != "14nm5cr2")
+		if (hssi_adapt_rx_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -12018,7 +12018,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					pma_reset_sequencer_xrx_path_uc_cal_enable_check ( .error(1'b1) );
 		end
-		if (pma_reset_sequencer_silicon_rev != "14nm5cr2")
+		if (pma_reset_sequencer_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -12207,7 +12207,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					pma_tx_ser_uc_vcc_setting_check ( .error(1'b1) );
 		end
-		if (pma_tx_ser_silicon_rev != "14nm5cr2")
+		if (pma_tx_ser_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -12450,7 +12450,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					pma_rx_deser_tdr_mode_check ( .error(1'b1) );
 		end
-		if (pma_rx_deser_silicon_rev != "14nm5cr2")
+		if (pma_rx_deser_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -12999,7 +12999,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_aibcr_rx_sup_mode_check ( .error(1'b1) );
 		end
-		if (hssi_aibcr_rx_silicon_rev != "14nm5cr2")
+		if (hssi_aibcr_rx_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -13494,7 +13494,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_aibcr_tx_sup_mode_check ( .error(1'b1) );
 		end
-		if (hssi_aibcr_tx_silicon_rev != "14nm5cr2")
+		if (hssi_aibcr_tx_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -13863,7 +13863,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_aibnd_rx_powermode_ac_check ( .error(1'b1) );
 		end
-		if (hssi_aibnd_rx_powermode_dc != "rxdatapath_powerup")
+		if (hssi_aibnd_rx_powermode_dc != "powerup")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -13890,7 +13890,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_aibnd_rx_sup_mode_check ( .error(1'b1) );
 		end
-		if (hssi_aibnd_rx_silicon_rev != "14nm5cr2")
+		if (hssi_aibnd_rx_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -14412,7 +14412,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_aibnd_tx_powermode_ac_check ( .error(1'b1) );
 		end
-		if (hssi_aibnd_tx_powermode_dc != "txdatapath_powerup")
+		if (hssi_aibnd_tx_powermode_dc != "powerup")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -14439,7 +14439,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_aibnd_tx_sup_mode_check ( .error(1'b1) );
 		end
-		if (hssi_aibnd_tx_silicon_rev != "14nm5cr2")
+		if (hssi_aibnd_tx_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -14583,7 +14583,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_pipe_gen3_test_out_sel_check ( .error(1'b1) );
 		end
-		if (hssi_pipe_gen3_silicon_rev != "14nm5cr2")
+		if (hssi_pipe_gen3_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -14718,7 +14718,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_gen3_rx_pcs_sup_mode_check ( .error(1'b1) );
 		end
-		if (hssi_gen3_rx_pcs_silicon_rev != "14nm5cr2")
+		if (hssi_gen3_rx_pcs_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -14772,7 +14772,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_gen3_tx_pcs_tx_gbox_byp_check ( .error(1'b1) );
 		end
-		if (hssi_gen3_tx_pcs_silicon_rev != "14nm5cr2")
+		if (hssi_gen3_tx_pcs_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -15474,7 +15474,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_adapt_tx_word_align_enable_check ( .error(1'b1) );
 		end
-		if (hssi_adapt_tx_silicon_rev != "14nm5cr2")
+		if (hssi_adapt_tx_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -15726,7 +15726,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_krfec_rx_pcs_sup_mode_check ( .error(1'b1) );
 		end
-		if (hssi_krfec_rx_pcs_silicon_rev != "14nm5cr2")
+		if (hssi_krfec_rx_pcs_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -15852,7 +15852,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_krfec_tx_pcs_tx_testbus_sel_check ( .error(1'b1) );
 		end
-		if (hssi_krfec_tx_pcs_silicon_rev != "14nm5cr2")
+		if (hssi_krfec_tx_pcs_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -16068,7 +16068,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_pipe_gen1_2_txswing_check ( .error(1'b1) );
 		end
-		if (hssi_pipe_gen1_2_silicon_rev != "14nm5cr2")
+		if (hssi_pipe_gen1_2_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -16113,7 +16113,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_common_pld_pcs_interface_pcs_testbus_block_sel_check ( .error(1'b1) );
 		end
-		if (hssi_common_pld_pcs_interface_silicon_rev != "14nm5cr2")
+		if (hssi_common_pld_pcs_interface_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -16518,7 +16518,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_common_pcs_pma_interface_wait_send_syncp_fbkp_check ( .error(1'b1) );
 		end
-		if (hssi_common_pcs_pma_interface_silicon_rev != "14nm5cr2")
+		if (hssi_common_pcs_pma_interface_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -16725,7 +16725,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_rx_pcs_pma_interface_sup_mode_check ( .error(1'b1) );
 		end
-		if (hssi_rx_pcs_pma_interface_silicon_rev != "14nm5cr2")
+		if (hssi_rx_pcs_pma_interface_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -17094,7 +17094,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_tx_pcs_pma_interface_uhsif_lock_det_thresh_diff_before_lock_value_check ( .error(1'b1) );
 		end
-		if (hssi_tx_pcs_pma_interface_silicon_rev != "14nm5cr2")
+		if (hssi_tx_pcs_pma_interface_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -17121,7 +17121,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_fifo_rx_pcs_prot_mode_check ( .error(1'b1) );
 		end
-		if (hssi_fifo_rx_pcs_silicon_rev != "14nm5cr2")
+		if (hssi_fifo_rx_pcs_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -17148,7 +17148,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					hssi_fifo_tx_pcs_prot_mode_check ( .error(1'b1) );
 		end
-		if (hssi_fifo_tx_pcs_silicon_rev != "14nm5cr2")
+		if (hssi_fifo_tx_pcs_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -17175,7 +17175,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					pma_cdr_refclk_receiver_detect_src_check ( .error(1'b1) );
 		end
-		if (pma_cdr_refclk_silicon_rev != "14nm5cr2")
+		if (pma_cdr_refclk_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -17319,7 +17319,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					pma_rx_odi_vreg_voltage_sel_check ( .error(1'b1) );
 		end
-		if (pma_rx_odi_silicon_rev != "14nm5cr2")
+		if (pma_rx_odi_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -17337,7 +17337,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					pma_adapt_sequencer_rx_path_rstn_overrideb_check ( .error(1'b1) );
 		end
-		if (pma_adapt_sequencer_silicon_rev != "14nm5cr2")
+		if (pma_adapt_sequencer_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -18390,7 +18390,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					pma_adapt_sup_mode_check ( .error(1'b1) );
 		end
-		if (pma_adapt_silicon_rev != "14nm5cr2")
+		if (pma_adapt_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -19182,7 +19182,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					pma_rx_dfe_vref_coeff_check ( .error(1'b1) );
 		end
-		if (pma_rx_dfe_silicon_rev != "14nm5cr2")
+		if (pma_rx_dfe_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -19272,7 +19272,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					pma_rx_sd_sup_mode_check ( .error(1'b1) );
 		end
-		if (pma_rx_sd_silicon_rev != "14nm5cr2")
+		if (pma_rx_sd_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -19281,7 +19281,7 @@ module caui4_xcvr_644 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					pma_rx_sd_silicon_rev_check ( .error(1'b1) );
 		end
-		if (pma_pcie_gen_switch_silicon_rev != "14nm5cr2")
+		if (pma_pcie_gen_switch_silicon_rev != "14nm5bcr2ea")
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -19292,7 +19292,7 @@ module caui4_xcvr_644 #(
 		end
 	endgenerate
 
-	ex_100g_altera_xcvr_native_s10_htile_180_m3pnzmq #(
+	ex_100g_altera_xcvr_native_s10_htile_180_gnz4taa #(
 		.rcfg_enable                                                                     (1),
 		.rcfg_jtag_enable                                                                (1),
 		.rcfg_separate_avmm_busy                                                         (0),
@@ -19303,8 +19303,8 @@ module caui4_xcvr_644 #(
 		.dbg_ctrl_soft_logic_enable                                                      (1),
 		.rcfg_emb_strm_enable                                                            (0),
 		.rcfg_profile_cnt                                                                (2),
-		.device_revision                                                                 ("14nm5cr2"),
-		.silicon_revision                                                                ("14nm5cr2"),
+		.device_revision                                                                 ("14nm5bcr2ea"),
+		.silicon_revision                                                                ("14nm5bcr2ea"),
 		.reduced_reset_sim_time                                                          (0),
 		.duplex_mode                                                                     ("duplex"),
 		.channels                                                                        (4),
@@ -19418,7 +19418,7 @@ module caui4_xcvr_644 #(
 		.hssi_rx_pld_pcs_interface_hd_krfec_test_bus_mode                                ("tx"),
 		.hssi_rx_pld_pcs_interface_hd_pcs10g_test_bus_mode                               ("rx"),
 		.hssi_rx_pld_pcs_interface_hd_pcs_channel_transparent_pcs_rx                     ("disable"),
-		.hssi_rx_pld_pcs_interface_silicon_rev                                           ("14nm5cr2"),
+		.hssi_rx_pld_pcs_interface_silicon_rev                                           ("14nm5bcr2ea"),
 		.hssi_tx_pld_pcs_interface_hd_pcs10g_advanced_user_mode_tx                       ("disable"),
 		.hssi_tx_pld_pcs_interface_hd_krfec_channel_operation_mode                       ("tx_rx_pair_enabled"),
 		.hssi_tx_pld_pcs_interface_hd_pcs10g_channel_operation_mode                      ("tx_rx_pair_enabled"),
@@ -19488,7 +19488,7 @@ module caui4_xcvr_644 #(
 		.hssi_tx_pld_pcs_interface_hd_pcs_channel_pld_if_sup_mode                        ("user_mode"),
 		.hssi_tx_pld_pcs_interface_hd_pcs_channel_pma_if_sup_mode                        ("user_mode"),
 		.hssi_tx_pld_pcs_interface_hd_pcs_channel_share_fifo_mem_sup_mode                ("user_mode"),
-		.hssi_tx_pld_pcs_interface_silicon_rev                                           ("14nm5cr2"),
+		.hssi_tx_pld_pcs_interface_silicon_rev                                           ("14nm5bcr2ea"),
 		.hssi_10g_tx_pcs_advanced_user_mode                                              ("disable"),
 		.hssi_10g_tx_pcs_bitslip_en                                                      ("bitslip_dis"),
 		.hssi_10g_tx_pcs_bonding_dft_en                                                  ("dft_dis"),
@@ -19564,7 +19564,7 @@ module caui4_xcvr_644 #(
 		.hssi_10g_tx_pcs_txfifo_pfull                                                    (11),
 		.hssi_10g_tx_pcs_wr_clk_sel                                                      ("wr_tx_pma_clk"),
 		.hssi_10g_tx_pcs_wrfifo_clken                                                    ("wrfifo_clk_en"),
-		.hssi_10g_tx_pcs_silicon_rev                                                     ("14nm5cr2"),
+		.hssi_10g_tx_pcs_silicon_rev                                                     ("14nm5bcr2ea"),
 		.hssi_8g_rx_pcs_auto_error_replacement                                           ("dis_err_replace"),
 		.hssi_8g_rx_pcs_bit_reversal                                                     ("dis_bit_reversal"),
 		.hssi_8g_rx_pcs_bonding_dft_en                                                   ("dft_dis"),
@@ -19642,7 +19642,7 @@ module caui4_xcvr_644 #(
 		.hssi_8g_rx_pcs_wa_rvnumber_data                                                 (0),
 		.hssi_8g_rx_pcs_wa_sync_sm_ctrl                                                  ("gige_sync_sm"),
 		.hssi_8g_rx_pcs_wait_cnt                                                         (0),
-		.hssi_8g_rx_pcs_silicon_rev                                                      ("14nm5cr2"),
+		.hssi_8g_rx_pcs_silicon_rev                                                      ("14nm5bcr2ea"),
 		.hssi_8g_tx_pcs_bit_reversal                                                     ("dis_bit_reversal"),
 		.hssi_8g_tx_pcs_bonding_dft_en                                                   ("dft_dis"),
 		.hssi_8g_tx_pcs_bonding_dft_val                                                  ("dft_0"),
@@ -19677,7 +19677,7 @@ module caui4_xcvr_644 #(
 		.hssi_8g_tx_pcs_tx_fast_pld_reg                                                  ("dis_tx_fast_pld_reg"),
 		.hssi_8g_tx_pcs_txclk_freerun                                                    ("en_freerun_tx"),
 		.hssi_8g_tx_pcs_txpcs_urst                                                       ("en_txpcs_urst"),
-		.hssi_8g_tx_pcs_silicon_rev                                                      ("14nm5cr2"),
+		.hssi_8g_tx_pcs_silicon_rev                                                      ("14nm5bcr2ea"),
 		.hssi_avmm1_if_pcs_arbiter_ctrl                                                  ("avmm1_arbiter_uc_sel"),
 		.hssi_avmm1_if_pcs_cal_done                                                      ("avmm1_cal_done_deassert"),
 		.hssi_avmm1_if_pcs_cal_reserved                                                  (0),
@@ -19696,7 +19696,7 @@ module caui4_xcvr_644 #(
 		.hssi_avmm1_if_pldadapt_avmm_testbus_sel                                         ("avmm1_transfer_testbus"),
 		.hssi_avmm1_if_hssiadapt_hip_mode                                                ("disable_hip"),
 		.hssi_avmm1_if_pldadapt_hip_mode                                                 ("disable_hip"),
-		.hssi_avmm1_if_silicon_rev                                                       ("14nm5cr2"),
+		.hssi_avmm1_if_silicon_rev                                                       ("14nm5bcr2ea"),
 		.hssi_avmm1_if_calibration_type                                                  ("one_time"),
 		.pma_cgb_bitslip_enable                                                          ("disable_bitslip"),
 		.pma_cgb_bti_protected                                                           ("false"),
@@ -19720,7 +19720,7 @@ module caui4_xcvr_644 #(
 		.pma_cgb_vccdreg_output                                                          ("vccdreg_nominal"),
 		.pma_cgb_vreg_sel_ref                                                            ("sel_vccer_4ref"),
 		.pma_cgb_x1_div_m_sel                                                            ("divbypass"),
-		.pma_cgb_silicon_rev                                                             ("14nm5cr2"),
+		.pma_cgb_silicon_rev                                                             ("14nm5bcr2ea"),
 		.pma_cgb_input_select_x1                                                         ("fpll_bot"),
 		.pma_cgb_input_select_gen3                                                       ("not_used"),
 		.pma_cgb_input_select_xn                                                         ("not_used"),
@@ -19757,7 +19757,7 @@ module caui4_xcvr_644 #(
 		.pma_tx_buf_duty_cycle_setting                                                   ("dcc_t32"),
 		.pma_tx_buf_duty_cycle_setting_aux                                               ("dcc2_t32"),
 		.pma_tx_buf_pm_cr2_tx_path_gt_enabled                                            ("enable"),
-		.pma_tx_buf_idle_ctrl                                                            ("id_cpen_off"),
+		.pma_tx_buf_idle_ctrl                                                            ("id_cpen_on"),
 		.pma_tx_buf_initial_settings                                                     ("true"),
 		.pma_tx_buf_pm_cr2_tx_path_initial_settings                                      ("true"),
 		.pma_tx_buf_jtag_drv_sel                                                         ("drv1"),
@@ -19801,7 +19801,7 @@ module caui4_xcvr_644 #(
 		.pma_tx_buf_pm_cr2_tx_path_sup_mode                                              ("user_mode"),
 		.pma_tx_buf_swing_level                                                          ("hv"),
 		.pma_tx_buf_pm_cr2_tx_path_swing_level                                           ("hv"),
-		.pma_tx_buf_term_code                                                            ("rterm_code7"),
+		.pma_tx_buf_term_code                                                            ("rterm_code0"),
 		.pma_tx_buf_term_n_tune                                                          ("rterm_n7"),
 		.pma_tx_buf_term_p_tune                                                          ("rterm_p7"),
 		.pma_tx_buf_term_sel                                                             ("r_r2"),
@@ -19818,11 +19818,11 @@ module caui4_xcvr_644 #(
 		.pma_tx_buf_user_fir_coeff_ctrl_sel                                              ("ram_ctl"),
 		.pma_tx_buf_vod_output_swing_ctrl                                                (31),
 		.pma_tx_buf_vreg_output                                                          ("vccdreg_nominal"),
-		.pma_tx_buf_silicon_rev                                                          ("14nm5cr2"),
+		.pma_tx_buf_silicon_rev                                                          ("14nm5bcr2ea"),
 		.pma_tx_sequencer_tx_path_rstn_overrideb                                         ("use_sequencer"),
 		.pma_tx_sequencer_xtx_path_xcgb_tx_ucontrol_en                                   ("disable"),
 		.pma_tx_sequencer_xrx_path_uc_cal_clk_bypass                                     ("cal_clk_0"),
-		.pma_tx_sequencer_silicon_rev                                                    ("14nm5cr2"),
+		.pma_tx_sequencer_silicon_rev                                                    ("14nm5bcr2ea"),
 		.hssi_10g_rx_pcs_advanced_user_mode                                              ("disable"),
 		.hssi_10g_rx_pcs_align_del                                                       ("align_del_dis"),
 		.hssi_10g_rx_pcs_ber_bit_err_total_cnt                                           ("bit_err_total_cnt_10g"),
@@ -19905,7 +19905,7 @@ module caui4_xcvr_644 #(
 		.hssi_10g_rx_pcs_sup_mode                                                        ("user_mode"),
 		.hssi_10g_rx_pcs_test_mode                                                       ("test_off"),
 		.hssi_10g_rx_pcs_wrfifo_clken                                                    ("wrfifo_clk_en"),
-		.hssi_10g_rx_pcs_silicon_rev                                                     ("14nm5cr2"),
+		.hssi_10g_rx_pcs_silicon_rev                                                     ("14nm5bcr2ea"),
 		.hssi_pldadapt_rx_aib_clk1_sel                                                   ("aib_clk1_pld_pcs_rx_clk_out"),
 		.hssi_pldadapt_rx_aib_clk2_sel                                                   ("aib_clk2_pld_pma_clkdiv_rx_user"),
 		.hssi_pldadapt_rx_hdpldadapt_aib_fabric_pld_pma_hclk_hz                          (0),
@@ -20002,7 +20002,7 @@ module caui4_xcvr_644 #(
 		.hssi_pldadapt_rx_us_bypass_pipeln                                               ("us_bypass_pipeln_dis"),
 		.hssi_pldadapt_rx_word_align                                                     ("wa_en"),
 		.hssi_pldadapt_rx_word_align_enable                                              ("enable"),
-		.hssi_pldadapt_rx_silicon_rev                                                    ("14nm5cr2"),
+		.hssi_pldadapt_rx_silicon_rev                                                    ("14nm5bcr2ea"),
 		.hssi_pldadapt_tx_aib_clk1_sel                                                   ("aib_clk1_pld_pcs_tx_clk_out"),
 		.hssi_pldadapt_tx_aib_clk2_sel                                                   ("aib_clk2_pld_pma_clkdiv_tx_user"),
 		.hssi_pldadapt_tx_hdpldadapt_aib_fabric_pld_pma_hclk_hz                          (0),
@@ -20095,7 +20095,7 @@ module caui4_xcvr_644 #(
 		.hssi_pldadapt_tx_us_bypass_pipeln                                               ("us_bypass_pipeln_dis"),
 		.hssi_pldadapt_tx_word_align_enable                                              ("enable"),
 		.hssi_pldadapt_tx_word_mark                                                      ("wm_en"),
-		.hssi_pldadapt_tx_silicon_rev                                                    ("14nm5cr2"),
+		.hssi_pldadapt_tx_silicon_rev                                                    ("14nm5bcr2ea"),
 		.cdr_pll_analog_mode                                                             ("user_custom"),
 		.cdr_pll_atb_select_control                                                      ("atb_off"),
 		.cdr_pll_auto_reset_on                                                           ("auto_reset_off"),
@@ -20197,24 +20197,24 @@ module caui4_xcvr_644 #(
 		.cdr_pll_vreg_output                                                             ("vccdreg_nominal"),
 		.cdr_pll_direct_fb                                                               ("direct_fb"),
 		.cdr_pll_iqclk_sel                                                               ("power_down"),
-		.cdr_pll_silicon_rev                                                             ("14nm5cr2"),
+		.cdr_pll_silicon_rev                                                             ("14nm5bcr2ea"),
 		.cdr_pll_pma_width                                                               (64),
 		.cdr_pll_cgb_div                                                                 (1),
 		.cdr_pll_is_cascaded_pll                                                         ("false"),
 		.pma_rx_buf_act_isource_disable                                                  ("isrc_dis"),
 		.pma_rx_buf_advanced_mode                                                        ("false"),
 		.pma_rx_buf_pm_cr2_rx_path_analog_mode                                           ("user_custom"),
-		.pma_rx_buf_bodybias_enable                                                      ("bodybias_dis"),
+		.pma_rx_buf_bodybias_enable                                                      ("bodybias_en"),
 		.pma_rx_buf_bodybias_select                                                      ("bodybias_sel1"),
 		.pma_rx_buf_bypass_ctle_rf_cal                                                   ("use_dprio_rfcal"),
 		.pma_rx_buf_clk_divrx_en                                                         ("normal_clk"),
-		.pma_rx_buf_const_gm_en                                                          ("cgm_en_1"),
+		.pma_rx_buf_const_gm_en                                                          ("cgm_en_3"),
 		.pma_rx_buf_ctle_ac_gain                                                         (0),
 		.pma_rx_buf_ctle_eq_gain                                                         (0),
 		.pma_rx_buf_ctle_hires_bypass                                                    ("ctle_hires_en"),
 		.pma_rx_buf_ctle_oc_ib_sel                                                       ("ib_oc_bw3"),
 		.pma_rx_buf_ctle_oc_sign                                                         ("add_i_2_p_eq"),
-		.pma_rx_buf_ctle_rf_cal                                                          (1),
+		.pma_rx_buf_ctle_rf_cal                                                          (5),
 		.pma_rx_buf_ctle_tia_isel                                                        ("ib_tia_bw3"),
 		.pma_rx_buf_pm_cr2_tx_rx_cvp_mode                                                ("cvp_off"),
 		.pma_rx_buf_datarate_bps                                                         ("25781250000"),
@@ -20284,7 +20284,7 @@ module caui4_xcvr_644 #(
 		.pma_rx_buf_vga_halfbw_en                                                        ("vga_half_bw_disabled"),
 		.pma_rx_buf_vga_ib_max_en                                                        ("vga_ib_max_enable"),
 		.pma_rx_buf_vga_mode                                                             ("vga_off"),
-		.pma_rx_buf_silicon_rev                                                          ("14nm5cr2"),
+		.pma_rx_buf_silicon_rev                                                          ("14nm5bcr2ea"),
 		.hssi_adapt_rx_adapter_lpbk_mode                                                 ("disable"),
 		.hssi_adapt_rx_hd_hssiadapt_aib_hssi_pld_sclk_hz                                 (0),
 		.hssi_adapt_rx_aib_lpbk_mode                                                     ("disable"),
@@ -20403,11 +20403,11 @@ module caui4_xcvr_644 #(
 		.hssi_adapt_rx_us_bypass_pipeln                                                  ("us_bypass_pipeln_dis"),
 		.hssi_adapt_rx_word_align_enable                                                 ("enable"),
 		.hssi_adapt_rx_word_mark                                                         ("wm_en"),
-		.hssi_adapt_rx_silicon_rev                                                       ("14nm5cr2"),
+		.hssi_adapt_rx_silicon_rev                                                       ("14nm5bcr2ea"),
 		.pma_reset_sequencer_rx_path_rstn_overrideb                                      ("use_sequencer"),
 		.pma_reset_sequencer_xrx_path_uc_cal_clk_bypass                                  ("cal_clk_0"),
 		.pma_reset_sequencer_xrx_path_uc_cal_enable                                      ("rx_cal_off"),
-		.pma_reset_sequencer_silicon_rev                                                 ("14nm5cr2"),
+		.pma_reset_sequencer_silicon_rev                                                 ("14nm5bcr2ea"),
 		.pma_tx_ser_bti_protected                                                        ("false"),
 		.pma_tx_ser_control_clks_divtx_aibtx                                             ("no_dft_control_clkdivtx_clkaibtx"),
 		.pma_tx_ser_datarate_bps                                                         ("0"),
@@ -20428,7 +20428,7 @@ module caui4_xcvr_644 #(
 		.pma_tx_ser_ser_preset_bti_en                                                    ("ser_preset_bti_disable"),
 		.pma_tx_ser_sup_mode                                                             ("user_mode"),
 		.pma_tx_ser_uc_vcc_setting                                                       ("vcc_setting2"),
-		.pma_tx_ser_silicon_rev                                                          ("14nm5cr2"),
+		.pma_tx_ser_silicon_rev                                                          ("14nm5bcr2ea"),
 		.pma_rx_deser_bitslip_bypass                                                     ("bs_bypass_yes"),
 		.pma_rx_deser_bti_protected                                                      ("false"),
 		.pma_rx_deser_clkdiv_source                                                      ("vco_bypass_normal"),
@@ -20455,7 +20455,7 @@ module caui4_xcvr_644 #(
 		.pma_rx_deser_sd_clk                                                             ("sd_clk_disabled"),
 		.pma_rx_deser_sup_mode                                                           ("user_mode"),
 		.pma_rx_deser_tdr_mode                                                           ("select_bbpd_data"),
-		.pma_rx_deser_silicon_rev                                                        ("14nm5cr2"),
+		.pma_rx_deser_silicon_rev                                                        ("14nm5bcr2ea"),
 		.pma_txpath_chnsequencer_pcie_gen                                                ("non_pcie"),
 		.pma_txpath_chnsequencer_prot_mode                                               ("basic_tx"),
 		.pma_txpath_chnsequencer_sup_mode                                                ("sup_off"),
@@ -20516,7 +20516,7 @@ module caui4_xcvr_644 #(
 		.hssi_aibcr_rx_powermode_dc                                                      ("powerup"),
 		.hssi_aibcr_rx_redundancy_en                                                     ("disable"),
 		.hssi_aibcr_rx_sup_mode                                                          ("user_mode"),
-		.hssi_aibcr_rx_silicon_rev                                                       ("14nm5cr2"),
+		.hssi_aibcr_rx_silicon_rev                                                       ("14nm5bcr2ea"),
 		.hssi_aibcr_tx_aib_datasel_gr0                                                   ("aib_datasel0_setting0"),
 		.hssi_aibcr_tx_aib_datasel_gr1                                                   ("aib_datasel1_setting1"),
 		.hssi_aibcr_tx_aib_datasel_gr2                                                   ("aib_datasel2_setting0"),
@@ -20571,7 +20571,7 @@ module caui4_xcvr_644 #(
 		.hssi_aibcr_tx_powermode_dc                                                      ("powerup"),
 		.hssi_aibcr_tx_redundancy_en                                                     ("disable"),
 		.hssi_aibcr_tx_sup_mode                                                          ("user_mode"),
-		.hssi_aibcr_tx_silicon_rev                                                       ("14nm5cr2"),
+		.hssi_aibcr_tx_silicon_rev                                                       ("14nm5bcr2ea"),
 		.hssi_aibnd_rx_aib_datasel_gr0                                                   ("aib_datasel0_setting0"),
 		.hssi_aibnd_rx_aib_datasel_gr1                                                   ("aib_datasel1_setting1"),
 		.hssi_aibnd_rx_aib_datasel_gr2                                                   ("aib_datasel2_setting1"),
@@ -20612,10 +20612,10 @@ module caui4_xcvr_644 #(
 		.hssi_aibnd_rx_dft_hssitestip_dll_dcc_en                                         ("disable_dft"),
 		.hssi_aibnd_rx_op_mode                                                           ("rx_dll_enable"),
 		.hssi_aibnd_rx_powermode_ac                                                      ("rxdatapath_high_speed_pwr"),
-		.hssi_aibnd_rx_powermode_dc                                                      ("rxdatapath_powerup"),
+		.hssi_aibnd_rx_powermode_dc                                                      ("powerup"),
 		.hssi_aibnd_rx_redundancy_en                                                     ("disable"),
 		.hssi_aibnd_rx_sup_mode                                                          ("user_mode"),
-		.hssi_aibnd_rx_silicon_rev                                                       ("14nm5cr2"),
+		.hssi_aibnd_rx_silicon_rev                                                       ("14nm5bcr2ea"),
 		.hssi_aibnd_tx_aib_datasel_gr0                                                   ("aib_datasel0_setting0"),
 		.hssi_aibnd_tx_aib_datasel_gr1                                                   ("aib_datasel1_setting0"),
 		.hssi_aibnd_tx_aib_datasel_gr2                                                   ("aib_datasel2_setting1"),
@@ -20673,10 +20673,10 @@ module caui4_xcvr_644 #(
 		.hssi_aibnd_tx_dft_hssitestip_dll_dcc_en                                         ("disable_dft"),
 		.hssi_aibnd_tx_op_mode                                                           ("tx_dcc_enable"),
 		.hssi_aibnd_tx_powermode_ac                                                      ("txdatapath_high_speed_pwr"),
-		.hssi_aibnd_tx_powermode_dc                                                      ("txdatapath_powerup"),
+		.hssi_aibnd_tx_powermode_dc                                                      ("powerup"),
 		.hssi_aibnd_tx_redundancy_en                                                     ("disable"),
 		.hssi_aibnd_tx_sup_mode                                                          ("user_mode"),
-		.hssi_aibnd_tx_silicon_rev                                                       ("14nm5cr2"),
+		.hssi_aibnd_tx_silicon_rev                                                       ("14nm5bcr2ea"),
 		.hssi_pipe_gen3_bypass_rx_detection_enable                                       ("false"),
 		.hssi_pipe_gen3_bypass_rx_preset                                                 (0),
 		.hssi_pipe_gen3_bypass_rx_preset_enable                                          ("false"),
@@ -20692,7 +20692,7 @@ module caui4_xcvr_644 #(
 		.hssi_pipe_gen3_rate_match_pad_insertion                                         ("dis_rm_fifo_pad_ins"),
 		.hssi_pipe_gen3_sup_mode                                                         ("user_mode"),
 		.hssi_pipe_gen3_test_out_sel                                                     ("disable_test_out"),
-		.hssi_pipe_gen3_silicon_rev                                                      ("14nm5cr2"),
+		.hssi_pipe_gen3_silicon_rev                                                      ("14nm5bcr2ea"),
 		.hssi_gen3_rx_pcs_block_sync                                                     ("bypass_block_sync"),
 		.hssi_gen3_rx_pcs_block_sync_sm                                                  ("disable_blk_sync_sm"),
 		.hssi_gen3_rx_pcs_cdr_ctrl_force_unalgn                                          ("disable"),
@@ -20707,13 +20707,13 @@ module caui4_xcvr_644 #(
 		.hssi_gen3_rx_pcs_rx_num_fixed_pat                                               (0),
 		.hssi_gen3_rx_pcs_rx_test_out_sel                                                ("rx_test_out0"),
 		.hssi_gen3_rx_pcs_sup_mode                                                       ("user_mode"),
-		.hssi_gen3_rx_pcs_silicon_rev                                                    ("14nm5cr2"),
+		.hssi_gen3_rx_pcs_silicon_rev                                                    ("14nm5bcr2ea"),
 		.hssi_gen3_tx_pcs_mode                                                           ("disable_pcs"),
 		.hssi_gen3_tx_pcs_reverse_lpbk                                                   ("rev_lpbk_dis"),
 		.hssi_gen3_tx_pcs_sup_mode                                                       ("user_mode"),
 		.hssi_gen3_tx_pcs_tx_bitslip                                                     (0),
 		.hssi_gen3_tx_pcs_tx_gbox_byp                                                    ("bypass_gbox"),
-		.hssi_gen3_tx_pcs_silicon_rev                                                    ("14nm5cr2"),
+		.hssi_gen3_tx_pcs_silicon_rev                                                    ("14nm5bcr2ea"),
 		.hssi_adapt_tx_aib_clk_sel                                                       ("aib_clk_pma_aib_tx_clk"),
 		.hssi_adapt_tx_hd_hssiadapt_aib_hssi_pld_sclk_hz                                 (0),
 		.hssi_adapt_tx_hd_hssiadapt_aib_hssi_tx_transfer_clk_hz                          (805664062),
@@ -20791,7 +20791,7 @@ module caui4_xcvr_644 #(
 		.hssi_adapt_tx_txqpi_pullup_rst_val                                              ("reset_to_zero_txqpiu"),
 		.hssi_adapt_tx_word_align                                                        ("wa_en"),
 		.hssi_adapt_tx_word_align_enable                                                 ("enable"),
-		.hssi_adapt_tx_silicon_rev                                                       ("14nm5cr2"),
+		.hssi_adapt_tx_silicon_rev                                                       ("14nm5bcr2ea"),
 		.hssi_krfec_rx_pcs_blksync_cor_en                                                ("detect"),
 		.hssi_krfec_rx_pcs_bypass_gb                                                     ("bypass_dis"),
 		.hssi_krfec_rx_pcs_clr_ctrl                                                      ("both_enabled"),
@@ -20819,7 +20819,7 @@ module caui4_xcvr_644 #(
 		.hssi_krfec_rx_pcs_rx_testbus_sel                                                ("overall"),
 		.hssi_krfec_rx_pcs_signal_ok_en                                                  ("sig_ok_en"),
 		.hssi_krfec_rx_pcs_sup_mode                                                      ("user_mode"),
-		.hssi_krfec_rx_pcs_silicon_rev                                                   ("14nm5cr2"),
+		.hssi_krfec_rx_pcs_silicon_rev                                                   ("14nm5bcr2ea"),
 		.hssi_krfec_tx_pcs_burst_err                                                     ("burst_err_dis"),
 		.hssi_krfec_tx_pcs_burst_err_len                                                 ("burst_err_len1"),
 		.hssi_krfec_tx_pcs_ctrl_bit_reverse                                              ("ctrl_bit_reverse_en"),
@@ -20833,7 +20833,7 @@ module caui4_xcvr_644 #(
 		.hssi_krfec_tx_pcs_transcode_err                                                 ("trans_err_dis"),
 		.hssi_krfec_tx_pcs_transmit_order                                                ("transmit_lsb"),
 		.hssi_krfec_tx_pcs_tx_testbus_sel                                                ("overall"),
-		.hssi_krfec_tx_pcs_silicon_rev                                                   ("14nm5cr2"),
+		.hssi_krfec_tx_pcs_silicon_rev                                                   ("14nm5bcr2ea"),
 		.hssi_pipe_gen1_2_elec_idle_delay_val                                            (0),
 		.hssi_pipe_gen1_2_error_replace_pad                                              ("replace_edb"),
 		.hssi_pipe_gen1_2_hip_mode                                                       ("dis_hip"),
@@ -20857,12 +20857,12 @@ module caui4_xcvr_644 #(
 		.hssi_pipe_gen1_2_sup_mode                                                       ("user_mode"),
 		.hssi_pipe_gen1_2_tx_pipe_enable                                                 ("dis_pipe_tx"),
 		.hssi_pipe_gen1_2_txswing                                                        ("dis_txswing"),
-		.hssi_pipe_gen1_2_silicon_rev                                                    ("14nm5cr2"),
+		.hssi_pipe_gen1_2_silicon_rev                                                    ("14nm5bcr2ea"),
 		.hssi_common_pld_pcs_interface_dft_clk_out_en                                    ("dft_clk_out_disable"),
 		.hssi_common_pld_pcs_interface_dft_clk_out_sel                                   ("teng_rx_dft_clk"),
 		.hssi_common_pld_pcs_interface_hrdrstctrl_en                                     ("hrst_dis"),
 		.hssi_common_pld_pcs_interface_pcs_testbus_block_sel                             ("pma_if"),
-		.hssi_common_pld_pcs_interface_silicon_rev                                       ("14nm5cr2"),
+		.hssi_common_pld_pcs_interface_silicon_rev                                       ("14nm5bcr2ea"),
 		.hssi_common_pcs_pma_interface_asn_clk_enable                                    ("false"),
 		.hssi_common_pcs_pma_interface_asn_enable                                        ("dis_asn"),
 		.hssi_common_pcs_pma_interface_block_sel                                         ("eight_g_pcs"),
@@ -20907,7 +20907,7 @@ module caui4_xcvr_644 #(
 		.hssi_common_pcs_pma_interface_wait_clk_on_off_timer                             (0),
 		.hssi_common_pcs_pma_interface_wait_pipe_synchronizing                           (0),
 		.hssi_common_pcs_pma_interface_wait_send_syncp_fbkp                              (0),
-		.hssi_common_pcs_pma_interface_silicon_rev                                       ("14nm5cr2"),
+		.hssi_common_pcs_pma_interface_silicon_rev                                       ("14nm5bcr2ea"),
 		.hssi_rx_pcs_pma_interface_block_sel                                             ("ten_g_pcs"),
 		.hssi_rx_pcs_pma_interface_channel_operation_mode                                ("tx_rx_pair_enabled"),
 		.hssi_rx_pcs_pma_interface_clkslip_sel                                           ("pld"),
@@ -20930,7 +20930,7 @@ module caui4_xcvr_644 #(
 		.hssi_rx_pcs_pma_interface_rx_static_polarity_inversion                          ("rx_stat_polinv_dis"),
 		.hssi_rx_pcs_pma_interface_rx_uhsif_lpbk_en                                      ("uhsif_lpbk_dis"),
 		.hssi_rx_pcs_pma_interface_sup_mode                                              ("user_mode"),
-		.hssi_rx_pcs_pma_interface_silicon_rev                                           ("14nm5cr2"),
+		.hssi_rx_pcs_pma_interface_silicon_rev                                           ("14nm5bcr2ea"),
 		.hssi_tx_pcs_pma_interface_bypass_pma_txelecidle                                 ("true"),
 		.hssi_tx_pcs_pma_interface_channel_operation_mode                                ("tx_rx_pair_enabled"),
 		.hssi_tx_pcs_pma_interface_lpbk_en                                               ("disable"),
@@ -20971,16 +20971,16 @@ module caui4_xcvr_644 #(
 		.hssi_tx_pcs_pma_interface_uhsif_lock_det_thresh_cnt_before_lock_value           (0),
 		.hssi_tx_pcs_pma_interface_uhsif_lock_det_thresh_diff_after_lock_value           (0),
 		.hssi_tx_pcs_pma_interface_uhsif_lock_det_thresh_diff_before_lock_value          (0),
-		.hssi_tx_pcs_pma_interface_silicon_rev                                           ("14nm5cr2"),
+		.hssi_tx_pcs_pma_interface_silicon_rev                                           ("14nm5bcr2ea"),
 		.hssi_fifo_rx_pcs_double_read_mode                                               ("double_read_dis"),
 		.hssi_fifo_rx_pcs_prot_mode                                                      ("teng_mode"),
-		.hssi_fifo_rx_pcs_silicon_rev                                                    ("14nm5cr2"),
+		.hssi_fifo_rx_pcs_silicon_rev                                                    ("14nm5bcr2ea"),
 		.hssi_fifo_tx_pcs_double_write_mode                                              ("double_write_dis"),
 		.hssi_fifo_tx_pcs_prot_mode                                                      ("teng_mode"),
-		.hssi_fifo_tx_pcs_silicon_rev                                                    ("14nm5cr2"),
+		.hssi_fifo_tx_pcs_silicon_rev                                                    ("14nm5bcr2ea"),
 		.pma_cdr_refclk_powerdown_mode                                                   ("powerup"),
 		.pma_cdr_refclk_receiver_detect_src                                              ("iqclk_src"),
-		.pma_cdr_refclk_silicon_rev                                                      ("14nm5cr2"),
+		.pma_cdr_refclk_silicon_rev                                                      ("14nm5bcr2ea"),
 		.pma_cdr_refclk_refclk_select                                                    ("ref_iqclk0"),
 		.pma_rx_odi_datarate_bps                                                         ("25781250000"),
 		.pma_rx_odi_enable_cdr_lpbk                                                      ("disable_lpbk"),
@@ -20996,9 +20996,9 @@ module caui4_xcvr_644 #(
 		.pma_rx_odi_sup_mode                                                             ("user_mode"),
 		.pma_rx_odi_vert_threshold                                                       ("vert_0"),
 		.pma_rx_odi_vreg_voltage_sel                                                     ("vreg3"),
-		.pma_rx_odi_silicon_rev                                                          ("14nm5cr2"),
+		.pma_rx_odi_silicon_rev                                                          ("14nm5bcr2ea"),
 		.pma_adapt_sequencer_rx_path_rstn_overrideb                                      ("use_sequencer"),
-		.pma_adapt_sequencer_silicon_rev                                                 ("14nm5cr2"),
+		.pma_adapt_sequencer_silicon_rev                                                 ("14nm5bcr2ea"),
 		.pma_adapt_adapt_mode                                                            ("ctle_dfe"),
 		.pma_adapt_adp_ac_ctle_cal_win                                                   ("radp_ac_ctle_cal_win_4"),
 		.pma_adapt_adp_ac_ctle_cocurrent_mode_sel                                        ("radp_ac_ctle_cocurrent_mode_sel_mode_1"),
@@ -21115,7 +21115,7 @@ module caui4_xcvr_644 #(
 		.pma_adapt_power_mode                                                            ("powsav_disable"),
 		.pma_adapt_prot_mode                                                             ("basic_rx"),
 		.pma_adapt_sup_mode                                                              ("user_mode"),
-		.pma_adapt_silicon_rev                                                           ("14nm5cr2"),
+		.pma_adapt_silicon_rev                                                           ("14nm5bcr2ea"),
 		.pma_rx_dfe_adapt_bti_en                                                         ("adapt_bti_disable"),
 		.pma_rx_dfe_atb_select                                                           ("atb_disable"),
 		.pma_rx_dfe_bti_protected                                                        ("false"),
@@ -21203,7 +21203,7 @@ module caui4_xcvr_644 #(
 		.pma_rx_dfe_tap9_sgn                                                             ("tap9_sign_0"),
 		.pma_rx_dfe_tapsum_bw_sel                                                        ("tapsum_hibw"),
 		.pma_rx_dfe_vref_coeff                                                           (0),
-		.pma_rx_dfe_silicon_rev                                                          ("14nm5cr2"),
+		.pma_rx_dfe_silicon_rev                                                          ("14nm5bcr2ea"),
 		.pma_rx_sd_link                                                                  ("sr"),
 		.pma_rx_sd_optimal                                                               ("true"),
 		.pma_rx_sd_power_mode                                                            ("high_perf"),
@@ -21213,8 +21213,8 @@ module caui4_xcvr_644 #(
 		.pma_rx_sd_sd_pdb                                                                ("sd_off"),
 		.pma_rx_sd_sd_threshold                                                          ("sdlv_3"),
 		.pma_rx_sd_sup_mode                                                              ("user_mode"),
-		.pma_rx_sd_silicon_rev                                                           ("14nm5cr2"),
-		.pma_pcie_gen_switch_silicon_rev                                                 ("14nm5cr2")
+		.pma_rx_sd_silicon_rev                                                           ("14nm5bcr2ea"),
+		.pma_pcie_gen_switch_silicon_rev                                                 ("14nm5bcr2ea")
 	) caui4_xcvr_644 (
 		.tx_analogreset                    (tx_analogreset),                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    //   input,    width = 4,       tx_analogreset.tx_analogreset
 		.rx_analogreset                    (rx_analogreset),                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    //   input,    width = 4,       rx_analogreset.rx_analogreset
@@ -21391,14 +21391,14 @@ module caui4_xcvr_644 #(
 		.out_pma_aib_tx_clk                ()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   // (terminated),                                    
 	);
 
-	assign unused_rx_parallel_data = { caui4_xcvr_644_rx_parallel_data[318:312], caui4_xcvr_644_rx_parallel_data[279:277], caui4_xcvr_644_rx_parallel_data[275:274], caui4_xcvr_644_rx_parallel_data[238:232], caui4_xcvr_644_rx_parallel_data[199:197], caui4_xcvr_644_rx_parallel_data[195:194], caui4_xcvr_644_rx_parallel_data[158:152], caui4_xcvr_644_rx_parallel_data[119:117], caui4_xcvr_644_rx_parallel_data[115:114], caui4_xcvr_644_rx_parallel_data[78:72], caui4_xcvr_644_rx_parallel_data[39:37], caui4_xcvr_644_rx_parallel_data[35:34] };
+	assign rx_parallel_data = { caui4_xcvr_644_rx_parallel_data[311:280], caui4_xcvr_644_rx_parallel_data[271:240], caui4_xcvr_644_rx_parallel_data[231:200], caui4_xcvr_644_rx_parallel_data[191:160], caui4_xcvr_644_rx_parallel_data[151:120], caui4_xcvr_644_rx_parallel_data[111:80], caui4_xcvr_644_rx_parallel_data[71:40], caui4_xcvr_644_rx_parallel_data[31:0] };
 
 	assign rx_enh_data_valid = { caui4_xcvr_644_rx_parallel_data[276], caui4_xcvr_644_rx_parallel_data[196], caui4_xcvr_644_rx_parallel_data[116], caui4_xcvr_644_rx_parallel_data[36] };
 
+	assign rx_control = { caui4_xcvr_644_rx_parallel_data[273:272], caui4_xcvr_644_rx_parallel_data[193:192], caui4_xcvr_644_rx_parallel_data[113:112], caui4_xcvr_644_rx_parallel_data[33:32] };
+
 	assign rx_data_valid = { caui4_xcvr_644_rx_parallel_data[319], caui4_xcvr_644_rx_parallel_data[239], caui4_xcvr_644_rx_parallel_data[159], caui4_xcvr_644_rx_parallel_data[79] };
 
-	assign rx_parallel_data = { caui4_xcvr_644_rx_parallel_data[311:280], caui4_xcvr_644_rx_parallel_data[271:240], caui4_xcvr_644_rx_parallel_data[231:200], caui4_xcvr_644_rx_parallel_data[191:160], caui4_xcvr_644_rx_parallel_data[151:120], caui4_xcvr_644_rx_parallel_data[111:80], caui4_xcvr_644_rx_parallel_data[71:40], caui4_xcvr_644_rx_parallel_data[31:0] };
-
-	assign rx_control = { caui4_xcvr_644_rx_parallel_data[273:272], caui4_xcvr_644_rx_parallel_data[193:192], caui4_xcvr_644_rx_parallel_data[113:112], caui4_xcvr_644_rx_parallel_data[33:32] };
+	assign unused_rx_parallel_data = { caui4_xcvr_644_rx_parallel_data[318:312], caui4_xcvr_644_rx_parallel_data[279:277], caui4_xcvr_644_rx_parallel_data[275:274], caui4_xcvr_644_rx_parallel_data[238:232], caui4_xcvr_644_rx_parallel_data[199:197], caui4_xcvr_644_rx_parallel_data[195:194], caui4_xcvr_644_rx_parallel_data[158:152], caui4_xcvr_644_rx_parallel_data[119:117], caui4_xcvr_644_rx_parallel_data[115:114], caui4_xcvr_644_rx_parallel_data[78:72], caui4_xcvr_644_rx_parallel_data[39:37], caui4_xcvr_644_rx_parallel_data[35:34] };
 
 endmodule

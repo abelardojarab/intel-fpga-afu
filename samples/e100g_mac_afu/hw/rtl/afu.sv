@@ -105,9 +105,6 @@ e100g_mac_afu_csr afu_csr (
     .reset        (reset)                           // input
 );
 
-logic unidirectional_en, remote_fault_status, local_fault_status;
-logic clk_rx_rs, clk_tx_rs, clk_ref;
-
 // ===== Status Signals ===== //
 logic rx_pcs_ready, rx_pcs_ready_rx_clk, cdr_lock;
 logic tx_clk_stable;
@@ -136,6 +133,7 @@ assign local_fault_status = 1'b0; // f2a_local_fault_status
 // ===== MAC Clocks ===== //
 logic rx_clk, tx_clk;
 logic tx_clk_locked, rx_clk_locked;
+logic clk_rx_rs, clk_tx_rs, clk_ref;
 
 // TODO: tie these signals to EHIP output
 assign rx_clk = 1'b0;      // o_clk_rec_div66 
@@ -400,7 +398,7 @@ alt_e100s10_csr csr   (
     .rx_full                (4'b0),                                 // input
     .rxpcs_frm_err          (20'b0),                                // input
     .rx_is_lockedtodata     ({cdr_lock,cdr_lock,cdr_lock,cdr_lock}), // input
-    .rx_word_locked         (rx_block_lock),                        // input
+    .rx_word_locked         (rx_block_lock),                        // TODO: 20-bit input
     .rx_am_lock             (rx_am_lock),                           // input
     .rx_deskew_locked       (rx_block_lock),                        // input
     .rx_align_locked        (rx_pcs_ready_rx_clk),                  // input

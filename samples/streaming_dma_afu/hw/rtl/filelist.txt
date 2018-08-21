@@ -16,79 +16,85 @@ ccip_interface_reg.sv
 ccip_std_afu.sv
 
 # Qsys systems and component search path
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/components.ipx
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/streaming_dma_test_system.qsys
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/memory_to_stream_dma_bbb.qsys
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/stream_to_memory_dma_bbb.qsys
+#QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/components.ipx
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/streaming_dma_test_system.qsys
+memory_to_stream_dma_bbb/memory_to_stream_dma_bbb.qsys
+stream_to_memory_dma_bbb/stream_to_memory_dma_bbb.qsys
+
+# tcl sources (need copy over for simulation)
+SI:QSYS_IPs/afu_id_avmm_slave/afu_id_avmm_slave_hw.tcl
+SI:QSYS_IPs/custom_pattern_checker/custom_pattern_checker_hw.tcl
+SI:QSYS_IPs/custom_pattern_generator/custom_pattern_generator_hw.tcl
+SI:QSYS_IPs/dispatcher/dcp_dispatcher_hw.tcl
+SI:QSYS_IPs/streaming_valve/m2s_streaming_valve_hw.tcl
+SI:QSYS_IPs/write_master/dcp_write_master_hw.tcl
+SI:QSYS_IPs/write_response_bridge/Write_Response_Bridge_hw.tcl
 
 # Modified mSGDMA write master
-#QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/afu_id_avmm_slave/afu_id_avmm_slave_hw.tcl
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/afu_id_avmm_slave/afu_id_avmm_slave.sv
-#QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/write_master/dcp_write_master_hw.tcl
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/write_master/dcp_byte_enable_generator.v
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/write_master/dcp_write_burst_control.v
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/write_master/dcp_write_master.v
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/write_master/dcp_ST_to_MM_Adapter.v
+QSYS_IPs/afu_id_avmm_slave/afu_id_avmm_slave.sv
+QSYS_IPs/write_master/dcp_byte_enable_generator.v
+QSYS_IPs/write_master/dcp_write_burst_control.v
+QSYS_IPs/write_master/dcp_write_master.v
+QSYS_IPs/write_master/dcp_ST_to_MM_Adapter.v
 
 # Modified mSGDMA dispatcher
-#QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/dispatcher/dcp_dispatcher_hw.tcl
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/dispatcher/dcp_csr_block.v
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/dispatcher/dcp_fifo_with_byteenables.v
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/dispatcher/dcp_descriptor_buffers.v
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/dispatcher/dcp_read_signal_breakout.v
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/dispatcher/dcp_response_block.v
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/dispatcher/dcp_dispatcher.v
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/dispatcher/dcp_write_signal_breakout.v
+QSYS_IPs/dispatcher/dcp_csr_block.v
+QSYS_IPs/dispatcher/dcp_fifo_with_byteenables.v
+QSYS_IPs/dispatcher/dcp_descriptor_buffers.v
+QSYS_IPs/dispatcher/dcp_read_signal_breakout.v
+QSYS_IPs/dispatcher/dcp_response_block.v
+QSYS_IPs/dispatcher/dcp_dispatcher.v
+QSYS_IPs/dispatcher/dcp_write_signal_breakout.v
 
 # new write only pipeline bridge that supports Avalon write responses
-#QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/write_response_bridge/Write_Response_Bridge_hw.tcl
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/write_response_bridge/write_response_bridge.v
+QSYS_IPs/write_response_bridge/write_response_bridge.v
 
 # streaming valve used in the stream-to-memory DMA to prohibit additional data entering DMA after an EOP
-#QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/streaming_valve/m2s_streaming_valve_hw.tcl
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/streaming_valve/s2m_streaming_valve.sv
+QSYS_IPs/streaming_valve/s2m_streaming_valve.sv
 
 # Pattern checker
-#QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/custom_pattern_checker/custom_pattern_checker_hw.tcl
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/custom_pattern_checker/mtm_custom_pattern_checker.v
+QSYS_IPs/custom_pattern_checker/mtm_custom_pattern_checker.v
 
 # Pattern generator
-#QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/custom_pattern_generator/custom_pattern_generator_hw.tcl
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/custom_pattern_generator/mtm_custom_pattern_generator.v
+QSYS_IPs/custom_pattern_generator/mtm_custom_pattern_generator.v
 
 # Streamimg DMA AFU Qsys system .ip files
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/dma_clock.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/emif_B_clock.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/streaming_dma_afu_id.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/emif_A_bridge.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/host_rd_bridge.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/streaming_dma_test_system_reset_in.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/emif_A_clock.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/emif_B_bridge.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/mmio_bridge.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/null_dfh.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/streaming_dma_test_system_host_wr_bridge.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/s2m_custom_pattern_generator.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/m2s_custom_pattern_checker.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/
+
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/dma_clock.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/emif_B_clock.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/streaming_dma_afu_id.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/emif_A_bridge.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/host_rd_bridge.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/streaming_dma_test_system_reset_in.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/emif_A_clock.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/emif_B_bridge.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/mmio_bridge.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/null_dfh.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/streaming_dma_test_system_host_wr_bridge.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/s2m_custom_pattern_generator.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/m2s_custom_pattern_checker.ip
 
 # Memory to streaming DMA BBB Qsys system .ip files
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_clock_in.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_csr_bridge.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_dispatcher.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_dma_read_master.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_host_bridge.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_id.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_memory_bridge.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_reset_in.ip
+memory_to_stream_dma_bbb/
+memory_to_stream_dma_bbb/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_clock_in.ip
+memory_to_stream_dma_bbb/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_csr_bridge.ip
+memory_to_stream_dma_bbb/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_dispatcher.ip
+memory_to_stream_dma_bbb/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_dma_read_master.ip
+memory_to_stream_dma_bbb/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_host_bridge.ip
+memory_to_stream_dma_bbb/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_id.ip
+memory_to_stream_dma_bbb/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_memory_bridge.ip
+memory_to_stream_dma_bbb/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_reset_in.ip
 
 # Streaming to memory DMA BBB Qsys system .ip files
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_clock_in.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_csr_bridge.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_dcp_modular_sgdma_dispatcher.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_id.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_memory_bridge.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_reset_in.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_write_master.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_write_response_bridge.ip
-QSYS_IPs/${OPAE_PLATFORM_FPGA_FAMILY}/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_streaming_valve.ip
+stream_to_memory_dma_bbb/
+stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_clock_in.ip
+stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_csr_bridge.ip
+stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_dcp_modular_sgdma_dispatcher.ip
+stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_id.ip
+stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_memory_bridge.ip
+stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_reset_in.ip
+stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_write_master.ip
+stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_write_response_bridge.ip
+stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_streaming_valve.ip
 

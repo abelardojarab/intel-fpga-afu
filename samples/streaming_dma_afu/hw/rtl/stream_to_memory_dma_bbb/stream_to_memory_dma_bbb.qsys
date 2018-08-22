@@ -129,7 +129,7 @@
          type = "int";
       }
    }
-   element s2m_host_bridge.avmm_slave
+   element s2m_host_bridge.slave
    {
       datum _lockedAddress
       {
@@ -168,6 +168,11 @@
    }
    element s2m_streaming_valve.csr
    {
+      datum _lockedAddress
+      {
+         value = "1";
+         type = "boolean";
+      }
       datum baseAddress
       {
          value = "160";
@@ -283,6 +288,18 @@
             </value>
         </entry>
         <entry>
+            <key>host_write</key>
+            <value>
+                <connectionPointName>host_write</connectionPointName>
+                <suppliedSystemInfos>
+                    <entry>
+                        <key>CLOCK_RATE</key>
+                    </entry>
+                </suppliedSystemInfos>
+                <consumedSystemInfos/>
+            </value>
+        </entry>
+        <entry>
             <key>mem_write</key>
             <value>
                 <connectionPointName>mem_write</connectionPointName>
@@ -310,7 +327,7 @@
  <interface name="csr" internal="s2m_csr_bridge.s0" type="avalon" dir="end" />
  <interface
    name="host_write"
-   internal="s2m_host_bridge.avmm_master"
+   internal="s2m_host_bridge.master"
    type="avalon"
    dir="start" />
  <interface
@@ -2865,7 +2882,40 @@
     <boundary>
         <interfaces>
             <interface>
-                <name>avmm_master</name>
+                <name>clk</name>
+                <type>clock</type>
+                <isStart>false</isStart>
+                <ports>
+                    <port>
+                        <name>s_clk</name>
+                        <role>clk</role>
+                        <direction>Input</direction>
+                        <width>1</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC</vhdlType>
+                    </port>
+                </ports>
+                <assignments>
+                    <assignmentValueMap/>
+                </assignments>
+                <parameters>
+                    <parameterValueMap>
+                        <entry>
+                            <key>clockRate</key>
+                            <value>0</value>
+                        </entry>
+                        <entry>
+                            <key>externallyDriven</key>
+                            <value>false</value>
+                        </entry>
+                        <entry>
+                            <key>ptfSchematicName</key>
+                        </entry>
+                    </parameterValueMap>
+                </parameters>
+            </interface>
+            <interface>
+                <name>master</name>
                 <type>avalon</type>
                 <isStart>true</isStart>
                 <ports>
@@ -2886,14 +2936,6 @@
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
                     <port>
-                        <name>m_write</name>
-                        <role>write</role>
-                        <direction>Output</direction>
-                        <width>1</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC</vhdlType>
-                    </port>
-                    <port>
                         <name>m_byteenable</name>
                         <role>byteenable</role>
                         <direction>Output</direction>
@@ -2910,6 +2952,14 @@
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
                     <port>
+                        <name>m_write</name>
+                        <role>write</role>
+                        <direction>Output</direction>
+                        <width>1</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC</vhdlType>
+                    </port>
+                    <port>
                         <name>m_response</name>
                         <role>response</role>
                         <direction>Input</direction>
@@ -2918,16 +2968,16 @@
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
                     <port>
-                        <name>m_waitrequest</name>
-                        <role>waitrequest</role>
+                        <name>m_writeresponsevalid</name>
+                        <role>writeresponsevalid</role>
                         <direction>Input</direction>
                         <width>1</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC</vhdlType>
                     </port>
                     <port>
-                        <name>m_write_response_valid</name>
-                        <role>writeresponsevalid</role>
+                        <name>m_waitrequest</name>
+                        <role>waitrequest</role>
                         <direction>Input</direction>
                         <width>1</width>
                         <lowerBound>0</lowerBound>
@@ -2956,7 +3006,7 @@
                         </entry>
                         <entry>
                             <key>associatedClock</key>
-                            <value>clock</value>
+                            <value>clk</value>
                         </entry>
                         <entry>
                             <key>associatedReset</key>
@@ -3028,7 +3078,7 @@
                         </entry>
                         <entry>
                             <key>maximumPendingWriteTransactions</key>
-                            <value>0</value>
+                            <value>128</value>
                         </entry>
                         <entry>
                             <key>minimumReadLatency</key>
@@ -3048,7 +3098,7 @@
                         </entry>
                         <entry>
                             <key>readWaitTime</key>
-                            <value>0</value>
+                            <value>1</value>
                         </entry>
                         <entry>
                             <key>registerIncomingSignals</key>
@@ -3078,7 +3128,37 @@
                 </parameters>
             </interface>
             <interface>
-                <name>avmm_slave</name>
+                <name>reset</name>
+                <type>reset</type>
+                <isStart>false</isStart>
+                <ports>
+                    <port>
+                        <name>reset</name>
+                        <role>reset</role>
+                        <direction>Input</direction>
+                        <width>1</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC</vhdlType>
+                    </port>
+                </ports>
+                <assignments>
+                    <assignmentValueMap/>
+                </assignments>
+                <parameters>
+                    <parameterValueMap>
+                        <entry>
+                            <key>associatedClock</key>
+                            <value>clk</value>
+                        </entry>
+                        <entry>
+                            <key>synchronousEdges</key>
+                            <value>BOTH</value>
+                        </entry>
+                    </parameterValueMap>
+                </parameters>
+            </interface>
+            <interface>
+                <name>slave</name>
                 <type>avalon</type>
                 <isStart>false</isStart>
                 <ports>
@@ -3099,14 +3179,6 @@
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
                     <port>
-                        <name>s_write</name>
-                        <role>write</role>
-                        <direction>Input</direction>
-                        <width>1</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC</vhdlType>
-                    </port>
-                    <port>
                         <name>s_byteenable</name>
                         <role>byteenable</role>
                         <direction>Input</direction>
@@ -3115,12 +3187,28 @@
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                     </port>
                     <port>
+                        <name>s_write</name>
+                        <role>write</role>
+                        <direction>Input</direction>
+                        <width>1</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC</vhdlType>
+                    </port>
+                    <port>
                         <name>s_response</name>
                         <role>response</role>
                         <direction>Output</direction>
                         <width>2</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
+                    </port>
+                    <port>
+                        <name>s_writeresponsevalid</name>
+                        <role>writeresponsevalid</role>
+                        <direction>Output</direction>
+                        <width>1</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC</vhdlType>
                     </port>
                     <port>
                         <name>s_waitrequest</name>
@@ -3137,14 +3225,6 @@
                         <width>3</width>
                         <lowerBound>0</lowerBound>
                         <vhdlType>STD_LOGIC_VECTOR</vhdlType>
-                    </port>
-                    <port>
-                        <name>s_write_response_valid</name>
-                        <role>writeresponsevalid</role>
-                        <direction>Output</direction>
-                        <width>1</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC</vhdlType>
                     </port>
                 </ports>
                 <assignments>
@@ -3191,7 +3271,7 @@
                         </entry>
                         <entry>
                             <key>associatedClock</key>
-                            <value>clock</value>
+                            <value>clk</value>
                         </entry>
                         <entry>
                             <key>associatedReset</key>
@@ -3207,7 +3287,7 @@
                         </entry>
                         <entry>
                             <key>bridgesToMaster</key>
-                            <value>s2m_host_bridge.avmm_master</value>
+                            <value>s2m_host_bridge.master</value>
                         </entry>
                         <entry>
                             <key>burstOnBurstBoundariesOnly</key>
@@ -3259,7 +3339,7 @@
                         </entry>
                         <entry>
                             <key>maximumPendingWriteTransactions</key>
-                            <value>64</value>
+                            <value>128</value>
                         </entry>
                         <entry>
                             <key>minimumReadLatency</key>
@@ -3336,75 +3416,12 @@
                     </parameterValueMap>
                 </parameters>
             </interface>
-            <interface>
-                <name>clock</name>
-                <type>clock</type>
-                <isStart>false</isStart>
-                <ports>
-                    <port>
-                        <name>clk</name>
-                        <role>clk</role>
-                        <direction>Input</direction>
-                        <width>1</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC</vhdlType>
-                    </port>
-                </ports>
-                <assignments>
-                    <assignmentValueMap/>
-                </assignments>
-                <parameters>
-                    <parameterValueMap>
-                        <entry>
-                            <key>clockRate</key>
-                            <value>0</value>
-                        </entry>
-                        <entry>
-                            <key>externallyDriven</key>
-                            <value>false</value>
-                        </entry>
-                        <entry>
-                            <key>ptfSchematicName</key>
-                        </entry>
-                    </parameterValueMap>
-                </parameters>
-            </interface>
-            <interface>
-                <name>reset</name>
-                <type>reset</type>
-                <isStart>false</isStart>
-                <ports>
-                    <port>
-                        <name>reset</name>
-                        <role>reset</role>
-                        <direction>Input</direction>
-                        <width>1</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC</vhdlType>
-                    </port>
-                </ports>
-                <assignments>
-                    <assignmentValueMap/>
-                </assignments>
-                <parameters>
-                    <parameterValueMap>
-                        <entry>
-                            <key>associatedClock</key>
-                            <value>clock</value>
-                        </entry>
-                        <entry>
-                            <key>synchronousEdges</key>
-                            <value>BOTH</value>
-                        </entry>
-                    </parameterValueMap>
-                </parameters>
-            </interface>
         </interfaces>
     </boundary>
     <originalModuleInfo>
-        <className>write_response_bridge</className>
+        <className>far_reach_avalon_mm_bridge</className>
         <version>1.0</version>
-        <displayName>Write Response Bridge</displayName>
+        <displayName>Far Reach Avalon-MM Bridge</displayName>
     </originalModuleInfo>
     <systemInfoParameterDescriptors>
         <descriptors/>
@@ -3412,9 +3429,9 @@
     <systemInfos>
         <connPtSystemInfos>
             <entry>
-                <key>avmm_slave</key>
+                <key>slave</key>
                 <value>
-                    <connectionPointName>avmm_slave</connectionPointName>
+                    <connectionPointName>slave</connectionPointName>
                     <suppliedSystemInfos>
                         <entry>
                             <key>ADDRESS_MAP</key>
@@ -3433,30 +3450,30 @@
     </systemInfos>
 </componentDefinition>]]></parameter>
   <parameter name="generationInfoDefinition"><![CDATA[<generationInfoDefinition>
-    <hdlLibraryName>stream_to_memory_dma_bbb_write_response_bridge</hdlLibraryName>
+    <hdlLibraryName>stream_to_memory_dma_bbb_host_bridge</hdlLibraryName>
     <fileSets>
         <fileSet>
-            <fileSetName>stream_to_memory_dma_bbb_write_response_bridge</fileSetName>
-            <fileSetFixedName>stream_to_memory_dma_bbb_write_response_bridge</fileSetFixedName>
+            <fileSetName>stream_to_memory_dma_bbb_host_bridge</fileSetName>
+            <fileSetFixedName>stream_to_memory_dma_bbb_host_bridge</fileSetFixedName>
             <fileSetKind>QUARTUS_SYNTH</fileSetKind>
             <fileSetFiles/>
         </fileSet>
         <fileSet>
-            <fileSetName>stream_to_memory_dma_bbb_write_response_bridge</fileSetName>
-            <fileSetFixedName>stream_to_memory_dma_bbb_write_response_bridge</fileSetFixedName>
+            <fileSetName>stream_to_memory_dma_bbb_host_bridge</fileSetName>
+            <fileSetFixedName>stream_to_memory_dma_bbb_host_bridge</fileSetFixedName>
             <fileSetKind>SIM_VERILOG</fileSetKind>
             <fileSetFiles/>
         </fileSet>
         <fileSet>
-            <fileSetName>stream_to_memory_dma_bbb_write_response_bridge</fileSetName>
-            <fileSetFixedName>stream_to_memory_dma_bbb_write_response_bridge</fileSetFixedName>
+            <fileSetName>stream_to_memory_dma_bbb_host_bridge</fileSetName>
+            <fileSetFixedName>stream_to_memory_dma_bbb_host_bridge</fileSetFixedName>
             <fileSetKind>SIM_VHDL</fileSetKind>
             <fileSetFiles/>
         </fileSet>
     </fileSets>
 </generationInfoDefinition>]]></parameter>
   <parameter name="hlsFile" value="" />
-  <parameter name="logicalView">ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_write_response_bridge.ip</parameter>
+  <parameter name="logicalView">ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_host_bridge.ip</parameter>
   <parameter name="moduleAssignmentDefinition"><![CDATA[<assignmentDefinition>
     <assignmentValueMap/>
 </assignmentDefinition>]]></parameter>
@@ -5371,15 +5388,15 @@
    kind="avalon"
    version="17.1"
    start="s2m_write_master.Data_Write_Master"
-   end="s2m_host_bridge.avmm_slave">
-  <parameter name="baseAddress" value="0x0001000000000000" />
+   end="s2m_mem_bridge.s0">
+  <parameter name="baseAddress" value="0x0000" />
  </connection>
  <connection
    kind="avalon"
    version="17.1"
    start="s2m_write_master.Data_Write_Master"
-   end="s2m_mem_bridge.s0">
-  <parameter name="baseAddress" value="0x0000" />
+   end="s2m_host_bridge.slave">
+  <parameter name="baseAddress" value="0x0001000000000000" />
  </connection>
  <connection
    kind="avalon"
@@ -5455,12 +5472,12 @@
    kind="clock"
    version="17.1"
    start="clock_in.out_clk"
-   end="s2m_bbb_id.clock" />
+   end="s2m_host_bridge.clk" />
  <connection
    kind="clock"
    version="17.1"
    start="clock_in.out_clk"
-   end="s2m_host_bridge.clock" />
+   end="s2m_bbb_id.clock" />
  <connection
    kind="clock"
    version="17.1"
@@ -5500,12 +5517,12 @@
    kind="reset"
    version="17.1"
    start="reset_in.out_reset"
-   end="s2m_host_bridge.reset" />
+   end="s2m_streaming_valve.reset" />
  <connection
    kind="reset"
    version="17.1"
    start="reset_in.out_reset"
-   end="s2m_streaming_valve.reset" />
+   end="s2m_host_bridge.reset" />
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
  <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />
  <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />

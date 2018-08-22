@@ -22,13 +22,13 @@ memory_to_stream_dma_bbb/memory_to_stream_dma_bbb.qsys
 stream_to_memory_dma_bbb/stream_to_memory_dma_bbb.qsys
 
 # tcl sources (need copy over for simulation)
-SI:QSYS_IPs/afu_id_avmm_slave/afu_id_avmm_slave_hw.tcl
-SI:QSYS_IPs/custom_pattern_checker/custom_pattern_checker_hw.tcl
-SI:QSYS_IPs/custom_pattern_generator/custom_pattern_generator_hw.tcl
-SI:QSYS_IPs/dispatcher/dcp_dispatcher_hw.tcl
-SI:QSYS_IPs/streaming_valve/m2s_streaming_valve_hw.tcl
-SI:QSYS_IPs/write_master/dcp_write_master_hw.tcl
-SI:QSYS_IPs/write_response_bridge/Write_Response_Bridge_hw.tcl
+QSYS_IPs/afu_id_avmm_slave/afu_id_avmm_slave_hw.tcl
+QSYS_IPs/custom_pattern_checker/custom_pattern_checker_hw.tcl
+QSYS_IPs/custom_pattern_generator/custom_pattern_generator_hw.tcl
+QSYS_IPs/dispatcher/dcp_dispatcher_hw.tcl
+QSYS_IPs/streaming_valve/m2s_streaming_valve_hw.tcl
+QSYS_IPs/write_master/dcp_write_master_hw.tcl
+QSYS_IPs/far_reach_avalon_mm_bridge/far_reach_avalon_mm_bridge_hw.tcl
 
 # Modified mSGDMA write master
 QSYS_IPs/afu_id_avmm_slave/afu_id_avmm_slave.sv
@@ -47,7 +47,10 @@ QSYS_IPs/dispatcher/dcp_dispatcher.v
 QSYS_IPs/dispatcher/dcp_write_signal_breakout.v
 
 # new write only pipeline bridge that supports Avalon write responses
-QSYS_IPs/write_response_bridge/write_response_bridge.v
+#QSYS_IPs/write_response_bridge/write_response_bridge.v
+QSYS_IPs/far_reach_avalon_mm_bridge/far_reach_avalon_mm_bridge.sv
+QSYS_IPs/far_reach_avalon_mm_bridge/far_reach_avalon_mm_bridge_stall_free_pipeline.sv
+
 
 # streaming valve used in the stream-to-memory DMA to prohibit additional data entering DMA after an EOP
 QSYS_IPs/streaming_valve/s2m_streaming_valve.sv
@@ -71,7 +74,8 @@ TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/emi
 TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/emif_B_bridge.ip
 TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/mmio_bridge.ip
 TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/null_dfh.ip
-TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/streaming_dma_test_system_host_wr_bridge.ip
+#TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/streaming_dma_test_system_host_wr_bridge.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/host_wr_bridge.ip
 TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/s2m_custom_pattern_generator.ip
 TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/m2s_custom_pattern_checker.ip
 
@@ -95,6 +99,7 @@ stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_id
 stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_memory_bridge.ip
 stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_reset_in.ip
 stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_write_master.ip
-stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_write_response_bridge.ip
+#stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_write_response_bridge.ip
+stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_host_bridge.ip
 stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_streaming_valve.ip
 

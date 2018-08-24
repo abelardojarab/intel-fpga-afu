@@ -675,7 +675,7 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle * dma_p)
 	struct sigaction sa;
 	int sigres;
 
-	memset_s(&sa, sizeof(sa), 0);
+	memset(&sa, 0, sizeof(sa));
 	sa.sa_flags = SA_SIGINFO | SA_RESETHAND;
 	sa.sa_sigaction = sig_handler;
 

@@ -527,7 +527,15 @@ begin
                   NO_STAGED_CSR,
                   1'b1,
                   {64{RO}},
-                  {16'h0, 16'(ccip_cfg_pkg::PCLK_FREQ), re2cr_error},
+                  {16'h0,
+`ifdef PLATFORM_PARAM_CCI_P_CLOCK_IS_PCLKDIV2
+                   16'(ccip_cfg_pkg::PCLK_FREQ >> 1),
+`elsif PLATFORM_PARAM_CCI_P_CLOCK_IS_PCLKDIV4
+                   16'(ccip_cfg_pkg::PCLK_FREQ >> 2),
+`else
+                   16'(ccip_cfg_pkg::PCLK_FREQ),
+`endif
+                   re2cr_error},
 		  64'h0
                  );
 `ifdef PLATFORM_PROVIDES_LOCAL_MEMORY

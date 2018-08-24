@@ -3,6 +3,10 @@
 // time.
 //
 
+`include "platform_if.vh"
+
+`ifdef PLATFORM_PROVIDES_LOCAL_MEMORY
+
 module local_mem
   #(
     parameter DATA_WIDTH = 64,
@@ -198,3 +202,4 @@ module local_mem
 
 endmodule
 
+`endif //  `ifdef PLATFORM_PROVIDES_LOCAL_MEMORY

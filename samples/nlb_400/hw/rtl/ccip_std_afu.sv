@@ -60,13 +60,23 @@ module ccip_std_afu
     );
 
 // =============================================================
+// Select the clock that will drive the AFU, specified in the AFU's
+// JSON file.  The Platform Interface Manager provides these macros.
+// =============================================================
+
+logic afu_clk;
+assign afu_clk = `PLATFORM_PARAM_CCI_P_CLOCK;
+logic afu_reset;
+assign afu_reset = `PLATFORM_PARAM_CCI_P_RESET;
+
+// =============================================================
 // Register SR <--> PR signals at interface before consuming it
 // =============================================================
 
 (* noprune *) logic [1:0]  pck_cp2af_pwrState_T1;
 (* noprune *) logic        pck_cp2af_error_T1;
 
-logic        pck_cp2af_softReset_T1;
+logic        afu_reset_T1;
 t_if_ccip_Rx pck_cp2af_sRx_T1;
 t_if_ccip_Tx pck_af2cp_sTx_T0;
 
@@ -77,14 +87,14 @@ t_if_ccip_Tx pck_af2cp_sTx_T0;
 ccip_interface_reg
   inst_green_ccip_interface_reg
    (
-    .pClk                       (pClk),
-    .pck_cp2af_softReset_T0     (pck_cp2af_softReset),
+    .pClk                       (afu_clk),
+    .pck_cp2af_softReset_T0     (afu_reset),
     .pck_cp2af_pwrState_T0      (pck_cp2af_pwrState),
     .pck_cp2af_error_T0         (pck_cp2af_error),
     .pck_cp2af_sRx_T0           (pck_cp2af_sRx),
     .pck_af2cp_sTx_T0           (pck_af2cp_sTx_T0),
 
-    .pck_cp2af_softReset_T1     (pck_cp2af_softReset_T1),
+    .pck_cp2af_softReset_T1     (afu_reset_T1),
     .pck_cp2af_pwrState_T1      (pck_cp2af_pwrState_T1),
     .pck_cp2af_error_T1         (pck_cp2af_error_T1),
     .pck_cp2af_sRx_T1           (pck_cp2af_sRx_T1),
@@ -111,11 +121,11 @@ nlb_lpbk
     )
   nlb_lpbk
    (
-    .Clk_400                    (pClk),
+    .Clk_400                    (afu_clk),
 `ifdef INCLUDE_REMOTE_STP
     .Clk_100                    (clk_100),
 `endif
-    .SoftReset                  (pck_cp2af_softReset_T1),
+    .SoftReset                  (afu_reset_T1),
 
 `ifdef PLATFORM_PROVIDES_LOCAL_MEMORY
     // Local memory interface

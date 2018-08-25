@@ -1,4 +1,5 @@
 +define+BIST_AFU
+nlb_400.json
 test_sw1.sv
 test_rdwr.sv
 test_lpbk1.sv
@@ -13,7 +14,6 @@ arbiter.sv
 nlb_gram_sdp.v
 pipeline.sv
 platform/${OPAE_PLATFORM_FPGA_FAMILY}/local_mem.sv
-platform/${OPAE_PLATFORM_FPGA_FAMILY}/nlb_400.json
 resync.v
 altera_std_synchronizer_nocut.v
 

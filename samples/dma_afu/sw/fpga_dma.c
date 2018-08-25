@@ -369,6 +369,19 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle *dma_p)
 	res = fpgaRegisterEvent(dma_h->fpga_h, FPGA_EVENT_INTERRUPT, dma_h->eh, 0/*vector id*/);
 	ON_ERR_GOTO(res, destroy_eh, "fpgaRegisterEvent");
 
+	struct sigaction sa;
+	int sigres;
+
+	memset(&sa, 0, sizeof(sa));
+	sa.sa_flags = SA_SIGINFO | SA_RESETHAND;
+	sa.sa_sigaction = sig_handler;
+
+	sigres = sigaction(SIGHUP, &sa, &old_action);
+        if (sigres < 0) {
+		ON_ERR_GOTO(sigres < 0, destroy_eh, "Error: failed to unregister signal handler.\n");
+	}
+	CsrControl = HOST_MMIO_32_ADDR(dma_h, CSR_CONTROL(dma_h));
+
 	return FPGA_OK;
 
 destroy_eh:

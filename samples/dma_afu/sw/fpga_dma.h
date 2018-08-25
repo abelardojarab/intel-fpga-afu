@@ -56,10 +56,8 @@ typedef enum {
 
 typedef struct _dma_handle_t *fpga_dma_handle;
 
-
 // Callback for asynchronous DMA transfers
 typedef void (*fpga_dma_transfer_cb)(void *context);
-
 
 /**
  * fpgaDmaOpen
@@ -134,5 +132,4 @@ fpga_result fpgaDmaClose(fpga_dma_handle dma);
 #ifdef __cplusplus
 }
 #endif
-
 #endif // __FPGA_DMA_H__

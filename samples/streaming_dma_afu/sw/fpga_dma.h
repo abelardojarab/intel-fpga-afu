@@ -67,14 +67,13 @@ fpga_result fpgaCountDMAChannels(fpga_handle fpga, size_t *count);
 * @param[out] dma             DMA object handle
 * @returns                    FPGA_OK on success, return code otherwise
 */
-fpga_result fpgaDMAOpen(fpga_handle fpga, int dma_channel_idx, fpga_dma_handle_t *dma);
+fpga_result fpgaDMAOpen(fpga_handle fpga, uint64_t dma_channel_idx, fpga_dma_handle_t *dma);
 
 /**
 * fpgaDMAClose
 *
 * @brief                  Close DMA channel handle
 *
-* @param[in]  fpga        Handle to the FPGA AFU object obtained via fpgaOpen()
 * @param[in]  dma         DMA channel handle
 * @returns                FPGA_OK on success, return code otherwise
 */
@@ -86,11 +85,10 @@ fpga_result fpgaDMAClose(fpga_dma_handle_t dma);
 * @brief                  Query DMA channel type
 *
 *                         Possible type of channels are TX streaming (TX_ST),
-*                         RX streaming (RX_ST), Memory-mapped (MM).
+*                         and RX streaming (RX_ST)
 *                         
 * @param[in]  dma         DMA channel handle
-* @param[out] props       Pointer to channel type
-
+* @param[out] ch_type     Pointer to channel type
 * @returns                FPGA_OK on success, return code otherwise
 */
 fpga_result fpgaGetDMAChannelType(fpga_dma_handle_t dma, fpga_dma_channel_type_t *ch_type);
@@ -100,7 +98,7 @@ fpga_result fpgaGetDMAChannelType(fpga_dma_handle_t dma, fpga_dma_channel_type_t
 *
 * @brief                  Initialize an object that represents the DMA transfer.
 *
-*                         The driver will reset all transfer attributes to their default
+*                         The driver will reset all transfer attributes to default
 *                         values upon successful initialization
 *
 * @param[out]  transfer   Pointer to transfer attribute struct
@@ -108,17 +106,26 @@ fpga_result fpgaGetDMAChannelType(fpga_dma_handle_t dma, fpga_dma_channel_type_t
 */
 fpga_result fpgaDMATransferInit(fpga_dma_transfer_t *transfer);
 
+/**
+* fpgaDMATransferReset
+*
+* @brief                  Reset DMA transfer attribute object to default values.
+*
+*                         If same transfer object is reused for transfers, the stale values
+*                         need to be reset to default values. Eg: rx_bytes, eop_status
+*
+* @param[in]  transfer    Pointer to transfer attribute struct
+* @returns                FPGA_OK on success, return code otherwise
+*/
+fpga_result fpgaDMATransferReset(fpga_dma_transfer_t transfer);
 
 /**
 * fpgaDMATransferDestroy
 *
-* @brief                  Destroy DMA transfer attribute object.
+* @brief                 Destroy DMA transfer attribute object.
 *
-*                         The driver will reset all transfer attributes to their default
-*                         values upon successful initialization
-*
-* @param[out]  transfer   Pointer to transfer attribute struct
-* @returns                FPGA_OK on success, return code otherwise
+* @param[in]  transfer   Pointer to transfer attribute struct
+* @returns               FPGA_OK on success, return code otherwise
 */
 fpga_result fpgaDMATransferDestroy(fpga_dma_transfer_t transfer);
 
@@ -127,11 +134,6 @@ fpga_result fpgaDMATransferDestroy(fpga_dma_transfer_t transfer);
 * fpgaDMATransferSetSrc
 *
 * @brief                  Set source address of the transfer
-* 
-*                         For Host to FPGA transfer, source address is
-*                         the host virtual address. For FPGA to host
-*                         transfer and FPGA to FPGA transfer, source
-*                         address is the FPGA physical address
 *
 * @param[in]  transfer    Pointer to transfer attribute struct
 * @param[in]  src         Source address
@@ -144,12 +146,6 @@ fpga_result fpgaDMATransferSetSrc(fpga_dma_transfer_t transfer, uint64_t src);
 * fpgaDMATransferSetDst
 *
 * @brief                  Set destination address of the transfer
-*
-*                         For Host to FPGA and FPGA to FPGA transfer,
-*                         destination address is the FPGA physical
-*                         address. For FPGA to host transfer,
-*                         destination address is the host virtual
-*                         address
 *
 * @param[in]  transfer    Pointer to transfer attribute struct
 * @param[in]  dst         Destination address
@@ -175,14 +171,14 @@ fpga_result fpgaDMATransferSetLen(fpga_dma_transfer_t transfer, uint64_t len);
 *
 * @brief                  Set transfer type
 *
-*                         Supported values are
+*                         Legal values are
 *                         HOST_MM_TO_FPGA_ST (host to AFU sreaming)
 *                         FPGA_ST_TO_HOST_MM (AFU to host streaming)
-*                         FPGA_MM_TO_FPGA_ST (local mem to AFU streaming)
-*                         FPGA_ST_TO_FPGA_MM (AFU to local mem streaming)
+*                         FPGA_MM_TO_FPGA_ST (local mem to AFU streaming. Not supported in the current version)
+*                         FPGA_ST_TO_FPGA_MM (AFU to local mem streaming. Not supported in the current version)
 *
 * @param[in]  transfer    Pointer to transfer attribute struct
-* @param[out] type        Type of transfer
+* @param[in]  type        Type of transfer
 
 * @returns                FPGA_OK on success, return code otherwise
 */
@@ -208,7 +204,7 @@ fpga_result fpgaDMATransferSetTransferType(fpga_dma_transfer_t transfer, fpga_dm
 *                         GENERATE_SOP_AND_EOP
 *
 * @param[in]  transfer    Pointer to transfer attribute struct
-* @param[out] tx_ctrl     TX Control value
+* @param[in]  tx_ctrl     TX Control value
 
 * @returns                FPGA_OK on success, return code otherwise
 */
@@ -227,7 +223,6 @@ fpga_result fpgaDMATransferSetTxControl(fpga_dma_transfer_t transfer, fpga_dma_t
 *
 *                         RX Control is valid only for FPGA_ST_TO_HOST_MM and
 *                         FPGA_MM_TO_FPGA_ST transfers.
-*                         The rx chave one of the following values:
 *
 *                         Valid values are:
 * 
@@ -235,7 +230,7 @@ fpga_result fpgaDMATransferSetTxControl(fpga_dma_transfer_t transfer, fpga_dma_t
 •                         END_ON_EOP
 *
 * @param[in]  transfer    Pointer to transfer attribute struct
-* @param[out] rx_ctrl     RX Control value
+* @param[in] rx_ctrl      RX Control value
 
 * @returns                FPGA_OK on success, return code otherwise
 */
@@ -246,13 +241,21 @@ fpga_result fpgaDMATransferSetRxControl(fpga_dma_transfer_t transfer, fpga_dma_r
 *
 * @brief                  Register callback for notification on asynchronous
 *                         transfer completion
+*                         If a callback is specified, fpgaDMATransfer
+*                         returns immediately (asynchronous transfer).
+*
+*                         If a callback is not specified, fpgaDMATransfer
+*                         returns after the transfer is complete (synchronous/
+*                         blocking transfer).
+*
 *
 * @param[in]  transfer    Pointer to transfer attribute struct
-* @param[in]  cb          Notification callback
-
+* @param[in]  cb          Notification callback; You must set notification
+*                         callback to NULL for synchronous transfers
+* @param[in]  ctxt        Callback context
 * @returns                FPGA_OK on success, return code otherwise
 */
-fpga_result fpgaDMATransferSetTransferCallback(fpga_dma_transfer_t transfer, fpga_dma_transfer_cb cb);
+fpga_result fpgaDMATransferSetTransferCallback(fpga_dma_transfer_t transfer, fpga_dma_transfer_cb cb, void* ctxt);
 
 /**
 * fpgaDMATransferGetBytesTransferred
@@ -273,26 +276,32 @@ fpga_result fpgaDMATransferSetTransferCallback(fpga_dma_transfer_t transfer, fpg
 fpga_result fpgaDMATransferGetBytesTransferred(fpga_dma_transfer_t transfer, size_t *rx_bytes);
 
 /**
+* fpgaDMATransferCheckEopArrived
+*
+* @brief                  Retrieve EOP status
+*
+*                         Legal value are:     
+*                         0: EOP not arrived
+*                         1: EOP arrived
+*
+* @param[in]  transfer    Pointer to transfer attribute struct
+* @param[out] eop_arrived Pointer to the eop status
+*
+* @returns                FPGA_OK on success, return code otherwise
+*/
+fpga_result fpgaDMATransferCheckEopArrived(fpga_dma_transfer_t transfer, bool *eop_arrived);
+
+/**
 * fpgaDMATransfer
 *
 * @brief                  Perform a DMA transfer
 *                         
-*                         If a callback is specified, fpgaDMATransfer
-*                         returns immediately (asynchronous transfer).
-*
-*                         If a callback is not specified, fpgaDMATransfer
-*                         returns after the transfer is complete (synchronous/
-*                         blocking transfer).
-*
 * @param[dma] dma         DMA handle
 * @param[in]  transfer    Transfer attribute object
-* @param[in]  cb          Callback
-* @param[in]  context     
 *
 * @returns                FPGA_OK on success, return code otherwise
 */
-fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, const fpga_dma_transfer_t transfer,
-						fpga_dma_transfer_cb cb, void *context);
+fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, const fpga_dma_transfer_t transfer);
 
 
 #ifdef __cplusplus

@@ -77,6 +77,7 @@ module ccip_avmm_mmio #(
   // read response tracking signals
 	logic tid_fifo_wrreq;
 	reg tid_fifo_rdreq;
+   reg tid_fifo_rdreq_reg;
 	logic [TID_FIFO_WIDTH-1:0] tid_fifo_input;
 	wire [TID_FIFO_WIDTH-1:0] tid_fifo_output;
 	reg [63:0] rd_rsp_data_reg;
@@ -105,7 +106,7 @@ module ccip_avmm_mmio #(
 		.sclr(reset),
 		.clock(clk),
 		.wrreq(tid_fifo_wrreq),
-		.rdreq(tid_fifo_rdreq),
+		.rdreq(tid_fifo_rdreq_reg),  // changed TID fifo from legacy to showahead so this needs to be one cycle later
 		.aclr (),
 		.almost_empty (),
 		.almost_full (),
@@ -147,6 +148,7 @@ module ccip_avmm_mmio #(
 
 		//MMIO read response
 		tid_fifo_rdreq <= reset ? 1'b0 : mmio_rsp_valid;
+      tid_fifo_rdreq_reg <= tid_fifo_rdreq;
 		rd_rsp_valid_reg <= reset ? 1'b0 : tid_fifo_rdreq;
 		rd_rsp_data_reg <= mmio_rsp_data;
 		rd_rsp_data_reg2 <= rd_rsp_data_reg;
@@ -198,8 +200,8 @@ module ccip_avmm_mmio #(
 
 
   // Avalon command FIFO output fields
-  assign avmm_write = cmd_fifo_output.write & (cmd_fifo_empty != 1'b1);;
-  assign avmm_read = cmd_fifo_output.read & (cmd_fifo_empty != 1'b1);;
+  assign avmm_write = cmd_fifo_output.write & (cmd_fifo_empty != 1'b1);
+  assign avmm_read = cmd_fifo_output.read & (cmd_fifo_empty != 1'b1);
   assign avmm_address = cmd_fifo_output.address;
   assign avmm_writedata = cmd_fifo_output.writedata;
   assign avmm_byteenable = cmd_fifo_output.byteenable;

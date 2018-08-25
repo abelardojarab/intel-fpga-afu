@@ -44,7 +44,7 @@ setup_app_env
 app_base=$(dirname $app_base)
 if [[ $opae_install ]]; then
    # non rpm flow
-   gcc -g -o $app_base/hello_fpga $opae_base/samples/hello_fpga.c -L $opae_install/lib/ -I $opae_install/include -luuid -lpthread -lopae-c-ase -std=gnu99
+   gcc -g -o $app_base/hello_fpga $opae_base/samples/hello_fpga.c -L $opae_install/lib -L $opae_install/lib64 -I $opae_install/include -luuid -lpthread -lopae-c-ase -std=gnu99
 else
    # rpm flow
    gcc -o $app_base/hello_fpga -luuid -lpthread -lopae-c-ase -std=gnu99  $opae_base/samples/hello_fpga.c

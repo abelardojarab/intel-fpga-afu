@@ -49,6 +49,11 @@ int usleep(unsigned);
 
 static int s_error_count = 0;
 
+void print_err(const char *s, fpga_result res)
+{
+	fprintf(stderr, "Error %s: %s\n", s, fpgaErrStr(res));
+}
+
 /*
  * macro to check return codes, print error message, and goto cleanup label
  * NOTE: this changes the program flow (uses goto)!
@@ -75,15 +80,10 @@ static int s_error_count = 0;
 		}                                  \
 	} while (0)
 
-typedef enum {
-    DDRA = 0,
-    DDRB
-} ddr_type;
-
 fpga_result ddr_write
 (
   fpga_handle* afc_handle,
-  ddr_type ddr,
+  uint32_t ddr_bank,
   uint64_t address,
   uint64_t data,
   uint32_t byte_enable,
@@ -91,7 +91,7 @@ fpga_result ddr_write
 )
 {
   fpga_result res = FPGA_OK;
-  uint32_t write_cmd = 0x2 | (ddr << 2) | (byte_enable<<4) | (burst_count<<20);
+  uint32_t write_cmd = 0x2 | (ddr_bank << 2) | (byte_enable<<4) | (burst_count<<20);
 
   printf("MMIO Write to DDR Write Data Register\n");
   res = fpgaWriteMMIO64(*afc_handle, 0, CSR_DDR4_WD, data);
@@ -113,7 +113,7 @@ fpga_result ddr_write
 fpga_result ddr_read
 (
   fpga_handle* afc_handle,
-  ddr_type ddr,
+  uint32_t ddr_bank,
   uint64_t address,
   uint64_t data,
   uint32_t data_sel,
@@ -124,7 +124,7 @@ fpga_result ddr_read
   fpga_result res = FPGA_OK;
   uint64_t read_data = 0;
   // Although byte_enable is not used for reading from EMIF, we still set it for consistency purpose
-  uint32_t read_cmd = 0x1 | (ddr << 2) | (byte_enable << 4) | (data_sel<<16) | (burst_count<<20);
+  uint32_t read_cmd = 0x1 | (ddr_bank << 2) | (byte_enable << 4) | (data_sel<<16) | (burst_count<<20);
 
   printf("MMIO Write to DDR Address Register\n");
   res = fpgaWriteMMIO64(*afc_handle, 0, CSR_DDR4_ADDR, address);
@@ -151,26 +151,26 @@ fpga_result ddr_read
 
      if (read_data != data) 
      {
-        const char* ddr_str = (ddr == DDRA) ? "DDRA" : "DDRB";
-        fprintf(stderr, "%s data mismatch at ADDR=%08lx, %08lx != %08lx\n", ddr_str, address, read_data, data);
+        fprintf(stderr, "Data mismatch at BANK=%d, ADDR=%08lx, %08lx != %08lx\n", ddr_bank, address, read_data, data);
+        goto out_exit_rd_error;
      }
      else
      {
-        printf("Successfully read back %08lx from ADDR=%08lx\n", read_data, address);
+        printf("Successfully read back %08lx from BANK=%d, ADDR=%08lx\n", read_data, ddr_bank, address);
      }
   }
   else
   {
-    fprintf(stderr, "DDR read timeout reading ADDR=%08lx\n", address);
+     fprintf(stderr, "DDR read timeout reading BANK=%d, ADDR=%08lx\n", ddr_bank, address);
+     goto out_exit_rd_error;
   }
 
   out_exit:
      return res;
-}
 
-void print_err(const char *s, fpga_result res)
-{
-	fprintf(stderr, "Error %s: %s\n", s, fpgaErrStr(res));
+  out_exit_rd_error:
+     s_error_count += 1;
+     return -1;
 }
 
 int main(int argc, char *argv[])
@@ -180,6 +180,7 @@ int main(int argc, char *argv[])
 	fpga_handle        afc_handle;
 	fpga_guid          guid;
 	uint32_t           num_matches;
+	uint32_t           num_banks;
 
 	fpga_result     res = FPGA_OK;
 
@@ -242,53 +243,63 @@ int main(int argc, char *argv[])
 	ON_ERR_GOTO(res, out_close, "reading from MMIO");
 	printf("AFU RESERVED = %08lx\n", data);
         
-        // Start DDR write/read test
-        uint64_t read_data;
-      
-        printf("Start DDR testing\n"); 
-        
-        printf("\n********************************************\n"); 
-        printf("  Testing single write followed by single  read\n"); 
-        printf("********************************************\n"); 
-        // DDRA 1 write & 1 read, same address
-        res = ddr_write(&afc_handle, DDRA, 0x0, 0xccccddddaaaabbbb, 0xff, 0x1);
-        res = ddr_read(&afc_handle, DDRA, 0x0, 0xccccddddaaaabbbb, 0x0, 0xff, 0x1);  
-        // DDRB 1 write & 1 read, same address
-        res = ddr_write(&afc_handle, DDRB, 0x1, 0xccccddddaaaabbbb, 0xff, 0x1);
-        res = ddr_read(&afc_handle, DDRB, 0x1, 0xccccddddaaaabbbb, 0x0, 0xff, 0x1);  
+    res = fpgaReadMMIO64(afc_handle, 0, CSR_DDR4_STATUS, &data);
+    ON_ERR_GOTO(res, out_close, "Reading from MMIO");
+    num_banks = data >> 56;
+    printf("NUM_LOCAL_MEM_BANKS = %d\n", num_banks);
 
-        printf("\n********************************************\n"); 
-        printf("  Testing 2 writes followed by 2 reads\n"); 
-        printf("********************************************\n"); 
-        // DDRA 2 writes on different addresses
-        res = ddr_write(&afc_handle, DDRA, 0x50, 0xabba2016abba2017, 0xff, 0x1);
-        res = ddr_write(&afc_handle, DDRA, 0x6f, 0xcafe8888face0000, 0xff, 0x1);
+    // Start DDR write/read test
+    printf("Start DDR testing\n");
         
-        // DDRB 2 writes on different addresses
-        res = ddr_write(&afc_handle, DDRB, 0x6f, 0xabba2016abba2017, 0xff, 0x1);
-        res = ddr_write(&afc_handle, DDRB, 0x50, 0xcafe8888face0000, 0xff, 0x1);
+    printf("\n********************************************\n");
+    printf("  Testing single write followed by single  read\n");
+    printf("********************************************\n");
+
+    // Write to all the banks.  Do all the writes first to confirm that the banks
+    // are all addressed correctly.
+    for (uint32_t b = 0; b < num_banks; b += 1) {
+        res = ddr_write(&afc_handle, b, 0x0, 0xccccddddaaaabbbb + b, 0xff, 0x1);
+        ON_ERR_GOTO(res, out_close, "write error");
+    }
+    // Read back the data written
+    for (uint32_t b = 0; b < num_banks; b += 1) {
+        res = ddr_read(&afc_handle, b, 0x0, 0xccccddddaaaabbbb + b, 0x0, 0xff, 0x1);
+        ON_ERR_GOTO(res, out_close, "read error");
+    }
+
+    printf("\n********************************************\n");
+    printf("  Testing 2 writes followed by 2 reads\n");
+    printf("********************************************\n");
+    for (uint32_t b = 0; b < num_banks; b += 1) {
+        // Writes on different addresses
+        res = ddr_write(&afc_handle, b, 0x50, 0xabba2016abba2017 + b, 0xff, 0x1);
+        ON_ERR_GOTO(res, out_close, "write error");
+        res = ddr_write(&afc_handle, b, 0x6f, 0xcafe8888face0000 + b, 0xff, 0x1);
+        ON_ERR_GOTO(res, out_close, "write error");
+    }
+    // Read back the data written
+    for (uint32_t b = 0; b < num_banks; b += 1) {
+        res = ddr_read(&afc_handle, b, 0x50, 0xabba2016abba2017 + b, 0x0, 0xff, 0x1);
+        ON_ERR_GOTO(res, out_close, "read error");
+        res = ddr_read(&afc_handle, b, 0x6f, 0xcafe8888face0000 + b, 0x0, 0xff, 0x1);
+        ON_ERR_GOTO(res, out_close, "read error");
+    }
         
-        // DDRA 2 reads from previously written addresses
-        res = ddr_read(&afc_handle, DDRA, 0x50, 0xabba2016abba2017, 0x0, 0xff, 0x1);  
-        res = ddr_read(&afc_handle, DDRA, 0x6f, 0xcafe8888face0000, 0x0, 0xff, 0x1);  
-
-        // DDRB 2 reads from previously written addresses
-        res = ddr_read(&afc_handle, DDRB, 0x50, 0xcafe8888face0000, 0x0, 0xff, 0x1);  
-        res = ddr_read(&afc_handle, DDRB, 0x6f, 0xabba2016abba2017, 0x0, 0xff, 0x1);  
-
-        printf("\n********************************************\n"); 
-        printf("  Testing byte-enable\n"); 
-        printf("********************************************\n"); 
-        // DDRA first write with byteenable=0xcc and second write with byteenable=0x33 to the same address
-        //      read the same address
-        res = ddr_write(&afc_handle, DDRA, 0x50, 0xbabe1980babe1982, 0xcc, 0x1);
-        res = ddr_write(&afc_handle, DDRA, 0x50, 0xabba2016abba2017, 0x33, 0x1);
-        res = ddr_read(&afc_handle, DDRA, 0x50, 0xbabe2016babe2017, 0x0, 0xff, 0x1);
+    printf("\n********************************************\n");
+    printf("  Testing byte-enable\n");
+    printf("********************************************\n");
+    // First write with byteenable=0xcc and second write with byteenable=0x33 to the same address
+    res = ddr_write(&afc_handle, 0, 0x50, 0xbabe1980babe1982, 0xcc, 0x1);
+    ON_ERR_GOTO(res, out_close, "write error");
+    res = ddr_write(&afc_handle, 0, 0x50, 0xabba2016abba2017, 0x33, 0x1);
+    ON_ERR_GOTO(res, out_close, "write error");
+    // Read the same address
+    res = ddr_read(&afc_handle, 0, 0x50, 0xbabe2016babe2017, 0x0, 0xff, 0x1);
+    ON_ERR_GOTO(res, out_close, "read error");
 	
 	printf("\nDone Running Test\n");
 
 	/* Unmap MMIO space */
-out_unmap:
 	res = fpgaUnmapMMIO(afc_handle, 0);
 	ON_ERR_GOTO(res, out_close, "unmapping MMIO space");
 	
@@ -312,6 +323,8 @@ out_destroy_prop:
 out_exit:
 	if(s_error_count > 0)
 		printf("Test FAILED!\n");
+    else
+		printf("Test PASSED\n");
 
 	return s_error_count;
 

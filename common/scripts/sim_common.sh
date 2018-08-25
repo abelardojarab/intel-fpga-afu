@@ -33,6 +33,8 @@ parse_args() {
       s="vcs"
    elif [ -x "$(command -v vsim)" ] ; then
       s="questa"
+   else
+      s=""
    fi
 
    local OPTIND
@@ -90,12 +92,17 @@ parse_args() {
    fi
 
    # mandatory args
-   if [ -z "${a}" ] || [ -z "${s}" ] || [ -z "${r}" ]; then
+   if [ -z "${a}" ] || [ -z "${r}" ]; then
       usage;
    fi
 
-   if [[ "$sim" != "vcs" ]] && [[ "$sim" != "questa" ]] && [[ "$sim" != "modelsim" ]]   ; then
-      echo "Supported simulators are VCS, Modelsim and Questa. You specified $sim"
+   if [ -z "$sim" ]; then
+      echo "No RTL simulator detected or specified with -s."
+      echo ""
+      usage;
+   elif [[ "$sim" != "vcs" ]] && [[ "$sim" != "questa" ]] && [[ "$sim" != "modelsim" ]] ; then
+      echo "Supported simulators are vcs, modelsim and questa. You specified \"$sim\"."
+      echo ""
       usage;
    fi
 
@@ -128,15 +135,6 @@ setup_sim_dir() {
 
    pushd "$rtl_sim_dir"
 
-   # Add a place holder for QSYS generated Verilog
-   touch vlog_files.list qsys_sim_files.list
-   echo "-F qsys_sim_files.list" >> vlog_files.list
-
-   # AFUs should be getting these from platform_if.vh.  Once legacy AFUs are
-   # gone, we can remove these.
-   echo "SNPS_VLOGAN_OPT += +define+INCLUDE_DDR4" >> ase_sources.mk
-   echo "MENT_VLOG_OPT += +define+INCLUDE_DDR4" >> ase_sources.mk
-
    # Suppress some ModelSim warnings
    echo "MENT_VLOG_OPT += -suppress 3485,3584" >> ase_sources.mk
    echo "MENT_VSIM_OPT += -suppress 3485,3584" >> ase_sources.mk
@@ -168,55 +166,9 @@ setup_quartus_home() {
    fi
 }
 
+# No longer required since afu_sim_setup handles this.  Kept for legacy code.
 gen_qsys() {
-   # Copy the source tree to the RTL simulator tree in order to avoid
-   # polluting the source tree with Qsys-generated files.  Qsys doesn't
-   # have a mode in which files are written outside the tree.
-   rm -rf "$rtl_sim_dir/qsys_sim_src"
-   rsync -a "$rtl/" "$rtl_sim_dir/qsys_sim_src/"
-
-   pushd "$rtl_sim_dir"
-
-   # Use the copied file list
-   qsys_sim_filelist=qsys_sim_src/`basename ${rtl_filelist}`
-
-   # Generate Qsys
-   for q in `rtl_src_config --abs --qsys "${qsys_sim_filelist}" | grep .qsys$`; do
-      # Delete old generated content
-      rm -rf ${q%.*}
-      $QUARTUS_HOME/sopc_builder/bin/qsys-generate "${q}" --synthesis=VERILOG
-   done
-
-   # remove _inst.v , _bb.v and *.vhd
-   find qsys_sim_src -name *.vhd -exec rm -rf {} \;
-   find qsys_sim_src -name '*_inst.v' -exec rm -rf {} \;
-   find qsys_sim_src -name '*_bb.v' -exec rm -rf {} \;
-
-   # There are duplicate generated files in the Qsys tree.  Copy all generated
-   # Verilog to a single directory, forcing the base names to be unique.
-   rm -rf qsys_sim_files
-   mkdir qsys_sim_files
-   for q in `rtl_src_config --abs --qsys "${qsys_sim_filelist}"`; do
-      # Search in directories with the same names as Qsys files
-      find "${q%.*}/" -name synth -type d | \
-         xargs -n1 -IAAA find AAA -name "*.*v" | \
-         xargs -n1 -IAAA cp -f AAA qsys_sim_files/
-   done
-
-   # One final hack: remove files with names matching base names already listed
-   # as sources, assuming they are duplicates.
-   for q in `rtl_src_config --sim "${qsys_sim_filelist}" | grep '.*v$'`; do
-      b=`basename "$q"`
-      if [ -f "qsys_sim_files/${b}" ]; then
-         echo "Removing duplicate Qsys ${b} already named in source list"
-         rm qsys_sim_files/${b}
-      fi
-   done
-
-   # Add generated Verilog to the list of sources
-   find qsys_sim_files -type f > qsys_sim_files.list
-
-   popd
+   :
 }
 
 add_text_macros() {     
@@ -306,6 +258,9 @@ wait_for_sim_ready() {
 setup_app_env() {
    # setup env variables
    export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$app_base
+   if [[ $opae_install ]]; then
+      export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$opae_install/lib64
+   fi
    export ASE_WORKDIR=`readlink -m ${rtl_sim_dir}/work`
    echo "ASE workdir is $ASE_WORKDIR"
 

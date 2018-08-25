@@ -34,7 +34,7 @@
 #define __FPGA_DMA_TYPES_H__
 
 #include <opae/fpga.h>
-
+#include <stdbool.h>
 #ifdef __cplusplus
 extern "C" {
 #endif

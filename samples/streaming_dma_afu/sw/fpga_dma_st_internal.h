@@ -37,6 +37,12 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include "x86-sse2.h"
+
+#define FPGA_DMA_ST_ERR(msg_str) \
+		fprintf(stderr, "Error %s: %s\n", __FUNCTION__, msg_str);
+
+#define MIN(X,Y) (X<Y)?X:Y
 
 #define QWORD_BYTES 8
 #define DWORD_BYTES 4
@@ -48,9 +54,6 @@
 #define S2M_DMA_UUID_H                0xf118209ad59a4b3f
 #define S2M_DMA_UUID_L                0xa66cd700a658a015
 #define FPGA_DMA_HOST_MASK            0x2000000000000
-#define FPGA_DMA_WF_HOST_MASK         0x3000000000000
-#define FPGA_DMA_WF_ROM_MAGIC_NO_MASK 0x1000000000000
-
 
 #define AFU_DFH_REG 0x0
 #define AFU_DFH_NEXT_OFFSET 16
@@ -67,12 +70,24 @@
 #define FPGA_DMA_CSR 0x40
 #define FPGA_DMA_DESC 0x60
 #define FPGA_DMA_RESPONSE 0x80
-#define FPGA_DMA_ADDR_SPAN_EXT_CNTL 0x200
-#define FPGA_DMA_ADDR_SPAN_EXT_DATA 0x1000
+#define FPGA_DMA_STREAMING_VALVE 0xA0
 
-#define DMA_ADDR_SPAN_EXT_WINDOW (4*1024)
-#define DMA_ADDR_SPAN_EXT_WINDOW_MASK ((uint64_t)(DMA_ADDR_SPAN_EXT_WINDOW-1))
+#define CSR_BASE(dma_handle) ((uint64_t)dma_handle->dma_csr_base)
+#define RSP_BASE(dma_handle) ((uint64_t)dma_handle->dma_rsp_base)
+#define ST_VALVE_BASE(dma_handle) ((uint64_t)dma_handle->dma_streaming_valve_base)
+#define HOST_MMIO_32_ADDR(dma_handle,offset) ((volatile uint32_t *)((uint64_t)(dma_handle)->mmio_va + (uint64_t)(offset)))
+#define HOST_MMIO_64_ADDR(dma_handle,offset) ((volatile uint64_t *)((uint64_t)(dma_handle)->mmio_va + (uint64_t)(offset)))
+#define HOST_MMIO_32(dma_handle,offset) (*HOST_MMIO_32_ADDR(dma_handle,offset))
+#define HOST_MMIO_64(dma_handle,offset) (*HOST_MMIO_64_ADDR(dma_handle,offset))
 
+#define CSR_STATUS(dma_h) (CSR_BASE(dma_h) + offsetof(msgdma_csr_t, status))
+#define CSR_CONTROL(dma_h) (CSR_BASE(dma_h) + offsetof(msgdma_csr_t, ctrl))
+#define CSR_FILL_LEVEL(dma_h) (CSR_BASE(dma_h) + offsetof(msgdma_csr_t, fill_level))
+#define CSR_RSP_FILL_LEVEL(dma_h) (CSR_BASE(dma_h) + offsetof(msgdma_csr_t, rsp_level))
+#define RSP_BYTES_TRANSFERRED(dma_h) (RSP_BASE(dma_h) + offsetof(msgdma_rsp_t, actual_bytes_tf))
+#define RSP_STATUS(dma_h) (RSP_BASE(dma_h) + offsetof(msgdma_rsp_t, rsp_status))
+#define ST_VALVE_CONTROL(dma_h) (ST_VALVE_BASE(dma_h) + offsetof(msgdma_st_valve_t, control))
+#define ST_VALVE_STATUS(dma_h) (ST_VALVE_BASE(dma_h) + offsetof(msgdma_st_valve_t, status))
 #define FPGA_DMA_MASK_32_BIT 0xFFFFFFFF
 
 #define FPGA_DMA_CSR_BUSY (1<<0)
@@ -85,14 +100,32 @@
 // in a single descriptor).This value must match configuration of
 // the DMA IP. Larger transfers will be broken down into smaller
 // transactions.
-#define FPGA_DMA_BUF_SIZE (2*1023*1024)
+#define FPGA_DMA_BUF_SIZE (2*1024*1024)
 #define FPGA_DMA_BUF_ALIGN_SIZE FPGA_DMA_BUF_SIZE
+
+#define MIN_SSE2_SIZE 4096
+#define CACHE_LINE_SIZE 64
+#define ALIGN_TO_CL(x) ((uint64_t)(x) & ~(CACHE_LINE_SIZE - 1))
+#define IS_CL_ALIGNED(x) (((uint64_t)(x) & (CACHE_LINE_SIZE - 1)) == 0)
+
 // Convenience macros
 #ifdef FPGA_DMA_DEBUG
-	#define debug_print(fmt, ...) \
-	do { if (FPGA_DMA_DEBUG) fprintf(stderr, fmt, ##__VA_ARGS__); } while (0)
+#define debug_print(fmt, ...) \
+do { \
+	if (FPGA_DMA_DEBUG) {\
+		fprintf(stderr, "%s (%d) : ", __FUNCTION__, __LINE__); \
+		fprintf(stderr, fmt, ##__VA_ARGS__); \
+	} \
+} while (0)
+#define error_print(fmt, ...) \
+do { \
+	fprintf(stderr, "%s (%d) : ", __FUNCTION__, __LINE__); \
+	fprintf(stderr, fmt, ##__VA_ARGS__); \
+	err_cnt++; \
+ } while (0)
 #else
-	#define debug_print(...)
+#define debug_print(...)
+#define error_print(...)
 #endif
 
 #define FPGA_DMA_MAX_BUF 8
@@ -114,12 +147,18 @@ struct fpga_dma_transfer {
 	fpga_dma_tx_ctrl_t tx_ctrl;
 	fpga_dma_rx_ctrl_t rx_ctrl;
 	fpga_dma_transfer_cb cb;
+	bool eop_status;
 	void *context;
 	size_t rx_bytes;
-	bool is_blocking;
 	pthread_mutex_t tf_mutex;	
 	sem_t tf_status; // When locked, the transfer in progress
 };
+
+typedef struct __attribute__ ((__packed__)) {
+	uint64_t dfh;
+	uint64_t feature_uuid_lo;
+	uint64_t feature_uuid_hi;
+} dfh_feature_t;
 
 typedef union {
 	uint64_t reg;
@@ -147,24 +186,30 @@ struct fpga_dma_handle {
 	fpga_handle fpga_h;
 	uint32_t mmio_num;
 	uint64_t mmio_offset;
+	uint64_t mmio_va;
 	uint64_t dma_base;
 	uint64_t dma_offset;
 	uint64_t dma_csr_base;
 	uint64_t dma_desc_base;
 	uint64_t dma_rsp_base;
+	uint64_t dma_streaming_valve_base;
 	uint64_t dma_ase_cntl_base;
 	uint64_t dma_ase_data_base;
+	// Index of the next available descriptor in the dispatcher queue
+	uint64_t next_avail_desc_idx;
+	// Total number of unused descriptors in the dispatcher queue
+	// Leftover descriptors are reused for subsequent transfers
+	// Note: Count includes the next available descriptor in
+	// the dispatcher queue indexed by next_avail_desc_idx
+	uint64_t unused_desc_count;
 	// Interrupt event handle
 	fpga_event_handle eh;
-	// magic number buffer
-	volatile uint64_t *magic_buf;
-	uint64_t magic_iova;
-	uint64_t magic_wsid;
 	uint64_t *dma_buf_ptr[FPGA_DMA_MAX_BUF];
 	uint64_t dma_buf_wsid[FPGA_DMA_MAX_BUF];
 	uint64_t dma_buf_iova[FPGA_DMA_MAX_BUF];
 	// channel type
 	fpga_dma_channel_type_t ch_type;
+#define INVALID_CHANNEL (0x7fffffffffffffffULL)
 	uint64_t dma_channel;
 	pthread_t thread_id;
 	// Transaction queue (model as a fixed-size circular buffer)
@@ -240,7 +285,10 @@ typedef union {
 		uint32_t stopped_on_early_term:1;
 		uint32_t global_intr_en_mask:1;
 		uint32_t stop_descriptors:1;
-		uint32_t rsvd:22;
+		uint32_t flush_descriptors:1;
+		uint32_t flush_rd_master:1;
+		uint32_t flush_wr_master:1;
+		uint32_t rsvd:19;
 	} ct;
 } msgdma_ctrl_t;
 
@@ -300,4 +348,38 @@ typedef struct __attribute__((__packed__)) {
 	// 0x4
 	msgdma_rsp_status_t rsp_status;
 } msgdma_rsp_t;
+
+typedef union {
+	uint32_t reg;
+	struct {
+		uint32_t en_data_flow:1;
+		uint32_t en_det_tf:1;
+		uint32_t en_non_det_tf:1;
+		uint32_t clr_bytes_transferred:1;
+		uint32_t rsvd:28;
+	} ct;
+} msgdma_st_valve_ctrl_t;
+
+typedef union {
+	uint32_t reg;
+	struct {
+		uint32_t det_tf_occurred:1;
+		uint32_t non_det_tf_occurred:1;
+		uint32_t rsvd:30;
+	} st;
+} msgdma_st_valve_status_t;
+
+typedef struct __attribute__((__packed__)) {
+	// 0x0
+	uint32_t bytes_transferred_l32;
+	// 0x4
+	uint32_t bytes_transferred_u32;
+	// 0x8
+	uint32_t bytes_to_transfer;
+	// 0xc
+	msgdma_st_valve_ctrl_t control;
+	// 0x10
+	msgdma_st_valve_status_t status;
+} msgdma_st_valve_t;
+
 #endif // __FPGA_DMA_ST_INT_H__

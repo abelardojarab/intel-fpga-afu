@@ -32,7 +32,7 @@ CFLAGS += -g -O2
 
 ifdef prefix
 CFLAGS += -I$(prefix)/include
-LDFLAGS += -L$(prefix)/lib
+LDFLAGS += -L$(prefix)/lib -L$(prefix)/lib64
 endif
 
 #CFLAGS += -Wall -Werror -Wno-unknown-pragmas
@@ -56,7 +56,7 @@ bist_afu_ase_test: bist_afu_ase_test.o bist_afu_ase.so
 	gcc -o $@ $^ $(LDFLAGS)
 
 bist_afu_ase_test.o: bist_afu_ase_test.c
-	gcc $(CFLAGS) -o $@ -c $^ 
+	gcc $(CFLAGS) -o $@ -c $^
 
 bist_afu_ase.so: bist_afu_ase.o
 	gcc $(CFLAGS)  -o $@ $^ $(LDFLAGS) -shared

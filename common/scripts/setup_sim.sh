@@ -41,8 +41,7 @@ if [ -f "${afu}/hw/sim/setup_sim.sh" ]; then
    "${afu}/hw/sim/setup_sim.sh" "$@"
 else
    # There is no AFU-specific script
-   setup_sim_dir
    setup_quartus_home
-   gen_qsys
+   setup_sim_dir
    build_sim
 fi

@@ -4,7 +4,7 @@
       "power": 0,
       "afu-top-interface":
          {
-            "class": "ccip_std_afu_avalon_mm_legacy_wires"
+            "class": "ccip_std_afu_avalon_mm"
          },
       "accelerator-clusters":
          [
@@ -16,3 +16,4 @@
          ]
    }
 }
+

@@ -3,7 +3,7 @@ CFLAGS = -g -O2 -fPIC
 
 CFLAGS += -I$(prefix)/include
 CFLAGS += -D FPGA_DMA_DEBUG=0
-LDFLAGS += -L$(prefix)/lib -luuid -lrt
+LDFLAGS += -L$(prefix)/lib -L$(prefix)/lib64 -luuid -lrt
 
 GTEST_INC += -I$(drv_path)
 
@@ -32,10 +32,10 @@ dma_afu_test: dma_afu_test.o dma_test_common.o
 	g++ $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 fpga_dma_gtest: fpga_dma_gtest.o
-	g++ -o $@ $^ -L$(googletest) -lgtest -L$(drv_path) -l:fpga_dma.so $(LDFLAGS)
+	g++ -o $@ $^ -L$(gtest_lib) -lgtest -L$(drv_path) -l:fpga_dma.a $(LDFLAGS)
 
 fpga_dma_gtest.o: fpga_dma_gtest.cpp
-	g++ -o $@ -c $^ $(CFLAGS) -I$(drv_path)
+	g++ -o $@ -c $^ $(CFLAGS) -I$(drv_path) -I$(gtest_include)
 
 
 dma_bbb_speed_test: dma_bbb_speed_test.o dma_test_common.o $(DMA_OBJS)

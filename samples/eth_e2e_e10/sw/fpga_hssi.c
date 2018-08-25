@@ -31,6 +31,7 @@
  */
 #include <stdlib.h>
 #include <opae/fpga.h>
+#include <time.h>
 #include <string.h>
 #include <safe_string/safe_string.h>
 #include "fpga_hssi.h"
@@ -40,9 +41,10 @@ static int err_cnt;
 
 static void byte_reverse(fpga_guid guid)
 {
+	int i;
 	char t;
 
-	for (int i = 0; i < sizeof(fpga_guid)/2; i++) {
+	for (i = 0; i < sizeof(fpga_guid)/2; i++) {
 		t = guid[sizeof(fpga_guid)-i-1];
 		guid[sizeof(fpga_guid)-i-1] = guid[i];
 		guid[i] = t;
@@ -67,8 +69,12 @@ static void prMgmtWrite(volatile struct afu_dfl *const dfl, pr_mgmt_cmd_t cmd,
 static void prMgmtRead(volatile struct afu_dfl *const dfl, pr_mgmt_cmd_t cmd,
 	pr_mgmt_data_t *data)
 {
+	struct timespec time;
+	time.tv_sec = 0;
+	time.tv_nsec = 10000;
 	data->reg = 0;
 	dfl->eth_ctrl_addr = PR_READ_CMD | cmd;
+	nanosleep(&time, &time);
 	data->reg = (uint64_t)dfl->eth_rd_data;
 	dfl->eth_ctrl_addr = 0;
 }
@@ -78,6 +84,7 @@ fpga_result fpgaHssiOpen(fpga_handle fpga, fpga_hssi_handle *hssi)
 {
 	fpga_result res = FPGA_OK;
 	fpga_guid guid;
+	int i;
 
 	err_cnt = 0;
 
@@ -100,10 +107,11 @@ fpga_result fpgaHssiOpen(fpga_handle fpga, fpga_hssi_handle *hssi)
 	h->csrs = malloc(sizeof(struct _hssi_csr *) * h->csr_cnt);
 	if(!h->csrs) {
 		res = FPGA_NO_MEMORY;
-		ON_ERR_GOTO(res, out_h, "Unable to allocate CSR memory in handle");
+		ON_ERR_GOTO(res, out_h,
+			    "Unable to allocate CSR memory in handle");
 	}
 
-	for (int i = 0; i < h->csr_cnt; i++)
+	for (i = 0; i < h->csr_cnt; i++)
 		h->csrs[i] = &e10_csrs[i];
 
 	res = fpgaMapMMIO(fpga, 0, (uint64_t **)&h->mmio_ptr);
@@ -116,17 +124,21 @@ fpga_result fpgaHssiOpen(fpga_handle fpga, fpga_hssi_handle *hssi)
 	if (memcmp(guid, &(h->dfl->afu_id_lo), sizeof(h->dfl->afu_id_lo)) ||
 		memcmp(&guid[sizeof(h->dfl->afu_id_lo)], &(h->dfl->afu_id_hi),
 			sizeof(h->dfl->afu_id_hi))
-	)
-		ON_ERR_GOTO(FPGA_EXCEPTION, out_csr, "Invalid UUID");
+	) {
+		res = FPGA_EXCEPTION;
+		fpgaUnmapMMIO(fpga, 0);
+		ON_ERR_GOTO(res, out_csr, "Invalid UUID");
+	}
+	h->fpga_h = fpga;
 
 	*hssi = h;
 	return FPGA_OK;
 
 out_csr:
-	if (!h->csrs)
+	if (h->csrs)
 		free(h->csrs);
 out_h:
-	if (!h)
+	if (h)
 		free(h);
 
 	return res;
@@ -139,7 +151,7 @@ fpga_result fpgaHssiClose(fpga_hssi_handle hssi)
 
 	fpgaUnmapMMIO(hssi->fpga_h, 0);
 
-	if (!hssi->csrs)
+	if (hssi->csrs)
 		free(hssi->csrs);
 
 	free(hssi);
@@ -363,9 +375,17 @@ fpga_result fpgaHssiSendPacket(fpga_hssi_handle hssi,
 	prMgmtWrite(hssi->dfl, PR_MGMT_PORT_SEL, wr_data);
 
 	fpgaHssiFilterCsrByName(hssi, "number_of_packets", &csr);
+
+	if (!csr)
+		return FPGA_INVALID_PARAM;
+
 	fpgaHssiWriteCsr64(hssi, csr, num_packets);
 
 	fpgaHssiFilterCsrByName(hssi, "start", &csr);
+
+	if (!csr)
+		return FPGA_INVALID_PARAM;
+
 	fpgaHssiWriteCsr64(hssi, csr, (uint64_t)1);
 	return FPGA_OK;
 }
@@ -379,7 +399,12 @@ fpga_result fpgaHssiPrintChannelStats(fpga_hssi_handle hssi_h,
 	uint64_t val;
 	bool loopback_en, freq_locked, word_locked;
 	const char *type_str = (type == TX)?"TX":"RX";
-
+	pr_mgmt_data_t wr_data = {0};
+	
+	// Select channel
+	wr_data.port_sel.port = channel_num;
+	prMgmtWrite(hssi_h->dfl, PR_MGMT_PORT_SEL, wr_data);
+	
 	fpgaHssiEnumerateCsr(hssi_h, &csrs, &count);
 	fpgaHssiGetLoopbackStatus(hssi_h, channel_num, &loopback_en);
 	fpgaHssiGetFreqLockStatus(hssi_h, channel_num, &freq_locked);
@@ -400,7 +425,7 @@ fpga_result fpgaHssiPrintChannelStats(fpga_hssi_handle hssi_h,
 	for (i = 0; i < count; i++) {
 		if (csrs[i]->type == type) {
 			fpgaHssiReadCsr64(hssi_h, csrs[i], &val);
-			printf("%#-8x|%-50s|%-20ld|%-50s\n", csrs[i]->offset,
+			printf("%#-8x|%-50s|%#-16lx|%-50s\n", csrs[i]->offset,
 				csrs[i]->name, val, csrs[i]->desc);
 		}
 	}
@@ -420,17 +445,22 @@ fpga_result fpgaHssiClearChannelStats(fpga_hssi_handle hssi,
 	wr_data.port_sel.port = channel_num;
 	prMgmtWrite(hssi->dfl, PR_MGMT_PORT_SEL, wr_data);
 
-	// Clear TX stats
 	if (type == TX) {
 		fpgaHssiFilterCsrByName(hssi, "tx_stats_clr", &csr);
-		fpgaHssiWriteCsr64(hssi, csr, (uint64_t)1);
-	}
 
-	// Clear RX stats
-	if (type == RX) {
-		fpgaHssiFilterCsrByName(hssi, "rx_stats_clr", &csr);
+		if (!csr)
+			return FPGA_INVALID_PARAM;
+
 		fpgaHssiWriteCsr64(hssi, csr, (uint64_t)1);
-	}
+	} else if (type == RX) {
+		fpgaHssiFilterCsrByName(hssi, "rx_stats_clr", &csr);
+
+		if (!csr)
+			return FPGA_INVALID_PARAM;
+
+		fpgaHssiWriteCsr64(hssi, csr, (uint64_t)1);
+	} else
+		return FPGA_INVALID_PARAM;
 
 	return FPGA_OK;
 }

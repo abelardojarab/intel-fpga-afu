@@ -63,3 +63,5 @@ trans_bit.v
 ./e10/xcvr_reset_controller/reset_control/reset_control.qip
 ./e10/altera_eth_10g_mac_base_r.v
 eth_e2e_e10.json
+
+QI:../par/extra_tcl.tcl

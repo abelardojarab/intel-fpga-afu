@@ -1,0 +1,110 @@
+#########################################################
+# Device and Board Setting                              #
+#########################################################
+set_global_assignment -name DEVICE 5SGXEA7N2F45C2
+set_global_assignment -name FAMILY "Stratix V"
+
+set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "2.5 V"
+set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
+set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
+
+#########################################################
+# I/O pins                                              #
+#########################################################
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to clk_ref_r
+set_instance_assignment -name INPUT_TERMINATION "OCT 100 OHMS" -to clk_ref_r
+
+set_location_assignment PIN_AL4 -to tx_serial_r[0]
+set_location_assignment PIN_AJ4 -to tx_serial_r[1]
+set_location_assignment PIN_AG4 -to tx_serial_r[2]
+set_location_assignment PIN_AE4 -to tx_serial_r[3]
+set_location_assignment PIN_AA4 -to tx_serial_r[4]
+set_location_assignment PIN_W4 -to tx_serial_r[5]
+set_location_assignment PIN_U4 -to tx_serial_r[6]
+set_location_assignment PIN_R4 -to tx_serial_r[7]
+set_location_assignment PIN_N4 -to tx_serial_r[8]
+set_location_assignment PIN_J4 -to tx_serial_r[9]
+
+set_instance_assignment -name XCVR_TX_VOD 10 -to tx_serial_r[0]
+set_instance_assignment -name XCVR_TX_VOD 10 -to tx_serial_r[1]
+set_instance_assignment -name XCVR_TX_VOD 10 -to tx_serial_r[2]
+set_instance_assignment -name XCVR_TX_VOD 10 -to tx_serial_r[3]
+set_instance_assignment -name XCVR_TX_VOD 10 -to tx_serial_r[4]
+set_instance_assignment -name XCVR_TX_VOD 10 -to tx_serial_r[5]
+set_instance_assignment -name XCVR_TX_VOD 10 -to tx_serial_r[6]
+set_instance_assignment -name XCVR_TX_VOD 10 -to tx_serial_r[7]
+set_instance_assignment -name XCVR_TX_VOD 10 -to tx_serial_r[8]
+set_instance_assignment -name XCVR_TX_VOD 10 -to tx_serial_r[9]
+
+set_location_assignment PIN_AP2 -to rx_serial_r[0]
+set_location_assignment PIN_AM2 -to rx_serial_r[1]
+set_location_assignment PIN_AK2 -to rx_serial_r[2]
+set_location_assignment PIN_AH2 -to rx_serial_r[3]
+set_location_assignment PIN_AD2 -to rx_serial_r[4]
+set_location_assignment PIN_AB2 -to rx_serial_r[5]
+set_location_assignment PIN_Y2 -to rx_serial_r[6]
+set_location_assignment PIN_V2 -to rx_serial_r[7]
+set_location_assignment PIN_T2 -to rx_serial_r[8]
+set_location_assignment PIN_M2 -to rx_serial_r[9]
+
+set_location_assignment PIN_AR9 -to cfp_glb_alrm
+set_location_assignment PIN_AN31 -to cfp_mdc
+set_location_assignment PIN_AH12 -to cfp_mdio
+set_location_assignment PIN_AR20 -to cfp_mod_abs
+set_location_assignment PIN_AW37 -to cfp_mod_lopwr
+set_location_assignment PIN_AH34 -to cfp_mod_rst
+set_location_assignment PIN_AG34 -to cfp_prg_alrm[1]
+set_location_assignment PIN_AP33 -to cfp_prg_alrm[2]
+set_location_assignment PIN_AK32 -to cfp_prg_alrm[3]
+set_location_assignment PIN_AU21 -to cfp_prg_cntl[1]
+set_location_assignment PIN_AG32 -to cfp_prg_cntl[2]
+set_location_assignment PIN_AW21 -to cfp_prg_cntl[3]
+set_location_assignment PIN_BB20 -to cfp_rx_los
+set_location_assignment PIN_BC11 -to cfp_tx_dis
+set_location_assignment PIN_AY9 -to clk50
+set_location_assignment PIN_AF6 -to "clk_ref_r(n)"
+set_location_assignment PIN_AF7 -to clk_ref_r
+
+set_location_assignment PIN_AJ27 -to cpu_resetn
+set_location_assignment PIN_K35 -to user_resetn
+
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to rx_serial_r[0]
+set_location_assignment PIN_AP1 -to "rx_serial_r[0](n)"
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to rx_serial_r[1]
+set_location_assignment PIN_AM1 -to "rx_serial_r[1](n)"
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to rx_serial_r[2]
+set_location_assignment PIN_AK1 -to "rx_serial_r[2](n)"
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to rx_serial_r[3]
+set_location_assignment PIN_AH1 -to "rx_serial_r[3](n)"
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to rx_serial_r[4]
+set_location_assignment PIN_AD1 -to "rx_serial_r[4](n)"
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to rx_serial_r[5]
+set_location_assignment PIN_AB1 -to "rx_serial_r[5](n)"
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to rx_serial_r[6]
+set_location_assignment PIN_Y1 -to "rx_serial_r[6](n)"
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to rx_serial_r[7]
+set_location_assignment PIN_V1 -to "rx_serial_r[7](n)"
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to rx_serial_r[8]
+set_location_assignment PIN_T1 -to "rx_serial_r[8](n)"
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to rx_serial_r[9]
+set_location_assignment PIN_M1 -to "rx_serial_r[9](n)"
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to tx_serial_r[0]
+set_location_assignment PIN_AL3 -to "tx_serial_r[0](n)"
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to tx_serial_r[1]
+set_location_assignment PIN_AJ3 -to "tx_serial_r[1](n)"
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to tx_serial_r[2]
+set_location_assignment PIN_AG3 -to "tx_serial_r[2](n)"
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to tx_serial_r[3]
+set_location_assignment PIN_AE3 -to "tx_serial_r[3](n)"
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to tx_serial_r[4]
+set_location_assignment PIN_AA3 -to "tx_serial_r[4](n)"
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to tx_serial_r[5]
+set_location_assignment PIN_W3 -to "tx_serial_r[5](n)"
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to tx_serial_r[6]
+set_location_assignment PIN_U3 -to "tx_serial_r[6](n)"
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to tx_serial_r[7]
+set_location_assignment PIN_R3 -to "tx_serial_r[7](n)"
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to tx_serial_r[8]
+set_location_assignment PIN_N3 -to "tx_serial_r[8](n)"
+set_instance_assignment -name IO_STANDARD "1.5-V PCML" -to tx_serial_r[9]
+set_location_assignment PIN_J3 -to "tx_serial_r[9](n)"

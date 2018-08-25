@@ -88,7 +88,11 @@ module hello_mem_afu
   wire mem_error_clr;
   wire [31:0]  mem_errors;
 
-  mem_csr csr
+  mem_csr
+   #(
+     .NUM_LOCAL_MEM_BANKS(NUM_LOCAL_MEM_BANKS)
+     )
+   csr
    (
     .clk                    (clk),
     .SoftReset              (SoftReset ),
@@ -116,7 +120,7 @@ module hello_mem_afu
     .ready_for_sw_cmd       (ready_for_sw_cmd),
     .mem_error_clr          (mem_error_clr),
     .mem_errors             (mem_errors)
- );
+   );
 
   mem_fsm fsm
    (
@@ -154,6 +158,6 @@ module hello_mem_afu
     .avs_readdatavalid      (avs_readdatavalid),
     .mem_error_clr          (mem_error_clr),
     .mem_errors             (mem_errors)
-  );
+   );
 
 endmodule

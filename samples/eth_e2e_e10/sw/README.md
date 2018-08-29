@@ -31,20 +31,20 @@ found in the 10-Gbps Ethernet MAC MegaCore Function User Guide.
 
 * fpgaHssiReadCsr64: Read a 64-bit value from the CSR referenced by its handle.
 
-* fpgaHssiCtrlLoopback: Enable internal loopback on a channel referenced by it's index.
+* fpgaHssiCtrlLoopback: Enable internal loopback on a channel referenced by its index.
 
-* fpgaHssiGetLoopbackStatus: Query channel's internal loopback status referenced by it's index.
+* fpgaHssiGetLoopbackStatus: Query channel's internal loopback status referenced by its index.
 
-* fpgaHssiGetFreqLockStatus: Query channel's frequency lock status referenced by it's index.
+* fpgaHssiGetFreqLockStatus: Query channel's frequency lock status referenced by its index.
 
-* fpgaHssiGetWordLockStatus: Query channel's word lock status referenced by it's index.
+* fpgaHssiGetWordLockStatus: Query channel's word lock status referenced by its index.
 
-* fpgaHssiSendPacket: Transmit aribtrary number of 1500-byte packets on the channel referenced by it's index.
+* fpgaHssiSendPacket: Transmit arbitrary number of 64-byte packets on the channel referenced by its index.
 Packet data is generated from the internal traffic generator.
 
-* fpgaHssiPrintChannelStats: Pretty-print TX and RX MAC CSRs for a channel referenced by it's index.
+* fpgaHssiPrintChannelStats: Pretty-print TX and RX MAC CSRs for a channel referenced by its index.
 
-* fpgaHssiClearChannelStats: Reset TX and RX MAC CSRs for a channel referenced by it's index.
+* fpgaHssiClearChannelStats: Reset TX and RX MAC CSRs for a channel referenced by its index.
 
 The following code-snippet demonstrates two ways of reading MAC CSRs.
 
@@ -168,8 +168,8 @@ CHANNEL |LOOPBACK               |FREQ LOCK       |WORD LOCK |TYPE
 OFFSET  |NAME                   |VALUE           |DESCRIPTION                      
 ----------------------------------------------------------------------------------------------------
 0xc00   |rx_stats_clr           |0               |Clear RX stats                       
-0xc02   |rx_stats_framesOK      |0x10000         |Frames that are successfully recieved
-0xc04   |rx_stats_framesErr     |0               |Frames that are successfully recieved
+0xc02   |rx_stats_framesOK      |0x10000         |Frames that are successfully received
+0xc04   |rx_stats_framesErr     |0               |Frames that are successfully received
 ..
 ..
 ```

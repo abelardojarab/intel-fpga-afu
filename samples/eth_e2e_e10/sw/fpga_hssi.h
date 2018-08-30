@@ -166,7 +166,7 @@ fpga_result fpgaHssiFilterCsrByOffset(fpga_hssi_handle hssi, uint64_t offset,
 /**
  * fpgaHssiWriteCsr64
  *
- * @brief           Write value to CSR
+ * @brief           Write 64 bit value to CSR
  *
  * @param[in] hssi  HSSI handle
  * @param[in] csr   CSR
@@ -180,7 +180,7 @@ fpga_result fpgaHssiWriteCsr64(fpga_hssi_handle hssi, hssi_csr csr,
 /**
  * fpgaHssiReadCsr64
  *
- * @brief           Read value from CSR
+ * @brief           Read 64 bit value from CSR
  *
  * @param[in] hssi  HSSI handle
  * @param[in] csr   CSR
@@ -190,6 +190,34 @@ fpga_result fpgaHssiWriteCsr64(fpga_hssi_handle hssi, hssi_csr csr,
  */
 fpga_result fpgaHssiReadCsr64(fpga_hssi_handle hssi, hssi_csr csr,
 	uint64_t *val);
+
+/**
+ * fpgaHssiWriteCsr32
+ *
+ * @brief           Write 32-bit value to CSR
+ *
+ * @param[in] hssi  HSSI handle
+ * @param[in] csr   CSR
+ * @param[in] val   Value to write
+ *
+ * @returns         FPGA_OK on success, return code otherwise
+ */
+fpga_result fpgaHssiWriteCsr32(fpga_hssi_handle hssi, hssi_csr csr,
+	uint32_t val);
+
+/**
+ * fpgaHssiReadCsr32
+ *
+ * @brief           Read 32-bit value from CSR
+ *
+ * @param[in] hssi  HSSI handle
+ * @param[in] csr   CSR
+ * @param[out] val  Read value
+ *
+ * @returns         FPGA_OK on success, return code otherwise
+ */
+fpga_result fpgaHssiReadCsr32(fpga_hssi_handle hssi, hssi_csr csr,
+	uint32_t *val);
 
 /**
  * fpgaHssiCtrlLoopback
@@ -259,11 +287,12 @@ fpga_result fpgaHssiGetWordLockStatus(fpga_hssi_handle hssi,
  * @param[in] hssi        HSSI handle
  * @param[in] channel_num Channel number
  * @param[in] num_packets Total number of packets to send
+ * @param[in] dst_mac     Destination MAC String
  *
  * @returns               FPGA_OK on success, return code otherwise
  */
 fpga_result fpgaHssiSendPacket(fpga_hssi_handle hssi,
-	uint32_t channel_num, uint64_t num_packets);
+	uint32_t channel_num, uint64_t num_packets, char *dst_mac);
 
 /**
  * fpgaPrintChannelStats

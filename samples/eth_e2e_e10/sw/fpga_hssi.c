@@ -280,6 +280,42 @@ fpga_result fpgaHssiReadCsr64(fpga_hssi_handle hssi,
 	return FPGA_OK;
 }
 
+fpga_result fpgaHssiWriteCsr32(fpga_hssi_handle hssi, hssi_csr csr,
+	uint32_t val)
+{
+	if (!hssi || !csr)
+		return FPGA_INVALID_PARAM;
+
+	pr_mgmt_data_t wr_data = {0};
+
+	wr_data.status_wr_data = val;
+	prMgmtWrite(hssi->dfl, PR_MGMT_STATUS_WR_DATA, wr_data);
+
+	wr_data.reg = 0;
+	wr_data.status.status_addr = csr->offset;
+	wr_data.status.status_wr = 1;
+	prMgmtWrite(hssi->dfl, PR_MGMT_STATUS, wr_data);
+	return FPGA_OK;
+}
+
+fpga_result fpgaHssiReadCsr32(fpga_hssi_handle hssi,
+	hssi_csr csr, uint32_t *val)
+{
+	if (!hssi)
+		return FPGA_INVALID_PARAM;
+
+	pr_mgmt_data_t wr_data = {0};
+	pr_mgmt_data_t rd_data = {0};
+
+	wr_data.status.status_addr = csr->offset;
+	wr_data.status.status_rd = 1;
+	prMgmtWrite(hssi->dfl, PR_MGMT_STATUS, wr_data);
+	prMgmtRead(hssi->dfl, PR_MGMT_STATUS_RD_DATA, &rd_data);
+	*val = (uint32_t)rd_data.reg;
+	return FPGA_OK;
+}
+
+
 fpga_result fpgaHssiCtrlLoopback(fpga_hssi_handle hssi,
 	uint32_t channel_num, bool loopback_en)
 {
@@ -359,9 +395,11 @@ fpga_result fpgaHssiGetWordLockStatus(fpga_hssi_handle hssi,
 }
 
 fpga_result fpgaHssiSendPacket(fpga_hssi_handle hssi,
-	uint32_t channel_num, uint64_t num_packets)
+	uint32_t channel_num, uint64_t num_packets, char *dst_mac)
 {
-	hssi_csr csr;
+	hssi_csr csr, dest_mac0, dest_mac1;
+	unsigned char dmac[6];
+	uint32_t lo_mac, hi_mac;
 
 	if (!hssi)
 		return FPGA_INVALID_PARAM;
@@ -369,7 +407,18 @@ fpga_result fpgaHssiSendPacket(fpga_hssi_handle hssi,
 	if (channel_num > NUM_ETH_CHANNELS)
 		return FPGA_INVALID_PARAM;
 
+	if (!dst_mac)
+		return FPGA_INVALID_PARAM;
+
 	pr_mgmt_data_t wr_data = {0};
+
+	sscanf(dst_mac, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+                                &dmac[0],
+                                &dmac[1],
+                                &dmac[2],
+                                &dmac[3],
+                                &dmac[4],
+                                &dmac[5]);
 
 	wr_data.port_sel.port = channel_num;
 	prMgmtWrite(hssi->dfl, PR_MGMT_PORT_SEL, wr_data);
@@ -381,8 +430,20 @@ fpga_result fpgaHssiSendPacket(fpga_hssi_handle hssi,
 
 	fpgaHssiWriteCsr64(hssi, csr, num_packets);
 
-	fpgaHssiFilterCsrByName(hssi, "start", &csr);
+	// configure destination mac address
+	lo_mac = dmac[5] | (dmac[4] << 8) | (dmac[3] << 16) | (dmac[2] << 24);
+	fpgaHssiFilterCsrByName(hssi, "destination_addr0", &dest_mac0);
+	if (!dest_mac0)
+		return FPGA_INVALID_PARAM;
+	fpgaHssiWriteCsr32(hssi, dest_mac0, lo_mac);
 
+	hi_mac = dmac[1] | (dmac[0] << 8);
+	fpgaHssiFilterCsrByName(hssi, "destination_addr1", &dest_mac1);
+	if (!dest_mac1)
+		return FPGA_INVALID_PARAM;
+	fpgaHssiWriteCsr32(hssi, dest_mac1, hi_mac);
+
+	fpgaHssiFilterCsrByName(hssi, "start", &csr);
 	if (!csr)
 		return FPGA_INVALID_PARAM;
 

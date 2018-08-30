@@ -99,20 +99,21 @@ With the driver properly configured, one can use the pac_hssi_e10 tool.
 
 Usage:
 ```
-pac_hssi_e10 [-h] [-b <bus>] [-d <device>] [-f <function>] -c channel -a action
+pac_hssi_e10 [-h] [-b <bus>] [-d <device>] [-f <function>] [-m Dest. MAC] -c channel -a action
 
--h,--help      Print this help
--b,--bus       Set target bus number
--d,--device    Set target device number
--f,--function  Set target function number 
--c,--channel   Set HSSI channel (0 - 3) 
--a,--action    Perform action:
-               
-               stat              Print channel statistics
-               stat_clear        Clear channel statistics
-               loopback_enable   Enable internal channel loopback
-               loopback_disable  Disable internal channel loopback
-               pkt_send          Send 0x10000 packets
+         -h,--help           Print this help
+         -b,--bus            Set target bus number
+         -d,--device         Set target device number
+         -f,--function       Set target function number
+         -c,--channel        Set HSSI channel (0 - 3)
+         -m,--dest_mac       Set Destination MAC (in the format AA:BB:CC:DD:EE:FF)
+         -a,--action         Perform action:
+
+           stat              Print channel statistics
+           stat_clear        Clear channel statistics
+           loopback_enable   Enable internal channel loopback
+           loopback_disable  Disable internal channel loopback
+           pkt_send          Send 0x10000 packets
 ```
 
 Note: Bus, Device and Function numbers are optional when the system has only one PAC card.
@@ -134,7 +135,7 @@ $ pac_hssi_e10 -b 00 -d 0a -f 0b --channel=0 --action=pkt_send
 
 Sample output on a 1-card system
 ```
-Sent 0x10000 packets on channel 0
+Sent 0x10000 packets on channel 0 to MAC FF:FF:FF:FF:FF:FF
 ```
 
 * Print transmit and receive statistics from MAC CSRs on AFU instance 0, channel 0

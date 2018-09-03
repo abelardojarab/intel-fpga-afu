@@ -98,11 +98,12 @@ int sendtxTransfer(fpga_dma_handle_t dma_h, fpga_dma_transfer_t tx_transfer, uin
 	return res;
 }
 
-fpga_result verify_buffer(uint32_t *buf, size_t payload_size) {
+//Verify repeating pattern 0x00...0xFF of payload_size
+fpga_result verify_buffer(unsigned char *buf, size_t payload_size) {
 	size_t i,j;
-	uint32_t test_word = 0;
+	unsigned char test_word = 0;
 	while(payload_size) {
-		test_word = 0x04030201;
+		test_word = 0x00;
 		for (i = 0; i < PATTERN_LENGTH; i++) {
 			for (j = 0; j < (PATTERN_WIDTH/sizeof(test_word)); j++) {
 				if(!payload_size)
@@ -113,7 +114,7 @@ fpga_result verify_buffer(uint32_t *buf, size_t payload_size) {
 				}
 				payload_size -= sizeof(test_word);
 				buf++;
-				test_word += 0x01010101;
+				test_word += 0x01;
 			}
 		}
 	}
@@ -135,12 +136,12 @@ static void txtransferComplete(void *ctx) {
 	sem_post(&tx_cb_status);
 }
 
-
-static void fill_buffer(uint32_t *buf, size_t payload_size) {
+//Populate repeating pattern 0x00...0xFF of payload size
+static void fill_buffer(unsigned char *buf, size_t payload_size) {
 	size_t i,j;
-	uint32_t test_word = 0;
+	unsigned char test_word = 0;
 	while(payload_size) {
-		test_word = 0x04030201;
+		test_word = 0x00;
 		for (i = 0; i < PATTERN_LENGTH; i++) {
 			for (j = 0; j < (PATTERN_WIDTH/sizeof(test_word)); j++) {
 				if(!payload_size)
@@ -148,7 +149,7 @@ static void fill_buffer(uint32_t *buf, size_t payload_size) {
 				*buf = test_word;
 				payload_size -= sizeof(test_word);
 				buf++;
-				test_word += 0x01010101;
+				test_word += 0x01;
 			}
 		}
 	}
@@ -180,7 +181,7 @@ fpga_result run_bw_test(fpga_handle afc_h, fpga_dma_handle_t dma_m2s_h, fpga_dma
 		goto out;
 	}
 
-	fill_buffer((uint32_t*)dma_tx_buf_ptr, total_mem_size);
+	fill_buffer((unsigned char *)dma_tx_buf_ptr, total_mem_size);
 	
 	fpga_dma_transfer_t rx_transfer;
 	fpgaDMATransferInit(&rx_transfer);
@@ -236,7 +237,7 @@ fpga_result run_bw_test(fpga_handle afc_h, fpga_dma_handle_t dma_m2s_h, fpga_dma
 	res = wait_for_generator_complete(afc_h);
 	ON_ERR_GOTO(res, out, "wait_for_checker_complete");
 	printf("Verifying buffer..\n");
-	verify_buffer((uint32_t*)dma_rx_buf_ptr, total_mem_size);
+	verify_buffer((unsigned char *)dma_rx_buf_ptr, total_mem_size);
 	clear_buffer((uint32_t*)dma_rx_buf_ptr, total_mem_size);
 	report_bandwidth(total_mem_size, getTime(start,end));
 
@@ -399,7 +400,7 @@ int main(int argc, char *argv[]) {
 	fpga_dma_transfer_t tx_transfer;
 	fpgaDMATransferInit(&tx_transfer);
 
-	fill_buffer((uint32_t*)dma_tx_buf_ptr, transfer_len);
+	fill_buffer((unsigned char *)dma_tx_buf_ptr, transfer_len);
 
 	// M2S deterministic length transfer
 	res = populate_pattern_checker(afc_h);
@@ -457,7 +458,7 @@ int main(int argc, char *argv[]) {
 	res = fpgaDMATransferGetBytesTransferred(rx_transfer, &bytes_rcvd);
 	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransferGetBytesTransferred");
 
-	verify_buffer((uint32_t*)dma_rx_buf_ptr, bytes_rcvd);
+	verify_buffer((unsigned char *)dma_rx_buf_ptr, bytes_rcvd);
 	clear_buffer((uint32_t*)dma_rx_buf_ptr, bytes_rcvd);
 
 	// S2M non-deterministic length transfer
@@ -485,7 +486,7 @@ int main(int argc, char *argv[]) {
 	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransferGetCheckEopArrived");
 
 	if(eop_arrived) {	
-		verify_buffer((uint32_t*)dma_rx_buf_ptr, bytes_rcvd);
+		verify_buffer((unsigned char *)dma_rx_buf_ptr, bytes_rcvd);
 		clear_buffer((uint32_t*)dma_rx_buf_ptr, bytes_rcvd);
 	}
 

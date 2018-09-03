@@ -44,6 +44,7 @@
 	} while (0)
 static int err_cnt = 0;
 /* Helper functions for Pattern Checker  */
+//Populate repeating pattern 0x00...0xFF checker of PATTERN_LENGTH*PATTERN_WIDTH
 fpga_result populate_pattern_checker(fpga_handle fpga_h) {
 	int i, j;
 	if(!fpga_h) 
@@ -51,14 +52,18 @@ fpga_result populate_pattern_checker(fpga_handle fpga_h) {
 
 	fpga_result res = FPGA_OK;
 	uint64_t custom_checker_addr = (uint64_t)M2S_PATTERN_CHECKER_MEMORY_SLAVE;
-	uint32_t test_word = 0x04030201;
+	uint32_t test_word = 0x03020100;
 	for (i = 0; i < PATTERN_LENGTH; i++) {
 		for (j = 0; j < (PATTERN_WIDTH/sizeof(test_word)); j++) {
 			res = fpgaWriteMMIO32(fpga_h, 0, custom_checker_addr, test_word);
 			if(res != FPGA_OK)
 				return res;
 			custom_checker_addr += sizeof(test_word);
-			test_word += 0x01010101;
+			if(test_word == 0xfffefdfc){
+				test_word = 0x03020100;
+				continue;
+			}
+			test_word += 0x04040404;
 		}
 	}
 	return res;

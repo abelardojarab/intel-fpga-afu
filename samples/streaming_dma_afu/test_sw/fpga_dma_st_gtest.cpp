@@ -139,48 +139,50 @@ public:
 		ASSERT_EQ(0,exitRoutine());
 	}
 
-	void fill_buffer(uint32_t *buf, size_t payload_size) {
+	//Populate repeating pattern 0x00...0xFF of payload size
+	static void fill_buffer(unsigned char *buf, size_t payload_size) {
 		size_t i,j;
-		uint32_t test_word = 0;
+		unsigned char test_word = 0;
 		while(payload_size) {
-			test_word = 0x04030201;
+			test_word = 0x00;
 			for (i = 0; i < PATTERN_LENGTH; i++) {
-				for (j = 0; j < (PATTERN_WIDTH_BYTES/sizeof(test_word)); j++) {
-					if(!payload_size)
+				for (j = 0; j < (PATTERN_WIDTH/sizeof(test_word)); j++) {
+				if(!payload_size)
 					return;
 					*buf = test_word;
 					payload_size -= sizeof(test_word);
 					buf++;
-					test_word += 0x01010101;
+					test_word += 0x01;
 				}
 			}
 		}
 	}
 	
-	fpga_result verify_buffer(uint32_t *buf, size_t payload_size) {
-	size_t i,j;
-	uint32_t test_word = 0;
-	while(payload_size) {
-		test_word = 0x04030201;
-		for (i = 0; i < PATTERN_LENGTH; i++) {
-			for (j = 0; j < (PATTERN_WIDTH_BYTES/sizeof(test_word)); j++) {
-				if(!payload_size)
-					goto out;
-				if((*buf) != test_word) {
-					printf("Invalid data at %zx Expected = %x Actual = %x\n",i,test_word,(*buf));
-					return FPGA_INVALID_PARAM;
+	//Verify repeating pattern 0x00...0xFF of payload size	
+	fpga_result verify_buffer(unsigned char *buf, size_t payload_size) {
+		size_t i,j;
+		unsigned char test_word = 0;
+		while(payload_size) {
+			test_word = 0x00;
+			for (i = 0; i < PATTERN_LENGTH; i++) {
+				for (j = 0; j < (PATTERN_WIDTH/sizeof(test_word)); j++) {
+					if(!payload_size)
+						goto out;
+					if((*buf) != test_word) {
+						printf("Invalid data at %zx Expected = %x Actual = %x\n",i,test_word,(*buf));
+						return FPGA_INVALID_PARAM;
+					}
+					payload_size -= sizeof(test_word);
+					buf++;
+					test_word += 0x01;
 				}
-				payload_size -= sizeof(test_word);
-				buf++;
-				test_word += 0x01010101;
 			}
 		}
-	}
 	out:
-	printf("S2M: Data Verification Success!\n");
-	return FPGA_OK;
+		printf("S2M: Data Verification Success!\n");
+		return FPGA_OK;
 	}
-
+		
 	void clear_buffer(char *buf, uint64_t size) {
 		memset(buf, 0, size);
 	}
@@ -231,7 +233,7 @@ public:
 			res = FPGA_NO_MEMORY;
 			ON_ERR(res, out, "Error allocating memory");
 		}
-		fill_buffer((uint32_t*)dma_tx_buf_ptr, transfer_len);
+		fill_buffer((unsigned char *)dma_tx_buf_ptr, transfer_len);
 
 		// copy from host to fpga
 		res = populate_pattern_checker(dma_h->fpga_h);
@@ -302,7 +304,7 @@ public:
 			if(transfer_len == 4*1023*1024*1024l)
 			debug_printk("Time taken Host To FPGA - %f s, BandWidth = %f MB/s \n",secs, ((unsigned long long)transfer_len/(float)secs/1000000));
 		}
-		res = verify_buffer((uint32_t*)dma_rx_buf_ptr, transfer_len);
+		res = verify_buffer((unsigned char *)dma_rx_buf_ptr, transfer_len);
 		ON_ERR(res, out, "verify_buffer");
 		clear_buffer((char*)dma_rx_buf_ptr, transfer_len);
 		res = stop_generator(dma_h->fpga_h);
@@ -317,7 +319,7 @@ public:
 	uint64_t cnt_left;
 	fpga_result S2M_multiple_transfer(fpga_dma_handle_t dma_h, fpga_dma_transfer_t rx_transfer, uint64_t transfer_len, int pkt_transfer, fpga_dma_transfer_cb cb, int tf_cnt){
 
-      uint64_t *dma_rx_buf_ptr = NULL;
+		uint64_t *dma_rx_buf_ptr = NULL;
 		int i;
 		// Divide single transfer into tf_cnt chunks
 		single_tf_length = transfer_len/tf_cnt;
@@ -326,54 +328,54 @@ public:
 		// Left over count
 		cnt_left = transfer_len - tf_cnt*(single_tf_length);
 		
-      dma_rx_buf_ptr = (uint64_t*)malloc(transfer_len);
-      if(!dma_rx_buf_ptr) {
-         res = FPGA_NO_MEMORY;
-         ON_ERR(res, out, "Error allocating memory");
-      }
-      gettimeofday(&start, NULL);
-      res = populate_pattern_generator(dma_h->fpga_h);
-      ON_ERR(res, out, "populate_pattern_generator");
+		dma_rx_buf_ptr = (uint64_t*)malloc(transfer_len);
+		if(!dma_rx_buf_ptr) {
+			res = FPGA_NO_MEMORY;
+			ON_ERR(res, out, "Error allocating memory");
+		}
+		gettimeofday(&start, NULL);
+		res = populate_pattern_generator(dma_h->fpga_h);
+		ON_ERR(res, out, "populate_pattern_generator");
 
-      res = stop_generator(dma_h->fpga_h);
-      ON_ERR(res, out, "stop generator");
+		res = stop_generator(dma_h->fpga_h);
+		ON_ERR(res, out, "stop generator");
 
 		res = start_generator(dma_h->fpga_h, transfer_len, pkt_transfer/*Not PACKET TRANSFER*/);
-      ON_ERR(res, out, "start pattern generator");
+		ON_ERR(res, out, "start pattern generator");
 		for (i =0; i < tf_cnt; i++) {
-      	if(pkt_transfer == 1 && i == (tf_cnt-1) && cnt_left == 0){
-      	   res = sendrxTransfer(dma_h, rx_transfer, 0, (uint64_t)dma_rx_buf_ptr+(i*single_tf_length), single_tf_length, FPGA_ST_TO_HOST_MM, END_ON_EOP, cb);
-      	} else {
-      	   res = sendrxTransfer(dma_h, rx_transfer, 0, (uint64_t)dma_rx_buf_ptr+(i*single_tf_length), single_tf_length, FPGA_ST_TO_HOST_MM, RX_NO_PACKET, rxtransferComplete_dummy);
-      	}
-      	ON_ERR(res, out, "fpgaDMATransfer");
+			if(pkt_transfer == 1 && i == (tf_cnt-1) && cnt_left == 0){
+				res = sendrxTransfer(dma_h, rx_transfer, 0, (uint64_t)dma_rx_buf_ptr+(i*single_tf_length), single_tf_length, FPGA_ST_TO_HOST_MM, END_ON_EOP, cb);
+			} else {
+				res = sendrxTransfer(dma_h, rx_transfer, 0, (uint64_t)dma_rx_buf_ptr+(i*single_tf_length), single_tf_length, FPGA_ST_TO_HOST_MM, RX_NO_PACKET, rxtransferComplete_dummy);
+			}
+			ON_ERR(res, out, "fpgaDMATransfer");
 		}
 
 		if(cnt_left && pkt_transfer == 1){
 			res = sendrxTransfer(dma_h, rx_transfer, 0, (uint64_t)dma_rx_buf_ptr+(i*single_tf_length), cnt_left, FPGA_ST_TO_HOST_MM, END_ON_EOP, cb);
 		}
-      
-		res = wait_for_generator_complete(dma_h->fpga_h);
-      ON_ERR(res, out, "wait_for_generator_complete");
-      
-		if(cb && i == tf_cnt)
-         sem_wait(&rx_cb_status);
-      gettimeofday(&stop, NULL);
-      secs = ((double)(stop.tv_usec - start.tv_usec) / 1000000) + (double)(stop.tv_sec - start.tv_sec);
-      if(secs>0){
-			if(transfer_len == 4*1023*1024*1024l)
-         debug_printk("Time taken Host To FPGA - %f s, BandWidth = %f MB/s \n",secs, ((unsigned long long)transfer_len/(float)secs/1000000));
-      }
-      res = verify_buffer((uint32_t*)dma_rx_buf_ptr, transfer_len);
-      ON_ERR(res, out, "verify_buffer");
-      clear_buffer((char*)dma_rx_buf_ptr, transfer_len);
-      res = stop_generator(dma_h->fpga_h);
-      ON_ERR(res, out, "stop generator");
-   out:
-      free(dma_rx_buf_ptr);
 
-      return (fpga_result)err_cnt;
-   }
+		res = wait_for_generator_complete(dma_h->fpga_h);
+		ON_ERR(res, out, "wait_for_generator_complete");
+
+		if(cb && i == tf_cnt)
+		 sem_wait(&rx_cb_status);
+		gettimeofday(&stop, NULL);
+		secs = ((double)(stop.tv_usec - start.tv_usec) / 1000000) + (double)(stop.tv_sec - start.tv_sec);
+		if(secs>0){
+			if(transfer_len == 4*1023*1024*1024l)
+		 debug_printk("Time taken Host To FPGA - %f s, BandWidth = %f MB/s \n",secs, ((unsigned long long)transfer_len/(float)secs/1000000));
+		}
+		res = verify_buffer((unsigned char *)dma_rx_buf_ptr, transfer_len);
+		ON_ERR(res, out, "verify_buffer");
+		clear_buffer((char*)dma_rx_buf_ptr, transfer_len);
+		res = stop_generator(dma_h->fpga_h);
+		ON_ERR(res, out, "stop generator");
+	out:
+		free(dma_rx_buf_ptr);
+
+		return (fpga_result)err_cnt;
+	}
 	
 };
 

@@ -1,6 +1,8 @@
 LDFLAGS ?=
 CFLAGS = -g -O2 -fPIC
 CFLAGS += -D FPGA_DMA_DEBUG=0
+# Flush and avoid use of DMA descriptors from previous transfer
+CFLAGS += -D FORCE_DESC_FLUSH=1
 ifdef prefix
 CFLAGS += -I$(prefix)/include
 LDFLAGS += -L$(prefix)/lib -L$(prefix)/lib64

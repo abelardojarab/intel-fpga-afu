@@ -42,7 +42,6 @@
 #include <safe_string/safe_string.h>
 #include "fpga_dma_st_internal.h"
 #include "fpga_dma.h"
-
 static int err_cnt = 0;
 /*
  * macro for checking return codes
@@ -856,8 +855,14 @@ static void *s2mTransactionWorker(void* dma_handle) {
 		}
 	out_transf_complete:
 		if(eop_arrived) {
-			dma_h->next_avail_desc_idx = tail % FPGA_DMA_MAX_BUF;
-			dma_h->unused_desc_count = head - tail;
+			#ifdef FORCE_DESC_FLUSH
+				s2m_pending_desc_flush(dma_h);
+				dma_h->unused_desc_count = 0;
+				dma_h->next_avail_desc_idx = 0;
+			#else	
+				dma_h->next_avail_desc_idx = tail % FPGA_DMA_MAX_BUF;
+				dma_h->unused_desc_count = head - tail;
+			#endif
 			s2m_transfer->eop_status = 1;
 		}
 		

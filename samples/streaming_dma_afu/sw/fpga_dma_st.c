@@ -620,7 +620,28 @@ out:
 	return res;
 }
 
-
+/**
+* getTxCtrl
+*
+* @brief                Sets appropriate tx_ctrl property based on desc being worked on
+* @param[in] index      Index of descriptor being worked on
+* @param[in] max_desc   Descriptor count
+* @param[in] tx_ctrl    Transfer control assigned to the transfer
+* @return fpga_dma_tx_ctrl_t Transfer control assigned to specific descriptor
+*
+*/
+fpga_dma_tx_ctrl_t getTxCtrl(uint64_t index, uint64_t max_desc, fpga_dma_tx_ctrl_t tx_ctrl) {
+	if(max_desc == 1)
+		return tx_ctrl;
+	else {
+		if(index == 0/*first desc*/ && (tx_ctrl == GENERATE_SOP || tx_ctrl == GENERATE_SOP_AND_EOP))
+			return GENERATE_SOP;
+		else if(index == (max_desc-1)/*last desc*/ && (tx_ctrl == GENERATE_EOP || tx_ctrl == GENERATE_SOP_AND_EOP))
+			return GENERATE_EOP;
+		else
+			return TX_NO_PACKET;
+	}
+}
 
 static void *m2sTransactionWorker(void* dma_handle) {
 	fpga_result res = FPGA_OK;
@@ -629,7 +650,7 @@ static void *m2sTransactionWorker(void* dma_handle) {
 	uint64_t i;
 
 	while (1) {
-		int issued_intr = 0;
+		bool intr_en = false;
 		fpga_dma_transfer_t m2s_transfer;
 		res = dequeue(&dma_h->qinfo, &m2s_transfer);
 		if(res != FPGA_OK) {
@@ -638,41 +659,23 @@ static void *m2sTransactionWorker(void* dma_handle) {
 		}
 		debug_print("HOST to FPGA --- src_addr = %08lx, dst_addr = %08lx\n", m2s_transfer->src, m2s_transfer->dst);
 		count = m2s_transfer->len;
-		uint64_t dma_chunks = count/FPGA_DMA_BUF_SIZE;
-		count -= (dma_chunks*FPGA_DMA_BUF_SIZE);
-
+		
+		uint64_t dma_chunks = (uint64_t)ceil(count/(double)FPGA_DMA_BUF_SIZE);
+		uint64_t bytes_to_transfer = 0;
+		fpga_dma_tx_ctrl_t tx_desc_ctrl;
 		for(i=0; i<dma_chunks; i++) {
-			local_memcpy(dma_h->dma_buf_ptr[i%FPGA_DMA_MAX_BUF], (void*)(m2s_transfer->src+i*FPGA_DMA_BUF_SIZE), FPGA_DMA_BUF_SIZE);
-			if((i%(FPGA_DMA_MAX_BUF/2) == (FPGA_DMA_MAX_BUF/2)-1) || i == (dma_chunks - 1)/*last descriptor*/) {
-				if(issued_intr) {
-					poll_interrupt(dma_h);
-				}
-				if(count == 0 && i == (dma_chunks-1)) {
-					if(i == 0 || m2s_transfer->tx_ctrl == TX_NO_PACKET)
-						res = _do_dma_tx(dma_h, 0, dma_h->dma_buf_iova[i%FPGA_DMA_MAX_BUF] | 0x1000000000000, FPGA_DMA_BUF_SIZE, 1, m2s_transfer->transfer_type, true/*intr_en*/, m2s_transfer->tx_ctrl/*tx_ctrl*/);
-					else 
-						res = _do_dma_tx(dma_h, 0, dma_h->dma_buf_iova[i%FPGA_DMA_MAX_BUF] | 0x1000000000000, FPGA_DMA_BUF_SIZE, 1, m2s_transfer->transfer_type, true/*intr_en*/, GENERATE_EOP/*tx_ctrl*/);
-				}
-				else
-					res = _do_dma_tx(dma_h, 0, dma_h->dma_buf_iova[i%FPGA_DMA_MAX_BUF] | 0x1000000000000, FPGA_DMA_BUF_SIZE, 1, m2s_transfer->transfer_type, true/*intr_en*/, TX_NO_PACKET/*tx_ctrl*/);
-				ON_ERR_GOTO(res, out, "HOST_TO_FPGA_ST Transfer failed");
-				issued_intr = 1;
-			} else {
-				res = _do_dma_tx(dma_h, 0, dma_h->dma_buf_iova[i%FPGA_DMA_MAX_BUF] | 0x1000000000000, FPGA_DMA_BUF_SIZE, 1, m2s_transfer->transfer_type, false/*intr_en*/, TX_NO_PACKET/*tx_ctrl*/);
-				ON_ERR_GOTO(res, out, "HOST_TO_FPGA_ST Transfer failed");
+			// Enable interrupt for every 4th descriptor and very last descriptor
+			intr_en = ((i%(FPGA_DMA_MAX_BUF/2) == (FPGA_DMA_MAX_BUF/2)-1) || i == (dma_chunks - 1));
+			bytes_to_transfer = (i == (dma_chunks-1) && (count % FPGA_DMA_BUF_SIZE != 0)) ? count%FPGA_DMA_BUF_SIZE : FPGA_DMA_BUF_SIZE;
+			if(intr_en && i > (FPGA_DMA_MAX_BUF/2)-1/*skip interrupt polling for very first interrupt*/ ) {
+				poll_interrupt(dma_h);
 			}
-		}
-		if(issued_intr) {
-			poll_interrupt(dma_h);
-			issued_intr = 0;
-		}
-		if(count > 0) {
-			local_memcpy(dma_h->dma_buf_ptr[0], (void*)(m2s_transfer->src+dma_chunks*FPGA_DMA_BUF_SIZE), count);
-			if(dma_chunks == 0 || m2s_transfer->tx_ctrl == TX_NO_PACKET)
-				res = _do_dma_tx(dma_h, 0, dma_h->dma_buf_iova[0] | 0x1000000000000, count, 1, m2s_transfer->transfer_type, true/*intr_en*/, m2s_transfer->tx_ctrl/*tx_ctrl*/);
-			else
-				res = _do_dma_tx(dma_h, 0, dma_h->dma_buf_iova[0] | 0x1000000000000, count, 1, m2s_transfer->transfer_type, true/*intr_en*/, GENERATE_EOP/*tx_ctrl*/);
+			local_memcpy(dma_h->dma_buf_ptr[i%FPGA_DMA_MAX_BUF], (void*)(m2s_transfer->src+i*FPGA_DMA_BUF_SIZE), bytes_to_transfer);
+			tx_desc_ctrl = getTxCtrl(i, dma_chunks, m2s_transfer->tx_ctrl);
+			res = _do_dma_tx(dma_h, 0, dma_h->dma_buf_iova[i%FPGA_DMA_MAX_BUF] | 0x1000000000000, bytes_to_transfer, 1, m2s_transfer->transfer_type, intr_en/*intr_en*/,   tx_desc_ctrl/*tx_ctrl*/);
 			ON_ERR_GOTO(res, out, "HOST_TO_FPGA_ST Transfer failed");
+		}
+		if(intr_en) {
 			poll_interrupt(dma_h);
 		}
 		// transfer_complete, if a callback was registered, invoke it

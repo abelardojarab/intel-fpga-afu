@@ -41,7 +41,7 @@
 
 int usleep(unsigned);
 
-#define HELLO_AFU_ID             AFU_ACCEL_UUID  // Defined in afu_json_info.h
+#define E10G_MAC_AFU_ID             AFU_ACCEL_UUID  // Defined in afu_json_info.h
 
 #define AFU_DFH             	0x0
 #define AFU_ID_L                0x8
@@ -139,8 +139,8 @@ int main(int argc, char *argv[])
 
 	fpga_result     res = FPGA_OK;
 
-	if (uuid_parse(HELLO_AFU_ID, guid) < 0) {
-		fprintf(stderr, "Error parsing guid '%s'\n", HELLO_AFU_ID);
+	if (uuid_parse(E10G_MAC_AFU_ID, guid) < 0) {
+		fprintf(stderr, "Error parsing guid '%s'\n", E10G_MAC_AFU_ID);
 		goto out_exit;
 	}
 

@@ -1,0 +1,13 @@
+e10g_mac_afu.json
+
+
+# CCI-P avmm shim
+QI:BBB_ccip_avmm/hw/par/ccip_avmm_addenda.qsf
+SI:BBB_ccip_avmm/hw/sim/ccip_avmm_sim_addenda.txt
+
+ccip_std_afu.sv
+csr_top.sv
+afu.sv
+ccip_interface_reg.sv
+
+

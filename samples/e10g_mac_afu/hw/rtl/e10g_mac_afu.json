@@ -1,0 +1,19 @@
+{
+   "version": 1,
+   "afu-image": {
+      "power": 0,
+      "afu-top-interface":
+         {
+            "class": "ccip_std_afu"
+         },
+      "accelerator-clusters":
+         [
+            {
+               "name": "e10g_mac_afu",
+               "total-contexts": 1,
+               "accelerator-type-uuid": "c44cd6fe-9829-44fe-840b-4a2e16c24185"
+            }
+         ]
+   }
+}
+

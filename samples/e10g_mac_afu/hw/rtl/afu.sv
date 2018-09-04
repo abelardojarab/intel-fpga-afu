@@ -121,46 +121,6 @@ csr_top afu_csr (
     .client_csr_waitrequest(client_csr_waitrequest)
 );
 
-// ===== MAC Clocks ===== //
-logic rx_clk, tx_clk;
-
-// ===== MAC ===== //
-logic l8_tx_startofpacket, l8_tx_endofpacket, l8_tx_valid, l8_tx_ready;
-logic l8_rx_startofpacket, l8_rx_endofpacket, l8_rx_valid;
-logic [5:0] l8_rx_empty, l8_tx_empty;
-logic [511:0] l8_rx_data, l8_tx_data;
-
-/*
-// ------------------------------------//
-// ========== Client Logic =========== //
-// ------------------------------------//
-alt_e100s10_packet_client client (
-    .i_arst                     (reset),
-
-    .i_clk_tx                   (tx_clk),
-    .i_tx_ready                 (l8_tx_ready),
-    .o_tx_valid                 (l8_tx_valid),
-    .o_tx_data                  (l8_tx_data),
-    .o_tx_sop                   (l8_tx_startofpacket),
-    .o_tx_eop                   (l8_tx_endofpacket),
-    .o_tx_empty                 (l8_tx_empty),
-
-    .i_clk_rx                   (rx_clk),
-    .i_rx_sop                   (l8_rx_startofpacket),
-    .i_rx_eop                   (l8_rx_endofpacket),
-    .i_rx_empty                 (l8_rx_empty),
-    .i_rx_data                  (l8_rx_data),
-    .i_rx_valid                 (l8_rx_valid),
-
-    .i_clk_status               (avmm_clk),
-    .i_status_addr              (client_csr_address),
-    .i_status_read              (client_csr_read),
-    .i_status_write             (client_csr_write),
-    .i_status_writedata         (client_csr_writedata),
-    .o_status_readdata          (client_csr_readdata),
-    .o_status_readdata_valid    (client_csr_readdatavalid)
-);*/
-
 endmodule
 
 

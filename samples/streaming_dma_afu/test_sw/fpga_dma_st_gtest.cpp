@@ -780,8 +780,9 @@ TEST_F(DmaAfuTest, fpgaDMATransfer_M2SStressDeterministic)
 	for(int i=0; i<100; i++) {
 		srand(time(0)+i);
 		count = (uint64_t)RAND_CNT();
-		if(count % 4 != 0)
-			count = ((count/4)+1)*4;
+		// Round to next 64 byte
+		if(count % 64 != 0)
+			count = ((count/64)+1)*64;
 		debug_printk("count = %08lx \n", count);
 		pkt_transfer = 0;
 		EXPECT_EQ(fpgaDMATransferInit(&transfer[0]), FPGA_OK);
@@ -861,8 +862,9 @@ TEST_F(DmaAfuTest, fpgaDMATransfer_S2MStressDeterministic)
 	for(int i=0; i<100; i++) {
 		srand(time(0)+i);
 		count = (uint64_t)RAND_CNT();
-		if(count % 4 != 0)
-			count = ((count/4)+1)*4;
+		// Round to next 64 byte
+		if(count % 64 != 0)
+			count = ((count/64)+1)*64;
 		debug_printk("count = %08lx \n", count);
 		pkt_transfer = 0;
 		EXPECT_EQ(fpgaDMATransferInit(&transfer[1]), FPGA_OK);
@@ -882,8 +884,9 @@ TEST_F(DmaAfuTest, fpgaDMATransfer_S2MStressNonDeterministicOnSameTransfer)
 	for(int i=0; i<10; i++) {
 		srand(time(0)+i);
 		count = (uint64_t)RAND_CNT();
-		if(count % 4 != 0)
-			count = ((count/4)+1)*4;
+		// Round to next 64 byte
+		if(count % 64 != 0)
+			count = ((count/64)+1)*64;
 		debug_printk("count = %08lx \n", count);
 		pkt_transfer = 1;
 		EXPECT_EQ(S2M_multiple_transfer(dma_h[1], transfer[1], count, pkt_transfer, rxtransferComplete, 8), FPGA_OK);

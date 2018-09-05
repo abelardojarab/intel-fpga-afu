@@ -1560,6 +1560,12 @@ fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, fpga_dma_transfer_t transfer)
 		return FPGA_INVALID_PARAM;
 	}
 
+	// Avalon ST does not allow signalling of partial data for non-packet transfers (transfers without SOP/EOP).
+	if(((transfer->tx_ctrl == TX_NO_PACKET && dma->ch_type == TX_ST) || (transfer->rx_ctrl == RX_NO_PACKET && dma->ch_type == RX_ST)) && ((transfer->len % 64) != 0)) {
+		FPGA_DMA_ST_ERR("Incompatible transfer length for transfer type NO_PKT");
+		return FPGA_INVALID_PARAM;
+	}
+
 	// Lock transfer in preparation for transfer
 	// Mutex will be unlocked from the worker thread once transfer is complete
 	if(pthread_mutex_lock(&transfer->tf_mutex)) {

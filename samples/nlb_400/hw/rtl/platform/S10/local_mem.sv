@@ -2,7 +2,7 @@
 // Take very simple CSR-based commands to read/write one memory location at a
 // time.
 //
-`include "ed_synth_tg_0.v"
+`include "ed_synth_tg.v"
 `include "altera_emif_avl_tg_defs.sv"
 `include "altera_emif_avl_tg_top.sv"
 `include "altera_emif_avl_tg_addr_gen.sv"
@@ -21,7 +21,6 @@
 `include "altera_emif_avl_tg_rand_num_gen.sv"
 `include "altera_emif_avl_tg_rand_seq_addr_gen.sv"
 `include "altera_emif_avl_tg_read_compare.sv"
-`include "altera_emif_avl_tg_reset_sync.sv"
 `include "altera_emif_avl_tg_scfifo_wrapper.sv"
 `include "altera_emif_avl_tg_seq_addr_gen.sv"
 `include "altera_emif_avl_tg_single_rw_stage.sv"
@@ -145,7 +144,7 @@ genvar b;
       generate 
       for (b=0;b<NUM_LOCAL_MEM_BANKS;b=b+1) begin : bist_gen
 		   
-         assign bank_csr_bist_ddr4_enable[b] = bank_cr2mem_ctrl[b][27]; 
+         assign bank_csr_bist_ddr4_enable[b] = bank_cr2mem_ctrl[b][27+b]; 
          
          pipeline #(.WIDTH(7), .STAGE(3))  bist_status_pipe (.clk(clk), 
             .din({ ddr4_fsm_state[b],
@@ -273,7 +272,7 @@ genvar b;
 
    generate 
       for (b=0;b<NUM_LOCAL_MEM_BANKS;b=b+1) begin : ddr4_bist_inst
-         ed_synth_tg_0 ddr4_bist_tg_0_inst (
+         ed_synth_tg ddr4_bist_tg_inst (
 				.emif_usr_clk	                  (local_mem[b].clk),
 				.emif_usr_reset_n	               (~bank_SoftReset[b] && bank_csr_bist_ddr4_enable[b]),
 				.amm_ready_0	                  (~local_mem[b].waitrequest),
@@ -284,7 +283,7 @@ genvar b;
 				.amm_writedata_0	               (ddr4_bist_amm_writedata[b]),
 				.amm_burstcount_0	               (ddr4_bist_amm_burstcount[b]),
 				.amm_byteenable_0	               (ddr4_bist_amm_byteenable[b]),
-				.amm_readdatavalid_0	            (local_mem[0].readdatavalid),
+				.amm_readdatavalid_0	            (local_mem[b].readdatavalid),
 				.fsm_state                       (ddr4_fsm_state[b]),
 				.traffic_gen_pass_0	            (ddr4_bist_traffic_gen_pass[b]),
 				.traffic_gen_fail_0	            (ddr4_bist_traffic_gen_fail[b]),

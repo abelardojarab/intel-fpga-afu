@@ -1,10 +1,10 @@
-// (C) 2001-2017 Intel Corporation. All rights reserved.
+// (C) 2001-2018 Intel Corporation. All rights reserved.
 // Your use of Intel Corporation's design tools, logic functions and other 
 // software and tools, and its AMPP partner logic functions, and any output 
-// files any of the foregoing (including device programming or simulation 
+// files from any of the foregoing (including device programming or simulation 
 // files), and any associated documentation or information are expressly subject 
 // to the terms and conditions of the Intel Program License Subscription 
-// Agreement, Intel MegaCore Function License Agreement, or other applicable 
+// Agreement, Intel FPGA IP License Agreement, or other applicable 
 // license agreement, including, without limitation, that your use is for the 
 // sole purpose of programming logic devices manufactured by Intel and sold by 
 // Intel or its authorized distributors.  Please refer to the applicable 
@@ -64,8 +64,7 @@ module altera_emif_avl_tg_driver # (
    parameter TG_USE_UNIX_ID                         = 3'b000,
 
    // If set to "1", the driver generates pseudo-random byte enables
-   //parameter TG_RANDOM_BYTE_ENABLE                  = 1,
-   parameter TG_RANDOM_BYTE_ENABLE                  = 0,
+   parameter TG_RANDOM_BYTE_ENABLE                  = 1,
 
    // If set to "1", the driver generates 'avl_size' which are powers of two
    parameter TG_POWER_OF_TWO_BURSTS_ONLY            = 0,
@@ -142,12 +141,7 @@ module altera_emif_avl_tg_driver # (
    // Indicates whether a separate interface exists for reads and writes.
    // Typically set to 1 for QDR-style interfaces where concurrent reads and
    // writes are possible
-   parameter TG_SEPARATE_READ_WRITE_IFS             = 0,
-   
-   // Indicates whether to use input reset signal as is, or to instantiate
-   // a reset synchronizer using the input clock and reset signal and use the output 
-   // of the reset synchronizer as reset.
-   parameter TG_GENERATE_LOCAL_RESET_SYNC           = 0
+   parameter TG_SEPARATE_READ_WRITE_IFS             = 0
 ) (
    // Clock and reset
    input  logic                                     clk,
@@ -192,12 +186,6 @@ module altera_emif_avl_tg_driver # (
    localparam ADDR_BURSTCOUNT_FIFO_SIZE    = TG_BLOCK_RW_BLOCK_SIZE;
    localparam WRITTEN_DATA_FIFO_SIZE       = max(TG_BLOCK_RW_BLOCK_SIZE * (1 <<< (TG_AVL_SIZE_WIDTH - 1)), TG_MAX_READ_LATENCY) + AVALON_TRAFFIC_BUFFER_SIZE;
 
-   // The number of resynchronized resets to create at this level
-   localparam NUM_DRIVER_RESET             = 8;
-
-   // Resynchronized reset
-   logic [NUM_DRIVER_RESET-1:0]            resync_reset_n;
-   
    // State machine signals
    logic                                   test_complete;
    logic                                   do_inv_be_write;
@@ -257,23 +245,6 @@ module altera_emif_avl_tg_driver # (
    logic                                   fifo_w_full;
    logic                                   fifo_w_empty;
 
-   generate
-      if (TG_GENERATE_LOCAL_RESET_SYNC) 
-      begin : reset_sync
-         // Create a synchronized version of the reset against the driver clock
-         altera_emif_avl_tg_reset_sync # (
-            .NUM_RESET_OUTPUT (NUM_DRIVER_RESET)
-         ) reset_sync_inst (
-            .reset_n      (reset_n),
-            .clk          (clk),
-            .reset_n_sync (resync_reset_n)
-         );
-      end else 
-      begin : no_reset_sync
-         assign resync_reset_n = {NUM_DRIVER_RESET{reset_n}};
-      end
-   endgenerate
-
    // Delay the signals to ensure they are always after the clock
    //SPR:367726 details this issue
    always @(avl_rdata_valid)
@@ -283,9 +254,9 @@ module altera_emif_avl_tg_driver # (
       avl_rdata_delay <= avl_rdata;
 
    // Sticky per bit pnf
-   always_ff @(posedge clk or negedge resync_reset_n[0])
+   always_ff @(posedge clk)
    begin
-      if (!resync_reset_n[0])
+      if (!reset_n)
          pnf_per_bit_persist <= '1;
       else
          pnf_per_bit_persist <= pnf_per_bit_persist & pnf_per_bit;
@@ -346,7 +317,7 @@ module altera_emif_avl_tg_driver # (
       .USE_UNIX_ID                           (TG_USE_UNIX_ID)
    ) addr_gen_inst (
       .clk             (clk),
-      .reset_n         (resync_reset_n[1]),
+      .reset_n         (reset_n),
       .addr_gen_select (addr_gen_select),
       .enable          (addr_gen_enable),
       .ready           (addr_gen_ready),
@@ -363,7 +334,7 @@ module altera_emif_avl_tg_driver # (
       .SEED         (TG_LFSR_SEED)
    ) data_gen_inst (
       .clk          (clk),
-      .reset_n      (resync_reset_n[2]),
+      .reset_n      (reset_n),
       .enable       (wdata_gen_enable),
       .data         (wdata)
    );
@@ -376,7 +347,7 @@ module altera_emif_avl_tg_driver # (
          .DATA_WIDTH   (TG_AVL_BE_WIDTH)
       ) be_gen_inst (
          .clk          (clk),
-         .reset_n      (resync_reset_n[2]),
+         .reset_n      (reset_n),
          .enable       (wdata_gen_enable),
          .data         (be)
       );
@@ -391,7 +362,7 @@ module altera_emif_avl_tg_driver # (
          .DATA_WIDTH   (TG_AVL_BE_WIDTH)
       ) inv_be_gen_inst (
          .clk          (clk),
-         .reset_n      (resync_reset_n[2]),
+         .reset_n      (reset_n),
          .enable       (inv_be_gen_enable),
          .data         (pre_inv_be)
       );
@@ -413,7 +384,7 @@ module altera_emif_avl_tg_driver # (
       .SHOW_AHEAD      ("ON")
    ) addr_burstcount_fifo (
       .clk             (clk),
-      .reset_n         (resync_reset_n[3]),
+      .reset_n         (reset_n),
       .write_req       (addr_fifo_write_req),
       .read_req        (addr_fifo_read_req),
       .data_in         ({addr_gen_addr,addr_gen_burstcount}),
@@ -439,7 +410,7 @@ module altera_emif_avl_tg_driver # (
       .USE_BLOCKING_ADDRESS_GENERATION        (TG_SEPARATE_READ_WRITE_IFS)
    ) driver_fsm_inst (
       .clk                             (clk),
-      .reset_n                         (resync_reset_n[4]),
+      .reset_n                         (reset_n),
       .worm_en                         (worm_en),
       .can_write                       (can_write),
       .can_read                        (can_read),
@@ -473,7 +444,7 @@ module altera_emif_avl_tg_driver # (
             .RANDOM_BYTE_ENABLE  (TG_RANDOM_BYTE_ENABLE)
          ) avl_tg_avl_mm_if_inst (
             .clk                    (clk),
-            .reset_n                (resync_reset_n[5]),
+            .reset_n                (reset_n),
             .avl_ready              (avl_ready),
             .avl_write_req          (avl_write_req),
             .avl_read_req           (avl_read_req),
@@ -521,7 +492,7 @@ module altera_emif_avl_tg_driver # (
             .AMM_BCOUNT_WIDTH         (TG_AVL_SIZE_WIDTH),
             .AMM_BYTEEN_WIDTH         (TG_AVL_BE_WIDTH)
          ) amm_1x_bridge (
-            .reset_n                    (resync_reset_n[5]),
+            .reset_n                    (reset_n),
             .clk                        (clk),
             .amm_slave_write            (avl_write_req),
             .amm_slave_read             (avl_read_req),
@@ -549,7 +520,7 @@ module altera_emif_avl_tg_driver # (
             .RANDOM_BYTE_ENABLE  (TG_RANDOM_BYTE_ENABLE)
          ) avl_tg_avl_mm_if_inst (
             .clk                    (clk),
-            .reset_n                (resync_reset_n[5]),
+            .reset_n                (reset_n),
             .avl_ready              (avl_master_ready),
             .avl_write_req          (avl_master_write_req),
             .avl_read_req           (avl_master_read_req),
@@ -599,8 +570,7 @@ module altera_emif_avl_tg_driver # (
       .TG_RANDOM_BYTE_ENABLE      (TG_RANDOM_BYTE_ENABLE)
    ) read_compare_inst (
       .clk                            (clk),
-      .reset_n                        (resync_reset_n[6]),
-      .reset_n_dup                    (resync_reset_n[7]),
+      .reset_n                        (reset_n),
       .enable                         (1'b1),
       .queue_read_compare_req         (queue_read_compare_req),
       .queue_read_addr_burstcount_req (addr_fifo_read_req),

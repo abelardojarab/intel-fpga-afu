@@ -1,10 +1,10 @@
-// (C) 2001-2017 Intel Corporation. All rights reserved.
+// (C) 2001-2018 Intel Corporation. All rights reserved.
 // Your use of Intel Corporation's design tools, logic functions and other 
 // software and tools, and its AMPP partner logic functions, and any output 
-// files any of the foregoing (including device programming or simulation 
+// files from any of the foregoing (including device programming or simulation 
 // files), and any associated documentation or information are expressly subject 
 // to the terms and conditions of the Intel Program License Subscription 
-// Agreement, Intel MegaCore Function License Agreement, or other applicable 
+// Agreement, Intel FPGA IP License Agreement, or other applicable 
 // license agreement, including, without limitation, that your use is for the 
 // sole purpose of programming logic devices manufactured by Intel and sold by 
 // Intel or its authorized distributors.  Please refer to the applicable 
@@ -83,7 +83,7 @@ module altera_emif_avl_tg_driver_fsm # (
    output logic                                   do_inv_be_write,
    output logic                                   do_write,
    output logic                                   do_read,
-  
+
    output [3:0]                                   fsm_state,
 
    // Driver status
@@ -139,8 +139,8 @@ module altera_emif_avl_tg_driver_fsm # (
    // Test stages
    test_stage_t                      stage;
 
-   assign fsm_state = stage[3:0];
 
+    assign fsm_state = stage[3:0];
    // Generate status signals
    assign test_complete    = (stage == TEST_COMPLETE);
    assign timeout          = (stage == TIMEOUT);
@@ -180,14 +180,14 @@ module altera_emif_avl_tg_driver_fsm # (
          
          REREAD_STAGE:
          begin
-            addr_gen_select <= addr_gen_select.first();  
+            addr_gen_select <= addr_gen_select_t'('b0);  
             do_write        <= 1'b0;
             do_read         <= can_read;
          end
 
          default:
          begin
-            addr_gen_select <= addr_gen_select.first();
+            addr_gen_select <= addr_gen_select_t'('b0);
             do_write        <= 1'b0;
             do_read         <= 1'b0;
          end
@@ -195,7 +195,7 @@ module altera_emif_avl_tg_driver_fsm # (
    end
 
    // Test stages state machine
-   always_ff @(posedge clk or negedge reset_n)
+   always_ff @(posedge clk)
    begin
       if (!reset_n) begin
          timeout_counter  <= '0;

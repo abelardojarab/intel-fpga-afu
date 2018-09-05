@@ -1,10 +1,10 @@
-// (C) 2001-2017 Intel Corporation. All rights reserved.
+// (C) 2001-2018 Intel Corporation. All rights reserved.
 // Your use of Intel Corporation's design tools, logic functions and other 
 // software and tools, and its AMPP partner logic functions, and any output 
-// files any of the foregoing (including device programming or simulation 
+// files from any of the foregoing (including device programming or simulation 
 // files), and any associated documentation or information are expressly subject 
 // to the terms and conditions of the Intel Program License Subscription 
-// Agreement, Intel MegaCore Function License Agreement, or other applicable 
+// Agreement, Intel FPGA IP License Agreement, or other applicable 
 // license agreement, including, without limitation, that your use is for the 
 // sole purpose of programming logic devices manufactured by Intel and sold by 
 // Intel or its authorized distributors.  Please refer to the applicable 
@@ -21,6 +21,7 @@ module altera_emif_avl_tg_scfifo_wrapper # (
    parameter FIFO_WIDTH          = "",
    parameter FIFO_SIZE           = "",
    parameter SHOW_AHEAD          = "",
+   parameter USE_EAB             = "ON",
    parameter ENABLE_PIPELINE     = 1
 ) (
    // Clock and reset
@@ -60,7 +61,7 @@ module altera_emif_avl_tg_scfifo_wrapper # (
          logic [FIFO_WIDTH-1:0]   data_in_reg;
          logic                    write_req_reg;
          
-         always_ff @ (posedge clk or negedge reset_n) begin
+         always_ff @ (posedge clk) begin
             if (~reset_n) begin
                write_req_reg <= 1'b0;
             end else begin
@@ -90,18 +91,18 @@ module altera_emif_avl_tg_scfifo_wrapper # (
             .lpm_numwords             (FIFO_NUMWORDS),
             .lpm_showahead            (SHOW_AHEAD),
             .almost_full_value        (FIFO_NUMWORDS > 2 ? FIFO_NUMWORDS-2 : 1), 
-            .use_eab                  ("OFF"),
+            .use_eab                  (USE_EAB),
             .overflow_checking        ("OFF"),
             .underflow_checking       ("OFF")
          ) scfifo_inst (
             .rdreq                    (read_req),
-            .aclr                     (!reset_n),
+            .aclr                     (1'b0),
             .clock                    (clk),
             .wrreq                    (write_req_logic),
             .data                     (data_in_logic),
             .full                     (total_full),
             .q                        (data_out),
-            .sclr                     (1'b0),
+            .sclr                     (!reset_n),
             .usedw                    (),
             .empty                    (empty),
             .almost_full              (almost_full),

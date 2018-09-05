@@ -1,10 +1,10 @@
-// (C) 2001-2017 Intel Corporation. All rights reserved.
+// (C) 2001-2018 Intel Corporation. All rights reserved.
 // Your use of Intel Corporation's design tools, logic functions and other 
 // software and tools, and its AMPP partner logic functions, and any output 
-// files any of the foregoing (including device programming or simulation 
+// files from any of the foregoing (including device programming or simulation 
 // files), and any associated documentation or information are expressly subject 
 // to the terms and conditions of the Intel Program License Subscription 
-// Agreement, Intel MegaCore Function License Agreement, or other applicable 
+// Agreement, Intel FPGA IP License Agreement, or other applicable 
 // license agreement, including, without limitation, that your use is for the 
 // sole purpose of programming logic devices manufactured by Intel and sold by 
 // Intel or its authorized distributors.  Please refer to the applicable 
@@ -52,16 +52,11 @@ module altera_emif_avl_tg_top # (
    // This is a boolean parameter.
    parameter SEPARATE_READ_WRITE_IFS                 = 0,
    
-   // Indicates whether to use input reset signal as is, or to instantiate
-   // a reset synchronizer using the input clock and reset signal and use the output 
-   // of the reset synchronizer as reset.
-   parameter GENERATE_LOCAL_RESET_SYNC               = 0,
-
    // Avalon protocol used by the controller
    parameter CTRL_AVL_PROTOCOL_ENUM                  = "",
 
    // Indicates whether Avalon byte-enable signal is used
-   parameter USE_AVL_BYTEEN                          = 0,
+   parameter USE_AVL_BYTEEN                          = 1,
 
    // Specifies alignment criteria for Avalon-MM word addresses and burst count
    parameter AMM_WORD_ADDRESS_DIVISIBLE_BY           = 1,
@@ -227,8 +222,10 @@ module altera_emif_avl_tg_top # (
    output logic                                               mmr_master_beginbursttransfer_1,
    input  logic                                               mmr_master_readdatavalid_1,
 
-
+   
    output logic [3:0]                                         fsm_state,
+
+
    // Ports for "tg_status" interfaces (auto-generated)
    output logic                                               traffic_gen_pass_0,
    output logic                                               traffic_gen_fail_0,
@@ -288,7 +285,29 @@ module altera_emif_avl_tg_top # (
    logic                                         issp_worm_en;
    logic [2:0]                                   worm_en;
    logic [2:0]                                   worm_en_sec;
+   
+   // Pipeline and duplicate the emif_usr_reset_n signal for timing
+   (* altera_attribute = {"-name MAX_FANOUT 50"}*) logic local_reset_n;
+   always_ff @(posedge emif_usr_clk, negedge emif_usr_reset_n)
+   begin
+      if (!emif_usr_reset_n) begin
+         local_reset_n <= 1'b0;
+      end else begin
+         local_reset_n <= 1'b1;
+      end
+   end   
 
+   // Pipeline and duplicate the emif_usr_reset_n_sec signal for timing
+   (* altera_attribute = {"-name MAX_FANOUT 50"}*) logic local_reset_n_sec;
+   always_ff @(posedge emif_usr_clk_sec, negedge emif_usr_reset_n_sec)
+   begin
+      if (!emif_usr_reset_n_sec) begin
+         local_reset_n_sec <= 1'b0;
+      end else begin
+         local_reset_n_sec <= 1'b1;
+      end
+   end   
+   
    // Output signals
    assign {amm_write_7,              amm_write_6,              amm_write_5,              amm_write_4,              amm_write_3,              amm_write_2,              amm_write_1,              amm_write_0             } = amm_write_all;
    assign {amm_read_7,               amm_read_6,               amm_read_5,               amm_read_4,               amm_read_3,               amm_read_2,               amm_read_1,               amm_read_0              } = amm_read_all;
@@ -418,7 +437,7 @@ module altera_emif_avl_tg_top # (
                      .AMM_BURST_COUNT_DIVISIBLE_BY           (AMM_WORD_ADDRESS_DIVISIBLE_BY)
                   ) inst (
                      .clk                                    (emif_usr_clk),
-                     .reset_n                                (emif_usr_reset_n),
+                     .reset_n                                (local_reset_n),
                      .avl_ready                              (amm_ready_all[(2*i)+1]),
                      .avl_read_req                           (amm_read_all[(2*i)+1]),
                      .avl_addr                               (amm_address_all[(2*i)+1]),
@@ -438,7 +457,6 @@ module altera_emif_avl_tg_top # (
                      .pnf_per_bit_persist                    (pnf_per_bit_persist[(2*i)+1])
                   );
                end else begin : normal
-      //end else if (bitwise_or) begin
                   altera_emif_avl_tg_driver # (
                      .DEVICE_FAMILY                          (MEGAFUNC_DEVICE_FAMILY),
                      .PROTOCOL_ENUM                          (PROTOCOL_ENUM),
@@ -450,14 +468,13 @@ module altera_emif_avl_tg_top # (
                      .TG_AVL_BE_WIDTH                        (PORT_CTRL_AMM_BYTEEN_WIDTH),
                      .TG_RANDOM_BYTE_ENABLE                  (USE_AVL_BYTEEN),
                      .TG_SEPARATE_READ_WRITE_IFS             (SEPARATE_READ_WRITE_IFS),
-                     .TG_GENERATE_LOCAL_RESET_SYNC           (GENERATE_LOCAL_RESET_SYNC),
                      .AMM_WORD_ADDRESS_DIVISIBLE_BY          (AMM_WORD_ADDRESS_DIVISIBLE_BY),
                      .AMM_BURST_COUNT_DIVISIBLE_BY           (AMM_WORD_ADDRESS_DIVISIBLE_BY),
                      .TG_ENABLE_UNIX_ID                      ( (PROTOCOL_ENUM == "PROTOCOL_QDR4") ? 1 : 0 ),
                      .TG_USE_UNIX_ID                         (i)
                   ) inst (
                      .clk                                    (emif_usr_clk),
-                     .reset_n                                (emif_usr_reset_n),
+                     .reset_n                                (local_reset_n),
                      .avl_ready                              (amm_ready_all[(2*i)+1]),
                      .avl_read_req                           (amm_read_all[(2*i)+1]),
                      .avl_addr                               (amm_address_all[(2*i)+1]),
@@ -519,7 +536,7 @@ module altera_emif_avl_tg_top # (
                   .AMM_BURST_COUNT_DIVISIBLE_BY           (AMM_WORD_ADDRESS_DIVISIBLE_BY)
                ) inst (
                   .clk                                    (emif_usr_clk),
-                  .reset_n                                (emif_usr_reset_n),
+                  .reset_n                                (local_reset_n),
                   .avl_ready                              (amm_ready_all[0]),
                   .avl_read_req                           (amm_read_all[0]),
                   .avl_addr                               (amm_address_all[0]),
@@ -550,12 +567,11 @@ module altera_emif_avl_tg_top # (
                   .TG_AVL_BE_WIDTH                        (PORT_CTRL_AMM_BYTEEN_WIDTH),
                   .TG_RANDOM_BYTE_ENABLE                  (USE_AVL_BYTEEN),
                   .TG_SEPARATE_READ_WRITE_IFS             (SEPARATE_READ_WRITE_IFS),
-                  .TG_GENERATE_LOCAL_RESET_SYNC           (GENERATE_LOCAL_RESET_SYNC),
                   .AMM_WORD_ADDRESS_DIVISIBLE_BY          (AMM_WORD_ADDRESS_DIVISIBLE_BY),
                   .AMM_BURST_COUNT_DIVISIBLE_BY           (AMM_WORD_ADDRESS_DIVISIBLE_BY)
                ) inst (
                   .clk                                    (emif_usr_clk),
-                  .reset_n                                (emif_usr_reset_n),
+                  .reset_n                                (local_reset_n),
                   .avl_ready                              (amm_ready_all[0]),
                   .avl_read_req                           (amm_read_all[0]),
                   .avl_addr                               (amm_address_all[0]),
@@ -626,7 +642,7 @@ module altera_emif_avl_tg_top # (
                      .AMM_BURST_COUNT_DIVISIBLE_BY           (AMM_WORD_ADDRESS_DIVISIBLE_BY)
                   ) inst (
                      .clk                                    ((PHY_PING_PONG_EN && (i == 1)) ? emif_usr_clk_sec : emif_usr_clk),
-                     .reset_n                                ((PHY_PING_PONG_EN && (i == 1)) ? emif_usr_reset_n_sec : emif_usr_reset_n),
+                     .reset_n                                ((PHY_PING_PONG_EN && (i == 1)) ? local_reset_n_sec : local_reset_n),
                      .avl_ready                              (amm_ready_all[i]),
                      .avl_write_req                          (amm_write_all[i]),
                      .avl_read_req                           (amm_read_all[i]),
@@ -657,14 +673,13 @@ module altera_emif_avl_tg_top # (
                      .TG_AVL_BE_WIDTH                        (PORT_CTRL_AMM_BYTEEN_WIDTH),
                      .TG_RANDOM_BYTE_ENABLE                  (USE_AVL_BYTEEN),
                      .TG_SEPARATE_READ_WRITE_IFS             (SEPARATE_READ_WRITE_IFS),
-                     .TG_GENERATE_LOCAL_RESET_SYNC           (GENERATE_LOCAL_RESET_SYNC),
                      .AMM_WORD_ADDRESS_DIVISIBLE_BY          (AMM_WORD_ADDRESS_DIVISIBLE_BY),
                      .AMM_BURST_COUNT_DIVISIBLE_BY           (AMM_WORD_ADDRESS_DIVISIBLE_BY),
                      .TG_ENABLE_UNIX_ID                      ( (PROTOCOL_ENUM == "PROTOCOL_QDR4") ? 1 : 0 ),
                      .TG_USE_UNIX_ID                         (i)
                   ) inst (
                      .clk                                    ((PHY_PING_PONG_EN && (i == 1)) ? emif_usr_clk_sec : emif_usr_clk),
-                     .reset_n                                ((PHY_PING_PONG_EN && (i == 1)) ? emif_usr_reset_n_sec : emif_usr_reset_n),
+                     .reset_n                                ((PHY_PING_PONG_EN && (i == 1)) ? local_reset_n_sec : local_reset_n),
                      .worm_en                                ((PHY_PING_PONG_EN && (i == 1)) ? worm_en_sec[2] : worm_en[2]),
                      .avl_ready                              (amm_ready_all[i]),
                      .avl_write_req                          (amm_write_all[i]),
@@ -684,6 +699,7 @@ module altera_emif_avl_tg_top # (
                      .pnf_per_bit                            (),
                      .pnf_per_bit_persist                    (pnf_per_bit_persist[i]),
                      .fsm_state                              (fsm_state)
+
                   );
                end
 
@@ -719,9 +735,9 @@ module altera_emif_avl_tg_top # (
    // but we tie them off via core registers to ensure we get somewhat
    // realistic timing for these paths.
    (* altera_attribute = {"-name MAX_FANOUT 1; -name ADV_NETLIST_OPT_ALLOWED ALWAYS_ALLOW"}*) logic core_zero_tieoff_r /* synthesis dont_merge syn_preserve = 1*/;
-   always_ff @(posedge emif_usr_clk or negedge emif_usr_reset_n)
+   always_ff @(posedge emif_usr_clk)
    begin
-      if (!emif_usr_reset_n) begin
+      if (!local_reset_n) begin
          core_zero_tieoff_r <= 1'b0;
       end else begin
          core_zero_tieoff_r <= 1'b0;
@@ -729,9 +745,9 @@ module altera_emif_avl_tg_top # (
    end
 
    (* altera_attribute = {"-name MAX_FANOUT 1; -name ADV_NETLIST_OPT_ALLOWED ALWAYS_ALLOW"}*) logic core_zero_tieoff_r_sec /* synthesis dont_merge syn_preserve = 1*/;
-   always_ff @(posedge emif_usr_clk_sec or negedge emif_usr_reset_n_sec)
+   always_ff @(posedge emif_usr_clk_sec)
    begin
-      if (!emif_usr_reset_n_sec) begin
+      if (!local_reset_n_sec) begin
          core_zero_tieoff_r_sec <= 1'b0;
       end else begin
          core_zero_tieoff_r_sec <= 1'b0;

@@ -1,10 +1,10 @@
-// (C) 2001-2017 Intel Corporation. All rights reserved.
+// (C) 2001-2018 Intel Corporation. All rights reserved.
 // Your use of Intel Corporation's design tools, logic functions and other 
 // software and tools, and its AMPP partner logic functions, and any output 
-// files any of the foregoing (including device programming or simulation 
+// files from any of the foregoing (including device programming or simulation 
 // files), and any associated documentation or information are expressly subject 
 // to the terms and conditions of the Intel Program License Subscription 
-// Agreement, Intel MegaCore Function License Agreement, or other applicable 
+// Agreement, Intel FPGA IP License Agreement, or other applicable 
 // license agreement, including, without limitation, that your use is for the 
 // sole purpose of programming logic devices manufactured by Intel and sold by 
 // Intel or its authorized distributors.  Please refer to the applicable 
@@ -118,7 +118,6 @@ module altera_emif_avl_tg_avl_mm_srw_if # (
    logic [ADDR_WIDTH-1:0]         fifo_addr_w_in;
    logic [BURSTCOUNT_WIDTH-1:0]   fifo_size_w_in;
 
-   logic                          fifo_write_req_out;
    logic                          fifo_read_req_out;
    logic [ADDR_WIDTH-1:0]         fifo_addr_out;
    logic [BURSTCOUNT_WIDTH-1:0]   fifo_size_out;
@@ -132,7 +131,7 @@ module altera_emif_avl_tg_avl_mm_srw_if # (
    // Buffer for Avalon write interface
    altera_emif_avl_tg_scfifo_wrapper # (
       .DEVICE_FAMILY   (DEVICE_FAMILY),
-      .FIFO_WIDTH      (1 + 1 + ADDR_WIDTH + BURSTCOUNT_WIDTH),
+      .FIFO_WIDTH      (1 + ADDR_WIDTH + BURSTCOUNT_WIDTH),
       .FIFO_SIZE       (BUFFER_SIZE),
       .SHOW_AHEAD      ("ON"),
       .ENABLE_PIPELINE (0)
@@ -141,14 +140,14 @@ module altera_emif_avl_tg_avl_mm_srw_if # (
       .reset_n         (reset_n),
       .write_req       (fifo_write_req_in),
       .read_req        (can_issue_avl_w_cmd & ~fifo_w_empty),
-      .data_in         ({fifo_write_req_in,fifo_use_inv_be_in,fifo_addr_w_in,fifo_size_w_in}),
-      .data_out        ({fifo_write_req_out,fifo_use_inv_be_out,fifo_addr_w_out,fifo_size_w_out}),
+      .data_in         ({fifo_use_inv_be_in,fifo_addr_w_in,fifo_size_w_in}),
+      .data_out        ({fifo_use_inv_be_out,fifo_addr_w_out,fifo_size_w_out}),
       .full            (fifo_w_full),
       .empty           (fifo_w_empty)
    );
 
    // Avalon traffic generator state machine
-   always_ff @(posedge clk or negedge reset_n)
+   always_ff @(posedge clk)
    begin
       if (!reset_n)
       begin
@@ -182,7 +181,7 @@ module altera_emif_avl_tg_avl_mm_srw_if # (
    end
 
 
-   always_ff @(posedge clk or negedge reset_n)
+   always_ff @(posedge clk)
    begin
       if (!reset_n)
       begin
@@ -274,20 +273,12 @@ module altera_emif_avl_tg_avl_mm_srw_if # (
    end
 
    // Avalon write interface signals generation
-   always_ff @(posedge clk or negedge reset_n)
+   always_ff @(posedge clk)
    begin
       if (!reset_n) begin
          avl_write_req <= 1'b0;
-         
       end else if (can_issue_avl_w_cmd) begin
-         // Avalon signals can be toggled only when the interface is ready
-         // (avl_ready_w is high) or idle (avl_write_req deasserted).
-         // Otherwise, all Avalon signals should be held constant.
-         if (fifo_w_empty) begin
-            avl_write_req <= 1'b0;
-         end else begin
-            avl_write_req <= fifo_write_req_out;
-         end
+         avl_write_req <= ~fifo_w_empty;
       end
    end
 
@@ -309,18 +300,18 @@ module altera_emif_avl_tg_avl_mm_srw_if # (
    // Signal to request random wdata/be/inv_be generation
    always_comb
    begin
-      wdata_gen_enable <= can_issue_avl_w_cmd && ~fifo_w_empty && fifo_write_req_out && ~fifo_use_inv_be_out;
+      wdata_gen_enable <= can_issue_avl_w_cmd && ~fifo_w_empty && ~fifo_use_inv_be_out;
       if (byteenable_stage) begin
          inv_be_gen_enable <= can_issue_avl_w_cmd && ~fifo_w_empty && fifo_use_inv_be_out;
       end else begin
-         inv_be_gen_enable <= can_issue_avl_w_cmd && ~fifo_w_empty && fifo_write_req_out;
+         inv_be_gen_enable <= can_issue_avl_w_cmd && ~fifo_w_empty;
       end
    end
    
    // Buffer for Avalon read interface
    altera_emif_avl_tg_scfifo_wrapper # (
       .DEVICE_FAMILY  (DEVICE_FAMILY),
-      .FIFO_WIDTH     (1 + ADDR_WIDTH + BURSTCOUNT_WIDTH),
+      .FIFO_WIDTH     (ADDR_WIDTH + BURSTCOUNT_WIDTH),
       .FIFO_SIZE      (BUFFER_SIZE),
       .SHOW_AHEAD     ("ON")
    ) avalon_traffic_fifo_r (
@@ -328,8 +319,8 @@ module altera_emif_avl_tg_avl_mm_srw_if # (
       .reset_n        (reset_n),
       .write_req      (fifo_read_req_in),
       .read_req       (can_issue_avl_r_cmd & ~fifo_r_empty),
-      .data_in        ({fifo_read_req_in,fifo_addr_in,fifo_size_in}),
-      .data_out       ({fifo_read_req_out,fifo_addr_out,fifo_size_out}),
+      .data_in        ({fifo_addr_in,fifo_size_in}),
+      .data_out       ({fifo_addr_out,fifo_size_out}),
       .full           (fifo_r_full),
       .empty          (fifo_r_empty)
    );
@@ -365,7 +356,7 @@ module altera_emif_avl_tg_avl_mm_srw_if # (
 
 
    // Avalon read interface signals generation
-   always_ff @(posedge clk or negedge reset_n)
+   always_ff @(posedge clk)
    begin
       if (!reset_n)
       begin
@@ -384,7 +375,7 @@ module altera_emif_avl_tg_avl_mm_srw_if # (
          end
          else
          begin
-            avl_read_req   <= fifo_read_req_out;
+            avl_read_req   <= 1'b1;
             avl_addr       <= fifo_addr_out;
             avl_size       <= fifo_size_out;
          end

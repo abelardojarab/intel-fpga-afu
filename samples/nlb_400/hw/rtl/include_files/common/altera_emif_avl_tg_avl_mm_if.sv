@@ -1,10 +1,10 @@
-// (C) 2001-2017 Intel Corporation. All rights reserved.
+// (C) 2001-2018 Intel Corporation. All rights reserved.
 // Your use of Intel Corporation's design tools, logic functions and other 
 // software and tools, and its AMPP partner logic functions, and any output 
-// files any of the foregoing (including device programming or simulation 
+// files from any of the foregoing (including device programming or simulation 
 // files), and any associated documentation or information are expressly subject 
 // to the terms and conditions of the Intel Program License Subscription 
-// Agreement, Intel MegaCore Function License Agreement, or other applicable 
+// Agreement, Intel FPGA IP License Agreement, or other applicable 
 // license agreement, including, without limitation, that your use is for the 
 // sole purpose of programming logic devices manufactured by Intel and sold by 
 // Intel or its authorized distributors.  Please refer to the applicable 
@@ -104,20 +104,21 @@ module altera_emif_avl_tg_avl_mm_if # (
    logic                          fifo_use_inv_be_in;
 
    logic                          fifo_write_req_out;
-   logic                          fifo_read_req_out;
    logic [ADDR_WIDTH-1:0]         fifo_addr_out;
    logic [BURSTCOUNT_WIDTH-1:0]   fifo_size_out;
    logic                          fifo_use_inv_be_out;
    
-   // Duplicate register for timing closure
-   (* altera_attribute = "-name MAX_FANOUT 1" *) logic avl_read_or_write_req;
-
-   assign can_issue_avl_cmd = avl_ready | ~avl_read_or_write_req;
+   // For best latency, it is possible to issue a command into the
+   // register stage whenever it is not occupied, even if the AMM
+   // slave isn't ready, but doing so makes timing closure difficult
+   // since the "occupied" signal is tightly coupled to FIFO state signals
+   // which can't be easily duplicated.
+   assign can_issue_avl_cmd = avl_ready;
 
    // Buffer for Avalon interface
    altera_emif_avl_tg_scfifo_wrapper # (
       .DEVICE_FAMILY   (DEVICE_FAMILY),
-      .FIFO_WIDTH      (1 + 1 + 1 + ADDR_WIDTH + BURSTCOUNT_WIDTH),
+      .FIFO_WIDTH      (1 + 1 + ADDR_WIDTH + BURSTCOUNT_WIDTH),
       .FIFO_SIZE       (BUFFER_SIZE),
       .SHOW_AHEAD      ("ON")
    ) avalon_traffic_fifo (
@@ -125,14 +126,14 @@ module altera_emif_avl_tg_avl_mm_if # (
       .reset_n         (reset_n),
       .write_req       (fifo_write_req_in | fifo_read_req_in),
       .read_req        (can_issue_avl_cmd & ~fifo_empty),
-      .data_in         ({fifo_write_req_in,fifo_read_req_in,fifo_use_inv_be_in,fifo_addr_in,fifo_size_in}),
-      .data_out        ({fifo_write_req_out,fifo_read_req_out,fifo_use_inv_be_out,fifo_addr_out,fifo_size_out}),
+      .data_in         ({fifo_write_req_in,fifo_use_inv_be_in,fifo_addr_in,fifo_size_in}),
+      .data_out        ({fifo_write_req_out,fifo_use_inv_be_out,fifo_addr_out,fifo_size_out}),
       .full            (fifo_full),
       .empty           (fifo_empty)
    );
 
    // Avalon traffic generator state machine
-   always_ff @(posedge clk or negedge reset_n)
+   always_ff @(posedge clk)
    begin
       if (!reset_n) begin
          burst_counter <= '0;
@@ -162,7 +163,7 @@ module altera_emif_avl_tg_avl_mm_if # (
       end
    end
 
-   always_ff @(posedge clk or negedge reset_n)
+   always_ff @(posedge clk)
    begin
       if (!reset_n) begin
          do_inv_be_write_r         <= 1'b0;
@@ -252,12 +253,11 @@ module altera_emif_avl_tg_avl_mm_if # (
    end
 
    // Avalon interface signals generation
-   always_ff @(posedge clk or negedge reset_n)
+   always_ff @(posedge clk)
    begin
       if (!reset_n) begin
          avl_write_req         <= 1'b0;
          avl_read_req          <= 1'b0;
-         avl_read_or_write_req <= 1'b0;
          
       end else if (can_issue_avl_cmd) begin
          // Avalon signals can be toggled only when the interface is ready
@@ -266,11 +266,9 @@ module altera_emif_avl_tg_avl_mm_if # (
          if (fifo_empty) begin
             avl_write_req         <= 1'b0;
             avl_read_req          <= 1'b0;
-            avl_read_or_write_req <= 1'b0;
          end else begin
             avl_write_req         <= fifo_write_req_out;
-            avl_read_req          <= fifo_read_req_out;
-            avl_read_or_write_req <= fifo_write_req_out | fifo_read_req_out;
+            avl_read_req          <= ~fifo_write_req_out;
          end
       end
    end

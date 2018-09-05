@@ -744,7 +744,7 @@ static void *s2mTransactionWorker(void* dma_handle) {
 		res = MMIOWrite32Blk(dma_h, ST_VALVE_CONTROL(dma_h), (uint64_t)&ctrl.reg, sizeof(ctrl.reg));
 		ON_ERR_GOTO(res, out, "MMIOWrite32Blk");
 
-		int issued_intr = 0;
+		int poll_for_response = 0;
 		int fill_level = 0;
 		uint32_t tf_count = 0;
 		debug_print("next_avail_desc_idx = %08lx , unused_desc_count = %08lx \n",dma_h->next_avail_desc_idx, dma_h->unused_desc_count);
@@ -790,12 +790,11 @@ static void *s2mTransactionWorker(void* dma_handle) {
 			int cur_num_pending = head-tail+1;
 
 			if(cur_num_pending == (FPGA_DMA_MAX_BUF/2)) {
-				res = _do_dma_rx(dma_h, dma_h->dma_buf_iova[head%(FPGA_DMA_MAX_BUF)] | 0x1000000000000, 0, FPGA_DMA_BUF_SIZE, 1, s2m_transfer->transfer_type, true/*intr_en*/, s2m_transfer->rx_ctrl/*rx_ctrl*/);
+				res = _do_dma_rx(dma_h, dma_h->dma_buf_iova[head%(FPGA_DMA_MAX_BUF)] | 0x1000000000000, 0, FPGA_DMA_BUF_SIZE, 1, s2m_transfer->transfer_type, false/*intr_en*/, s2m_transfer->rx_ctrl/*rx_ctrl*/);
 				ON_ERR_GOTO(res, out, "FPGA_ST_TO_HOST_MM Transfer failed");
-				issued_intr = 1;
+				poll_for_response = 1;
 			} else if(cur_num_pending > (FPGA_DMA_MAX_BUF-1) || head == (dma_chunks - 1)/*last descriptor*/) {
-				if(issued_intr) {
-					poll_interrupt(dma_h);
+				if(poll_for_response) {
 					_pop_response_fifo(dma_h, &fill_level, &tf_count, &eop_arrived);
 					s2m_transfer->rx_bytes += tf_count;
 					for(j=0; j<fill_level; j++) {
@@ -804,14 +803,14 @@ static void *s2mTransactionWorker(void* dma_handle) {
 						// Increment tail when we memcpy data back to user-buffer
 						tail++;
 					}
-					issued_intr = 0;
+					poll_for_response = 0;
 					if(eop_arrived) {
 						goto out_transf_complete;
 					}
 				}
-				res = _do_dma_rx(dma_h, dma_h->dma_buf_iova[head % (FPGA_DMA_MAX_BUF)] | 0x1000000000000, 0, FPGA_DMA_BUF_SIZE, 1, s2m_transfer->transfer_type, true/*intr_en*/, s2m_transfer->rx_ctrl/*rx_ctrl*/);
+				res = _do_dma_rx(dma_h, dma_h->dma_buf_iova[head % (FPGA_DMA_MAX_BUF)] | 0x1000000000000, 0, FPGA_DMA_BUF_SIZE, 1, s2m_transfer->transfer_type, false/*intr_en*/, s2m_transfer->rx_ctrl/*rx_ctrl*/);
 				ON_ERR_GOTO(res, out, "FPGA_ST_TO_HOST_MM Transfer failed");
-				issued_intr = 1;
+				poll_for_response = 1;
 			} else {
 				res = _do_dma_rx(dma_h, dma_h->dma_buf_iova[head % (FPGA_DMA_MAX_BUF)] | 0x1000000000000, 0, FPGA_DMA_BUF_SIZE, 1, s2m_transfer->transfer_type, false/*intr_en*/, s2m_transfer->rx_ctrl/*rx_ctrl*/);
 				ON_ERR_GOTO(res, out, "FPGA_ST_TO_HOST_MM Transfer failed");
@@ -821,8 +820,7 @@ static void *s2mTransactionWorker(void* dma_handle) {
 			head++;
 		}
 
-		if(issued_intr) {
-			poll_interrupt(dma_h);
+		if(poll_for_response) {
 			do {
 				_pop_response_fifo(dma_h, &fill_level, &tf_count, &eop_arrived);
 				s2m_transfer->rx_bytes += tf_count;
@@ -839,9 +837,9 @@ static void *s2mTransactionWorker(void* dma_handle) {
 				goto out_transf_complete;
 		}
 		if(count > 0) {
-			res = _do_dma_rx(dma_h, dma_h->dma_buf_iova[0] | 0x1000000000000, 0, count, 1, s2m_transfer->transfer_type, true/*intr_en*/, s2m_transfer->rx_ctrl/*rx_ctrl*/);
+			res = _do_dma_rx(dma_h, dma_h->dma_buf_iova[0] | 0x1000000000000, 0, count, 1, s2m_transfer->transfer_type, false/*intr_en*/, s2m_transfer->rx_ctrl/*rx_ctrl*/);
 			ON_ERR_GOTO(res, out, "FPGA_TO_HOST_ST Transfer failed");
-			poll_interrupt(dma_h);
+			
 			do {
 				_pop_response_fifo(dma_h, &fill_level, &tf_count, &eop_arrived);
 				s2m_transfer->rx_bytes += tf_count;

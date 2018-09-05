@@ -63,7 +63,7 @@ int usleep(unsigned);
 #define NULL_ID_L 				0x56722e4e1a5e4b0f
 #define NULL_ID_H 				0xaf744f15130ab6c1
 
-#define FPGA_DMA_BBB 0x2
+#define FPGA_BBB 0x2
 #define AFU_DFH_NEXT_OFFSET 16
 #define AFU_DFH_EOL_OFFSET 40
 #define AFU_DFH_TYPE_OFFSET 60
@@ -74,20 +74,18 @@ static uint64_t count=0;
 /**
 * fpgaEnumerateDFH
 *
-* @brief           Count available DMA channels
+* @brief           Count available DFH registers
 *                    
-*                  Scan the device feature chain for DMA BBBs and count
-*                  all available channels. Total number of available channels
-*                  are populated in count on successfull return.
+*                  Scan the device feature chain for DFH (including AFUs and BBBs)
 *
 * @param[in]    fpga   Handle to the FPGA AFU object obtained via fpgaOpen()
-* @param[out]   count  Total number of DMA channels in the FPGA AFU object
+* @param[out]   count  Total number of DFH registers in the FPGA AFU object
 * @returns             FPGA_OK on success, return code otherwise
 */
 fpga_result fpgaEnumerateDFH(fpga_handle fpga, size_t *count);
-static bool _fpga_dma_feature_eol(uint64_t dfh);
-static bool _fpga_dma_feature_is_bbb(uint64_t dfh);
-static uint64_t _fpga_dma_feature_next(uint64_t dfh);
+static bool _fpga_feature_eol(uint64_t dfh);
+static bool _fpga_feature_is_bbb(uint64_t dfh);
+static uint64_t _fpga_feature_next(uint64_t dfh);
 
 /*
  * macro to check return codes, print error message, and goto cleanup label
@@ -178,78 +176,6 @@ int main(int argc, char *argv[])
 	res = fpgaReset(afc_handle);
 	ON_ERR_GOTO(res, out_close, "resetting AFC");
 
-	// Access mandatory AFU registers
-	/*
-	uint64_t data = 0;
-	
-	res = fpgaReadMMIO64(afc_handle, 0, AFU_DFH, &data);
-	ON_ERR_GOTO(res, out_close, "reading from MMIO");
-	printf("AFU DFH REG = %08lx\n", data);
-
-	res = fpgaReadMMIO64(afc_handle, 0, AFU_ID_L, &data);
-	ON_ERR_GOTO(res, out_close, "reading from MMIO");
-	printf("AFU ID LO = %08lx\n", data);
-
-	res = fpgaReadMMIO64(afc_handle, 0, AFU_ID_H, &data);
-	ON_ERR_GOTO(res, out_close, "reading from MMIO");
-	printf("AFU ID HI = %08lx\n", data);
-
-	res = fpgaReadMMIO64(afc_handle, 0, AFU_DFH_RSVD, &data);
-	ON_ERR_GOTO(res, out_close, "reading from MMIO");
-	printf("AFU RESERVED = %08lx\n", data);
-
-	// Access AFU user scratch-pad register
-	res = fpgaReadMMIO64(afc_handle, 0, SCRATCH_REG, &data);
-	ON_ERR_GOTO(res, out_close, "reading from MMIO");
-	printf("Reading Scratch Register (Byte Offset=%08x) = %08lx\n", SCRATCH_REG, data);
-
-	printf("MMIO Write to Scratch Register (Byte Offset=%08x) = %08lx\n", SCRATCH_REG, SCRATCH_VALUE);
-	res = fpgaWriteMMIO64(afc_handle, 0, SCRATCH_REG, SCRATCH_VALUE);
-	ON_ERR_GOTO(res, out_close, "writing to MMIO");
-
-	res = fpgaReadMMIO64(afc_handle, 0, SCRATCH_REG, &data);
-	ON_ERR_GOTO(res, out_close, "reading from MMIO");
-	printf("Reading Scratch Register (Byte Offset=%08x) = %08lx\n", SCRATCH_REG, data);
-	ASSERT_GOTO(data == SCRATCH_VALUE, out_close, "MMIO mismatched expected result");
-
-	// Set Scratch Register to 0
-	printf("Setting Scratch Register (Byte Offset=%08x) = %08x\n", SCRATCH_REG, SCRATCH_RESET);
-	res = fpgaWriteMMIO64(afc_handle, 0, SCRATCH_REG, SCRATCH_RESET);
-	ON_ERR_GOTO(res, out_close, "writing to MMIO");
-	res = fpgaReadMMIO64(afc_handle, 0, SCRATCH_REG, &data);
-	ON_ERR_GOTO(res, out_close, "reading from MMIO");
-	printf("Reading Scratch Register (Byte Offset=%08x) = %08lx\n", SCRATCH_REG, data);
-	ASSERT_GOTO(data == SCRATCH_RESET, out_close, "MMIO mismatched expected result");
-
-	// Read/write AFU ERROR
-	res = fpgaReadMMIO64(afc_handle, 0, AFU_ERROR, &data);
-	ON_ERR_GOTO(res, out_close, "reading from MMIO");
-	printf("AFU ERROR = %08lx\n", data);
-
-	printf("MMIO Write to AFU Error (Byte Offset=%08x) = %08lx\n", AFU_ERROR, SCRATCH_VALUE);
-	res = fpgaWriteMMIO64(afc_handle, 0, AFU_ERROR, SCRATCH_VALUE);
-	ON_ERR_GOTO(res, out_close, "writing to MMIO");
-
-	res = fpgaReadMMIO64(afc_handle, 0, AFU_ERROR, &data);
-	ON_ERR_GOTO(res, out_close, "reading from MMIO");
-	printf("Reading AFU Error Register (Byte Offset=%08x) = %08lx\n", AFU_ERROR, data);
-	ASSERT_GOTO(data == SCRATCH_VALUE, out_close, "MMIO mismatched expected result");
-
-	// Read/write AFU CTRL
-	res = fpgaReadMMIO64(afc_handle, 0, AFU_CTRL, &data);
-	ON_ERR_GOTO(res, out_close, "reading from MMIO");
-	printf("AFU CTRL = %08lx\n", data);
-
-	printf("MMIO Write to AFU Control (Byte Offset=%08x) = %08lx\n", AFU_CTRL, SCRATCH_VALUE);
-	res = fpgaWriteMMIO64(afc_handle, 0, AFU_CTRL, SCRATCH_VALUE);
-	ON_ERR_GOTO(res, out_close, "writing to MMIO");
-
-	res = fpgaReadMMIO64(afc_handle, 0, AFU_CTRL, &data);
-	ON_ERR_GOTO(res, out_close, "reading from MMIO");
-	printf("Reading AFU Control Register (Byte Offset=%08x) = %08lx\n", AFU_CTRL, data);
-	ASSERT_GOTO(data == SCRATCH_VALUE, out_close, "MMIO mismatched expected result");
-	*/
-
 	// Enumerate DFH 
 	res = fpgaEnumerateDFH(afc_handle, &count);
 	ON_ERR_GOTO(res, out_close, "fpgaEnumerateDFH");
@@ -291,7 +217,7 @@ out_exit:
 }
 
 fpga_result fpgaEnumerateDFH(fpga_handle fpga, size_t *count) {
-	// Discover total# DMA channels by traversing the device feature list
+	// Discover total# DFH registers by traversing the device feature list
 	// We may encounter one or more BBBs during discovery
 	// Populate the count
 	fpga_result res = FPGA_OK;
@@ -345,7 +271,7 @@ fpga_result fpgaEnumerateDFH(fpga_handle fpga, size_t *count) {
 		printf("Found UUID_H = %08lx\n", feature_uuid_hi);
 
 #endif
-		if (_fpga_dma_feature_is_bbb(dfh) &&
+		if (_fpga_feature_is_bbb(dfh) &&
 			(((feature_uuid_lo == MAC_ID_L) && (feature_uuid_hi == MAC_ID_H)) ||
 			((feature_uuid_lo == CLIENT_ID_L) && (feature_uuid_hi == CLIENT_ID_H)) ||
 			((feature_uuid_lo == NULL_ID_L) && (feature_uuid_hi == NULL_ID_H)))) {
@@ -353,9 +279,9 @@ fpga_result fpgaEnumerateDFH(fpga_handle fpga, size_t *count) {
 			*count = *count+1;
 		}
 		// End of the list?
-		end_of_list = _fpga_dma_feature_eol(dfh);
+		end_of_list = _fpga_feature_eol(dfh);
 		// Move to the next feature header
-		offset = offset + _fpga_dma_feature_next(dfh);
+		offset = offset + _fpga_feature_next(dfh);
 		
 	} while(!end_of_list);
 
@@ -365,18 +291,18 @@ out:
 
 // Internal Functions
 // End of feature list
-static bool _fpga_dma_feature_eol(uint64_t dfh) {
+static bool _fpga_feature_eol(uint64_t dfh) {
 	return ((dfh >> AFU_DFH_EOL_OFFSET) & 1) == 1;
 }
 
 // Feature type is BBB
-static bool _fpga_dma_feature_is_bbb(uint64_t dfh) {
+static bool _fpga_feature_is_bbb(uint64_t dfh) {
 	// BBB is type 2
-	return ((dfh >> AFU_DFH_TYPE_OFFSET) & 0xf) == FPGA_DMA_BBB;
+	return ((dfh >> AFU_DFH_TYPE_OFFSET) & 0xf) == FPGA_BBB;
 }
 
 // Offset to the next feature header
-static uint64_t _fpga_dma_feature_next(uint64_t dfh) {
+static uint64_t _fpga_feature_next(uint64_t dfh) {
 	return (dfh >> AFU_DFH_NEXT_OFFSET) & 0xffffff;
 }
 

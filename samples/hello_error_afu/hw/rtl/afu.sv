@@ -26,12 +26,14 @@
 
 // Generate interrupt
 function automatic t_if_ccip_c1_Tx ccip_genInterrupt(
-    input [1:0] usr_intr_id
+    input [1:0] usr_intr_id,
+    t_ccip_vc vc_select
 );
     // use c1 to write interrupt ccip packets
     t_if_ccip_c1_Tx c1;
     t_ccip_c1_ReqIntrHdr intrHdr;
 
+    intrHdr.vc_sel = vc_select;
     intrHdr.rsvd1 = 0;
     intrHdr.req_type = eREQ_INTR;
     intrHdr.rsvd0 = 0;
@@ -44,31 +46,16 @@ function automatic t_if_ccip_c1_Tx ccip_genInterrupt(
     return c1;
 endfunction
 
-module afu (
+module afu #(
+    parameter NUM_LOCAL_MEM_BANKS = 2
+)(
         // ---------------------------global signals-------------------------------------------------
         input	Clk_400,	  //              in    std_logic;           Core clock. CCI interface is synchronous to this clock.
         input	SoftReset,	  //              in    std_logic;           CCI interface reset. The Accelerator IP must use this Reset. ACTIVE HIGH
         // ---------------------------IF signals between CCI and AFU  --------------------------------
-`ifdef INCLUDE_DDR4
-        input	wire		DDR4_USERCLK,
-        input	wire		DDR4a_waitrequest,
-        input	wire [511:0]	DDR4a_readdata,
-        input	wire		DDR4a_readdatavalid,
-        output	wire [6:0]	DDR4a_burstcount,
-        output	reg  [511:0]	DDR4a_writedata,
-        output	reg  [25:0]	DDR4a_address,
-        output	reg		DDR4a_write,
-        output	reg		DDR4a_read,
-        output	wire [63:0]	DDR4a_byteenable,
-        input	wire		DDR4b_waitrequest,
-        input	wire [511:0]	DDR4b_readdata,
-        input	wire		DDR4b_readdatavalid,
-        output	wire [6:0]	DDR4b_burstcount,
-        output	reg  [511:0]	DDR4b_writedata,
-        output	reg  [25:0]	DDR4b_address,
-        output	reg		DDR4b_write,
-        output	reg		DDR4b_read,
-        output	wire [63:0]	DDR4b_byteenable,
+`ifdef PLATFORM_PROVIDES_LOCAL_MEMORY
+        // Local memory interface
+        avalon_mem_if.to_fiu local_mem[NUM_LOCAL_MEM_BANKS],
 `endif
         input	t_if_ccip_Rx	cp2af_sRxPort,
         output	t_if_ccip_Tx	af2cp_sTxPort
@@ -107,7 +94,7 @@ module afu (
                 if(cp2af_sRxPort.c0.mmioWrValid == 1) begin
                     case(mmioHdr.address)
                         16'h0020: scratch_reg <= cp2af_sRxPort.c0.data[63:0];
-                        16'h0028: af2cp_sTxPort.c1 <= ccip_genInterrupt(usr_intr_id);
+                        16'h0028: af2cp_sTxPort.c1 <= ccip_genInterrupt(usr_intr_id,af2cp_sTxPort.c1.hdr.vc_sel);
                         16'h0030: usr_intr_id <= cp2af_sRxPort.c0.data[1:0];
                     endcase
                 end
@@ -143,19 +130,5 @@ module afu (
               end
           end
       end
-`ifdef INCLUDE_DDR4
-        always @(posedge DDR4_USERCLK) begin
-            if(SoftReset) begin
-                DDR4a_write <= 1'b0;
-                DDR4a_read  <= 1'b0;
-                DDR4b_write <= 1'b0;
-                DDR4b_read  <= 1'b0;
-            end
-        end
 
-assign DDR4a_burstcount = 7'b1;
-assign DDR4a_byteenable = 64'hFFFF_FFFF_FFFF_FFFF;
-assign DDR4b_burstcount = 7'b1;
-assign DDR4b_byteenable = 64'hFFFF_FFFF_FFFF_FFFF;
-`endif
 endmodule

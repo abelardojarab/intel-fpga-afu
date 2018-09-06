@@ -4,12 +4,12 @@
       "power": 0,
       "afu-top-interface":
          {
-            "class": "ccip_std_afu_avalon_mm_legacy_wires"
+            "class": "ccip_std_afu"
          },
       "accelerator-clusters":
          [
             {
-               "name": "hello_intr_afu",
+               "name": "hello_error_afu",
                "total-contexts": 1,
                "accelerator-type-uuid": "5C1EA3C4-2BFB-4E2A-ABF4-13C1E12541B0"
             }

@@ -61,7 +61,6 @@ enum eth_action {
 };
 
 #define CONFIG_UNINIT (-1)
-#define MAC_STR_LEN 17 //bytes
 
 static struct config {
 	int bus;

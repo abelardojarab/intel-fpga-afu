@@ -31,6 +31,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <limits.h>
+#include <ctype.h>
 #include <safe_string/safe_string.h>
 #include "fpga_hssi.h"
 
@@ -57,12 +58,15 @@ enum eth_action {
 };
 
 #define CONFIG_UNINIT (-1)
+#define MAC_STR_LEN 17 //bytes
+
 static struct config {
 	int bus;
 	int device;
 	int function;
 	int instance;
 	int channel;
+	char dst_mac[MAC_STR_LEN+1];
 	enum eth_action action;
 } config = {
 	.bus = CONFIG_UNINIT,
@@ -70,6 +74,7 @@ static struct config {
 	.function = CONFIG_UNINIT,
 	.instance = CONFIG_UNINIT,
 	.channel = 0,
+	.dst_mac = "FF:FF:FF:FF:FF:FF",
 	.action = ETH_ACT_NONE,
 };
 
@@ -79,11 +84,12 @@ static void printUsage(char *prog)
 "%s\n"
 "PAC HSSI configuration utility\n"
 "Usage:\n" 
-"     pac_hssi_e40 [-h] [-b <bus>] [-d <device>] [-f <function>] -a action\n\n"
+"     pac_hssi_e40 [-h] [-b <bus>] [-d <device>] [-f <function>] [-m Dest. MAC] -a action\n\n"
 "         -h,--help           Print this help\n"
 "         -b,--bus            Set target bus number\n"
 "         -d,--device         Set target device number\n"
 "         -f,--function       Set target function number\n"
+"         -m,--dest_mac       Set Destination MAC (in the format AA:BB:CC:DD:EE:FF)\n"
 "         -a,--action         Perform action:\n\n"
 "           stat              Print channel statistics\n"
 "           stat_clear        Clear channel statistics\n"
@@ -97,6 +103,26 @@ static void printUsage(char *prog)
 
 #define STR_CONST_CMP(str, str_const) strncmp(str, str_const, sizeof(str_const))
 
+static bool isValidMac(const char *str)
+{
+	int i;
+	int len = strnlen_s(str, MAC_STR_LEN);
+
+	if(len != MAC_STR_LEN)
+		return false;
+
+	for(i = 0; i < len; i++) {
+		if((i+1) % 3 == 0) { // every 3rd char is ':'
+			if(str[i] != ':')
+				return false;
+		}
+		else if(!isxdigit(str[i]))
+			return false;
+	}
+	return true;
+}
+
+
 static void parse_args(struct config *config, int argc, char *argv[])
 {
 	int c;
@@ -106,13 +132,14 @@ static void parse_args(struct config *config, int argc, char *argv[])
 			{"bus",           required_argument, NULL, 'b'},
 			{"device",        required_argument, NULL, 'd'},
 			{"function",      required_argument, NULL, 'f'},
+			{"dest_mac",      optional_argument, 0,    'm'},
 			{"action", required_argument, 0, 'a'},
 			{0, 0, 0, 0}
 		};
 		char *endptr;
 		const char *tmp_optarg;
 
-		c = getopt_long(argc, argv, "hlb:d:f:a:", options, NULL);
+		c = getopt_long(argc, argv, "hlb:d:f:m:a:", options, NULL);
 		if (c == -1) {
 			break;
 		}
@@ -164,6 +191,17 @@ static void parse_args(struct config *config, int argc, char *argv[])
 			}
 			break;
 
+		case 'm':    /* Set Destination MAC */
+			if (NULL == tmp_optarg)
+				break;
+
+			if(!isValidMac(tmp_optarg)) {
+				fprintf(stderr, "invalid mac: %s\n",
+					tmp_optarg);
+				printUsage(argv[0]);
+			}
+			strncpy_s(config->dst_mac, MAC_STR_LEN+1, tmp_optarg, MAC_STR_LEN+1);
+			break;
 
 		case 'a':
 			if (NULL == optarg) {
@@ -289,9 +327,9 @@ static int do_action(struct config *config, fpga_token afc_tok)
 		printf("Disabled loopback on channel %d\n", config->channel);
 		break;
 	case ETH_ACT_PKT_SEND:
-		printf("Sent 0x%x packets on channel %d\n",
-			NUM_PKT_TO_SEND, config->channel);
-		fpgaHssiSendPacket(hssi_h, config->channel, NUM_PKT_TO_SEND);
+		fpgaHssiSendPacket(hssi_h, config->channel, NUM_PKT_TO_SEND, config->dst_mac);
+		printf("Sent 0x%x packets on channel %d to MAC %s\n",
+			NUM_PKT_TO_SEND, config->channel, config->dst_mac);
 		break;
 	default:
 		fprintf(stderr, "unknown action, %d\n", config->action);

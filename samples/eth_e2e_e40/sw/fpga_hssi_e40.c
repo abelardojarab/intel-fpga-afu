@@ -285,18 +285,32 @@ fpga_result fpgaHssiGetWordLockStatus(fpga_hssi_handle hssi,
 }
 
 fpga_result fpgaHssiSendPacket(fpga_hssi_handle hssi,
-	uint32_t channel_num, uint64_t num_packets)
+	uint32_t channel_num, uint64_t num_packets, char *dst_mac)
 {
+	unsigned char dmac[6];
+	uint32_t lo_mac, hi_mac;
+
 	if (!hssi)
 		return FPGA_INVALID_PARAM;
 
 	if (channel_num > NUM_ETH_CHANNELS)
 		return FPGA_INVALID_PARAM;
 
+	sscanf(dst_mac, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+                                &dmac[0],
+                                &dmac[1],
+                                &dmac[2],
+                                &dmac[3],
+                                &dmac[4],
+                                &dmac[5]);
+	// configure destination mac address
+	lo_mac = dmac[5] | (dmac[4] << 8) | (dmac[3] << 16) | (dmac[2] << 24);
+	hi_mac = dmac[1] | (dmac[0] << 8);
+
 	pr_mgmt_data_e40_t wr_data = { 0 };
 	// use broadcast traffic
 	wr_data.reg = 0;
-	wr_data.eth_traff_wdata = 0xFFFFFFFF;
+	wr_data.eth_traff_wdata = lo_mac;
 	prMgmtWrite(hssi->dfl, PR_MGMT_ETH_WR_DATA, wr_data);
 
 	wr_data.reg = 0;
@@ -304,7 +318,7 @@ fpga_result fpgaHssiSendPacket(fpga_hssi_handle hssi,
 	wr_data.eth_traf.eth_traff_addr = 0x0;
 	prMgmtWrite(hssi->dfl, PR_MGMT_ETH_CTRL, wr_data);
 	wr_data.reg = 0;
-	wr_data.eth_traff_wdata = 0xFFFF;
+	wr_data.eth_traff_wdata = hi_mac;
 	prMgmtWrite(hssi->dfl, PR_MGMT_ETH_WR_DATA, wr_data);
 
 	wr_data.reg = 0;

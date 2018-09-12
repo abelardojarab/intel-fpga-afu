@@ -33,6 +33,9 @@
 #include <limits.h>
 #include <ctype.h>
 #include <safe_string/safe_string.h>
+#include <sys/types.h>
+#include <net/ethernet.h>
+#include <netinet/ether.h>
 #include "fpga_hssi.h"
 
 /**
@@ -66,7 +69,7 @@ static struct config {
 	int function;
 	int instance;
 	int channel;
-	char dst_mac[MAC_STR_LEN+1];
+	struct ether_addr *dst_mac;
 	enum eth_action action;
 } config = {
 	.bus = CONFIG_UNINIT,
@@ -74,7 +77,7 @@ static struct config {
 	.function = CONFIG_UNINIT,
 	.instance = CONFIG_UNINIT,
 	.channel = 0,
-	.dst_mac = "FF:FF:FF:FF:FF:FF",
+	.dst_mac = NULL,
 	.action = ETH_ACT_NONE,
 };
 
@@ -102,26 +105,6 @@ static void printUsage(char *prog)
 }
 
 #define STR_CONST_CMP(str, str_const) strncmp(str, str_const, sizeof(str_const))
-
-static bool isValidMac(const char *str)
-{
-	int i;
-	int len = strnlen_s(str, MAC_STR_LEN);
-
-	if(len != MAC_STR_LEN)
-		return false;
-
-	for(i = 0; i < len; i++) {
-		if((i+1) % 3 == 0) { // every 3rd char is ':'
-			if(str[i] != ':')
-				return false;
-		}
-		else if(!isxdigit(str[i]))
-			return false;
-	}
-	return true;
-}
-
 
 static void parse_args(struct config *config, int argc, char *argv[])
 {
@@ -195,12 +178,12 @@ static void parse_args(struct config *config, int argc, char *argv[])
 			if (NULL == tmp_optarg)
 				break;
 
-			if(!isValidMac(tmp_optarg)) {
+			config->dst_mac = ether_aton((char*)tmp_optarg);
+			if(!config->dst_mac) {
 				fprintf(stderr, "invalid mac: %s\n",
 					tmp_optarg);
 				printUsage(argv[0]);
 			}
-			strncpy_s(config->dst_mac, MAC_STR_LEN+1, tmp_optarg, MAC_STR_LEN+1);
 			break;
 
 		case 'a':
@@ -327,9 +310,12 @@ static int do_action(struct config *config, fpga_token afc_tok)
 		printf("Disabled loopback on channel %d\n", config->channel);
 		break;
 	case ETH_ACT_PKT_SEND:
+		// if a valid MAC address wasn't specified, use broadcast address
+		if(!config->dst_mac)
+			config->dst_mac = ether_aton("FF:FF:FF:FF:FF:FF");
 		fpgaHssiSendPacket(hssi_h, config->channel, NUM_PKT_TO_SEND, config->dst_mac);
 		printf("Sent 0x%x packets on channel %d to MAC %s\n",
-			NUM_PKT_TO_SEND, config->channel, config->dst_mac);
+			NUM_PKT_TO_SEND, config->channel, ether_ntoa(config->dst_mac));
 		break;
 	default:
 		fprintf(stderr, "unknown action, %d\n", config->action);

@@ -36,6 +36,8 @@
 #include <stdbool.h>
 #include <uuid/uuid.h>
 #include <opae/fpga.h>
+#include <net/ethernet.h>
+#include <netinet/ether.h>
 
 #define MAX_NAME_LEN 256
 #define MAX_DESC_LEN 2048

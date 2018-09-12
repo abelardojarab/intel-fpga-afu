@@ -285,9 +285,8 @@ fpga_result fpgaHssiGetWordLockStatus(fpga_hssi_handle hssi,
 }
 
 fpga_result fpgaHssiSendPacket(fpga_hssi_handle hssi,
-	uint32_t channel_num, uint64_t num_packets, char *dst_mac)
+	uint32_t channel_num, uint64_t num_packets, struct ether_addr *dst_mac)
 {
-	unsigned char dmac[6];
 	uint32_t lo_mac, hi_mac;
 
 	if (!hssi)
@@ -296,16 +295,17 @@ fpga_result fpgaHssiSendPacket(fpga_hssi_handle hssi,
 	if (channel_num > NUM_ETH_CHANNELS)
 		return FPGA_INVALID_PARAM;
 
-	sscanf(dst_mac, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
-                                &dmac[0],
-                                &dmac[1],
-                                &dmac[2],
-                                &dmac[3],
-                                &dmac[4],
-                                &dmac[5]);
+	if(!dst_mac)
+		return FPGA_INVALID_PARAM;
+
 	// configure destination mac address
-	lo_mac = dmac[5] | (dmac[4] << 8) | (dmac[3] << 16) | (dmac[2] << 24);
-	hi_mac = dmac[1] | (dmac[0] << 8);
+	lo_mac = dst_mac->ether_addr_octet[5] |
+		(dst_mac->ether_addr_octet[4] << 8) |
+		(dst_mac->ether_addr_octet[3] << 16) |
+		(dst_mac->ether_addr_octet[2] << 24);
+
+	hi_mac = dst_mac->ether_addr_octet[1] |
+		(dst_mac->ether_addr_octet[0] << 8);
 
 	pr_mgmt_data_e40_t wr_data = { 0 };
 	// use broadcast traffic

@@ -4,8 +4,7 @@
       "power": 0,
       "afu-top-interface":
          {
-            "class": "ccip_std_afu",
-            "module-ports" :
+            "class": "ccip_std_afu"
          },
       "accelerator-clusters":
          [

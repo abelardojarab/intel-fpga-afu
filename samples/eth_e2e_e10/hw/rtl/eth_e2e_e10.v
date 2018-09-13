@@ -54,18 +54,17 @@ reg [31:0] scratch = {GBS_ID, GBS_VER};
 reg [31:0] prmgmt_dout_r = 32'h0;
 
 reg [NUM_ETH-1:0] sloop;
-// JTX: remove HSSI interface
 //assign hssi.a2f_rx_seriallpbken[NUM_ETH-1:0] = sloop;
 
-// JTX: don't need this anymore
 ////////////////////////////////////////////////////////////////////////////////
 // MUX for HSSI PR MGMT bus access 
 ////////////////////////////////////////////////////////////////////////////////
-/*
+
 reg  [15:0] prmgmt_cmd;
 reg  [15:0] prmgmt_addr;   
 reg  [31:0] prmgmt_din;   
 
+/*
 always @(posedge hssi.f2a_prmgmt_ctrl_clk)
 begin
     // RD/WR request from AFU CSR
@@ -86,11 +85,12 @@ begin
     end
 
 end
+*/
 
 assign eth_rd_data   = prmgmt_dout_r;
-assign csr_init_done = hssi.f2a_init_done;
+assign csr_init_done = 1'b1;
 
-
+/*
 ////////////////////////////////////////////////////////////////////////////////
 // PRMGMT registers for I2C controllers
 ////////////////////////////////////////////////////////////////////////////////
@@ -238,8 +238,8 @@ alt_mux4w32t1s1 mx0 (
 ////////////////////////////////////////////////////////////////////////////////
 // hook up to the management port
 ////////////////////////////////////////////////////////////////////////////////
-/*
-always @(posedge hssi.f2a_prmgmt_ctrl_clk) begin
+
+always @(posedge clk) begin
     case (prmgmt_addr[3:0])
         4'h0 : prmgmt_dout_r <= 32'h0 | scratch;
         4'h1 : prmgmt_dout_r <= 32'h0 | {csr_rst,rx_rst,tx_rst};
@@ -250,19 +250,19 @@ always @(posedge hssi.f2a_prmgmt_ctrl_clk) begin
         4'h5 : prmgmt_dout_r <= 32'h0 | port_sel;
 
         4'h6 : prmgmt_dout_r <= 32'h0 | sloop;
-        4'h7 : prmgmt_dout_r <= {hssi.f2a_rx_enh_blk_lock, hssi.f2a_rx_is_lockedtodata};
+        //4'h7 : prmgmt_dout_r <= {hssi.f2a_rx_enh_blk_lock, hssi.f2a_rx_is_lockedtodata};
 
-        4'h8 : prmgmt_dout_r <= 32'h0 | {i2c_inst_sel_r,i2c_ctrl_wdata_r};
-        4'h9 : prmgmt_dout_r <= 32'h0 | i2c_stat_rdata;
+        //4'h8 : prmgmt_dout_r <= 32'h0 | {i2c_inst_sel_r,i2c_ctrl_wdata_r};
+        //4'h9 : prmgmt_dout_r <= 32'h0 | i2c_stat_rdata;
         
-        4'hd : prmgmt_dout_r <= 32'h0 | {hssi.a2f_prmgmt_fatal_err, hssi.f2a_init_done};
+        //4'hd : prmgmt_dout_r <= 32'h0 | {hssi.a2f_prmgmt_fatal_err, hssi.f2a_init_done};
 
         default : prmgmt_dout_r <= 32'h0;
     endcase
 end
-assign hssi.a2f_prmgmt_dout = prmgmt_dout_r;
+//assign hssi.a2f_prmgmt_dout = prmgmt_dout_r;
 
-
+/*
 always @(posedge hssi.f2a_prmgmt_ctrl_clk) begin
     status_read <= 1'b0;
     status_write <= 1'b0;

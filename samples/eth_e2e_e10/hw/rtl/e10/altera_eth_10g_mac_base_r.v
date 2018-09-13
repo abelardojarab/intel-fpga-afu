@@ -77,7 +77,12 @@ wire	[9:0]	phy_csr_address;
 
 wire	[1:0]	avalon_st_pause_data;
 wire	[1:0]	avalon_st_pause_data_sync;
-
+wire avalon_st_txstatus_valid;
+wire [39:0] avalon_st_txstatus_data;
+wire [6:0] avalon_st_txstatus_error;
+wire avalon_st_rxstatus_valid;
+wire [39:0] avalon_st_rxstatus_data;
+wire [6:0] avalon_st_rxstatus_error;
 
 wire    [63:0]  tx_sc_fifo_in_data;          
 wire            tx_sc_fifo_in_valid;         
@@ -300,7 +305,7 @@ altera_eth_10g_mac mac_inst (
 reset_control	reset_controller_inst(
 	.clock				(csr_clk),
     .reset				(~csr_rst_n),
-    .pll_powerdown		(pll_powerdown),
+    .pll_powerdown		(),
     .tx_analogreset		(tx_analogreset),
     .tx_digitalreset	(tx_digitalreset),
     .tx_ready			(tx_ready_export),

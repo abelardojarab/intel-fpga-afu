@@ -183,6 +183,10 @@ logic init_done;
     // Connection to BBS
     // JTX: remove HSSI interface
     //.hssi(hssi)
+
+    // JTX: add necessary signals
+    .clk(uClk_usr),
+    .reset(pck_cp2af_softReset)
     );
 
 logic action_r = 0;

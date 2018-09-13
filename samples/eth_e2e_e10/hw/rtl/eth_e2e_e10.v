@@ -30,7 +30,13 @@
 module eth_e2e_e10 #(
     parameter NUM_LN = 4   // no override
 )(
-	pr_hssi_if.to_fiu hssi,
+    // JTX: remove HSSI interface
+	//pr_hssi_if.to_fiu hssi,
+
+    // JTX: add signals removed from HSSI interface
+    input clk,
+    input reset,
+
     // ETH CSR ports
     input  [31:0] eth_ctrl_addr,
     input  [31:0] eth_wr_data, 
@@ -48,12 +54,14 @@ reg [31:0] scratch = {GBS_ID, GBS_VER};
 reg [31:0] prmgmt_dout_r = 32'h0;
 
 reg [NUM_ETH-1:0] sloop;
-assign hssi.a2f_rx_seriallpbken[NUM_ETH-1:0] = sloop;
+// JTX: remove HSSI interface
+//assign hssi.a2f_rx_seriallpbken[NUM_ETH-1:0] = sloop;
 
+// JTX: don't need this anymore
 ////////////////////////////////////////////////////////////////////////////////
 // MUX for HSSI PR MGMT bus access 
 ////////////////////////////////////////////////////////////////////////////////
-
+/*
 reg  [15:0] prmgmt_cmd;
 reg  [15:0] prmgmt_addr;   
 reg  [31:0] prmgmt_din;   
@@ -82,6 +90,7 @@ end
 assign eth_rd_data   = prmgmt_dout_r;
 assign csr_init_done = hssi.f2a_init_done;
 
+
 ////////////////////////////////////////////////////////////////////////////////
 // PRMGMT registers for I2C controllers
 ////////////////////////////////////////////////////////////////////////////////
@@ -91,6 +100,7 @@ reg  [15:0] i2c_stat_rdata  ;
 wire [15:0] i2c_stat_rdata_0;
 wire [15:0] i2c_stat_rdata_1;
 reg  [ 1:0] i2c_inst_sel_r  ;
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 // MAC signals
@@ -128,10 +138,15 @@ generate
         wire [63:0]    xgmii_rx_data;
         wire err_ins = 1'b0;
 
+        // JTX: loopback XGMII
+        /*
         assign xgmii_rx_control = hssi.f2a_rx_control [(i*20)+7:(i*20)];
         assign xgmii_rx_data = hssi.f2a_rx_parallel_data [(i*128)+63:(i*128)];
         assign hssi.a2f_tx_control [(i+1)*18-1:(i*18)] = {9'b0,err_ins,xgmii_tx_control};
         assign hssi.a2f_tx_parallel_data [(i+1)*128-1:(i*128)] = {64'b0,xgmii_tx_data};
+        */
+        assign xgmii_rx_control = xgmii_tx_control;
+        assign xgmii_rx_data    = xgmii_tx_data;
 
         reg         csr_read = 1'b0;
         reg         csr_write = 1'b0;
@@ -141,37 +156,38 @@ generate
         wire         csr_waitrequest;
 
         altera_eth_10g_mac_base_r eth0 (
-            .csr_clk(hssi.f2a_prmgmt_ctrl_clk),
+            .csr_clk(clk),
             .csr_rst_n(~csr_rst),
             .tx_rst_n(~tx_rst),
             .rx_rst_n(~rx_rst),
 
-            .tx_clk_312(hssi.f2a_tx_clkx2),
-            .rx_clk_312(hssi.f2a_rx_clkx2_ln0),
-            .tx_clk_156(hssi.f2a_tx_clk),
-            .rx_clk_156(hssi.f2a_rx_clk_ln0),
+            // TODO JTX: clk with 2*freq
+            .tx_clk_312(),
+            .rx_clk_312(),
+            .tx_clk_156(clk),
+            .rx_clk_156(clk),
 
-            .iopll_locked(hssi.f2a_tx_locked && hssi.f2a_rx_locked_ln0),
+            .iopll_locked(~reset),
 
             // serdes controls
-            .tx_analogreset(hssi.a2f_tx_analogreset[i]),
-            .tx_digitalreset(hssi.a2f_tx_digitalreset[i]),
-            .rx_analogreset(hssi.a2f_rx_analogreset[i]),
-            .rx_digitalreset(hssi.a2f_rx_digitalreset[i]),
-            .tx_cal_busy(hssi.f2a_tx_cal_busy),
-            .rx_cal_busy(hssi.f2a_rx_cal_busy),
-            .rx_is_lockedtodata(hssi.f2a_rx_is_lockedtodata[i]),
-            .atx_pll_locked(hssi.f2a_tx_pll_locked),
-            .tx_ready_export(tx_ready_export[i]),
-            .rx_ready_export(rx_ready_export[i]),
+            .tx_analogreset(),
+            .tx_digitalreset(),
+            .rx_analogreset(),
+            .rx_digitalreset(),
+            .tx_cal_busy(reset),
+            .rx_cal_busy(reset),
+            .rx_is_lockedtodata(reset),
+            .atx_pll_locked(reset),
+            .tx_ready_export(),
+            .rx_ready_export(),
 
             // serdes data pipe
-            .xgmii_tx_valid(hssi.a2f_tx_enh_data_valid[i]),
+            .xgmii_tx_valid(~reset),
             .xgmii_tx_control(xgmii_tx_control),
             .xgmii_tx_data(xgmii_tx_data),
             .xgmii_rx_control(xgmii_rx_control),
             .xgmii_rx_data(xgmii_rx_data),
-            .xgmii_rx_valid(hssi.f2a_rx_enh_data_valid[i]),
+            .xgmii_rx_valid(~reset),
 
             // csr interface
             .csr_read(csr_read),
@@ -183,8 +199,8 @@ generate
         );
 
         reg [31:0] csr_readdata_r = 32'h0;
-        always @(posedge hssi.f2a_prmgmt_ctrl_clk) begin
-            if (hssi.f2a_prmgmt_arst) csr_read <= 1'b0;
+        always @(posedge clk) begin
+            if (reset) csr_read <= 1'b0;
             else begin
                 if (status_read && (port_sel == i[1:0])) csr_read <= 1'b1;
                 if (csr_read & ~csr_waitrequest) csr_read <= 1'b0;
@@ -192,8 +208,8 @@ generate
             if (csr_read) csr_readdata_r <= csr_readdata;
         end
 
-        always @(posedge hssi.f2a_prmgmt_ctrl_clk) begin
-            if (hssi.f2a_prmgmt_arst) csr_write <= 1'b0;
+        always @(posedge clk) begin
+            if (reset) csr_write <= 1'b0;
             else begin
                 if (status_write && (port_sel == i[1:0])) csr_write <= 1'b1;
                 if (csr_write & ~csr_waitrequest) csr_write <= 1'b0;
@@ -202,7 +218,7 @@ generate
 
         assign all_csr_rdata [(i+1)*32-1:i*32] = csr_readdata_r;
 
-        always @(posedge hssi.f2a_prmgmt_ctrl_clk) begin
+        always @(posedge clk) begin
             csr_address <= status_addr;
             csr_writedata <= status_writedata;
         end
@@ -213,7 +229,7 @@ endgenerate
 
 wire [31:0] status_readdata_r;
 alt_mux4w32t1s1 mx0 (
-    .clk(hssi.f2a_prmgmt_ctrl_clk),
+    .clk(clk),
     .din(all_csr_rdata),
     .sel(port_sel),
     .dout(status_readdata_r)
@@ -222,7 +238,7 @@ alt_mux4w32t1s1 mx0 (
 ////////////////////////////////////////////////////////////////////////////////
 // hook up to the management port
 ////////////////////////////////////////////////////////////////////////////////
-
+/*
 always @(posedge hssi.f2a_prmgmt_ctrl_clk) begin
     case (prmgmt_addr[3:0])
         4'h0 : prmgmt_dout_r <= 32'h0 | scratch;
@@ -355,8 +371,10 @@ assign oen_I2C1_rstn = 1'b0;
 assign oen_GPIO_a = 5'b0;
 assign oen_GPIO_b = 5'b0;
 
+
 ////////////////////////////////////
 // drive the unused channels into a civilized state
+
 
 generate
 for (i=4; i<NUM_LN; i=i+1) begin : unused_ln
@@ -374,5 +392,6 @@ for (i=4; i<NUM_LN; i=i+1) begin : unused_ln
     assign hssi.a2f_tx_control[(i+1)*18-1:i*18] = 18'h0;
 end
 endgenerate
+*/
 
 endmodule

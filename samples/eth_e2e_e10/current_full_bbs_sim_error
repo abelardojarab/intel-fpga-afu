@@ -1,0 +1,4 @@
+Error-[TMENF-ILL] Top Module/Entity not found
+Top module/entity/config "top_tb" is not found in the following library 
+list.
+Liblist: work

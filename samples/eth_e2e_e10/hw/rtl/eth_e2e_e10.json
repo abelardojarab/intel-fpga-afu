@@ -6,19 +6,6 @@
          {
             "class": "ccip_std_afu",
             "module-ports" :
-               [
-                  {
-                     "class": "cci-p",
-                     "params":
-                        {
-                           "clock": "hssi.f2a_prmgmt_ctrl_clk"
-                        }
-                  },
-                  {
-                     "class": "hssi",
-                     "interface": "raw_pr"
-                  }
-               ]
          },
       "accelerator-clusters":
          [

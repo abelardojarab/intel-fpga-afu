@@ -53,14 +53,14 @@ trans_bit.v
 ./hsl_files/alt_sync20m.v
 ./hsl_files/alt_sync_regs_m2.v
 ./hsl_files/alt_times_1pt8.v
-./e10/address_decoder/address_decode/address_decode.qip
-./e10/eth_traffic_controller/crc32/crc32.qip
-./e10/eth_traffic_controller/eth_std_traffic_controller_top.qip
-./e10/fifo_dcfifo/dc_fifo/dc_fifo.qip
-./e10/fifo_scfifo/sc_fifo/sc_fifo.qip
-./e10/mac/altera_eth_10g_mac/altera_eth_10g_mac.qip
-./e10/pll_mpll/pll/pll.qip
-./e10/xcvr_reset_controller/reset_control/reset_control.qip
+#./e10/address_decoder/address_decode/address_decode.qip
+#./e10/eth_traffic_controller/crc32/crc32.qip
+#./e10/eth_traffic_controller/eth_std_traffic_controller_top.qip
+#./e10/fifo_dcfifo/dc_fifo/dc_fifo.qip
+#./e10/fifo_scfifo/sc_fifo/sc_fifo.qip
+#./e10/mac/altera_eth_10g_mac/altera_eth_10g_mac.qip
+#./e10/pll_mpll/pll/pll.qip
+#./e10/xcvr_reset_controller/reset_control/reset_control.qip
 ./e10/altera_eth_10g_mac_base_r.v
 eth_e2e_e10.json
 

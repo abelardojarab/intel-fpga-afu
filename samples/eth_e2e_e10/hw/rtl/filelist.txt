@@ -1,5 +1,5 @@
 +define+E2E_E10
-C:filelist_sim.txt
++define+SIM_MODE
 
 ccip_std_afu.sv
 ccip_interface_reg.sv

@@ -78,7 +78,7 @@ const struct _hssi_csr e10_csrs[] = {
 	"rx_stats_framesOK",
 	0,
 	RO,
-	"Frames that are successfully recieved"},
+	"Frames that are successfully received"},
 
 	{0x1C02,
 	TX,
@@ -94,7 +94,7 @@ const struct _hssi_csr e10_csrs[] = {
 	"rx_stats_framesErr",
 	0,
 	RO,
-	"Frames that are successfully recieved"},
+	"Frames that are received with error"},
 
 	{0x1C04,
 	TX,
@@ -102,7 +102,7 @@ const struct _hssi_csr e10_csrs[] = {
 	"tx_stats_framesErr",
 	0,
 	RO,
-	"Frames that are successfully transmitted"},
+	"Frames that are transmitted with error"},
 
 	{0x0C06,
 	RX,

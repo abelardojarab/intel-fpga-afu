@@ -1,5 +1,5 @@
 `timescale 1 ps / 1 ps
-// baeckler - 07-12-2014
+// baeckler - 06-02-2016
 
 
 // DESCRIPTION
@@ -25,25 +25,32 @@ generate
 		/////////////////////////////////////////////
 		// hardware cells
 
+		// the fourteen nm only (the Stratix 10) needs another data register
+		reg [WIDTH-1:0] wdata_reg_2;
+		always @(posedge wclk) wdata_reg_2 <= wdata_reg;
+		
 		for (i=0; i<WIDTH; i=i+1)  begin : ml
 			wire wclk_w = wclk;  // workaround strange modelsim warning due to cell model tristate
             // Note: the stratix 5 cell is the same other than timing
+			
 			//stratixv_mlab_cell lrm (
-			twentynm_mlab_cell lrm (
+			//twentynm_mlab_cell lrm (
+			
+			fourteennm_mlab_cell lrm (
 				.clk0(wclk_w),
 				.ena0(wena),
 				
 				// synthesis translate off
 				.clk1(1'b0),
 				.ena1(1'b1),
-				.ena2(1'b1),
+			//?	.ena2(1'b1),
 				.clr(1'b0),
 				.devclrn(1'b1),
 				.devpor(1'b1),
 				// synthesis translate on			
 
 				.portabyteenamasks(1'b1),
-				.portadatain(wdata_reg[i]),
+				.portadatain(wdata_reg_2[i]),
 				.portaaddr(waddr_reg),
 				.portbaddr(raddr),
 				.portbdataout(rdata[i])			
@@ -89,4 +96,3 @@ generate
 endgenerate
 
 endmodule	
-

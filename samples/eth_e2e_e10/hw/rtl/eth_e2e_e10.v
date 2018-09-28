@@ -64,19 +64,19 @@ reg  [15:0] prmgmt_cmd;
 reg  [15:0] prmgmt_addr;   
 reg  [31:0] prmgmt_din;   
 
-/*
-always @(posedge hssi.f2a_prmgmt_ctrl_clk)
+always @(posedge clk)
+//always @(posedge hssi.f2a_prmgmt_ctrl_clk)
 begin
     // RD/WR request from AFU CSR
 	prmgmt_cmd <= 16'b0;
-	
+	/*
 	if (hssi.f2a_prmgmt_cmd != 16'b0)
     begin
         prmgmt_cmd  <= hssi.f2a_prmgmt_cmd;
         prmgmt_addr <= hssi.f2a_prmgmt_addr;
         prmgmt_din  <= hssi.f2a_prmgmt_din;
     end
-	
+	*/
     if (eth_ctrl_addr[17] | eth_ctrl_addr[16])
     begin
         prmgmt_cmd  <= eth_ctrl_addr[31:16];
@@ -85,7 +85,7 @@ begin
     end
 
 end
-*/
+
 
 assign eth_rd_data   = prmgmt_dout_r;
 assign csr_init_done = 1'b1;
@@ -262,8 +262,8 @@ always @(posedge clk) begin
 end
 //assign hssi.a2f_prmgmt_dout = prmgmt_dout_r;
 
-/*
-always @(posedge hssi.f2a_prmgmt_ctrl_clk) begin
+always @(posedge clk or posedge reset) begin
+//always @(posedge hssi.f2a_prmgmt_ctrl_clk) begin
     status_read <= 1'b0;
     status_write <= 1'b0;
 
@@ -278,26 +278,27 @@ always @(posedge hssi.f2a_prmgmt_ctrl_clk) begin
 
             4'h6 : sloop <= prmgmt_din[NUM_ETH-1:0];
             
-            4'h8 : {i2c_inst_sel_r,i2c_ctrl_wdata_r} <= prmgmt_din[17:0];
+            //4'h8 : {i2c_inst_sel_r,i2c_ctrl_wdata_r} <= prmgmt_din[17:0];
 
-            4'hd : hssi.a2f_prmgmt_fatal_err <= prmgmt_din[1];
+            //4'hd : hssi.a2f_prmgmt_fatal_err <= prmgmt_din[1];
         endcase
     end
-
+    /*
     // This is the Configuration Trigger for I2C controllers
     if (i2c_ctrl_wdata_r[8]) 
         i2c_ctrl_wdata_r[8] <= 1'b0;
-    
-    if (hssi.f2a_prmgmt_arst) begin
+    */
+    if (reset) begin
+    //if (hssi.f2a_prmgmt_arst) begin
         scratch <= {GBS_ID, GBS_VER};
-        hssi.a2f_prmgmt_fatal_err <= 1'b0;
+        //hssi.a2f_prmgmt_fatal_err <= 1'b0;
         status_read <= 1'b0;
         status_write <= 1'b0;
         sloop <= 'b0;
-        i2c_ctrl_wdata_r <= 'b0;
+        //i2c_ctrl_wdata_r <= 'b0;
     end
 end
-
+/*
 assign hssi.a2f_init_start = csr_init_start;
 
 ////////////////////////////////////////////////////////////////////////////////

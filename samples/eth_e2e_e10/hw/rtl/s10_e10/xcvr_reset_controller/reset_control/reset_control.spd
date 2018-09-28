@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file
+   path="altera_xcvr_reset_control_s10_181/sim/altera_std_synchronizer_nocut.v"
+   type="VERILOG"
+   library="altera_xcvr_reset_control_s10_181" />
+ <file
+   path="altera_xcvr_reset_control_s10_181/sim/alt_xcvr_resync_std.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_reset_control_s10_181" />
+ <file
+   path="altera_xcvr_reset_control_s10_181/sim/altera_xcvr_reset_control_s10.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_reset_control_s10_181" />
+ <file
+   path="altera_xcvr_reset_control_s10_181/sim/alt_xcvr_reset_counter_s10.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_reset_control_s10_181" />
+ <file
+   path="altera_xcvr_reset_control_s10_181/sim/mentor/altera_xcvr_reset_control_s10.sv"
+   type="SYSTEM_VERILOG_ENCRYPT"
+   library="altera_xcvr_reset_control_s10_181"
+   simulator="modelsim" />
+ <file
+   path="altera_xcvr_reset_control_s10_181/sim/mentor/alt_xcvr_reset_counter_s10.sv"
+   type="SYSTEM_VERILOG_ENCRYPT"
+   library="altera_xcvr_reset_control_s10_181"
+   simulator="modelsim" />
+ <file
+   path="altera_xcvr_reset_control_s10_181/sim/plain_files.txt"
+   type="OTHER"
+   library="altera_xcvr_reset_control_s10_181" />
+ <file
+   path="altera_xcvr_reset_control_s10_181/sim/mentor_files.txt"
+   type="OTHER"
+   library="altera_xcvr_reset_control_s10_181" />
+ <file
+   path="altera_xcvr_reset_control_s10_181/sim/cadence_files.txt"
+   type="OTHER"
+   library="altera_xcvr_reset_control_s10_181" />
+ <file
+   path="altera_xcvr_reset_control_s10_181/sim/synopsys_files.txt"
+   type="OTHER"
+   library="altera_xcvr_reset_control_s10_181" />
+ <file
+   path="altera_xcvr_reset_control_s10_181/sim/aldec_files.txt"
+   type="OTHER"
+   library="altera_xcvr_reset_control_s10_181" />
+ <file
+   path="sim/reset_control.v"
+   type="VERILOG"
+   library="reset_control"
+   hasInlineConfiguration="true" />
+ <topLevel name="reset_control.reset_control" />
+ <deviceFamily name="stratix10" />
+</simPackage>

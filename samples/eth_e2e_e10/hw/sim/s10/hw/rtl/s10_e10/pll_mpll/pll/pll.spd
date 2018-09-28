@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file
+   path="altera_xcvr_fpll_s10_htile_181/sim/altera_xcvr_native_s10_functions_h.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_common_sv_packages"
+   systemVerilogPackageName="altera_xcvr_native_s10_functions_h" />
+ <file
+   path="altera_xcvr_fpll_s10_htile_181/sim/altera_std_synchronizer_nocut.v"
+   type="VERILOG"
+   library="altera_xcvr_fpll_s10_htile_181" />
+ <file
+   path="altera_xcvr_fpll_s10_htile_181/sim/s10_avmm_h.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_fpll_s10_htile_181" />
+ <file
+   path="altera_xcvr_fpll_s10_htile_181/sim/alt_xcvr_native_anlg_reset_seq.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_fpll_s10_htile_181" />
+ <file
+   path="altera_xcvr_fpll_s10_htile_181/sim/alt_xcvr_pll_rcfg_arb.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_fpll_s10_htile_181" />
+ <file
+   path="altera_xcvr_fpll_s10_htile_181/sim/alt_xcvr_pll_embedded_debug.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_fpll_s10_htile_181" />
+ <file
+   path="altera_xcvr_fpll_s10_htile_181/sim/alt_xcvr_pll_avmm_csr.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_fpll_s10_htile_181" />
+ <file
+   path="altera_xcvr_fpll_s10_htile_181/sim/alt_xcvr_resync.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_fpll_s10_htile_181" />
+ <file
+   path="altera_xcvr_fpll_s10_htile_181/sim/alt_xcvr_arbiter.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_fpll_s10_htile_181" />
+ <file
+   path="altera_xcvr_fpll_s10_htile_181/sim/mentor/alt_xcvr_resync.sv"
+   type="SYSTEM_VERILOG_ENCRYPT"
+   library="altera_xcvr_fpll_s10_htile_181"
+   simulator="modelsim" />
+ <file
+   path="altera_xcvr_fpll_s10_htile_181/sim/mentor/alt_xcvr_arbiter.sv"
+   type="SYSTEM_VERILOG_ENCRYPT"
+   library="altera_xcvr_fpll_s10_htile_181"
+   simulator="modelsim" />
+ <file
+   path="altera_xcvr_fpll_s10_htile_181/sim/plain_files.txt"
+   type="OTHER"
+   library="altera_xcvr_fpll_s10_htile_181" />
+ <file
+   path="altera_xcvr_fpll_s10_htile_181/sim/mentor_files.txt"
+   type="OTHER"
+   library="altera_xcvr_fpll_s10_htile_181" />
+ <file
+   path="altera_xcvr_fpll_s10_htile_181/sim/cadence_files.txt"
+   type="OTHER"
+   library="altera_xcvr_fpll_s10_htile_181" />
+ <file
+   path="altera_xcvr_fpll_s10_htile_181/sim/synopsys_files.txt"
+   type="OTHER"
+   library="altera_xcvr_fpll_s10_htile_181" />
+ <file
+   path="altera_xcvr_fpll_s10_htile_181/sim/aldec_files.txt"
+   type="OTHER"
+   library="altera_xcvr_fpll_s10_htile_181" />
+ <file
+   path="altera_xcvr_fpll_s10_htile_181/sim/docs/pll_altera_xcvr_fpll_s10_htile_181_3xznj3i_parameters.csv"
+   type="OTHER"
+   library="altera_xcvr_fpll_s10_htile_181" />
+ <file
+   path="altera_xcvr_fpll_s10_htile_181/sim/pll_altera_xcvr_fpll_s10_htile_181_3xznj3i.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_fpll_s10_htile_181" />
+ <file
+   path="altera_xcvr_fpll_s10_htile_181/sim/alt_xcvr_pll_rcfg_opt_logic_3xznj3i.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_xcvr_fpll_s10_htile_181" />
+ <file
+   path="sim/pll.v"
+   type="VERILOG"
+   library="pll"
+   hasInlineConfiguration="true" />
+ <topLevel name="pll.pll" />
+ <deviceFamily name="stratix10" />
+</simPackage>

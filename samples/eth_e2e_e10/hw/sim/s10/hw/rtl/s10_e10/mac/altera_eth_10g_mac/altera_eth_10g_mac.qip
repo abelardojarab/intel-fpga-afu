@@ -1,0 +1,188 @@
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_TOOL_NAME "QsysPrimePro"
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_TOOL_VERSION "18.1"
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_TOOL_ENV "QsysPrimePro"
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_TOOL_VENDOR_NAME "Intel Corporation"
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_TOP_LEVEL_COMPONENT_NAME "alt_em10g32"
+set_global_assignment -library "altera_eth_10g_mac" -name SOPCINFO_FILE [file join $::quartus(qip_path) "altera_eth_10g_mac.sopcinfo"]
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name SLD_INFO "QSYS_NAME altera_eth_10g_mac HAS_SOPCINFO 1 GENERATION_ID 0"
+set_global_assignment -library "altera_eth_10g_mac" -name MISC_FILE [file join $::quartus(qip_path) "altera_eth_10g_mac.cmp"]
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_TARGETED_DEVICE_FAMILY "Stratix 10"
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_GENERATED_DEVICE_FAMILY "{Stratix 10}"
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_QSYS_MODE "STANDALONE"
+set_global_assignment -name SYNTHESIS_ONLY_QIP ON
+set_global_assignment -library "altera_eth_10g_mac" -name MISC_FILE [file join $::quartus(qip_path) "../altera_eth_10g_mac.ip"]
+
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_NAME "YWx0X2VtMTBnMzI="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_DISPLAY_NAME "TG93IExhdGVuY3kgRXRoZXJuZXQgMTBHIE1BQyBJbnRlbCBGUEdBIElQ"
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_REPORT_HIERARCHY "Off"
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_INTERNAL "Off"
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_AUTHOR "SW50ZWwgQ29ycG9yYXRpb24="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_VERSION "MTguMQ=="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_DESCRIPTION "RXRoZXJuZXQgMzIgQml0cyAxMEcgTUFD"
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "REVWSUNFX0ZBTUlMWQ==::U3RyYXRpeCAxMA==::RGV2aWNlIGZhbWlseQ=="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "REVWSUNF::MVNHMjgwSFUyRjUwRTJWRw==::RGV2aWNlIHBhcnQ="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "SU5TRVJUX1NUX0FEQVBUT1I=::MA==::VXNlIGxlZ2FjeSBFdGhlcm5ldCAxMEcgTUFDIEF2YWxvbiBTdHJlYW1pbmcgaW50ZXJmYWNl"
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "SU5TRVJUX0NTUl9BREFQVE9S::MA==::VXNlIGxlZ2FjeSBFdGhlcm5ldCAxMEcgTUFDIEF2YWxvbiBNZW1vcnktTWFwcGVkIGludGVyZmFjZQ=="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "SU5TRVJUX1hHTUlJX0FEQVBUT1I=::MQ==::VXNlIGxlZ2FjeSBFdGhlcm5ldCAxMEcgTUFDIFhHTUlJIGludGVyZmFjZQ=="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "VVNFX0FTWU5DX0FEQVBUT1I=::MA==::VXNlIERDIEZJRk8gYmFzZWQgNjQtYml0IEV0aGVybmV0IDEwRyBNQUMgWEdNSUkgYWRhcHRvcg=="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "REFUQVBBVEhfT1BUSU9O::Mw==::RGF0YXBhdGggb3B0aW9ucw=="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "RU5BQkxFX1NVUFBfQUREUg==::MQ==::RW5hYmxlIHN1cHBsZW1lbnRhcnkgYWRkcmVzcw=="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "RU5BQkxFX1BGQw==::MA==::RW5hYmxlIHByaW9yaXR5LWJhc2VkIGZsb3cgY29udHJvbCAoUEZDKQ=="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "SU5TVEFOVElBVEVfU1RBVElTVElDUw==::MQ==::RW5hYmxlIHN0YXRpc3RpY3MgY29sbGVjdGlvbg=="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "UkVHSVNURVJfQkFTRURfU1RBVElTVElDUw==::MA==::U3RhdGlzdGljcyBjb3VudGVycw=="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "UFJFQU1CTEVfUEFTU1RIUk9VR0g=::MA==::RW5hYmxlIHByZWFtYmxlIHBhc3MtdGhyb3VnaCBtb2Rl"
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "RU5BQkxFX1RJTUVTVEFNUElORw==::MA==::RW5hYmxlIHRpbWUgc3RhbXBpbmc="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "RU5BQkxFXzFHMTBHX01BQw==::MA==::U3BlZWQ="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "RU5BQkxFX01FTV9FQ0M=::MA==::RW5hYmxlIEVDQyBvbiBtZW1vcnkgYmxvY2tz"
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "RU5BQkxFX1VOSURJUkVDVElPTkFM::MA==::RW5hYmxlIHVuaWRpcmVjdGlvbmFsIGZlYXR1cmU="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "RU5BQkxFXzEwR0JBU0VSX1JFR19NT0RF::MA==::RW5hYmxlIDEwR0JBU0UtUiByZWdpc3RlciBtb2Rl"
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "RU5BQkxFX1RYUlhfREFUQVBBVEg=::MQ==::VFggYW5kIFJYIGRhdGFwYXRoIFJlc2V0L0RlZmF1bHQgVG8gRW5hYmxl"
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "U0hPV19ISURERU5fT1BUSU9OUw==::MA==::U2hvdyBoaWRkZW4gb3B0aW9ucw=="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "U0VMRUNUX1NVUFBPUlRFRF9WQVJJQU5U::MTA=::U2VsZWN0IERlc2lnbg=="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "RU5BQkxFX0VEX0ZJTEVTRVRfU1lOVEhFU0lT::MQ==::U3ludGhlc2lz"
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "RU5BQkxFX0VEX0ZJTEVTRVRfU0lN::MQ==::U2ltdWxhdGlvbg=="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "U0VMRUNUX0VEX0ZJTEVTRVQ=::MA==::R2VuZXJhdGUgRmlsZSBGb3JtYXQ="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "U0VMRUNUX1RBUkdFVEVEX0RFVklDRQ==::MA==::U2VsZWN0IEJvYXJk"
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "QU5MR19WT0xUQUdF::MV8wVg==::QW5hbG9nIFZvbHRhZ2U="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "RU5BQkxFX0FETUU=::MA==::RW5hYmxlIEFETUUgc3VwcG9ydA=="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "REVWS0lUX0RFVklDRQ==::MTBBWDExNVM0RjQ1RTNTR0Uz::RGV2a2l0IGRldmljZSBwYXJ0"
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "UVNGX1BBVEg=::TEwxMEdfRXRoZXJuZXRfQTEwXzEwR0JBU0VSLw==::UVNGIFBhdGg="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "SU5URVJOQUxfRkVBVFVSRQ==::ZmFsc2U=::SU5URVJOQUxfRkVBVFVSRQ=="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_PARAMETER "UFJfUkVBRFk=::MA==::UGFydGlhbCBSZWNvbmZpZ3VyYXRpb24gUmVhZHk="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_GROUP "SW50ZXJmYWNlIFByb3RvY29scy9FdGhlcm5ldC8xMEcgdG8gMUcgTXVsdGktcmF0ZSBFdGhlcm5ldA=="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvZGFtL2FsdGVyYS13d3cvZ2xvYmFsL2VuX1VTL3BkZnMvbGl0ZXJhdHVyZS91Zy91Z18zMmJfMTBnX2V0aGVybmV0X21hYy5wZGY="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL3Byb2dyYW1tYWJsZS9kb2N1bWVudGF0aW9uL2JoYzEzOTUxMjc4MzAwMzIuaHRtbA=="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL3Byb2dyYW1tYWJsZS9kb2N1bWVudGF0aW9uL2hjbzE0MjE2OTc4NjQ5MTQuaHRtbA=="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL3Byb2dyYW1tYWJsZS9kb2N1bWVudGF0aW9uL3VtYzE0NjcyNzI0Mjk4MDUuaHRtbA=="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL3Byb2dyYW1tYWJsZS9kb2N1bWVudGF0aW9uL25mYTE0Mzg3NTM0NDg3NDcuaHRtbA=="
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL3Byb2dyYW1tYWJsZS9kb2N1bWVudGF0aW9uL2RiZjE1MjA5OTE4MTc1ODQuaHRtbA=="
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_NAME "YWx0ZXJhX2V0aF8xMGdfbWFj"
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_DISPLAY_NAME "c3lzdGVt"
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_REPORT_HIERARCHY "On"
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_INTERNAL "Off"
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_AUTHOR "SW50ZWwgQ29ycG9yYXRpb24="
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_VERSION "MS4w"
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_PARAMETER "QVVUT19HRU5FUkFUSU9OX0lE::MA==::QXV0byBHRU5FUkFUSU9OX0lE"
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0VfRkFNSUxZ::U3RyYXRpeCAxMA==::QXV0byBERVZJQ0VfRkFNSUxZ"
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0U=::MVNHMjgwSFUyRjUwRTJWRw==::QXV0byBERVZJQ0U="
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0VfU1BFRURHUkFERQ==::Mg==::QXV0byBERVZJQ0VfU1BFRURHUkFERQ=="
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_PARAMETER "QVVUT19UWF8zMTJfNV9DTEtfQ0xPQ0tfUkFURQ==::LTE=::QXV0byBDTE9DS19SQVRF"
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_PARAMETER "QVVUT19UWF8zMTJfNV9DTEtfQ0xPQ0tfRE9NQUlO::LTE=::QXV0byBDTE9DS19ET01BSU4="
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_PARAMETER "QVVUT19UWF8zMTJfNV9DTEtfUkVTRVRfRE9NQUlO::LTE=::QXV0byBSRVNFVF9ET01BSU4="
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_PARAMETER "QVVUT19UWF8xNTZfMjVfQ0xLX0NMT0NLX1JBVEU=::LTE=::QXV0byBDTE9DS19SQVRF"
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_PARAMETER "QVVUT19UWF8xNTZfMjVfQ0xLX0NMT0NLX0RPTUFJTg==::LTE=::QXV0byBDTE9DS19ET01BSU4="
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_PARAMETER "QVVUT19UWF8xNTZfMjVfQ0xLX1JFU0VUX0RPTUFJTg==::LTE=::QXV0byBSRVNFVF9ET01BSU4="
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_PARAMETER "QVVUT19SWF8zMTJfNV9DTEtfQ0xPQ0tfUkFURQ==::LTE=::QXV0byBDTE9DS19SQVRF"
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_PARAMETER "QVVUT19SWF8zMTJfNV9DTEtfQ0xPQ0tfRE9NQUlO::LTE=::QXV0byBDTE9DS19ET01BSU4="
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_PARAMETER "QVVUT19SWF8zMTJfNV9DTEtfUkVTRVRfRE9NQUlO::LTE=::QXV0byBSRVNFVF9ET01BSU4="
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_PARAMETER "QVVUT19SWF8xNTZfMjVfQ0xLX0NMT0NLX1JBVEU=::LTE=::QXV0byBDTE9DS19SQVRF"
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_PARAMETER "QVVUT19SWF8xNTZfMjVfQ0xLX0NMT0NLX0RPTUFJTg==::LTE=::QXV0byBDTE9DS19ET01BSU4="
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_PARAMETER "QVVUT19SWF8xNTZfMjVfQ0xLX1JFU0VUX0RPTUFJTg==::LTE=::QXV0byBSRVNFVF9ET01BSU4="
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_PARAMETER "QVVUT19DU1JfQ0xLX0NMT0NLX1JBVEU=::LTE=::QXV0byBDTE9DS19SQVRF"
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_PARAMETER "QVVUT19DU1JfQ0xLX0NMT0NLX0RPTUFJTg==::LTE=::QXV0byBDTE9DS19ET01BSU4="
+set_global_assignment -entity "altera_eth_10g_mac" -library "altera_eth_10g_mac" -name IP_COMPONENT_PARAMETER "QVVUT19DU1JfQ0xLX1JFU0VUX0RPTUFJTg==::LTE=::QXV0byBSRVNFVF9ET01BSU4="
+
+
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/alt_em10g32.v"]
+set_instance_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name SDC_ENTITY_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/altera_reset_controller.sdc"] -no_sdc_promotion  -no_auto_inst_discovery 
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/altera_std_synchronizer_nocut.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/alt_em10g32unit.v"]
+set_global_assignment -library "alt_em10g32_181" -name SOURCE_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/alt_em10g32.ocp"]
+set_global_assignment -library "alt_em10g32_181" -name TCL_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/alt_em10g32_clock_crosser_timing_info.tcl"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_clk_rst.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_clock_crosser.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_crc32.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_crc32_gf_mult32_kc.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_creg_map.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_creg_top.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_frm_decoder.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_tx_rs_gmii_mii_layer.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_pipeline_base.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_reset_synchronizer.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rr_clock_crosser.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rst_cnt.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rx_fctl_filter_crcpad_rem.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rx_fctl_overflow.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rx_fctl_preamble.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rx_frm_control.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rx_pfc_flow_control.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rx_pfc_pause_conversion.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rx_pkt_backpressure_control.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rx_rs_gmii16b.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rx_rs_gmii16b_top.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rx_rs_gmii_mii.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rx_rs_layer.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rx_rs_xgmii.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rx_status_aligner.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rx_top.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_stat_mem.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_stat_reg.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_tx_data_frm_gen.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_tx_srcaddr_inserter.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_tx_err_aligner.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_tx_flow_control.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_tx_frm_arbiter.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_tx_frm_muxer.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_tx_pause_beat_conversion.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_tx_pause_frm_gen.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_tx_pause_req.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_tx_pfc_frm_gen.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rr_buffer.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_tx_rs_gmii16b.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_tx_rs_gmii16b_top.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_tx_rs_layer.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_tx_rs_xgmii_layer.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_sc_fifo.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_tx_top.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rx_gmii_decoder.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rx_gmii_decoder_dfa.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_tx_gmii_encoder.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_tx_gmii_encoder_dfa.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rx_gmii_mii_decoder_if.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_tx_gmii_mii_encoder_if.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/adapters/altera_eth_avalon_mm_adapter/altera_eth_avalon_mm_adapter.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/adapters/altera_eth_avalon_st_adapter/altera_eth_avalon_st_adapter.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/adapters/altera_eth_avalon_st_adapter/avalon_st_adapter_avalon_st_rx.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/adapters/altera_eth_avalon_st_adapter/avalon_st_adapter_avalon_st_tx.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/adapters/altera_eth_avalon_st_adapter/avalon_st_adapter.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/adapters/altera_eth_avalon_st_adapter/alt_em10g32_vldpkt_rddly.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/adapters/altera_eth_avalon_st_adapter/sideband_adapter_rx.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/adapters/altera_eth_avalon_st_adapter/sideband_adapter_tx.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/adapters/altera_eth_avalon_st_adapter/sideband_adapter.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/adapters/altera_eth_avalon_st_adapter/altera_eth_sideband_crosser.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/adapters/altera_eth_avalon_st_adapter/altera_eth_sideband_crosser_sync.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/adapters/altera_eth_xgmii_width_adaptor/alt_em10g_32_64_xgmii_conversion.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/adapters/altera_eth_xgmii_width_adaptor/alt_em10g_32_to_64_xgmii_conversion.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/adapters/altera_eth_xgmii_width_adaptor/alt_em10g_64_to_32_xgmii_conversion.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/adapters/altera_eth_xgmii_width_adaptor/alt_em10g_dcfifo_32_to_64_xgmii_conversion.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/adapters/altera_eth_xgmii_width_adaptor/alt_em10g_dcfifo_64_to_32_xgmii_conversion.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/adapters/altera_eth_xgmii_data_format_adapter/alt_em10g32_xgmii_32_to_64_adapter.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/adapters/altera_eth_xgmii_data_format_adapter/alt_em10g32_xgmii_64_to_32_adapter.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/adapters/altera_eth_xgmii_data_format_adapter/alt_em10g32_xgmii_data_format_adapter.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_altsyncram_bundle.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_altsyncram.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/alt_em10g32_avalon_dc_fifo.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/alt_em10g32_dcfifo_synchronizer_bundle.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/alt_em10g32_std_synchronizer.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_avalon_dc_fifo_lat_calc.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_avalon_dc_fifo_hecc.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_avalon_dc_fifo_secc.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_avalon_sc_fifo.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_avalon_sc_fifo_hecc.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_avalon_sc_fifo_secc.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_ecc_dec_18_12.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_ecc_dec_39_32.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_ecc_enc_12_18.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_ecc_enc_32_39.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_tx_rs_xgmii_layer_ultra.v"]
+set_global_assignment -library "alt_em10g32_181" -name VERILOG_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/rtl/alt_em10g32_rx_rs_xgmii_ultra.v"]
+set_global_assignment -library "alt_em10g32_181" -name TCL_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/debug/stp/build_stp.tcl"]
+set_global_assignment -library "alt_em10g32_181" -name SOURCE_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/debug/stp/LL10GMAC.xml"]
+set_instance_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name SDC_ENTITY_FILE [file join $::quartus(qip_path) "alt_em10g32_181/synth/low_latency_10G_ethernet.sdc"] -no_sdc_promotion  -no_auto_inst_discovery 
+set_global_assignment -library "altera_eth_10g_mac" -name VERILOG_FILE [file join $::quartus(qip_path) "synth/altera_eth_10g_mac.v"]
+
+
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_TOOL_NAME "alt_em10g32"
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_TOOL_VERSION "18.1"
+set_global_assignment -entity "alt_em10g32" -library "alt_em10g32_181" -name IP_TOOL_ENV "QsysPrimePro"
+

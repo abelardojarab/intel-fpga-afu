@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file
+   path="sim/address_decode_tx_xcvr_clk.v"
+   type="VERILOG"
+   library="address_decode_tx_xcvr_clk"
+   hasInlineConfiguration="true" />
+ <topLevel name="address_decode_tx_xcvr_clk.address_decode_tx_xcvr_clk" />
+ <deviceFamily name="stratix10" />
+</simPackage>

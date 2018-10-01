@@ -30,8 +30,7 @@
 module eth_e2e_e10 #(
     parameter NUM_LN = 4   // no override
 )(
-    // JTX: remove HSSI interface
-	//pr_hssi_if.to_fiu hssi,
+	pr_hssi_if.to_fiu hssi,
 
     // JTX: add signals removed from HSSI interface
     input clk,
@@ -65,7 +64,6 @@ reg  [15:0] prmgmt_addr;
 reg  [31:0] prmgmt_din;   
 
 always @(posedge clk)
-//always @(posedge hssi.f2a_prmgmt_ctrl_clk)
 begin
     // RD/WR request from AFU CSR
 	prmgmt_cmd <= 16'b0;
@@ -263,7 +261,6 @@ end
 //assign hssi.a2f_prmgmt_dout = prmgmt_dout_r;
 
 always @(posedge clk or posedge reset) begin
-//always @(posedge hssi.f2a_prmgmt_ctrl_clk) begin
     status_read <= 1'b0;
     status_write <= 1'b0;
 

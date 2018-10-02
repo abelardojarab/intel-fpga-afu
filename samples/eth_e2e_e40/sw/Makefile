@@ -90,7 +90,7 @@ all: pac_hssi_e40
 afu_json_info.h: ../hw/rtl/eth_e2e_e40.json
 	$(AFU_JSON_MGR) json-info --afu-json=$^ --c-hdr=$@
 
-pac_hssi_e40: fpga_hssi_e40.so pac_hssi_e40.o
+pac_hssi_e40: pac_hssi_e40.o fpga_hssi_e40.so
 	gcc -o $@ $^ $(LDFLAGS)
 
 pac_hssi_e40.o: pac_hssi_e40.c afu_json_info.h

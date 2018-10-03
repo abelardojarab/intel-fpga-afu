@@ -52,6 +52,7 @@ localparam NUM_ETH = 4;
 reg [31:0] scratch = {GBS_ID, GBS_VER};
 reg [31:0] prmgmt_dout_r = 32'h0;
 
+// TODO
 reg [NUM_ETH-1:0] sloop;
 //assign hssi.a2f_rx_seriallpbken[NUM_ETH-1:0] = sloop;
 
@@ -134,17 +135,22 @@ generate
         wire [63:0]    xgmii_tx_data;
         wire [7:0]     xgmii_rx_control;
         wire [63:0]    xgmii_rx_data;
-        wire err_ins = 1'b0;
+        wire           rx_enh_data_valid;
+        wire           tx_enh_data_valid;
+        //wire err_ins = 1'b0;
 
-        // JTX: loopback XGMII
-        /*
-        assign xgmii_rx_control = hssi.f2a_rx_control [(i*20)+7:(i*20)];
-        assign xgmii_rx_data = hssi.f2a_rx_parallel_data [(i*128)+63:(i*128)];
-        assign hssi.a2f_tx_control [(i+1)*18-1:(i*18)] = {9'b0,err_ins,xgmii_tx_control};
-        assign hssi.a2f_tx_parallel_data [(i+1)*128-1:(i*128)] = {64'b0,xgmii_tx_data};
-        */
-        assign xgmii_rx_control = xgmii_tx_control;
-        assign xgmii_rx_data    = xgmii_tx_data;
+        assign xgmii_rx_control[3:0] = hssi.f2a_rx_parallel_data [(i*80)+35:(i*80)+32];
+        assign xgmii_rx_control[9:4] = hssi.f2a_rx_parallel_data [(i*80)+77:(i*80)+72];
+        assign xgmii_rx_data[31:0] = hssi.f2a_rx_parallel_data [(i*80)+31:(i*80)];
+        assign xgmii_rx_data[63:32] = hssi.f2a_rx_parallel_data [(i*80)+71:(i*80)+40];
+        assign rx_enh_data_valid = hssi.f2a_rx_parallel_data [(i*80)+36]
+
+        assign hssi.a2f_tx_parallel_data [(i*80)+35:(i*80)+32] = xgmii_tx_control[3:0];
+        assign hssi.a2f_tx_parallel_data [(i*80)+77:(i*80)+72] = xgmii_tx_control[9:4];
+        assign hssi.a2f_tx_parallel_data [(i*80)+31:(i*80)] = xgmii_tx_data[31:0];
+        assign hssi.a2f_tx_parallel_data [(i*80)+71:(i*80)+40] = xgmii_tx_data[63:32];
+        assign hssi.a2f_tx_parallel_data [(i*80)+36] = tx_enh_data_valid;
+        
 
         reg         csr_read = 1'b0;
         reg         csr_write = 1'b0;
@@ -159,33 +165,34 @@ generate
             .tx_rst_n(~tx_rst),
             .rx_rst_n(~rx_rst),
 
-            // TODO JTX: clk with 2*freq
-            .tx_clk_312(),
-            .rx_clk_312(),
-            .tx_clk_156(clk),
-            .rx_clk_156(clk),
+            .tx_clk_312(hssi.f2a_tx_parallel_clk_x2),
+            .rx_clk_312(hssi.f2a_rx_parallel_clk_x2),
+            .tx_clk_156(hssi.f2a_tx_parallel_clk_x1),
+            .rx_clk_156(hssi.f2a_rx_parallel_clk_x1),
 
-            .iopll_locked(~reset),
+            //.iopll_locked(&hssi.f2a_rx_is_lockedtoref), // Unused
 
             // serdes controls
-            .tx_analogreset(),
-            .tx_digitalreset(),
-            .rx_analogreset(),
-            .rx_digitalreset(),
-            .tx_cal_busy(reset),
-            .rx_cal_busy(reset),
-            .rx_is_lockedtodata(reset),
-            .atx_pll_locked(reset),
-            .tx_ready_export(),
-            .rx_ready_export(),
+            /*
+            .tx_analogreset(),      // Leave unused
+            .tx_digitalreset(),     // Leave unused
+            .rx_analogreset(),      // Leave unused
+            .rx_digitalreset(),     // Leave unused
+            .tx_cal_busy(hssi.f2a_tx_ready),    // Remove
+            .rx_cal_busy(hssi.f2a_rx_ready),    // Remove
+            .rx_is_lockedtodata(hssi.f2a_rx_is_lockedtodata[i]),    // Remove
+            .atx_pll_locked(&hssi.f2a_rx_is_lockedtoref), // Remove
+            .tx_ready_export(),     // Leave unused
+            .rx_ready_export(),     // Leave unused
+            */
 
             // serdes data pipe
-            .xgmii_tx_valid(~reset),
+            .xgmii_tx_valid(tx_enh_data_valid),
             .xgmii_tx_control(xgmii_tx_control),
             .xgmii_tx_data(xgmii_tx_data),
             .xgmii_rx_control(xgmii_rx_control),
             .xgmii_rx_data(xgmii_rx_data),
-            .xgmii_rx_valid(~reset),
+            .xgmii_rx_valid(rx_enh_data_valid),
 
             // csr interface
             .csr_read(csr_read),
@@ -286,7 +293,6 @@ always @(posedge clk or posedge reset) begin
         i2c_ctrl_wdata_r[8] <= 1'b0;
     */
     if (reset) begin
-    //if (hssi.f2a_prmgmt_arst) begin
         scratch <= {GBS_ID, GBS_VER};
         //hssi.a2f_prmgmt_fatal_err <= 1'b0;
         status_read <= 1'b0;
@@ -368,28 +374,19 @@ assign oen_I2C1_rstn = 1'b0;
 
 assign oen_GPIO_a = 5'b0;
 assign oen_GPIO_b = 5'b0;
-
+*/
 
 ////////////////////////////////////
 // drive the unused channels into a civilized state
 
-
+// TODO
 generate
 for (i=4; i<NUM_LN; i=i+1) begin : unused_ln
-    assign hssi.a2f_tx_analogreset[i] = 1'b1;
-    assign hssi.a2f_tx_digitalreset[i] = 1'b1;
-    assign hssi.a2f_rx_analogreset[i] = 1'b1;
-    assign hssi.a2f_rx_digitalreset[i] = 1'b1;
-    assign hssi.a2f_rx_seriallpbken[i] = 1'b1;
-    assign hssi.a2f_rx_set_locktodata[i] = 1'b0;
-    assign hssi.a2f_rx_set_locktoref[i] = 1'b0;
-    assign hssi.a2f_tx_enh_data_valid[i] = 1'b0;
-    assign hssi.a2f_rx_enh_fifo_rd_en[i] = 1'b0;
-
-    assign hssi.a2f_tx_parallel_data[(i+1)*128-1:i*128] = 128'h0;
-    assign hssi.a2f_tx_control[(i+1)*18-1:i*18] = 18'h0;
+    assign hssi.a2f_rx_bitslip[i] = 1'b0;       // TODO
+    assign hssi.a2f_rx_fifo_rd_en[i] = 1'b0;    // TODO
+    assign hssi.a2f_tx_parallel_data[(i+1)*80-1:i*80] = 80'h0;
 end
 endgenerate
-*/
+
 
 endmodule

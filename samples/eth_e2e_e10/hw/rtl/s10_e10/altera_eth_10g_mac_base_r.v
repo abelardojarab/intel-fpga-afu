@@ -23,9 +23,10 @@ module altera_eth_10g_mac_base_r (
 	input tx_clk_156,
 	input rx_clk_156,
 		
-	input iopll_locked,
+	//input iopll_locked,
 
 	// serdes controls
+    /*
 	output tx_analogreset,
 	output tx_digitalreset,
 	output rx_analogreset,
@@ -36,7 +37,7 @@ module altera_eth_10g_mac_base_r (
 	input atx_pll_locked,
 	output tx_ready_export,
 	output rx_ready_export,
-    
+    */
     // serdes data pipe
 	input xgmii_tx_valid,
     output [7:0]   xgmii_tx_control,
@@ -301,23 +302,23 @@ altera_eth_10g_mac mac_inst (
 	.xgmii_tx				(xgmii_tx)
 );
 
-
+/*
 reset_control	reset_controller_inst(
 	.clock				(csr_clk),
     .reset				(~csr_rst_n),
-    .tx_analogreset		(tx_analogreset),
-    .tx_digitalreset	(tx_digitalreset),
-    .tx_ready			(tx_ready_export),
+    .tx_analogreset		(tx_analogreset),  // output
+    .tx_digitalreset	(tx_digitalreset), // output
+    .tx_ready			(tx_ready_export), // output
     .pll_locked			(atx_pll_locked),
     .pll_select			(1'b0),
     .tx_cal_busy		(tx_cal_busy),
     .rx_analogreset		(rx_analogreset),
-    .rx_digitalreset	(rx_digitalreset),
-    .rx_ready			(rx_ready_export),
-    .rx_is_lockedtodata	(rx_is_lockedtodata),
+    .rx_digitalreset	(rx_digitalreset),      // output
+    .rx_ready			(rx_ready_export),      // output
+    .rx_is_lockedtodata	(rx_is_lockedtodata),   // output
     .rx_cal_busy 		(rx_cal_busy)
 );
-
+*/
 altera_reset_synchronizer #(
         .DEPTH      (2),
         .ASYNC_RESET(1)

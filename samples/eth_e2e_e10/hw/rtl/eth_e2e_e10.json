@@ -5,13 +5,23 @@
       "clock-frequency-high": 100,
       "clock-frequency-low": 100,
       "afu-top-interface":
-         {
+      {
             "class": "ccip_std_afu",
-            "params":
+            "module-ports" :
+               [
                   {
-                        "clock": "uClk_usr"
+                     "class": "cci-p",
+                     "params":
+                        {
+                           "clock": "uClk_usr"
+                        }
+                  },
+                  {
+                     "class": "hssi",
+                     "interface": "raw_pr"
                   }
-         },
+               ]
+      },
       "accelerator-clusters":
          [
             {

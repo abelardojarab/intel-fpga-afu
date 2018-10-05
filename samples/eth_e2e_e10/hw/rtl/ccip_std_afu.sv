@@ -168,7 +168,7 @@ logic init_done;
     .csr_init_done(init_done),
 
     // Connection to BBS
-    .hssi(hssi)
+    .hssi(hssi),
 
     // JTX: add necessary signals
     .clk(uClk_usr),

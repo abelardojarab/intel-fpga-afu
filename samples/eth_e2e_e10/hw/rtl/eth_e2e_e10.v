@@ -143,7 +143,7 @@ generate
         assign xgmii_rx_control[9:4] = hssi.f2a_rx_parallel_data [(i*80)+77:(i*80)+72];
         assign xgmii_rx_data[31:0] = hssi.f2a_rx_parallel_data [(i*80)+31:(i*80)];
         assign xgmii_rx_data[63:32] = hssi.f2a_rx_parallel_data [(i*80)+71:(i*80)+40];
-        assign rx_enh_data_valid = hssi.f2a_rx_parallel_data [(i*80)+36]
+        assign rx_enh_data_valid = hssi.f2a_rx_parallel_data [(i*80)+36];
 
         assign hssi.a2f_tx_parallel_data [(i*80)+35:(i*80)+32] = xgmii_tx_control[3:0];
         assign hssi.a2f_tx_parallel_data [(i*80)+77:(i*80)+72] = xgmii_tx_control[9:4];
@@ -165,7 +165,7 @@ generate
             .tx_rst_n(~tx_rst),
             .rx_rst_n(~rx_rst),
 
-            .tx_clk_312(hssi.f2a_tx_parallel_clk_x2),
+            .tx_clk_312(hssi.f2a_tx_parallel_clk_x2), // TODO: use channel 0
             .rx_clk_312(hssi.f2a_rx_parallel_clk_x2),
             .tx_clk_156(hssi.f2a_tx_parallel_clk_x1),
             .rx_clk_156(hssi.f2a_rx_parallel_clk_x1),

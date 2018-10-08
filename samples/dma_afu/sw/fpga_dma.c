@@ -686,6 +686,7 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle *dma_p)
 				0 /*vector id */);
 	ON_ERR_GOTO(res, destroy_eh, "fpgaRegisterEvent");
 
+#ifndef USE_ASE
 	struct sigaction sa;
 	int sigres;
 
@@ -699,6 +700,7 @@ fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle *dma_p)
 			    "Error: failed to unregister signal handler.\n");
 	}
 	CsrControl = HOST_MMIO_32_ADDR(dma_h, CSR_CONTROL(dma_h));
+#endif
 
 	return FPGA_OK;
 

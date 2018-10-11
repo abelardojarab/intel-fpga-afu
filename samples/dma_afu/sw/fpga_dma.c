@@ -760,7 +760,6 @@ static fpga_result _read_memory_mmio_unaligned(fpga_dma_handle dma_h,
 	// overlay our data
 	local_memcpy((void *)host_addr, ((char *)(&read_tmp)) + shift, count);
 
-out:
 	return res;
 }
 

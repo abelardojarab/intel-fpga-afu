@@ -1,0 +1,18 @@
+# system info address_decode_merlin_master_translator_0 on 2018.09.21.11:07:56
+system_info:
+name,value
+DEVICE,1SG280HU2F50E2VG
+DEVICE_FAMILY,Stratix 10
+GENERATION_ID,0
+#
+#
+# Files generated for address_decode_merlin_master_translator_0 on 2018.09.21.11:07:56
+files:
+filepath,kind,attributes,module,is_top
+sim/address_decode_merlin_master_translator_0.v,VERILOG,CONTAINS_INLINE_CONFIGURATION,address_decode_merlin_master_translator_0,true
+altera_merlin_master_translator_181/sim/address_decode_merlin_master_translator_0_altera_merlin_master_translator_181_mhudjri.sv,SYSTEM_VERILOG,,address_decode_merlin_master_translator_0_altera_merlin_master_translator_181_mhudjri,false
+#
+# Map from instance-path to kind of module
+instances:
+instancePath,module
+address_decode_merlin_master_translator_0.merlin_master_translator_0,address_decode_merlin_master_translator_0_altera_merlin_master_translator_181_mhudjri

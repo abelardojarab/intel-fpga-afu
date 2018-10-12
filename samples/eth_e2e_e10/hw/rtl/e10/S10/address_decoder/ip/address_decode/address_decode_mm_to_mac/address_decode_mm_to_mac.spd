@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file
+   path="altera_merlin_slave_translator_181/sim/address_decode_mm_to_mac_altera_merlin_slave_translator_181_5aswt6a.sv"
+   type="SYSTEM_VERILOG"
+   library="altera_merlin_slave_translator_181" />
+ <file
+   path="sim/address_decode_mm_to_mac.v"
+   type="VERILOG"
+   library="address_decode_mm_to_mac"
+   hasInlineConfiguration="true" />
+ <topLevel name="address_decode_mm_to_mac.address_decode_mm_to_mac" />
+ <deviceFamily name="stratix10" />
+</simPackage>

@@ -253,6 +253,7 @@ static inline void fill_buffer(char *buf, size_t size)
 		verify_buf = (char *)malloc(size);
 		verify_buf_size = size;
 		char *buf = verify_buf;
+		assert(buf);
 
 		// use a deterministic seed to generate pseudo-random numbers
 		srand(99);
@@ -503,7 +504,7 @@ int main(int argc, char *argv[])
 	fpga_token afc_token;
 	fpga_handle afc_h;
 	fpga_guid guid;
-	uint32_t num_matches = 1;
+	uint32_t num_matches = 0;
 	volatile uint64_t *mmio_ptr = NULL;
 	uint64_t *dma_buf_ptr = NULL;
 	uint32_t use_ase;
@@ -735,7 +736,9 @@ int main(int argc, char *argv[])
 	free(verify_buf);
 
 out_dma_close:
-	free_aligned(dma_buf_ptr);
+	if (dma_buf_ptr) {
+		free_aligned(dma_buf_ptr);
+	}
 	if (dma_h)
 		res = fpgaDmaClose(dma_h);
 	ON_ERR_GOTO(res, out_unmap, "fpgaDmaClose");

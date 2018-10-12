@@ -53,6 +53,9 @@ reg [31:0] prmgmt_dout_r = 32'h0;
 
 reg [NUM_ETH-1:0] sloop;
 //assign hssi.a2f_rx_seriallpbken[NUM_ETH-1:0] = sloop;
+always_comb begin
+     assign sloop = '1;
+end
 
 ////////////////////////////////////////////////////////////////////////////////
 // MUX for HSSI PR MGMT bus access 
@@ -137,7 +140,7 @@ generate
         wire           tx_enh_data_valid;
         //wire err_ins = 1'b0;
 
-        if (!sloop)
+        if (!sloop[i])
         begin
             assign xgmii_rx_control[3:0] = hssi.f2a_rx_parallel_data [(i*80)+35:(i*80)+32];
             assign xgmii_rx_control[7:4] = hssi.f2a_rx_parallel_data [(i*80)+77:(i*80)+72];     // 9th and 10th bits unused

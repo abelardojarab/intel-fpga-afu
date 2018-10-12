@@ -32,7 +32,6 @@ module eth_e2e_e10 #(
 )(
 	pr_hssi_if.to_fiu hssi,
 
-    // JTX: add signals removed from HSSI interface
     input clk,
     input reset,
 
@@ -52,7 +51,6 @@ localparam NUM_ETH = 4;
 reg [31:0] scratch = {GBS_ID, GBS_VER};
 reg [31:0] prmgmt_dout_r = 32'h0;
 
-// TODO
 reg [NUM_ETH-1:0] sloop;
 //assign hssi.a2f_rx_seriallpbken[NUM_ETH-1:0] = sloop;
 
@@ -139,18 +137,24 @@ generate
         wire           tx_enh_data_valid;
         //wire err_ins = 1'b0;
 
-        assign xgmii_rx_control[3:0] = hssi.f2a_rx_parallel_data [(i*80)+35:(i*80)+32];
-        assign xgmii_rx_control[7:4] = hssi.f2a_rx_parallel_data [(i*80)+77:(i*80)+72];
-        assign xgmii_rx_data[31:0] = hssi.f2a_rx_parallel_data [(i*80)+31:(i*80)];
-        assign xgmii_rx_data[63:32] = hssi.f2a_rx_parallel_data [(i*80)+71:(i*80)+40];
-        assign rx_enh_data_valid = hssi.f2a_rx_parallel_data [(i*80)+36];
+        if (!sloop)
+        begin
+            assign xgmii_rx_control[3:0] = hssi.f2a_rx_parallel_data [(i*80)+35:(i*80)+32];
+            assign xgmii_rx_control[7:4] = hssi.f2a_rx_parallel_data [(i*80)+77:(i*80)+72];     // 9th and 10th bits unused
+            assign xgmii_rx_data[31:0] = hssi.f2a_rx_parallel_data [(i*80)+31:(i*80)];
+            assign xgmii_rx_data[63:32] = hssi.f2a_rx_parallel_data [(i*80)+71:(i*80)+40];
+            assign rx_enh_data_valid = hssi.f2a_rx_parallel_data [(i*80)+36];
 
-        assign hssi.a2f_tx_parallel_data [(i*80)+35:(i*80)+32] = xgmii_tx_control[3:0];
-        assign hssi.a2f_tx_parallel_data [(i*80)+77:(i*80)+72] = xgmii_tx_control[7:4];
-        assign hssi.a2f_tx_parallel_data [(i*80)+31:(i*80)] = xgmii_tx_data[31:0];
-        assign hssi.a2f_tx_parallel_data [(i*80)+71:(i*80)+40] = xgmii_tx_data[63:32];
-        assign hssi.a2f_tx_parallel_data [(i*80)+36] = tx_enh_data_valid;
-        
+            assign hssi.a2f_tx_parallel_data [(i*80)+35:(i*80)+32] = xgmii_tx_control[3:0];
+            assign hssi.a2f_tx_parallel_data [(i*80)+77:(i*80)+72] = xgmii_tx_control[7:4];     // 9th bit is unused
+            assign hssi.a2f_tx_parallel_data [(i*80)+31:(i*80)] = xgmii_tx_data[31:0];
+            assign hssi.a2f_tx_parallel_data [(i*80)+71:(i*80)+40] = xgmii_tx_data[63:32];
+            assign hssi.a2f_tx_parallel_data [(i*80)+36] = tx_enh_data_valid;
+        end else begin
+            assign xgmii_rx_control = xgmii_tx_control;
+            assign xgmii_rx_data    = xgmii_tx_data;
+            assign rx_enh_data_valid = tx_enh_data_valid;
+        end
 
         reg         csr_read = 1'b0;
         reg         csr_write = 1'b0;
@@ -161,9 +165,9 @@ generate
 
         altera_eth_10g_mac_base_r eth0 (
             .csr_clk(clk),
-            .csr_rst_n(~csr_rst),
-            .tx_rst_n(~tx_rst),
-            .rx_rst_n(~rx_rst),
+            .csr_rst_n(!csr_rst),
+            .tx_rst_n(!tx_rst),
+            .rx_rst_n(!rx_rst),
 
             .tx_clk_312(hssi.f2a_tx_parallel_clk_x2), // TODO: use channel 0
             .rx_clk_312(hssi.f2a_rx_parallel_clk_x2),
@@ -267,7 +271,7 @@ always @(posedge clk) begin
 end
 //assign hssi.a2f_prmgmt_dout = prmgmt_dout_r;
 
-always @(posedge clk or posedge reset) begin
+always @(posedge clk) begin
     status_read <= 1'b0;
     status_write <= 1'b0;
 

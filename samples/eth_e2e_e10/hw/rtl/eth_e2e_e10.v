@@ -54,7 +54,7 @@ reg [31:0] prmgmt_dout_r = 32'h0;
 reg [NUM_ETH-1:0] sloop;
 //assign hssi.a2f_rx_seriallpbken[NUM_ETH-1:0] = sloop;
 always_comb begin
-     assign sloop = '1;
+     sloop = '1;
 end
 
 ////////////////////////////////////////////////////////////////////////////////

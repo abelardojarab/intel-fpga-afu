@@ -140,7 +140,7 @@ generate
         wire           tx_enh_data_valid;
         //wire err_ins = 1'b0;
 
-        if (!sloop[i])
+        /*if (!sloop[i])
         begin
             assign xgmii_rx_control[3:0] = hssi.f2a_rx_parallel_data [(i*80)+35:(i*80)+32];
             assign xgmii_rx_control[7:4] = hssi.f2a_rx_parallel_data [(i*80)+77:(i*80)+72];     // 9th and 10th bits unused
@@ -154,10 +154,11 @@ generate
             assign hssi.a2f_tx_parallel_data [(i*80)+71:(i*80)+40] = xgmii_tx_data[63:32];
             assign hssi.a2f_tx_parallel_data [(i*80)+36] = tx_enh_data_valid;
         end else begin
-            assign xgmii_rx_control = xgmii_tx_control;
+            */
+	assign xgmii_rx_control = xgmii_tx_control;
             assign xgmii_rx_data    = xgmii_tx_data;
             assign rx_enh_data_valid = tx_enh_data_valid;
-        end
+        //end
 
         reg         csr_read = 1'b0;
         reg         csr_write = 1'b0;

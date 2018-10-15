@@ -57,9 +57,9 @@
 ./eth_traffic_controller/crc32/crc32.qip
 ./eth_traffic_controller/eth_std_traffic_controller_top.qip
 ./fifo_dcfifo/dc_fifo/dc_fifo.qip
-./fifo_scfifo/sc_fifo/sc_fifo_rx_sc_fifo/sc_fifo_rx_sc_fifo.qip
-./fifo_scfifo/sc_fifo/sc_fifo_tx_sc_fifo/sc_fifo_tx_sc_fifo.qip
 ./fifo_scfifo/sc_fifo/sc_fifo.qip
+./fifo_scfifo/sc_fifo/sc_fifo_tx_sc_fifo/sc_fifo_tx_sc_fifo.qip
+./fifo_scfifo/sc_fifo/sc_fifo_rx_sc_fifo/sc_fifo_rx_sc_fifo.qip
 ./mac/altera_eth_10g_mac/altera_eth_10g_mac.qip
 ./pll_mpll/pll/pll.qip
 ./xcvr_reset_controller/reset_control/reset_control.qip

@@ -42,7 +42,7 @@ module shiftreg_data (
 	shiftout,
 	taps);
 
-    parameter DEVICE_FAMILY = "Arria 10";
+    parameter DEVICE_FAMILY = "Stratix 10";
 
 	input	  aclr;
 	input	  clken;

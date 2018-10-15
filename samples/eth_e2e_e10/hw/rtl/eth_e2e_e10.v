@@ -53,9 +53,9 @@ reg [31:0] prmgmt_dout_r = 32'h0;
 
 reg [NUM_ETH-1:0] sloop;
 //assign hssi.a2f_rx_seriallpbken[NUM_ETH-1:0] = sloop;
-always_comb begin
+/*always_comb begin
      sloop = '1;
-end
+end*/
 
 ////////////////////////////////////////////////////////////////////////////////
 // MUX for HSSI PR MGMT bus access 

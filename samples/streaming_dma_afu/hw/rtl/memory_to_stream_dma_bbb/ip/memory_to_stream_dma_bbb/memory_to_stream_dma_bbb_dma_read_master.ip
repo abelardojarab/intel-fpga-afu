@@ -1102,7 +1102,7 @@
         <spirit:parameter>
           <spirit:name>deviceFamily</spirit:name>
           <spirit:displayName>Device family</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="deviceFamily">Stratix 10</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="deviceFamily">Arria 10</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>deviceSpeedGrade</spirit:name>

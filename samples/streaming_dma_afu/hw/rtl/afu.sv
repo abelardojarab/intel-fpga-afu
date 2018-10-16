@@ -161,8 +161,8 @@ module afu (
 	wire mmio_avmm_read;
 	wire [(CCIP_AVMM_MMIO_DATA_WIDTH/8)-1:0]	mmio_avmm_byteenable;
 
-	wire m2s_dma_irq;
-  wire s2m_dma_irq;
+//	wire m2s_dma_irq;
+//  wire s2m_dma_irq;
 	
 	streaming_dma_test_system the_streaming_dma_test_system (
     .emif_a_avmm_waitrequest       (DDR4a_waitrequest),   // dma_master.waitrequest
@@ -218,8 +218,8 @@ module afu (
     .host_read_byteenable     (),    //                    .byteenable
     .host_read_debugaccess    (),   //                    .debugaccess
         
-    .m2s_irq_irq                   (m2s_dma_irq),
-    .s2m_irq_irq                   (s2m_dma_irq),
+//    .m2s_irq_irq                   (m2s_dma_irq),
+//    .s2m_irq_irq                   (s2m_dma_irq),
         
 		.emif_a_clock_clk              (DDR4a_USERCLK),
 		.emif_b_clock_clk              (DDR4b_USERCLK),
@@ -252,7 +252,8 @@ module afu (
 		.clk                      (afu_clk),            //   clk.clk
 		.reset                    (reset),         // reset.reset
 		
-		.irq                      ({2'b00, s2m_dma_irq, m2s_dma_irq}),
+//		.irq                      ({2'b00, s2m_dma_irq, m2s_dma_irq}),
+        .irq                      (4'b0000),
 		
 		.avmm_waitrequest         (requestor_avmm_wr_waitrequest),
 		.avmm_writedata           (requestor_avmm_wr_writedata),

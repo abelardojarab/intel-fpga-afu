@@ -265,9 +265,9 @@ static fpga_result bandwidth_test(fpga_handle afc_h, fpga_dma_handle_t dma_h, st
 			tx_ctrl = GENERATE_SOP_AND_EOP;
 
 		#if !EMU_MODE
-		res = prepare_checker(afc_h, config->data_size);
-		ON_ERR_GOTO(res, free_transfer, "preparing checker");
-		debug_print("checker prepared\n");
+		//res = prepare_checker(afc_h, config->data_size);
+		//ON_ERR_GOTO(res, free_transfer, "preparing checker");
+		//debug_print("checker prepared\n");
 		#endif
 
 		clock_gettime(CLOCK_MONOTONIC, &start);
@@ -301,9 +301,9 @@ static fpga_result bandwidth_test(fpga_handle afc_h, fpga_dma_handle_t dma_h, st
 		printf("%lf transfers/sec\n", (double)transfers/getTime(start,end));
 		
 		#if !EMU_MODE
-		res = wait_checker(afc_h);
-		ON_ERR_GOTO(res, free_transfer, "checker verify failed");
-		printf("Transfer pass!\n");
+		//res = wait_checker(afc_h);
+		//ON_ERR_GOTO(res, free_transfer, "checker verify failed");
+		//printf("Transfer pass!\n");
 		#endif
 
 	} else {
@@ -359,6 +359,7 @@ out:
 	return res;
 }
 
+#if 0
 fpga_result configure_numa(fpga_token afc_token, bool cpu_affinity, bool memory_affinity)
 {
 	fpga_result res = FPGA_OK;
@@ -423,6 +424,7 @@ out_destroy_prop:
 out:
 	return res;
 }
+#endif
 
 int find_accelerator(const char *afu_id, struct config *config,
 			    fpga_token *afu_tok) {
@@ -528,12 +530,12 @@ fpga_result do_action(struct config *config, fpga_token afc_tok)
 	debug_print("bandwidth test success\n");
 
 out_dma_close:
-	if(dma_h) {
-		printf("closing DMA\n");
-		res = fpgaDMAClose(dma_h);
-		ON_ERR_GOTO(res, out_unmap, "fpgaDMAOpen");
-		debug_print("closed dma channel\n");
-	}
+	//if(dma_h) {
+	//	printf("closing DMA\n");
+	//	res = fpgaDMAClose(dma_h);
+	//	ON_ERR_GOTO(res, out_unmap, "fpgaDMAOpen");
+	//	debug_print("closed dma channel\n");
+	//}
 
 out_unmap:
 	#ifndef USE_ASE

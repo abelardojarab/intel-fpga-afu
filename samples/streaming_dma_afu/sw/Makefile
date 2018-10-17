@@ -1,10 +1,12 @@
 CXX = g++
 LDFLAGS ?=
+tbb = /home/dunnikri/intel/tbb/
 CXXFLAGS += -D FPGA_DMA_DEBUG=1 -g -O2 -fPIC -D EMU_MODE=0 -Wall -Wno-unknown-pragmas -I$(tbb)/include -fpermissive -std=c++11
 
 # Flush and avoid use of DMA descriptors from previous transfer
 CFLAGS += -D FORCE_DESC_FLUSH=1
 ifdef prefix
+CXXFLAGS += -I$(prefix)/include
 LDFLAGS += -L$(prefix)/lib -L$(prefix)/lib64 
 endif
 
@@ -20,7 +22,7 @@ ifeq ($(USE_ASE),1)
 else
 	LDFLAGS += -ljson-c
 	LDFLAGS += -lopae-c
-	LDFLAGS += -lhwloc
+#	LDFLAGS += -lhwloc
 endif
 
 LDFLAGS += -pthread

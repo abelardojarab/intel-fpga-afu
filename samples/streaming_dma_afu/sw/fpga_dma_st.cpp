@@ -159,6 +159,44 @@ static fpga_result MMIOWrite64Blk(fpga_dma_handle_t dma_h, uint64_t device,
 	return res;
 }
 
+/**
+* MMIOWrite32Blk
+*
+* @brief                Writes a block of 32-bit values to FPGA MMIO space
+* @param[in] dma        Handle to the FPGA DMA object
+* @param[in] device     FPGA address
+* @param[in] host       Host buffer address
+* @param[in] count      Size in bytes
+* @return fpga_result FPGA_OK on success, return code otherwise
+*
+*/
+static fpga_result MMIOWrite32Blk(fpga_dma_handle_t dma_h, uint64_t device,
+				uint64_t host, uint64_t bytes)
+{
+	assert(IS_ALIGNED_DWORD(device));
+	assert(IS_ALIGNED_DWORD(bytes));
+
+	uint32_t *haddr = (uint32_t *) host;
+	uint64_t i;
+	fpga_result res = FPGA_OK;
+
+#ifndef USE_ASE
+	volatile uint32_t *dev_addr = HOST_MMIO_32_ADDR(dma_h, device);
+#endif
+
+	//debug_print("copying %lld bytes from 0x%p to 0x%p\n", (long long int)bytes, haddr, (void *)device);
+	for (i = 0; i < bytes / sizeof(uint32_t); i++) {
+#ifdef USE_ASE
+		res = fpgaWriteMMIO32(dma_h->fpga_h, dma_h->mmio_num, device, *haddr);
+		ON_ERR_RETURN(res, "fpgaWriteMMIO32");
+		haddr++;
+		device += sizeof(uint32_t);
+#else
+		*dev_addr++ = *haddr++;
+#endif
+	}
+	return res;
+}
 
 /**
 * MMIORead64Blk
@@ -296,7 +334,6 @@ void assign_hw_desc(msgdma_sw_desc_t *sw_desc, msgdma_hw_descp_t *hw_descp) {
 		hw_descp->hw_desc->ctrl.generate_sop = 0;
 		hw_descp->hw_desc->ctrl.generate_eop = 0;
 	}
-
 	hw_descp->hw_desc->ctrl.go = 1;
 	hw_descp->hw_desc->owned_by_hw = 1;
 	// hack - push just 1 descriptor
@@ -354,7 +391,7 @@ static void dump_hw_desc(int i, msgdma_hw_desc_t *desc)
 
 static void *dispatcherWorker(void* dma_handle) {
 	fpga_dma_handle_t dma_h = (fpga_dma_handle_t )dma_handle;
-
+	fpga_result res = FPGA_OK;	
 	while(!dma_h->init)
 		usleep(10);
 
@@ -369,6 +406,12 @@ static void *dispatcherWorker(void* dma_handle) {
 			dma_h->free_desc.try_pop(hw_descp);
 			
 			assign_hw_desc(sw_desc, hw_descp);
+
+			// enable fetch engine (read-modify-write?)
+			//msgdma_prefetcher_ctrl_t prefetcher_ctrl;
+			//prefetcher_ctrl = {0};
+			//prefetcher_ctrl.ct.fetch_en = 1;
+			//MMIOWrite64Blk(dma_h, PREFETCHER_CTRL(dma_h), (uint64_t)&prefetcher_ctrl.reg, sizeof(prefetcher_ctrl.reg));
 
 			// dump hardware descriptor for debug
 			dump_hw_desc(0, sw_desc->hw_descp->hw_desc);
@@ -485,8 +528,10 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, uint64_t dma_channel_index, fpga_dma_h
 					dma_h->ch_type=RX_ST;
 				}
 				dma_h->dma_csr_base = dma_h->dma_base + FPGA_DMA_CSR;
-				dma_h->dma_desc_base = dma_h->dma_base + FPGA_DMA_DESC;
 				dma_h->dma_prefetcher_base = dma_h->dma_base + FPGA_DMA_PREFETCHER;
+				debug_print("csr base = %lx\n", dma_h->dma_csr_base);
+				debug_print("desc base = %lx\n", dma_h->dma_desc_base);
+				debug_print("prefetcher base = %lx\n", dma_h->dma_prefetcher_base);
 				dma_found = true;
 				dma_h->dma_channel = dma_channel_index;
 				debug_print("DMA Base Addr = %08lx\n", dma_h->dma_base);
@@ -560,7 +605,7 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, uint64_t dma_channel_index, fpga_dma_h
 		//}	
 
 		// dump descriptor for debug		
-		//dump_hw_desc(i, cur_block);
+		dump_hw_desc(i, cur_block);
 	}
 
 	// populate free descriptor pool
@@ -588,6 +633,7 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, uint64_t dma_channel_index, fpga_dma_h
 		res = FPGA_EXCEPTION;
 		ON_ERR_GOTO(res, rel_buf, "pthread_create completionWorker");
 	}
+
 	#if EMU_MODE
 	// kick dma emulation thread
 	//if(pthread_create(&dma_h->emu_work_id, NULL, emulationWorker, (void*)dma_h) != 0) {
@@ -596,6 +642,11 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, uint64_t dma_channel_index, fpga_dma_h
 	//}
 	#else
 	// write start address the fetch engine reads from
+	msgdma_ctrl_t ctrl;
+	ctrl = {0};
+	res = MMIOWrite32Blk(dma_h, CSR_CONTROL(dma_h), (uint64_t)&ctrl.reg, sizeof(ctrl.reg));
+	ON_ERR_GOTO(res, out, "MMIOWrite32Blk");
+
 	uint64_t start_loc;
 	start_loc = dma_h->block_mem[0].block_iova;
 	res = MMIOWrite64Blk(dma_h, PREFETCHER_START(dma_h), (uint64_t)&start_loc, sizeof(start_loc));
@@ -604,7 +655,9 @@ fpga_result fpgaDMAOpen(fpga_handle fpga, uint64_t dma_channel_index, fpga_dma_h
 	// enable fetch engine (read-modify-write?)
 	msgdma_prefetcher_ctrl_t prefetcher_ctrl;
 	prefetcher_ctrl = {0};
-	prefetcher_ctrl.ct.fetch_en = 1;
+	prefetcher_ctrl.ct.timeout_val = 0x20;
+	prefetcher_ctrl.ct.timeout_en = 1;
+	prefetcher_ctrl.ct.fetch_en = 1;	
 	res = MMIOWrite64Blk(dma_h, PREFETCHER_CTRL(dma_h), (uint64_t)&prefetcher_ctrl.reg, sizeof(prefetcher_ctrl.reg));
 	ON_ERR_GOTO(res, out, "enabling fetch engine");
 	#endif

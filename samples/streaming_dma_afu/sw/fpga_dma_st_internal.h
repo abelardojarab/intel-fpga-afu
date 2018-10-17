@@ -71,7 +71,6 @@ using namespace tbb;
 
 // DMA Register offsets from base
 #define FPGA_DMA_CSR 0x40
-#define FPGA_DMA_DESC 0x60
 #define FPGA_DMA_PREFETCHER 0x80
 
 #define CSR_BASE(dma_h) ((uint64_t)dma_h->dma_csr_base)
@@ -82,6 +81,11 @@ using namespace tbb;
 #define PREFETCHER_START(dma_h) (PREFETCHER_BASE(dma_h) + offsetof(msgdma_prefetcher_csr_t, start_loc))
 #define PREFETCHER_FETCH(dma_h) (PREFETCHER_BASE(dma_h) + offsetof(msgdma_prefetcher_csr_t, fetch_loc))
 #define PREFETCHER_STATUS(dma_h) (PREFETCHER_BASE(dma_h) + offsetof(msgdma_prefetcher_csr_t, status))
+
+#define CSR_STATUS(dma_h) (CSR_BASE(dma_h) + offsetof(msgdma_csr_t, status))
+#define CSR_CONTROL(dma_h) (CSR_BASE(dma_h) + offsetof(msgdma_csr_t, ctrl))
+#define CSR_FILL_LEVEL(dma_h) (CSR_BASE(dma_h) + offsetof(msgdma_csr_t, fill_level))
+#define CSR_RSP_FILL_LEVEL(dma_h) (CSR_BASE(dma_h) + offsetof(msgdma_csr_t, rsp_level)
 
 #define HOST_MMIO_32_ADDR(dma_handle,offset) ((volatile uint32_t *)((uint64_t)(dma_handle)->mmio_va + (uint64_t)(offset)))
 #define HOST_MMIO_64_ADDR(dma_handle,offset) ((volatile uint64_t *)((uint64_t)(dma_handle)->mmio_va + (uint64_t)(offset)))
@@ -189,6 +193,77 @@ typedef union {
 		uint32_t go:1;
 	};
 } msgdma_desc_ctrl_t;
+
+typedef union {
+	uint32_t reg;
+	struct {
+		uint32_t busy:1;
+		uint32_t desc_buf_empty:1;
+		uint32_t desc_buf_full:1;
+		uint32_t rsp_buf_empty:1;
+		uint32_t rsp_buf_full:1;
+		uint32_t stopped:1;
+		uint32_t resetting:1;
+		uint32_t stopped_on_errror:1;
+		uint32_t stopped_on_early_term:1;
+		uint32_t irq:1;
+		uint32_t reserved:22;
+	} st;
+} msgdma_status_t;
+
+typedef union {
+	uint32_t reg;
+	struct {
+		uint32_t stop_dispatcher:1;
+		uint32_t reset_dispatcher:1;
+		uint32_t stop_on_error:1;
+		uint32_t stopped_on_early_term:1;
+		uint32_t global_intr_en_mask:1;
+		uint32_t stop_descriptors:1;
+		uint32_t flush_descriptors:1;
+		uint32_t flush_rd_master:1;
+		uint32_t flush_wr_master:1;
+		uint32_t rsvd:19;
+	} ct;
+} msgdma_ctrl_t;
+
+
+typedef union {
+	uint32_t reg;
+	struct {
+		uint32_t rd_fill_level:16;
+		uint32_t wr_fill_level:16;
+	} fl;
+} msgdma_fill_level_t;
+
+typedef union {
+	uint32_t reg;
+	struct {
+		uint32_t rsp_fill_level:16;
+		uint32_t rsvd:16;
+	} rsp;
+} msgdma_rsp_level_t;
+
+typedef union {
+	uint32_t reg;
+	struct {
+		uint32_t rd_seq_num:16;
+		uint32_t wr_seq_num:16;
+	} seq;
+} msgdma_seq_num_t;
+
+typedef struct __attribute__((__packed__)) {
+	// 0x0
+	msgdma_status_t status;
+	// 0x4
+	msgdma_ctrl_t ctrl;
+	// 0x8
+	msgdma_fill_level_t fill_level;
+	// 0xc
+	msgdma_rsp_level_t rsp_level;
+	// 0x10
+	msgdma_seq_num_t seq_num;
+} msgdma_csr_t;
 
 // Hardware descriptor
 typedef struct __attribute__((__packed__)) {

@@ -200,20 +200,20 @@ int main(int argc, char *argv[]) {
 		.bus = CONFIG_UNINIT,
 		.device = CONFIG_UNINIT,
 		.function = CONFIG_UNINIT,
-		.data_size = CONFIG_UNINIT,
-		.payload_size = CONFIG_UNINIT,
-	 	.direction = STDMA_INVAL_DIRECTION,
-	 	.transfer_type = STDMA_INVAL_TRANSFER_TYPE
+		.data_size = 4096,
+		.payload_size = 4096,
+	 	.direction = STDMA_MTOS,
+	 	.transfer_type = STDMA_TRANSFER_FIXED
 	};
 
-	parse_args(&config, argc, argv);
-	if(config.data_size == CONFIG_UNINIT ||
-		config.payload_size == CONFIG_UNINIT ||
-		config.direction == STDMA_INVAL_DIRECTION ||
-		config.transfer_type == STDMA_INVAL_TRANSFER_TYPE) {
-		printUsage();
-		exit(1);
-	}
+	//parse_args(&config, argc, argv);
+	//if(config.data_size == CONFIG_UNINIT ||
+	//	config.payload_size == CONFIG_UNINIT ||
+	//	config.direction == STDMA_INVAL_DIRECTION ||
+	//	config.transfer_type == STDMA_INVAL_TRANSFER_TYPE) {
+	//	printUsage();
+	//	exit(1);
+	//}
 	
 	int ret = find_accelerator(DMA_AFU_ID, &config, &afc_tok);
 	if (ret < 0) {
@@ -226,8 +226,8 @@ int main(int argc, char *argv[]) {
 		bool cpu_affinity = true;
 		bool memory_affinity = true;
 		debug_print("found %d accelerator(s)\n", ret);
-		res = configure_numa(afc_tok, cpu_affinity, memory_affinity);
-		ON_ERR_GOTO(res, out, "configuring NUMA affinity");
+		//res = configure_numa(afc_tok, cpu_affinity, memory_affinity);
+		//ON_ERR_GOTO(res, out, "configuring NUMA affinity");
 
 		res = do_action(&config, afc_tok);
 		ON_ERR_GOTO(res, out, "error do_action");

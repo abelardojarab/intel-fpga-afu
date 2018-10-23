@@ -129,7 +129,7 @@ wire  [0:0] status_read_timeout;
 
 reg [1:0] e40_arst = 2'b11;
 wire [0:0] reset_async = e40_arst[0];
-wire [0:0] reset_status = e40_arst[1];
+wire [0:0] reset_status = e40_arst[0];
 
 wire  [0:0] rx_pcs_ready;
 
@@ -183,11 +183,11 @@ always @(posedge hssi.f2a_prmgmt_ctrl_clk) begin
     rx_analogreset_r <= {4{rx_analogreset_i}};
 end
 
-always @(posedge hssi.f2a_tx_clk) begin
+always @(posedge hssi.f2a_prmgmt_ctrl_clk) begin
     tx_digitalreset_r <= {4{tx_digitalreset_i}};
 end
 
-always @(posedge hssi.f2a_rx_clk_ln0) begin
+always @(posedge hssi.f2a_prmgmt_ctrl_clk) begin
     rx_digitalreset_r <= {4{rx_digitalreset_i}};
 end
 

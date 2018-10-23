@@ -27,7 +27,8 @@
  * \fpga_dma_st_test_utils.c
  * \brief Streaming DMA test utils
  */
-#include <math.h>
+#include <iostream>
+#include <cmath>
 #include "fpga_dma_st_test_utils.h"
 #include "fpga_dma_st_common.h"
 
@@ -43,33 +44,8 @@ static int err_cnt = 0;
 		}\
 	} while (0)
 
-static void transferComplete(void *ctx, void* status_ctx) {
-	//tf_status status = (tf_status)status_ctx;
-	//context.rcvd_bytes = status->rcvd_bytes;
-	//context.eop_arrived = status->eop_arrived;
-	//printf("Callback recieved\n");
-	////sem_post(&transfer_done);
-}
-
-static fpga_result rxTransfer(fpga_dma_handle_t dma_h, fpga_dma_transfer_t rx_transfer,
-	uint64_t src, uint64_t dst, uint64_t length, fpga_dma_transfer_type_t tf_type,
-	fpga_dma_rx_ctrl_t rx_ctrl, fpga_dma_transfer_cb cb)
-{
-	fpga_result res = FPGA_OK;
-	fpgaDMATransferSetSrc(rx_transfer, src);
-	fpgaDMATransferSetDst(rx_transfer, dst);
-	fpgaDMATransferSetLen(rx_transfer, length);
-	fpgaDMATransferSetTransferType(rx_transfer, tf_type);
-	fpgaDMATransferSetRxControl(rx_transfer, rx_ctrl);
-	fpgaDMATransferSetTransferCallback(rx_transfer, cb, NULL);
-
-	res = fpgaDMATransfer(dma_h, rx_transfer);
-	ON_ERR_GOTO(res, out, "transfer failed\n");
-
-	sem_wait(&transfer_done);
-	sem_post(&transfer_done);
-out:
-	return res;
+static void transferComplete(void *ctx, fpga_dma_transfer_status_t status) {
+	return;
 }
 
 //Verify repeating pattern 0x00...0xFF of payload_size
@@ -93,7 +69,7 @@ static fpga_result verify_buffer(unsigned char *buf, size_t payload_size) {
 		}
 	}
 out:
-	printf("S2M: Data Verification Success!\n");
+	//printf("S2M: Data Verification Success!\n");
 	return FPGA_OK;
 }
 
@@ -117,9 +93,9 @@ static void fill_buffer(unsigned char *buf, size_t payload_size) {
 	}
 }
 
-static void report_bandwidth(size_t size, double seconds) {
+static double getBandwidth(size_t size, double seconds) {
 	double throughput = (double)size/((double)seconds*1000*1000);
-	printf("\rBandwidth = %lf MB/s\n", throughput);
+	return std::round(throughput);
 }
 
 // return elapsed time
@@ -163,7 +139,7 @@ out:
 }
 
 
-static fpga_result prepare_generator(fpga_handle afc_h, uint64_t size)
+static fpga_result prepare_generator(fpga_handle afc_h, uint64_t size, fpga_dma_rx_ctrl_t rx_ctrl)
 {
 	fpga_result res;
 	res = populate_pattern_generator(afc_h);
@@ -174,7 +150,11 @@ static fpga_result prepare_generator(fpga_handle afc_h, uint64_t size)
 	ON_ERR_GOTO(res, out, "stopping generator");
 	debug_print("stopped generator\n");
 
-	res = start_generator(afc_h, size, 0);
+	if(rx_ctrl == RX_NO_PACKET)
+		res = start_generator(afc_h, size, 0);
+	else if (rx_ctrl == END_ON_EOP)
+		res = start_generator(afc_h, size, 1);
+	
 	ON_ERR_GOTO(res, out, "starting generator");
 	debug_print("started generator\n");
 
@@ -247,7 +227,7 @@ static fpga_result bandwidth_test(fpga_handle afc_h, fpga_dma_handle_t dma_h, st
 	battrs.size = config->data_size;
 	res = allocate_buffer(afc_h, &battrs);	
 	ON_ERR_GOTO(res, out, "allocating buffer");
-	debug_print("allocated test buffer va = %lx, iova = %lx, wsid = %lx\n", battrs.va, battrs.iova, battrs.wsid, battrs.size);
+	debug_print("allocated test buffer va = %p, iova = %lx, wsid = %lx, size = %ld\n", battrs.va, battrs.iova, battrs.wsid, battrs.size);
 
 	fpga_dma_transfer_t transfer;
 	res = fpgaDMATransferInit(&transfer);
@@ -265,19 +245,18 @@ static fpga_result bandwidth_test(fpga_handle afc_h, fpga_dma_handle_t dma_h, st
 			tx_ctrl = GENERATE_SOP_AND_EOP;
 
 		#if !EMU_MODE
-		//res = prepare_checker(afc_h, config->data_size);
-		//ON_ERR_GOTO(res, free_transfer, "preparing checker");
-		//debug_print("checker prepared\n");
+		res = prepare_checker(afc_h, config->data_size);
+		ON_ERR_GOTO(res, free_transfer, "preparing checker");
+		debug_print("checker prepared\n");
 		#endif
 
 		clock_gettime(CLOCK_MONOTONIC, &start);
 		uint64_t total_size = config->data_size;
 		int64_t tid = ceil(config->data_size / config->payload_size);
-		int64_t transfers = tid;
 		uint64_t src = battrs.iova;
 		while(total_size > 0) {
 			uint64_t transfer_bytes = MIN(total_size, config->payload_size);
-			debug_print("Transfer src=%lx, dst=%lx, bytes=%ld\n", (uint64_t)src, (uint64_t)0, transfer_bytes);
+			//debug_print("Transfer src=%lx, dst=%lx, bytes=%ld\n", (uint64_t)src, (uint64_t)0, transfer_bytes);
 
 			fpgaDMATransferSetSrc(transfer, src);
 			fpgaDMATransferSetDst(transfer, (uint64_t)0);
@@ -285,11 +264,12 @@ static fpga_result bandwidth_test(fpga_handle afc_h, fpga_dma_handle_t dma_h, st
 			fpgaDMATransferSetTransferType(transfer, HOST_MM_TO_FPGA_ST);
 			fpgaDMATransferSetTxControl(transfer, tx_ctrl);
 			// perform non-blocking transfers, except for the very last
-			debug_print("transfer id = %ld\n", tid);
-			if(tid == 1)
+			if(tid == 1) {
+				fpgaDMATransferSetLast(transfer, true);
 				fpgaDMATransferSetTransferCallback(transfer, NULL, NULL);
-			else
+			} else {
 				fpgaDMATransferSetTransferCallback(transfer, transferComplete, NULL);
+			}
 
 			res = fpgaDMATransfer(dma_h, transfer);
 			ON_ERR_GOTO(res, free_transfer, "transfer error");
@@ -298,12 +278,10 @@ static fpga_result bandwidth_test(fpga_handle afc_h, fpga_dma_handle_t dma_h, st
 			tid--;
 		}
 		clock_gettime(CLOCK_MONOTONIC, &end);
-		printf("%lf transfers/sec\n", (double)transfers/getTime(start,end));
 		
 		#if !EMU_MODE
-		//res = wait_checker(afc_h);
-		//ON_ERR_GOTO(res, free_transfer, "checker verify failed");
-		//printf("Transfer pass!\n");
+		res = wait_checker(afc_h);
+		ON_ERR_GOTO(res, free_transfer, "checker verify failed");
 		#endif
 
 	} else {
@@ -313,24 +291,35 @@ static fpga_result bandwidth_test(fpga_handle afc_h, fpga_dma_handle_t dma_h, st
 		else
 			rx_ctrl = END_ON_EOP;
 
-		res = prepare_generator(afc_h, config->data_size);
+		memset(battrs.va, 0, config->data_size);
+		res = prepare_generator(afc_h, config->data_size , rx_ctrl);
 		ON_ERR_GOTO(res, free_transfer, "preparing generator");
 		debug_print("generator prepared\n");
 
-		memset(battrs.va, 0, config->data_size);
 		clock_gettime(CLOCK_MONOTONIC, &start);
 		uint64_t total_size = config->data_size;
-		char *dst_p = (char*)battrs.va;
+		int64_t tid = ceil(config->data_size / config->payload_size);
+		uint64_t dst = battrs.iova;
 		while(total_size > 0) {
 			uint64_t transfer_bytes = MIN(total_size, config->payload_size);
-			debug_print("Transfer src=%lx, dst=%lx, bytes=%ld\n", (uint64_t)0, (uint64_t)dst_p, transfer_bytes);
-			res = rxTransfer(dma_h, transfer, 0, (uint64_t)dst_p,
-					transfer_bytes,
-					FPGA_ST_TO_HOST_MM, rx_ctrl,
-					transferComplete);
+
+			fpgaDMATransferSetSrc(transfer, (uint64_t)0);
+			fpgaDMATransferSetDst(transfer, dst);
+			fpgaDMATransferSetLen(transfer, transfer_bytes);
+			fpgaDMATransferSetTransferType(transfer, FPGA_ST_TO_HOST_MM);
+			fpgaDMATransferSetRxControl(transfer, rx_ctrl);
+			if(tid == 1) {
+				fpgaDMATransferSetLast(transfer, true);
+				fpgaDMATransferSetTransferCallback(transfer, NULL, NULL);
+			} else {
+				fpgaDMATransferSetTransferCallback(transfer, transferComplete, NULL);
+			}
+
+			res = fpgaDMATransfer(dma_h, transfer);
 			ON_ERR_GOTO(res, free_transfer, "transfer error");
 			total_size -= transfer_bytes;
-			dst_p += transfer_bytes;
+			dst += transfer_bytes;
+			tid--;
 		}
 		ON_ERR_GOTO(res, free_transfer, "transfer error");
 		clock_gettime(CLOCK_MONOTONIC, &end);
@@ -343,23 +332,24 @@ static fpga_result bandwidth_test(fpga_handle afc_h, fpga_dma_handle_t dma_h, st
 		ON_ERR_GOTO(res, free_transfer, "buffer verify failed");
 		printf("Transfer pass!\n");
 	}
-	report_bandwidth(config->data_size, getTime(start,end));
+	std::cout << "PASS! Bandwidth = " << getBandwidth(config->data_size, getTime(start,end)) << " MB/s" << std::endl;
 
 free_transfer:
 	if(battrs.va) {
 		debug_print("destroying transfer\n");
-		res = fpgaDMATransferDestroy(transfer);
+		res = fpgaDMATransferDestroy(&transfer);
 		ON_ERR_GOTO(res, out, "destroy transfer");
 		debug_print("destroyed transfer\n");
 	}
 out:
-	if(battrs.va)
+	if(battrs.va) {
+		debug_print("free app buffer\n");
 		free_buffer(afc_h, &battrs);
+	}
 
 	return res;
 }
 
-#if 0
 fpga_result configure_numa(fpga_token afc_token, bool cpu_affinity, bool memory_affinity)
 {
 	fpga_result res = FPGA_OK;
@@ -400,20 +390,20 @@ fpga_result configure_numa(fpga_token afc_token, bool cpu_affinity, bool memory_
 		#endif
 		if (memory_affinity) {
 			#if HWLOC_API_VERSION > 0x00020000
-				// hack
-				//retval = hwloc_set_membind(topology, obj2->nodeset,
-				//				HWLOC_MEMBIND_THREAD, HWLOC_MEMBIND_MIGRATE | HWLOC_MEMBIND_BYNODESET);
+				retval = hwloc_set_membind(topology, obj2->nodeset,
+								HWLOC_MEMBIND_THREAD,
+								HWLOC_MEMBIND_MIGRATE | HWLOC_MEMBIND_BYNODESET);
 			#else
-				//retval =
-				//hwloc_set_membind_nodeset(topology, obj2->nodeset,
-				//				HWLOC_MEMBIND_THREAD,
-				//				HWLOC_MEMBIND_MIGRATE);
+				retval =
+				hwloc_set_membind_nodeset(topology, obj2->nodeset,
+								HWLOC_MEMBIND_BIND,
+								HWLOC_MEMBIND_THREAD | HWLOC_MEMBIND_MIGRATE);
 			#endif
-			//ON_ERR_GOTO(retval, out_destroy_prop, "hwloc_set_membind");
+			ON_ERR_GOTO((fpga_result)retval, out_destroy_prop, "hwloc_set_membind");
 		}
 		if (cpu_affinity) {
-			retval = hwloc_set_cpubind(topology, obj2->cpuset,	HWLOC_CPUBIND_STRICT);
-			ON_ERR_GOTO(retval, out_destroy_prop, "hwloc_set_cpubind");
+			retval = hwloc_set_cpubind(topology, obj2->cpuset, HWLOC_CPUBIND_STRICT);
+			ON_ERR_GOTO((fpga_result)retval, out_destroy_prop, "hwloc_set_cpubind");
 		}
 
 	}
@@ -424,7 +414,6 @@ out_destroy_prop:
 out:
 	return res;
 }
-#endif
 
 int find_accelerator(const char *afu_id, struct config *config,
 			    fpga_token *afu_tok) {
@@ -530,12 +519,11 @@ fpga_result do_action(struct config *config, fpga_token afc_tok)
 	debug_print("bandwidth test success\n");
 
 out_dma_close:
-	//if(dma_h) {
-	//	printf("closing DMA\n");
-	//	res = fpgaDMAClose(dma_h);
-	//	ON_ERR_GOTO(res, out_unmap, "fpgaDMAOpen");
-	//	debug_print("closed dma channel\n");
-	//}
+	if(dma_h) {
+		res = fpgaDMAClose(dma_h);
+		ON_ERR_GOTO(res, out_unmap, "fpgaDMAOpen");
+		debug_print("closed dma channel\n");
+	}
 
 out_unmap:
 	#ifndef USE_ASE

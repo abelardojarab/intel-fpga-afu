@@ -31,6 +31,7 @@
 #include <getopt.h>
 #include <unistd.h>
 #include "fpga_dma_st_test_utils.h"
+#include "fpga_dma_st_internal.h"
 
 static int err_cnt = 0;
 
@@ -47,12 +48,14 @@ static void printUsage()
 {
 	printf(
 "Usage:\n"
-"     fpga_dma_st_test [-h] [-b <bus>] [-d <device>] [-f <function>] -s <data size (bytes)>\n"
-"                       -p <Payload size (bytes)> -r <Transfer direction> -t <Transfer type>\n\n"
+"     fpga_dma_st_test [-h] [-B <bus>] [-D <device>] [-F <function>] [-S <segment>]\n"
+"                       -s <data size (bytes)> -p <payload size (bytes)>\n"
+"                       -r <transfer direction> -t <transfer type>\n\n"
 "         -h,--help           Print this help\n"
-"         -b,--bus            Set target bus number\n"
-"         -d,--device         Set target device number\n"
-"         -f,--function       Set target function number\n"
+"         -B,--bus            Set target bus number\n"
+"         -D,--device         Set target device number\n"
+"         -F,--function       Set target function number\n"
+"         -S,--segment        Set PCIe segment\n"
 "         -s,--data_size      Total data size\n"
 "         -p,--payload_size   Payload size (per DMA transaction)\n"
 "         -r,--direction      Transfer direction\n"
@@ -76,9 +79,10 @@ static void parse_args(struct config *config, int argc, char *argv[])
 	do {
 		static const struct option options[] = {
 			{"help", no_argument, 0, 'h'},
-			{"bus", required_argument, NULL, 'b'},
-			{"device", required_argument, NULL, 'd'},
-			{"function", required_argument, NULL, 'f'},
+			{"bus", required_argument, NULL, 'B'},
+			{"device", required_argument, NULL, 'D'},
+			{"function", required_argument, NULL, 'F'},
+			{"segment", optional_argument, NULL, 'S'},
 			{"data_size", required_argument, 0, 's'},
 			{"payload_size", required_argument, 0, 'p'},
 			{"direction", required_argument, 0, 'r'},
@@ -88,7 +92,7 @@ static void parse_args(struct config *config, int argc, char *argv[])
 		char *endptr;
 		const char *tmp_optarg;
 
-		c = getopt_long(argc, argv, "hlb:d:f:s:p:r:t:", options, NULL);
+		c = getopt_long(argc, argv, "hlB:D:F:S:s:p:r:t:", options, NULL);
 		if (c == -1) {
 			break;
 		}
@@ -104,25 +108,32 @@ static void parse_args(struct config *config, int argc, char *argv[])
 			printUsage();
 			break;
 
-		case 'b':    /* bus */
+		case 'B':    /* bus */
 			if (NULL == tmp_optarg)
 				break;
 			config->bus = (int) strtoul(tmp_optarg, &endptr, 0);
 			debug_print("bus = %x\n", config->bus);
 			break;
 
-		case 'd':    /* device */
+		case 'D':    /* device */
 			if (NULL == tmp_optarg)
 				break;
 			config->device = (int) strtoul(tmp_optarg, &endptr, 0);
 			debug_print("device = %x\n", config->device);
 			break;
 
-		case 'f':    /* function */
+		case 'F':    /* function */
 			if (NULL == tmp_optarg)
 				break;
 			config->function = (int)strtoul(tmp_optarg, &endptr, 0);
 			debug_print("function = %x\n", config->function);
+			break;
+
+		case 'S':    /* pcie segment */
+			if (NULL == tmp_optarg)
+				break;
+			config->segment = (int)strtoul(tmp_optarg, &endptr, 0);
+			debug_print("pcie segment = %x\n", config->segment);
 			break;
 
 		case 's':    /* total data size */
@@ -200,20 +211,21 @@ int main(int argc, char *argv[]) {
 		.bus = CONFIG_UNINIT,
 		.device = CONFIG_UNINIT,
 		.function = CONFIG_UNINIT,
-		.data_size = 4096,
-		.payload_size = 4096,
-	 	.direction = STDMA_MTOS,
-	 	.transfer_type = STDMA_TRANSFER_FIXED
+		.segment = CONFIG_UNINIT,
+		.data_size = CONFIG_UNINIT,
+		.payload_size = CONFIG_UNINIT,
+	 	.direction = STDMA_INVAL_DIRECTION,
+	 	.transfer_type = STDMA_INVAL_TRANSFER_TYPE
 	};
 
-	//parse_args(&config, argc, argv);
-	//if(config.data_size == CONFIG_UNINIT ||
-	//	config.payload_size == CONFIG_UNINIT ||
-	//	config.direction == STDMA_INVAL_DIRECTION ||
-	//	config.transfer_type == STDMA_INVAL_TRANSFER_TYPE) {
-	//	printUsage();
-	//	exit(1);
-	//}
+	parse_args(&config, argc, argv);
+	if(config.data_size == CONFIG_UNINIT ||
+		config.payload_size == CONFIG_UNINIT ||
+		config.direction == STDMA_INVAL_DIRECTION ||
+		config.transfer_type == STDMA_INVAL_TRANSFER_TYPE) {
+		printUsage();
+		exit(1);
+	}
 	
 	int ret = find_accelerator(DMA_AFU_ID, &config, &afc_tok);
 	if (ret < 0) {
@@ -226,8 +238,8 @@ int main(int argc, char *argv[]) {
 		bool cpu_affinity = true;
 		bool memory_affinity = true;
 		debug_print("found %d accelerator(s)\n", ret);
-		//res = configure_numa(afc_tok, cpu_affinity, memory_affinity);
-		//ON_ERR_GOTO(res, out, "configuring NUMA affinity");
+		res = configure_numa(afc_tok, cpu_affinity, memory_affinity);
+		ON_ERR_GOTO(res, out, "configuring NUMA affinity");
 
 		res = do_action(&config, afc_tok);
 		ON_ERR_GOTO(res, out, "error do_action");

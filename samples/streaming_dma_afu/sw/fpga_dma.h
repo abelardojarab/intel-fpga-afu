@@ -101,10 +101,10 @@ fpga_result fpgaGetDMAChannelType(fpga_dma_handle_t dma, fpga_dma_channel_type_t
 *                         The driver will reset all transfer attributes to default
 *                         values upon successful initialization
 *
-* @param[out]  transfer   Pointer to transfer attribute struct
+* @param[out]  transfer_p Pointer to transfer
 * @returns                FPGA_OK on success, return code otherwise
 */
-fpga_result fpgaDMATransferInit(fpga_dma_transfer_t *transfer);
+fpga_result fpgaDMATransferInit(fpga_dma_transfer_t *transfer_p);
 
 /**
 * fpgaDMATransferReset
@@ -124,10 +124,10 @@ fpga_result fpgaDMATransferReset(fpga_dma_transfer_t transfer);
 *
 * @brief                 Destroy DMA transfer attribute object.
 *
-* @param[in]  transfer   Pointer to transfer attribute struct
+* @param[in]  transfer_p Pointer to transfer
 * @returns               FPGA_OK on success, return code otherwise
 */
-fpga_result fpgaDMATransferDestroy(fpga_dma_transfer_t transfer);
+fpga_result fpgaDMATransferDestroy(fpga_dma_transfer_t *transfer_p);
 
 
 /**
@@ -292,6 +292,19 @@ fpga_result fpgaDMATransferGetBytesTransferred(fpga_dma_transfer_t transfer, siz
 fpga_result fpgaDMATransferCheckEopArrived(fpga_dma_transfer_t transfer, bool *eop_arrived);
 
 /**
+* fpgaDMATransferSetLast
+*
+* @brief                  
+*
+* @param[in]  transfer    Pointer to transfer attribute struct
+* @param[in]  is_last_buf boolean value that indicates whether this transfer marks
+*                         the final buffer in the transfer
+* @returns                FPGA_OK on success, return code otherwise
+*/
+fpga_result fpgaDMATransferSetLast(fpga_dma_transfer_t transfer, bool is_last_buf);
+
+
+/**
 * fpgaDMATransfer
 *
 * @brief                  Perform a DMA transfer
@@ -302,6 +315,18 @@ fpga_result fpgaDMATransferCheckEopArrived(fpga_dma_transfer_t transfer, bool *e
 * @returns                FPGA_OK on success, return code otherwise
 */
 fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, const fpga_dma_transfer_t transfer);
+
+
+/**
+* fpgaDMAInvalidate
+*
+* @brief                  Invalidate all incomplete transfers
+*                         
+* @param[dma] dma         DMA handle
+*
+* @returns                FPGA_OK on success, return code otherwise
+*/
+fpga_result fpgaDMAInvalidate(fpga_dma_handle_t dma);
 
 
 #ifdef __cplusplus

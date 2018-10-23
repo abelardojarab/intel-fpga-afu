@@ -31,7 +31,6 @@
 
 #ifndef __FPGA_DMA_ST_INT_H__
 #define __FPGA_DMA_ST_INT_H__
-
 #include <opae/fpga.h>
 #include "fpga_dma_types.h"
 #include <stdbool.h>
@@ -39,7 +38,11 @@
 #include <semaphore.h>
 #include "tbb/concurrent_queue.h"
 #include "x86-sse2.h"
+#include <iostream>
+#include <fstream>
 
+
+using namespace std;
 using namespace tbb;
 
 #define FPGA_DMA_ST_ERR(msg_str) \
@@ -103,8 +106,6 @@ using namespace tbb;
 
 #define FPGA_DMA_BUF_SIZE (1024*1024)
 #define FPGA_DMA_BUF_ALIGN_SIZE FPGA_DMA_BUF_SIZE
-#define FPGA_DMA_MAX_BLOCKS (2)
-#define FPGA_DMA_BLOCK_SIZE (4)
 
 #define MIN_SSE2_SIZE 4096
 #define CACHE_LINE_SIZE 64
@@ -130,11 +131,6 @@ do { \
 #define debug_print(...)
 #define error_print(...)
 #endif
-
-#define FPGA_DMA_MAX_BUF 8
-
-// Max. async transfers in progress
-#define FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS 1024
 
 // Channel types
 typedef enum {
@@ -227,7 +223,6 @@ typedef union {
 	} ct;
 } msgdma_ctrl_t;
 
-
 typedef union {
 	uint32_t reg;
 	struct {
@@ -270,7 +265,7 @@ typedef struct __attribute__((__packed__)) {
 	// word 0
 	uint8_t format;
 	uint8_t block_size;
-	uint8_t owned_by_hw;
+	volatile uint8_t owned_by_hw;
 	uint8_t rsvd1;	
 	msgdma_desc_ctrl_t ctrl;
 	// word 1
@@ -287,10 +282,10 @@ typedef struct __attribute__((__packed__)) {
 	uint16_t rd_stride;
 	uint16_t wr_stride;
 	// word 5
-	uint32_t bytes_transferred;
-	uint8_t error;
-	uint8_t eop_arrived;
-	uint8_t early_term;
+	volatile uint32_t bytes_transferred;
+	volatile uint8_t error;
+	volatile uint8_t eop_arrived;
+	volatile uint8_t early_term;
 	uint8_t rsvd3;
 	// word 6
 	uint64_t rsvd4;
@@ -300,17 +295,18 @@ typedef struct __attribute__((__packed__)) {
 
 // Buffer
 struct fpga_dma_transfer {
-	uint64_t src;
+	volatile uint64_t src;
 	uint64_t dst;
 	uint64_t len;
 	fpga_dma_transfer_type_t transfer_type;
 	fpga_dma_tx_ctrl_t tx_ctrl;
 	fpga_dma_rx_ctrl_t rx_ctrl;
 	fpga_dma_transfer_cb cb;
-	bool eop_status;
+	bool eop_arrived;
 	void *context;
-	size_t rx_bytes;
+	size_t bytes_transferred;
 	pthread_mutex_t tf_mutex;	
+	bool is_last_buf;
 };
 
 // Pointer to hardware descriptor, with additional metadata for use by driver
@@ -323,6 +319,7 @@ typedef struct msgdma_hw_descp {
 
 // Software descriptor
 typedef struct msgdma_sw_desc {
+	uint64_t id;
 	msgdma_hw_descp_t *hw_descp; // assigned hw descriptor
 	struct fpga_dma_transfer *transfer;
 	sem_t tf_status; // When locked, the transfer in progress
@@ -351,11 +348,8 @@ struct fpga_dma_handle {
 	uint64_t dma_channel;
 	pthread_t ingress_id;
 	pthread_t pending_id;
-	#if EMU_MODE
-	pthread_t emu_work_id;
-	#endif
 	pthread_mutex_t dma_mutex;
-	bool init;
+	sem_t dma_init;
 };
 
 // Prefetcher ctrl register

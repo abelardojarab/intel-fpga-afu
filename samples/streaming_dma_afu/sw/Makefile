@@ -1,7 +1,7 @@
 CXX = g++
 LDFLAGS ?=
-tbb = /home/dunnikri/intel/tbb/
-CXXFLAGS += -D FPGA_DMA_DEBUG=1 -g -O2 -fPIC -D EMU_MODE=0 -Wall -Wno-unknown-pragmas -I$(tbb)/include -fpermissive -std=c++11
+CXXFLAGS += -D FPGA_DMA_DEBUG=0 -g -O2 -fPIC -D EMU_MODE=0 -Wall -Wno-unknown-pragmas -I$(TBB_HOME)/include -fpermissive -std=c++11
+CXXFLAGS += -DFPGA_DMA_MAX_BLOCKS=256 -DFPGA_DMA_BLOCK_SIZE=64
 
 # Flush and avoid use of DMA descriptors from previous transfer
 CFLAGS += -D FORCE_DESC_FLUSH=1
@@ -14,7 +14,7 @@ LDFLAGS += -luuid
 LDFLAGS += -lsafestr
 LDFLAGS += -lrt
 LDFLAGS += -ltbb
-LDFLAGS += -L$(tbb)/lib/intel64_lin/gcc4.7/
+LDFLAGS += -L$(TBB_HOME)/lib/intel64_lin/gcc4.7/
 
 ifeq ($(USE_ASE),1)
 	LDFLAGS += -lopae-c-ase
@@ -22,7 +22,7 @@ ifeq ($(USE_ASE),1)
 else
 	LDFLAGS += -ljson-c
 	LDFLAGS += -lopae-c
-#	LDFLAGS += -lhwloc
+	LDFLAGS += -lhwloc
 endif
 
 LDFLAGS += -pthread
@@ -39,6 +39,6 @@ fpga_dma_st_test: $(OBJS) fpga_dma_st.a
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:
-	$(RM) fpga_dma_st_test *.o *.so *.a
+	$(RM) fpga_dma_st_test *.o *.so *.a *.dat *.log
 
 .PHONY:all clean

@@ -38,7 +38,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <semaphore.h>
-//#include <hwloc.h>
+#include <hwloc.h>
 #include "fpga_dma.h"
 #include "fpga_pattern_gen.h"
 #include "fpga_pattern_checker.h"
@@ -74,6 +74,7 @@ struct config {
 	int bus;
 	int device;
 	int function;
+	int segment;
 	uint64_t data_size;
 	uint64_t payload_size;
 	enum stdma_test_direction direction;

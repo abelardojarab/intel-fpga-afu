@@ -118,7 +118,7 @@ out:
 fpga_result wait_for_checker_complete(fpga_handle fpga_h) {
 	fpga_result res = FPGA_OK;
 	pattern_checker_status_t status ={0};
-	int wait_time = 20; //seconds, checker times out after max wait time
+	int wait_time = 5; //seconds, checker times out after max wait time
 	
 	do {
 		res = fpgaReadMMIO32(fpga_h, 0, M2S_PATTERN_CHECKER_CSR+offsetof(pattern_checker_control_t, status), &status.reg);
@@ -131,12 +131,10 @@ fpga_result wait_for_checker_complete(fpga_handle fpga_h) {
 	if(wait_time == 0) {
 		res = FPGA_EXCEPTION;
 		FPGA_DMA_ST_ERR("checker timed out\n");
-	}
-	else if(status.st.err == 0) {
+	} else if(status.st.err == 0) {
 		res = FPGA_OK;
 		debug_print("checker verified success!\n");
-	}
-	else {
+	} else {
 		res = FPGA_EXCEPTION;
 		FPGA_DMA_ST_ERR("data verification error\n");
 	}

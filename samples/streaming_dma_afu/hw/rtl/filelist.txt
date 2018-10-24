@@ -30,13 +30,22 @@ QSYS_IPs/dispatcher/dcp_dispatcher_hw.tcl
 QSYS_IPs/write_master/dcp_write_master_hw.tcl
 QSYS_IPs/far_reach_avalon_mm_bridge/far_reach_avalon_mm_bridge_hw.tcl
 QSYS_IPs/dcp_msgdma_front_end/mSGDMA_frontend_hw.tcl
+QSYS_IPs/read_master/dcp_read_master_hw.tcl
+
+# DFH Qsys IP component
+QSYS_IPs/afu_id_avmm_slave/afu_id_avmm_slave.sv
 
 # Modified mSGDMA write master
-QSYS_IPs/afu_id_avmm_slave/afu_id_avmm_slave.sv
 QSYS_IPs/write_master/dcp_byte_enable_generator.v
 QSYS_IPs/write_master/dcp_write_burst_control.v
 QSYS_IPs/write_master/dcp_write_master.v
 QSYS_IPs/write_master/dcp_ST_to_MM_Adapter.v
+
+# Modified mSGDMA read master
+QSYS_IPs/read_master/dcp_read_master.v
+QSYS_IPs/read_master/dcp_read_burst_control.v
+QSYS_IPs/read_master/dcp_MM_to_ST_Adapter.v
+QSYS_IPs/read_master/dcp_read_master_response_tracking.v
 
 # Modified mSGDMA dispatcher
 QSYS_IPs/dispatcher/dcp_csr_block.v

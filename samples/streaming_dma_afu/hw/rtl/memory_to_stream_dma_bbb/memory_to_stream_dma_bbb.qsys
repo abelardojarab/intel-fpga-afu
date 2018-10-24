@@ -163,14 +163,6 @@
          type = "int";
       }
    }
-   element m2s_read_master.Data_Read_Master
-   {
-      datum color
-      {
-         value = "-65281";
-         type = "int";
-      }
-   }
    element memory_to_stream_dma_bbb_afu_id_avmm_slave_0
    {
       datum _sortIndex
@@ -2443,7 +2435,7 @@
                         </entry>
                         <entry>
                             <key>maximumPendingReadTransactions</key>
-                            <value>32</value>
+                            <value>64</value>
                         </entry>
                         <entry>
                             <key>maximumPendingWriteTransactions</key>
@@ -5167,9 +5159,9 @@
         </interfaces>
     </boundary>
     <originalModuleInfo>
-        <className>dma_read_master</className>
+        <className>dcp_dma_read_master</className>
         <version>17.1</version>
-        <displayName>Read Master</displayName>
+        <displayName>DCP mSGDMA Read Master</displayName>
     </originalModuleInfo>
     <systemInfoParameterDescriptors>
         <descriptors>

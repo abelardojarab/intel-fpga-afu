@@ -13,6 +13,10 @@ afu.sv
 ccip_interface_reg.sv
 ccip_std_afu.sv
 
+lib/memory/custom_altera_avalon_mm_bridge.v
+lib/memory/ddr_avmm_bridge.v
+lib/common/green_bs_resync.v
+
 qsys/${OPAE_PLATFORM_FPGA_FAMILY}/components.ipx
 qsys/${OPAE_PLATFORM_FPGA_FAMILY}/dma_test_system_wrapper.sv
 qsys/${OPAE_PLATFORM_FPGA_FAMILY}/dma_test_system.qsys

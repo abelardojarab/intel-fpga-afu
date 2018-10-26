@@ -55,6 +55,8 @@ module altera_eth_10g_mac_base_r (
 	output wire 		csr_waitrequest
 );
 
+parameter   DEVICE_FAMILY           = "Stratix 10";
+
 wire			mac_csr_read_32;
 wire			mac_csr_write_32;
 wire	[31:0]	mac_csr_readdata_32;
@@ -441,7 +443,9 @@ sc_fifo fifo_inst(
 ); 
 
 // generator and checker and also loopback
-eth_std_traffic_controller_top gen_mon_inst (
+eth_std_traffic_controller_top #(
+        .DEVICE_FAMILY (DEVICE_FAMILY)
+) gen_mon_inst (
 
 //here  clocking OK?
     .clk                 (tx_clk_156),
@@ -509,7 +513,9 @@ altera_eth_avalon_mm_adapter csr_adapter_inst(
 
 // tx path clock by rx
 
-altera_eth_avalon_st_adapter dc_fifo_adapter_inst(
+altera_eth_avalon_st_adapter #(
+        .DEVICE_FAMILY (DEVICE_FAMILY)
+) dc_fifo_adapter_inst(
 
 	.csr_tx_adptdcff_rdwtrmrk	  (3'b010),
 	.csr_tx_adptdcff_vldpkt_minwt (3'b010),

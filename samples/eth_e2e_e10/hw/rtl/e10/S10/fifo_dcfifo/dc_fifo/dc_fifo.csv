@@ -1,4 +1,4 @@
-# system info dc_fifo on 2018.09.21.11:09:30
+# system info dc_fifo on 2018.10.17.11:01:33
 system_info:
 name,value
 DEVICE,1SG280HU2F50E2VG
@@ -6,7 +6,7 @@ DEVICE_FAMILY,Stratix 10
 GENERATION_ID,0
 #
 #
-# Files generated for dc_fifo on 2018.09.21.11:09:30
+# Files generated for dc_fifo on 2018.10.17.11:01:33
 files:
 filepath,kind,attributes,module,is_top
 sim/dc_fifo.v,VERILOG,CONTAINS_INLINE_CONFIGURATION,dc_fifo,true

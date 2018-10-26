@@ -1,4 +1,4 @@
-# system info sc_fifo_rx_sc_fifo on 2018.09.21.11:09:54
+# system info sc_fifo_rx_sc_fifo on 2018.10.17.11:01:51
 system_info:
 name,value
 DEVICE,1SG280HU2F50E2VG
@@ -6,7 +6,7 @@ DEVICE_FAMILY,Stratix 10
 GENERATION_ID,0
 #
 #
-# Files generated for sc_fifo_rx_sc_fifo on 2018.09.21.11:09:54
+# Files generated for sc_fifo_rx_sc_fifo on 2018.10.17.11:01:51
 files:
 filepath,kind,attributes,module,is_top
 sim/sc_fifo_rx_sc_fifo.v,VERILOG,CONTAINS_INLINE_CONFIGURATION,sc_fifo_rx_sc_fifo,true

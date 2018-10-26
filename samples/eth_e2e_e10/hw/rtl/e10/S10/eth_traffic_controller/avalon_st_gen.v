@@ -58,7 +58,7 @@ module avalon_st_gen
  parameter ADDR_CNTDATA		= 8'hf2;
  parameter ADDR_CNTTRNSTN	= 8'hf3;
 
-parameter DEVICE_FAMILY = "Stratix 10";
+parameter DEVICE_FAMILY = "Arria 10";
 
 // 10G Ethernet Control Registers
 reg	start_reg;

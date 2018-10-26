@@ -54,7 +54,7 @@
    {
       datum _sortIndex
       {
-         value = "60";
+         value = "59";
          type = "int";
       }
    }
@@ -70,7 +70,7 @@
    {
       datum _sortIndex
       {
-         value = "65";
+         value = "64";
          type = "int";
       }
    }
@@ -86,7 +86,7 @@
    {
       datum _sortIndex
       {
-         value = "20";
+         value = "19";
          type = "int";
       }
    }
@@ -102,7 +102,7 @@
    {
       datum _sortIndex
       {
-         value = "25";
+         value = "24";
          type = "int";
       }
    }
@@ -118,7 +118,7 @@
    {
       datum _sortIndex
       {
-         value = "30";
+         value = "29";
          type = "int";
       }
    }
@@ -134,7 +134,7 @@
    {
       datum _sortIndex
       {
-         value = "35";
+         value = "34";
          type = "int";
       }
    }
@@ -150,7 +150,7 @@
    {
       datum _sortIndex
       {
-         value = "40";
+         value = "39";
          type = "int";
       }
    }
@@ -166,7 +166,7 @@
    {
       datum _sortIndex
       {
-         value = "45";
+         value = "44";
          type = "int";
       }
    }
@@ -182,7 +182,7 @@
    {
       datum _sortIndex
       {
-         value = "50";
+         value = "49";
          type = "int";
       }
    }
@@ -198,7 +198,7 @@
    {
       datum _sortIndex
       {
-         value = "55";
+         value = "54";
          type = "int";
       }
    }
@@ -208,14 +208,6 @@
       {
          value = "638976";
          type = "String";
-      }
-   }
-   element master_0
-   {
-      datum _sortIndex
-      {
-         value = "15";
-         type = "int";
       }
    }
    element merlin_master_translator_0
@@ -254,7 +246,7 @@
    {
       datum _sortIndex
       {
-         value = "56";
+         value = "55";
          type = "int";
       }
    }
@@ -270,7 +262,7 @@
    {
       datum _sortIndex
       {
-         value = "61";
+         value = "60";
          type = "int";
       }
    }
@@ -286,7 +278,7 @@
    {
       datum _sortIndex
       {
-         value = "16";
+         value = "15";
          type = "int";
       }
    }
@@ -302,7 +294,7 @@
    {
       datum _sortIndex
       {
-         value = "21";
+         value = "20";
          type = "int";
       }
    }
@@ -318,7 +310,7 @@
    {
       datum _sortIndex
       {
-         value = "26";
+         value = "25";
          type = "int";
       }
    }
@@ -334,7 +326,7 @@
    {
       datum _sortIndex
       {
-         value = "31";
+         value = "30";
          type = "int";
       }
    }
@@ -350,7 +342,7 @@
    {
       datum _sortIndex
       {
-         value = "36";
+         value = "35";
          type = "int";
       }
    }
@@ -366,7 +358,7 @@
    {
       datum _sortIndex
       {
-         value = "41";
+         value = "40";
          type = "int";
       }
    }
@@ -382,7 +374,7 @@
    {
       datum _sortIndex
       {
-         value = "46";
+         value = "45";
          type = "int";
       }
    }
@@ -398,7 +390,7 @@
    {
       datum _sortIndex
       {
-         value = "51";
+         value = "50";
          type = "int";
       }
    }
@@ -446,7 +438,7 @@
    {
       datum _sortIndex
       {
-         value = "57";
+         value = "56";
          type = "int";
       }
    }
@@ -462,7 +454,7 @@
    {
       datum _sortIndex
       {
-         value = "62";
+         value = "61";
          type = "int";
       }
    }
@@ -478,7 +470,7 @@
    {
       datum _sortIndex
       {
-         value = "17";
+         value = "16";
          type = "int";
       }
    }
@@ -494,7 +486,7 @@
    {
       datum _sortIndex
       {
-         value = "22";
+         value = "21";
          type = "int";
       }
    }
@@ -510,7 +502,7 @@
    {
       datum _sortIndex
       {
-         value = "27";
+         value = "26";
          type = "int";
       }
    }
@@ -526,7 +518,7 @@
    {
       datum _sortIndex
       {
-         value = "32";
+         value = "31";
          type = "int";
       }
    }
@@ -542,7 +534,7 @@
    {
       datum _sortIndex
       {
-         value = "37";
+         value = "36";
          type = "int";
       }
    }
@@ -558,7 +550,7 @@
    {
       datum _sortIndex
       {
-         value = "42";
+         value = "41";
          type = "int";
       }
    }
@@ -574,7 +566,7 @@
    {
       datum _sortIndex
       {
-         value = "47";
+         value = "46";
          type = "int";
       }
    }
@@ -590,7 +582,7 @@
    {
       datum _sortIndex
       {
-         value = "52";
+         value = "51";
          type = "int";
       }
    }
@@ -638,7 +630,7 @@
    {
       datum _sortIndex
       {
-         value = "58";
+         value = "57";
          type = "int";
       }
    }
@@ -654,7 +646,7 @@
    {
       datum _sortIndex
       {
-         value = "63";
+         value = "62";
          type = "int";
       }
    }
@@ -670,7 +662,7 @@
    {
       datum _sortIndex
       {
-         value = "18";
+         value = "17";
          type = "int";
       }
    }
@@ -686,7 +678,7 @@
    {
       datum _sortIndex
       {
-         value = "23";
+         value = "22";
          type = "int";
       }
    }
@@ -702,7 +694,7 @@
    {
       datum _sortIndex
       {
-         value = "28";
+         value = "27";
          type = "int";
       }
    }
@@ -718,7 +710,7 @@
    {
       datum _sortIndex
       {
-         value = "33";
+         value = "32";
          type = "int";
       }
    }
@@ -734,7 +726,7 @@
    {
       datum _sortIndex
       {
-         value = "38";
+         value = "37";
          type = "int";
       }
    }
@@ -750,7 +742,7 @@
    {
       datum _sortIndex
       {
-         value = "43";
+         value = "42";
          type = "int";
       }
    }
@@ -766,7 +758,7 @@
    {
       datum _sortIndex
       {
-         value = "48";
+         value = "47";
          type = "int";
       }
    }
@@ -782,7 +774,7 @@
    {
       datum _sortIndex
       {
-         value = "53";
+         value = "52";
          type = "int";
       }
    }
@@ -838,7 +830,7 @@
    {
       datum _sortIndex
       {
-         value = "59";
+         value = "58";
          type = "int";
       }
    }
@@ -854,7 +846,7 @@
    {
       datum _sortIndex
       {
-         value = "64";
+         value = "63";
          type = "int";
       }
    }
@@ -870,7 +862,7 @@
    {
       datum _sortIndex
       {
-         value = "19";
+         value = "18";
          type = "int";
       }
    }
@@ -891,7 +883,7 @@
    {
       datum _sortIndex
       {
-         value = "24";
+         value = "23";
          type = "int";
       }
    }
@@ -907,7 +899,7 @@
    {
       datum _sortIndex
       {
-         value = "29";
+         value = "28";
          type = "int";
       }
    }
@@ -931,7 +923,7 @@
    {
       datum _sortIndex
       {
-         value = "34";
+         value = "33";
          type = "int";
       }
    }
@@ -947,7 +939,7 @@
    {
       datum _sortIndex
       {
-         value = "39";
+         value = "38";
          type = "int";
       }
    }
@@ -971,7 +963,7 @@
    {
       datum _sortIndex
       {
-         value = "44";
+         value = "43";
          type = "int";
       }
    }
@@ -987,7 +979,7 @@
    {
       datum _sortIndex
       {
-         value = "49";
+         value = "48";
          type = "int";
       }
    }
@@ -1011,7 +1003,7 @@
    {
       datum _sortIndex
       {
-         value = "54";
+         value = "53";
          type = "int";
       }
    }
@@ -9361,417 +9353,6 @@
   <parameter name="logicalView">ip/address_decode/address_decode_eth_gen_mon.ip</parameter>
   <parameter name="moduleAssignmentDefinition"><![CDATA[<assignmentDefinition>
     <assignmentValueMap/>
-</assignmentDefinition>]]></parameter>
-  <parameter name="svInterfaceDefinition" value="" />
- </module>
- <module
-   name="master_0"
-   kind="altera_generic_component"
-   version="1.0"
-   enabled="1">
-  <parameter name="componentDefinition"><![CDATA[<componentDefinition>
-    <boundary>
-        <interfaces>
-            <interface>
-                <name>clk</name>
-                <type>clock</type>
-                <isStart>false</isStart>
-                <ports>
-                    <port>
-                        <name>clk_clk</name>
-                        <role>clk</role>
-                        <direction>Input</direction>
-                        <width>1</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC</vhdlType>
-                    </port>
-                </ports>
-                <assignments>
-                    <assignmentValueMap/>
-                </assignments>
-                <parameters>
-                    <parameterValueMap>
-                        <entry>
-                            <key>clockRate</key>
-                            <value>0</value>
-                        </entry>
-                        <entry>
-                            <key>externallyDriven</key>
-                            <value>false</value>
-                        </entry>
-                        <entry>
-                            <key>ptfSchematicName</key>
-                        </entry>
-                    </parameterValueMap>
-                </parameters>
-            </interface>
-            <interface>
-                <name>clk_reset</name>
-                <type>reset</type>
-                <isStart>false</isStart>
-                <ports>
-                    <port>
-                        <name>clk_reset_reset</name>
-                        <role>reset</role>
-                        <direction>Input</direction>
-                        <width>1</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC</vhdlType>
-                    </port>
-                </ports>
-                <assignments>
-                    <assignmentValueMap/>
-                </assignments>
-                <parameters>
-                    <parameterValueMap>
-                        <entry>
-                            <key>associatedClock</key>
-                        </entry>
-                        <entry>
-                            <key>synchronousEdges</key>
-                            <value>NONE</value>
-                        </entry>
-                    </parameterValueMap>
-                </parameters>
-            </interface>
-            <interface>
-                <name>master</name>
-                <type>avalon</type>
-                <isStart>true</isStart>
-                <ports>
-                    <port>
-                        <name>master_address</name>
-                        <role>address</role>
-                        <direction>Output</direction>
-                        <width>32</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC_VECTOR</vhdlType>
-                    </port>
-                    <port>
-                        <name>master_readdata</name>
-                        <role>readdata</role>
-                        <direction>Input</direction>
-                        <width>32</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC_VECTOR</vhdlType>
-                    </port>
-                    <port>
-                        <name>master_read</name>
-                        <role>read</role>
-                        <direction>Output</direction>
-                        <width>1</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC</vhdlType>
-                    </port>
-                    <port>
-                        <name>master_write</name>
-                        <role>write</role>
-                        <direction>Output</direction>
-                        <width>1</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC</vhdlType>
-                    </port>
-                    <port>
-                        <name>master_writedata</name>
-                        <role>writedata</role>
-                        <direction>Output</direction>
-                        <width>32</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC_VECTOR</vhdlType>
-                    </port>
-                    <port>
-                        <name>master_waitrequest</name>
-                        <role>waitrequest</role>
-                        <direction>Input</direction>
-                        <width>1</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC</vhdlType>
-                    </port>
-                    <port>
-                        <name>master_readdatavalid</name>
-                        <role>readdatavalid</role>
-                        <direction>Input</direction>
-                        <width>1</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC</vhdlType>
-                    </port>
-                    <port>
-                        <name>master_byteenable</name>
-                        <role>byteenable</role>
-                        <direction>Output</direction>
-                        <width>4</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC_VECTOR</vhdlType>
-                    </port>
-                </ports>
-                <assignments>
-                    <assignmentValueMap>
-                        <entry>
-                            <key>debug.controlledBy</key>
-                            <value>in_stream</value>
-                        </entry>
-                        <entry>
-                            <key>debug.providesServices</key>
-                            <value>master</value>
-                        </entry>
-                        <entry>
-                            <key>debug.typeName</key>
-                            <value>altera_jtag_avalon_master.master</value>
-                        </entry>
-                        <entry>
-                            <key>debug.visible</key>
-                            <value>true</value>
-                        </entry>
-                    </assignmentValueMap>
-                </assignments>
-                <parameters>
-                    <parameterValueMap>
-                        <entry>
-                            <key>adaptsTo</key>
-                        </entry>
-                        <entry>
-                            <key>addressGroup</key>
-                            <value>0</value>
-                        </entry>
-                        <entry>
-                            <key>addressUnits</key>
-                            <value>SYMBOLS</value>
-                        </entry>
-                        <entry>
-                            <key>alwaysBurstMaxBurst</key>
-                            <value>false</value>
-                        </entry>
-                        <entry>
-                            <key>associatedClock</key>
-                            <value>clk</value>
-                        </entry>
-                        <entry>
-                            <key>associatedReset</key>
-                            <value>clk_reset</value>
-                        </entry>
-                        <entry>
-                            <key>bitsPerSymbol</key>
-                            <value>8</value>
-                        </entry>
-                        <entry>
-                            <key>burstOnBurstBoundariesOnly</key>
-                            <value>false</value>
-                        </entry>
-                        <entry>
-                            <key>burstcountUnits</key>
-                            <value>WORDS</value>
-                        </entry>
-                        <entry>
-                            <key>constantBurstBehavior</key>
-                            <value>false</value>
-                        </entry>
-                        <entry>
-                            <key>dBSBigEndian</key>
-                            <value>false</value>
-                        </entry>
-                        <entry>
-                            <key>doStreamReads</key>
-                            <value>false</value>
-                        </entry>
-                        <entry>
-                            <key>doStreamWrites</key>
-                            <value>false</value>
-                        </entry>
-                        <entry>
-                            <key>holdTime</key>
-                            <value>0</value>
-                        </entry>
-                        <entry>
-                            <key>interleaveBursts</key>
-                            <value>false</value>
-                        </entry>
-                        <entry>
-                            <key>isAsynchronous</key>
-                            <value>false</value>
-                        </entry>
-                        <entry>
-                            <key>isBigEndian</key>
-                            <value>false</value>
-                        </entry>
-                        <entry>
-                            <key>isReadable</key>
-                            <value>false</value>
-                        </entry>
-                        <entry>
-                            <key>isWriteable</key>
-                            <value>false</value>
-                        </entry>
-                        <entry>
-                            <key>linewrapBursts</key>
-                            <value>false</value>
-                        </entry>
-                        <entry>
-                            <key>maxAddressWidth</key>
-                            <value>32</value>
-                        </entry>
-                        <entry>
-                            <key>maximumPendingReadTransactions</key>
-                            <value>0</value>
-                        </entry>
-                        <entry>
-                            <key>maximumPendingWriteTransactions</key>
-                            <value>0</value>
-                        </entry>
-                        <entry>
-                            <key>minimumReadLatency</key>
-                            <value>1</value>
-                        </entry>
-                        <entry>
-                            <key>minimumResponseLatency</key>
-                            <value>1</value>
-                        </entry>
-                        <entry>
-                            <key>prSafe</key>
-                            <value>false</value>
-                        </entry>
-                        <entry>
-                            <key>readLatency</key>
-                            <value>0</value>
-                        </entry>
-                        <entry>
-                            <key>readWaitTime</key>
-                            <value>1</value>
-                        </entry>
-                        <entry>
-                            <key>registerIncomingSignals</key>
-                            <value>false</value>
-                        </entry>
-                        <entry>
-                            <key>registerOutgoingSignals</key>
-                            <value>false</value>
-                        </entry>
-                        <entry>
-                            <key>setupTime</key>
-                            <value>0</value>
-                        </entry>
-                        <entry>
-                            <key>timingUnits</key>
-                            <value>Cycles</value>
-                        </entry>
-                        <entry>
-                            <key>waitrequestAllowance</key>
-                            <value>0</value>
-                        </entry>
-                        <entry>
-                            <key>writeWaitTime</key>
-                            <value>0</value>
-                        </entry>
-                    </parameterValueMap>
-                </parameters>
-            </interface>
-            <interface>
-                <name>master_reset</name>
-                <type>reset</type>
-                <isStart>true</isStart>
-                <ports>
-                    <port>
-                        <name>master_reset_reset</name>
-                        <role>reset</role>
-                        <direction>Output</direction>
-                        <width>1</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC</vhdlType>
-                    </port>
-                </ports>
-                <assignments>
-                    <assignmentValueMap/>
-                </assignments>
-                <parameters>
-                    <parameterValueMap>
-                        <entry>
-                            <key>associatedClock</key>
-                        </entry>
-                        <entry>
-                            <key>associatedDirectReset</key>
-                        </entry>
-                        <entry>
-                            <key>associatedResetSinks</key>
-                            <value>none</value>
-                        </entry>
-                        <entry>
-                            <key>synchronousEdges</key>
-                            <value>NONE</value>
-                        </entry>
-                    </parameterValueMap>
-                </parameters>
-            </interface>
-        </interfaces>
-    </boundary>
-    <originalModuleInfo>
-        <className>altera_jtag_avalon_master</className>
-        <version>16.925</version>
-        <displayName>JTAG to Avalon Master Bridge</displayName>
-    </originalModuleInfo>
-    <systemInfoParameterDescriptors>
-        <descriptors>
-            <descriptor>
-                <parameterDefaultValue></parameterDefaultValue>
-                <parameterName>AUTO_DEVICE</parameterName>
-                <parameterType>java.lang.String</parameterType>
-                <systemInfotype>DEVICE</systemInfotype>
-            </descriptor>
-            <descriptor>
-                <parameterDefaultValue></parameterDefaultValue>
-                <parameterName>AUTO_DEVICE_FAMILY</parameterName>
-                <parameterType>java.lang.String</parameterType>
-                <systemInfotype>DEVICE_FAMILY</systemInfotype>
-            </descriptor>
-            <descriptor>
-                <parameterDefaultValue></parameterDefaultValue>
-                <parameterName>AUTO_DEVICE_SPEEDGRADE</parameterName>
-                <parameterType>java.lang.String</parameterType>
-                <systemInfotype>DEVICE_SPEEDGRADE</systemInfotype>
-            </descriptor>
-            <descriptor>
-                <parameterDefaultValue>0</parameterDefaultValue>
-                <parameterName>COMPONENT_CLOCK</parameterName>
-                <parameterType>java.lang.Integer</parameterType>
-                <systemInfoArgs>clock</systemInfoArgs>
-                <systemInfotype>CLOCK_RATE</systemInfotype>
-            </descriptor>
-        </descriptors>
-    </systemInfoParameterDescriptors>
-    <systemInfos>
-        <connPtSystemInfos/>
-    </systemInfos>
-</componentDefinition>]]></parameter>
-  <parameter name="generationInfoDefinition"><![CDATA[<generationInfoDefinition>
-    <hdlLibraryName>address_decode_master_0</hdlLibraryName>
-    <fileSets>
-        <fileSet>
-            <fileSetName>address_decode_master_0</fileSetName>
-            <fileSetFixedName>address_decode_master_0</fileSetFixedName>
-            <fileSetKind>QUARTUS_SYNTH</fileSetKind>
-            <fileSetFiles/>
-        </fileSet>
-        <fileSet>
-            <fileSetName>address_decode_master_0</fileSetName>
-            <fileSetFixedName>address_decode_master_0</fileSetFixedName>
-            <fileSetKind>SIM_VERILOG</fileSetKind>
-            <fileSetFiles/>
-        </fileSet>
-        <fileSet>
-            <fileSetName>address_decode_master_0</fileSetName>
-            <fileSetFixedName>address_decode_master_0</fileSetFixedName>
-            <fileSetKind>SIM_VHDL</fileSetKind>
-            <fileSetFiles/>
-        </fileSet>
-    </fileSets>
-</generationInfoDefinition>]]></parameter>
-  <parameter name="hlsFile" value="" />
-  <parameter name="logicalView">ip/address_decode/address_decode_master_0.ip</parameter>
-  <parameter name="moduleAssignmentDefinition"><![CDATA[<assignmentDefinition>
-    <assignmentValueMap>
-        <entry>
-            <key>debug.hostConnection</key>
-            <value>type jtag id 110:132</value>
-        </entry>
-    </assignmentValueMap>
 </assignmentDefinition>]]></parameter>
   <parameter name="svInterfaceDefinition" value="" />
  </module>
@@ -34799,8 +34380,8 @@
     </boundary>
     <originalModuleInfo>
         <className>altera_merlin_slave_translator</className>
-        <version>16.925</version>
-        <displayName>Avalon MM Slave Translator</displayName>
+        <version>18.1</version>
+        <displayName>Avalon-MM Slave Translator Intel FPGA IP</displayName>
     </originalModuleInfo>
     <systemInfoParameterDescriptors>
         <descriptors>
@@ -42104,426 +41685,6 @@
    end="eth_gen_mon_11.avalon_universal_slave_0">
   <parameter name="baseAddress" value="0x000bc000" />
  </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="eth_gen_mon_1.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0001c000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="tx_sc_fifo_1.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0001d600" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="rx_sc_fifo_1.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0001d400" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_phy_1.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x00018000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_mac_1.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x00010000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="tx_sc_fifo_0.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0xd600" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="rx_sc_fifo_0.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0xd400" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_phy_0.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x8000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_mac_0.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="eth_gen_mon_0.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0xc000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_mac_2.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x00020000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_phy_2.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x00028000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="rx_sc_fifo_2.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0002d400" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="tx_sc_fifo_2.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0002d600" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="eth_gen_mon_2.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0002c000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_mac_3.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x00030000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_phy_3.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x00038000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="rx_sc_fifo_3.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0003d400" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="tx_sc_fifo_3.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0003d600" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="eth_gen_mon_3.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0003c000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_mac_4.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x00040000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_phy_4.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x00048000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="rx_sc_fifo_4.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0004d400" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="tx_sc_fifo_4.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0004d600" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="eth_gen_mon_4.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0004c000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_mac_5.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x00050000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_phy_5.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x00058000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="rx_sc_fifo_5.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0005d400" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="tx_sc_fifo_5.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0005d600" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="eth_gen_mon_5.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0005c000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_mac_6.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x00060000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_phy_6.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x00068000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="rx_sc_fifo_6.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0006d400" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="tx_sc_fifo_6.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0006d600" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="eth_gen_mon_6.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0006c000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_mac_7.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x00070000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_phy_7.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x00078000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="rx_sc_fifo_7.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0007d400" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="tx_sc_fifo_7.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0007d600" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="eth_gen_mon_7.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0007c000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_phy_8.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x00088000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="rx_sc_fifo_8.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0008d400" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="tx_sc_fifo_8.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0008d600" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="eth_gen_mon_8.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0008c000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_mac_8.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x00080000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_mac_9.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x00090000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_phy_9.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x00098000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="rx_sc_fifo_9.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0009d400" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="tx_sc_fifo_9.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0009d600" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="eth_gen_mon_9.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x0009c000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_mac_10.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x000a0000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_phy_10.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x000a8000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="rx_sc_fifo_10.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x000ad400" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="tx_sc_fifo_10.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x000ad600" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="eth_gen_mon_10.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x000ac000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_mac_11.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x000b0000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="mm_to_phy_11.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x000b8000" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="rx_sc_fifo_11.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x000bd400" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="tx_sc_fifo_11.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x000bd600" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="master_0.master"
-   end="eth_gen_mon_11.avalon_universal_slave_0">
-  <parameter name="baseAddress" value="0x000bc000" />
- </connection>
  <connection kind="clock" version="18.1" start="clk_csr.clk" end="mm_to_phy_0.clk" />
  <connection kind="clock" version="18.1" start="clk_csr.clk" end="mm_to_mac_0.clk" />
  <connection
@@ -42563,7 +41724,6 @@
    version="18.1"
    start="tx_xcvr_half_clk.clk"
    end="eth_gen_mon_1.clk" />
- <connection kind="clock" version="18.1" start="clk_csr.clk" end="master_0.clk" />
  <connection kind="clock" version="18.1" start="clk_csr.clk" end="mm_to_mac_2.clk" />
  <connection kind="clock" version="18.1" start="clk_csr.clk" end="mm_to_phy_2.clk" />
  <connection
@@ -42750,11 +41910,6 @@
    version="18.1"
    start="tx_xcvr_half_clk.clk"
    end="eth_gen_mon_11.clk" />
- <connection
-   kind="reset"
-   version="18.1"
-   start="clk_csr.clk_reset"
-   end="master_0.clk_reset" />
  <connection
    kind="reset"
    version="18.1"

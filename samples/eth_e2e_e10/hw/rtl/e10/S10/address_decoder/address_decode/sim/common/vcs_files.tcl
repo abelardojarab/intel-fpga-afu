@@ -1,61 +1,61 @@
-source [file join [file dirname [info script]] ./../../../ip/address_decode/address_decode_tx_sc_fifo/sim/common/vcs_files.tcl]
-source [file join [file dirname [info script]] ./../../../ip/address_decode/address_decode_mm_to_mac/sim/common/vcs_files.tcl]
+source [file join [file dirname [info script]] ./../../../ip/address_decode/address_decode_clk_csr/sim/common/vcs_files.tcl]
+source [file join [file dirname [info script]] ./../../../ip/address_decode/address_decode_tx_xcvr_clk/sim/common/vcs_files.tcl]
 source [file join [file dirname [info script]] ./../../../ip/address_decode/address_decode_tx_xcvr_half_clk/sim/common/vcs_files.tcl]
 source [file join [file dirname [info script]] ./../../../ip/address_decode/address_decode_mm_to_phy/sim/common/vcs_files.tcl]
 source [file join [file dirname [info script]] ./../../../ip/address_decode/address_decode_rx_sc_fifo/sim/common/vcs_files.tcl]
 source [file join [file dirname [info script]] ./../../../ip/address_decode/address_decode_rx_xcvr_clk/sim/common/vcs_files.tcl]
-source [file join [file dirname [info script]] ./../../../ip/address_decode/address_decode_clk_csr/sim/common/vcs_files.tcl]
+source [file join [file dirname [info script]] ./../../../ip/address_decode/address_decode_mm_to_mac/sim/common/vcs_files.tcl]
+source [file join [file dirname [info script]] ./../../../ip/address_decode/address_decode_tx_sc_fifo/sim/common/vcs_files.tcl]
+source [file join [file dirname [info script]] ./../../../ip/address_decode/address_decode_merlin_master_translator_0/sim/common/vcs_files.tcl]
 source [file join [file dirname [info script]] ./../../../ip/address_decode/address_decode_eth_gen_mon/sim/common/vcs_files.tcl]
 source [file join [file dirname [info script]] ./../../../ip/address_decode/address_decode_master_0/sim/common/vcs_files.tcl]
-source [file join [file dirname [info script]] ./../../../ip/address_decode/address_decode_merlin_master_translator_0/sim/common/vcs_files.tcl]
-source [file join [file dirname [info script]] ./../../../ip/address_decode/address_decode_tx_xcvr_clk/sim/common/vcs_files.tcl]
 
 namespace eval address_decode {
   proc get_memory_files {QSYS_SIMDIR} {
     set memory_files [list]
-    set memory_files [concat $memory_files [address_decode_tx_sc_fifo::get_memory_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_tx_sc_fifo/sim/"]]
-    set memory_files [concat $memory_files [address_decode_mm_to_mac::get_memory_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_mm_to_mac/sim/"]]
+    set memory_files [concat $memory_files [address_decode_clk_csr::get_memory_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_clk_csr/sim/"]]
+    set memory_files [concat $memory_files [address_decode_tx_xcvr_clk::get_memory_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_tx_xcvr_clk/sim/"]]
     set memory_files [concat $memory_files [address_decode_tx_xcvr_half_clk::get_memory_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_tx_xcvr_half_clk/sim/"]]
     set memory_files [concat $memory_files [address_decode_mm_to_phy::get_memory_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_mm_to_phy/sim/"]]
     set memory_files [concat $memory_files [address_decode_rx_sc_fifo::get_memory_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_rx_sc_fifo/sim/"]]
     set memory_files [concat $memory_files [address_decode_rx_xcvr_clk::get_memory_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_rx_xcvr_clk/sim/"]]
-    set memory_files [concat $memory_files [address_decode_clk_csr::get_memory_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_clk_csr/sim/"]]
+    set memory_files [concat $memory_files [address_decode_mm_to_mac::get_memory_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_mm_to_mac/sim/"]]
+    set memory_files [concat $memory_files [address_decode_tx_sc_fifo::get_memory_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_tx_sc_fifo/sim/"]]
+    set memory_files [concat $memory_files [address_decode_merlin_master_translator_0::get_memory_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_merlin_master_translator_0/sim/"]]
     set memory_files [concat $memory_files [address_decode_eth_gen_mon::get_memory_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_eth_gen_mon/sim/"]]
     set memory_files [concat $memory_files [address_decode_master_0::get_memory_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_master_0/sim/"]]
-    set memory_files [concat $memory_files [address_decode_merlin_master_translator_0::get_memory_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_merlin_master_translator_0/sim/"]]
-    set memory_files [concat $memory_files [address_decode_tx_xcvr_clk::get_memory_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_tx_xcvr_clk/sim/"]]
     return $memory_files
   }
   
   proc get_common_design_files {QSYS_SIMDIR} {
     set design_files [dict create]
-    set design_files [dict merge $design_files [address_decode_tx_sc_fifo::get_common_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_tx_sc_fifo/sim/"]]
-    set design_files [dict merge $design_files [address_decode_mm_to_mac::get_common_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_mm_to_mac/sim/"]]
+    set design_files [dict merge $design_files [address_decode_clk_csr::get_common_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_clk_csr/sim/"]]
+    set design_files [dict merge $design_files [address_decode_tx_xcvr_clk::get_common_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_tx_xcvr_clk/sim/"]]
     set design_files [dict merge $design_files [address_decode_tx_xcvr_half_clk::get_common_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_tx_xcvr_half_clk/sim/"]]
     set design_files [dict merge $design_files [address_decode_mm_to_phy::get_common_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_mm_to_phy/sim/"]]
     set design_files [dict merge $design_files [address_decode_rx_sc_fifo::get_common_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_rx_sc_fifo/sim/"]]
     set design_files [dict merge $design_files [address_decode_rx_xcvr_clk::get_common_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_rx_xcvr_clk/sim/"]]
-    set design_files [dict merge $design_files [address_decode_clk_csr::get_common_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_clk_csr/sim/"]]
+    set design_files [dict merge $design_files [address_decode_mm_to_mac::get_common_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_mm_to_mac/sim/"]]
+    set design_files [dict merge $design_files [address_decode_tx_sc_fifo::get_common_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_tx_sc_fifo/sim/"]]
+    set design_files [dict merge $design_files [address_decode_merlin_master_translator_0::get_common_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_merlin_master_translator_0/sim/"]]
     set design_files [dict merge $design_files [address_decode_eth_gen_mon::get_common_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_eth_gen_mon/sim/"]]
     set design_files [dict merge $design_files [address_decode_master_0::get_common_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_master_0/sim/"]]
-    set design_files [dict merge $design_files [address_decode_merlin_master_translator_0::get_common_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_merlin_master_translator_0/sim/"]]
-    set design_files [dict merge $design_files [address_decode_tx_xcvr_clk::get_common_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_tx_xcvr_clk/sim/"]]
     return $design_files
   }
   
   proc get_design_files {QSYS_SIMDIR} {
     set design_files [dict create]
-    set design_files [dict merge $design_files [address_decode_tx_sc_fifo::get_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_tx_sc_fifo/sim/"]]
-    set design_files [dict merge $design_files [address_decode_mm_to_mac::get_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_mm_to_mac/sim/"]]
+    set design_files [dict merge $design_files [address_decode_clk_csr::get_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_clk_csr/sim/"]]
+    set design_files [dict merge $design_files [address_decode_tx_xcvr_clk::get_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_tx_xcvr_clk/sim/"]]
     set design_files [dict merge $design_files [address_decode_tx_xcvr_half_clk::get_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_tx_xcvr_half_clk/sim/"]]
     set design_files [dict merge $design_files [address_decode_mm_to_phy::get_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_mm_to_phy/sim/"]]
     set design_files [dict merge $design_files [address_decode_rx_sc_fifo::get_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_rx_sc_fifo/sim/"]]
     set design_files [dict merge $design_files [address_decode_rx_xcvr_clk::get_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_rx_xcvr_clk/sim/"]]
-    set design_files [dict merge $design_files [address_decode_clk_csr::get_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_clk_csr/sim/"]]
+    set design_files [dict merge $design_files [address_decode_mm_to_mac::get_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_mm_to_mac/sim/"]]
+    set design_files [dict merge $design_files [address_decode_tx_sc_fifo::get_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_tx_sc_fifo/sim/"]]
+    set design_files [dict merge $design_files [address_decode_merlin_master_translator_0::get_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_merlin_master_translator_0/sim/"]]
     set design_files [dict merge $design_files [address_decode_eth_gen_mon::get_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_eth_gen_mon/sim/"]]
     set design_files [dict merge $design_files [address_decode_master_0::get_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_master_0/sim/"]]
-    set design_files [dict merge $design_files [address_decode_merlin_master_translator_0::get_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_merlin_master_translator_0/sim/"]]
-    set design_files [dict merge $design_files [address_decode_tx_xcvr_clk::get_design_files "$QSYS_SIMDIR/../../ip/address_decode/address_decode_tx_xcvr_clk/sim/"]]
     dict set design_files "address_decode_altera_merlin_master_translator_181_mhudjri.sv"         "$QSYS_SIMDIR/../altera_merlin_master_translator_181/sim/address_decode_altera_merlin_master_translator_181_mhudjri.sv"                 
     dict set design_files "address_decode_altera_merlin_slave_translator_181_5aswt6a.sv"          "$QSYS_SIMDIR/../altera_merlin_slave_translator_181/sim/address_decode_altera_merlin_slave_translator_181_5aswt6a.sv"                   
     dict set design_files "address_decode_altera_merlin_master_agent_181_t5eyqrq.sv"              "$QSYS_SIMDIR/../altera_merlin_master_agent_181/sim/address_decode_altera_merlin_master_agent_181_t5eyqrq.sv"                           
@@ -105,17 +105,17 @@ namespace eval address_decode {
   
   proc get_elab_options {SIMULATOR_TOOL_BITNESS} {
     set ELAB_OPTIONS ""
-    append ELAB_OPTIONS [address_decode_tx_sc_fifo::get_elab_options $SIMULATOR_TOOL_BITNESS]
-    append ELAB_OPTIONS [address_decode_mm_to_mac::get_elab_options $SIMULATOR_TOOL_BITNESS]
+    append ELAB_OPTIONS [address_decode_clk_csr::get_elab_options $SIMULATOR_TOOL_BITNESS]
+    append ELAB_OPTIONS [address_decode_tx_xcvr_clk::get_elab_options $SIMULATOR_TOOL_BITNESS]
     append ELAB_OPTIONS [address_decode_tx_xcvr_half_clk::get_elab_options $SIMULATOR_TOOL_BITNESS]
     append ELAB_OPTIONS [address_decode_mm_to_phy::get_elab_options $SIMULATOR_TOOL_BITNESS]
     append ELAB_OPTIONS [address_decode_rx_sc_fifo::get_elab_options $SIMULATOR_TOOL_BITNESS]
     append ELAB_OPTIONS [address_decode_rx_xcvr_clk::get_elab_options $SIMULATOR_TOOL_BITNESS]
-    append ELAB_OPTIONS [address_decode_clk_csr::get_elab_options $SIMULATOR_TOOL_BITNESS]
+    append ELAB_OPTIONS [address_decode_mm_to_mac::get_elab_options $SIMULATOR_TOOL_BITNESS]
+    append ELAB_OPTIONS [address_decode_tx_sc_fifo::get_elab_options $SIMULATOR_TOOL_BITNESS]
+    append ELAB_OPTIONS [address_decode_merlin_master_translator_0::get_elab_options $SIMULATOR_TOOL_BITNESS]
     append ELAB_OPTIONS [address_decode_eth_gen_mon::get_elab_options $SIMULATOR_TOOL_BITNESS]
     append ELAB_OPTIONS [address_decode_master_0::get_elab_options $SIMULATOR_TOOL_BITNESS]
-    append ELAB_OPTIONS [address_decode_merlin_master_translator_0::get_elab_options $SIMULATOR_TOOL_BITNESS]
-    append ELAB_OPTIONS [address_decode_tx_xcvr_clk::get_elab_options $SIMULATOR_TOOL_BITNESS]
     if ![ string match "bit_64" $SIMULATOR_TOOL_BITNESS ] {
     } else {
     }
@@ -125,17 +125,17 @@ namespace eval address_decode {
   
   proc get_sim_options {SIMULATOR_TOOL_BITNESS} {
     set SIM_OPTIONS ""
-    append SIM_OPTIONS [address_decode_tx_sc_fifo::get_sim_options $SIMULATOR_TOOL_BITNESS]
-    append SIM_OPTIONS [address_decode_mm_to_mac::get_sim_options $SIMULATOR_TOOL_BITNESS]
+    append SIM_OPTIONS [address_decode_clk_csr::get_sim_options $SIMULATOR_TOOL_BITNESS]
+    append SIM_OPTIONS [address_decode_tx_xcvr_clk::get_sim_options $SIMULATOR_TOOL_BITNESS]
     append SIM_OPTIONS [address_decode_tx_xcvr_half_clk::get_sim_options $SIMULATOR_TOOL_BITNESS]
     append SIM_OPTIONS [address_decode_mm_to_phy::get_sim_options $SIMULATOR_TOOL_BITNESS]
     append SIM_OPTIONS [address_decode_rx_sc_fifo::get_sim_options $SIMULATOR_TOOL_BITNESS]
     append SIM_OPTIONS [address_decode_rx_xcvr_clk::get_sim_options $SIMULATOR_TOOL_BITNESS]
-    append SIM_OPTIONS [address_decode_clk_csr::get_sim_options $SIMULATOR_TOOL_BITNESS]
+    append SIM_OPTIONS [address_decode_mm_to_mac::get_sim_options $SIMULATOR_TOOL_BITNESS]
+    append SIM_OPTIONS [address_decode_tx_sc_fifo::get_sim_options $SIMULATOR_TOOL_BITNESS]
+    append SIM_OPTIONS [address_decode_merlin_master_translator_0::get_sim_options $SIMULATOR_TOOL_BITNESS]
     append SIM_OPTIONS [address_decode_eth_gen_mon::get_sim_options $SIMULATOR_TOOL_BITNESS]
     append SIM_OPTIONS [address_decode_master_0::get_sim_options $SIMULATOR_TOOL_BITNESS]
-    append SIM_OPTIONS [address_decode_merlin_master_translator_0::get_sim_options $SIMULATOR_TOOL_BITNESS]
-    append SIM_OPTIONS [address_decode_tx_xcvr_clk::get_sim_options $SIMULATOR_TOOL_BITNESS]
     if ![ string match "bit_64" $SIMULATOR_TOOL_BITNESS ] {
     } else {
     }
@@ -146,17 +146,17 @@ namespace eval address_decode {
   proc get_env_variables {SIMULATOR_TOOL_BITNESS} {
     set ENV_VARIABLES [dict create]
     set LD_LIBRARY_PATH [dict create]
-    set LD_LIBRARY_PATH [dict merge $LD_LIBRARY_PATH [dict get [address_decode_tx_sc_fifo::get_env_variables $SIMULATOR_TOOL_BITNESS] "LD_LIBRARY_PATH"]]
-    set LD_LIBRARY_PATH [dict merge $LD_LIBRARY_PATH [dict get [address_decode_mm_to_mac::get_env_variables $SIMULATOR_TOOL_BITNESS] "LD_LIBRARY_PATH"]]
+    set LD_LIBRARY_PATH [dict merge $LD_LIBRARY_PATH [dict get [address_decode_clk_csr::get_env_variables $SIMULATOR_TOOL_BITNESS] "LD_LIBRARY_PATH"]]
+    set LD_LIBRARY_PATH [dict merge $LD_LIBRARY_PATH [dict get [address_decode_tx_xcvr_clk::get_env_variables $SIMULATOR_TOOL_BITNESS] "LD_LIBRARY_PATH"]]
     set LD_LIBRARY_PATH [dict merge $LD_LIBRARY_PATH [dict get [address_decode_tx_xcvr_half_clk::get_env_variables $SIMULATOR_TOOL_BITNESS] "LD_LIBRARY_PATH"]]
     set LD_LIBRARY_PATH [dict merge $LD_LIBRARY_PATH [dict get [address_decode_mm_to_phy::get_env_variables $SIMULATOR_TOOL_BITNESS] "LD_LIBRARY_PATH"]]
     set LD_LIBRARY_PATH [dict merge $LD_LIBRARY_PATH [dict get [address_decode_rx_sc_fifo::get_env_variables $SIMULATOR_TOOL_BITNESS] "LD_LIBRARY_PATH"]]
     set LD_LIBRARY_PATH [dict merge $LD_LIBRARY_PATH [dict get [address_decode_rx_xcvr_clk::get_env_variables $SIMULATOR_TOOL_BITNESS] "LD_LIBRARY_PATH"]]
-    set LD_LIBRARY_PATH [dict merge $LD_LIBRARY_PATH [dict get [address_decode_clk_csr::get_env_variables $SIMULATOR_TOOL_BITNESS] "LD_LIBRARY_PATH"]]
+    set LD_LIBRARY_PATH [dict merge $LD_LIBRARY_PATH [dict get [address_decode_mm_to_mac::get_env_variables $SIMULATOR_TOOL_BITNESS] "LD_LIBRARY_PATH"]]
+    set LD_LIBRARY_PATH [dict merge $LD_LIBRARY_PATH [dict get [address_decode_tx_sc_fifo::get_env_variables $SIMULATOR_TOOL_BITNESS] "LD_LIBRARY_PATH"]]
+    set LD_LIBRARY_PATH [dict merge $LD_LIBRARY_PATH [dict get [address_decode_merlin_master_translator_0::get_env_variables $SIMULATOR_TOOL_BITNESS] "LD_LIBRARY_PATH"]]
     set LD_LIBRARY_PATH [dict merge $LD_LIBRARY_PATH [dict get [address_decode_eth_gen_mon::get_env_variables $SIMULATOR_TOOL_BITNESS] "LD_LIBRARY_PATH"]]
     set LD_LIBRARY_PATH [dict merge $LD_LIBRARY_PATH [dict get [address_decode_master_0::get_env_variables $SIMULATOR_TOOL_BITNESS] "LD_LIBRARY_PATH"]]
-    set LD_LIBRARY_PATH [dict merge $LD_LIBRARY_PATH [dict get [address_decode_merlin_master_translator_0::get_env_variables $SIMULATOR_TOOL_BITNESS] "LD_LIBRARY_PATH"]]
-    set LD_LIBRARY_PATH [dict merge $LD_LIBRARY_PATH [dict get [address_decode_tx_xcvr_clk::get_env_variables $SIMULATOR_TOOL_BITNESS] "LD_LIBRARY_PATH"]]
     dict set ENV_VARIABLES "LD_LIBRARY_PATH" $LD_LIBRARY_PATH
     if ![ string match "bit_64" $SIMULATOR_TOOL_BITNESS ] {
     } else {

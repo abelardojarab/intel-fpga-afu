@@ -30,9 +30,10 @@
 module eth_e2e_e10 #(
     parameter NUM_LN = 4   // no override
 )(
-	pr_hssi_if.to_fiu hssi,
+	//pr_hssi_if.to_fiu hssi,
 
-    input clk,
+    input clk156,
+    input clk312,
     input reset,
 
     // ETH CSR ports
@@ -52,10 +53,6 @@ reg [31:0] scratch = {GBS_ID, GBS_VER};
 reg [31:0] prmgmt_dout_r = 32'h0;
 
 reg [NUM_ETH-1:0] sloop;
-//assign hssi.a2f_rx_seriallpbken[NUM_ETH-1:0] = sloop;
-/*always_comb begin
-     sloop = '1;
-end*/
 
 ////////////////////////////////////////////////////////////////////////////////
 // MUX for HSSI PR MGMT bus access 
@@ -65,7 +62,7 @@ reg  [15:0] prmgmt_cmd;
 reg  [15:0] prmgmt_addr;   
 reg  [31:0] prmgmt_din;   
 
-always @(posedge clk)
+always @(posedge clk156)
 begin
     // RD/WR request from AFU CSR
 	prmgmt_cmd <= 16'b0;
@@ -140,25 +137,9 @@ generate
         wire           tx_enh_data_valid;
         //wire err_ins = 1'b0;
 
-        /*if (!sloop[i])
-        begin
-            assign xgmii_rx_control[3:0] = hssi.f2a_rx_parallel_data [(i*80)+35:(i*80)+32];
-            assign xgmii_rx_control[7:4] = hssi.f2a_rx_parallel_data [(i*80)+77:(i*80)+72];     // 9th and 10th bits unused
-            assign xgmii_rx_data[31:0] = hssi.f2a_rx_parallel_data [(i*80)+31:(i*80)];
-            assign xgmii_rx_data[63:32] = hssi.f2a_rx_parallel_data [(i*80)+71:(i*80)+40];
-            assign rx_enh_data_valid = hssi.f2a_rx_parallel_data [(i*80)+36];
-
-            assign hssi.a2f_tx_parallel_data [(i*80)+35:(i*80)+32] = xgmii_tx_control[3:0];
-            assign hssi.a2f_tx_parallel_data [(i*80)+77:(i*80)+72] = xgmii_tx_control[7:4];     // 9th bit is unused
-            assign hssi.a2f_tx_parallel_data [(i*80)+31:(i*80)] = xgmii_tx_data[31:0];
-            assign hssi.a2f_tx_parallel_data [(i*80)+71:(i*80)+40] = xgmii_tx_data[63:32];
-            assign hssi.a2f_tx_parallel_data [(i*80)+36] = tx_enh_data_valid;
-        end else begin
-            */
-	assign xgmii_rx_control = xgmii_tx_control;
-            assign xgmii_rx_data    = xgmii_tx_data;
-            assign rx_enh_data_valid = tx_enh_data_valid;
-        //end
+        assign xgmii_rx_control = xgmii_tx_control;
+        assign xgmii_rx_data    = xgmii_tx_data;
+        assign rx_enh_data_valid = tx_enh_data_valid;
 
         reg         csr_read = 1'b0;
         reg         csr_write = 1'b0;
@@ -168,15 +149,15 @@ generate
         wire         csr_waitrequest;
 
         altera_eth_10g_mac_base_r eth0 (
-            .csr_clk(clk),
+            .csr_clk(clk156),
             .csr_rst_n(!csr_rst),
             .tx_rst_n(!tx_rst),
             .rx_rst_n(!rx_rst),
 
-            .tx_clk_312(hssi.f2a_tx_parallel_clk_x2), // TODO: use channel 0
-            .rx_clk_312(hssi.f2a_rx_parallel_clk_x2),
-            .tx_clk_156(hssi.f2a_tx_parallel_clk_x1),
-            .rx_clk_156(hssi.f2a_rx_parallel_clk_x1),
+            .tx_clk_312(clk312),
+            .rx_clk_312(clk312),
+            .tx_clk_156(clk156),
+            .rx_clk_156(clk156),
 
             //.iopll_locked(&hssi.f2a_rx_is_lockedtoref), // Unused
 
@@ -212,7 +193,7 @@ generate
         );
 
         reg [31:0] csr_readdata_r = 32'h0;
-        always @(posedge clk) begin
+        always @(posedge clk156) begin
             if (reset) csr_read <= 1'b0;
             else begin
                 if (status_read && (port_sel == i[1:0])) csr_read <= 1'b1;
@@ -221,7 +202,7 @@ generate
             if (csr_read) csr_readdata_r <= csr_readdata;
         end
 
-        always @(posedge clk) begin
+        always @(posedge clk156) begin
             if (reset) csr_write <= 1'b0;
             else begin
                 if (status_write && (port_sel == i[1:0])) csr_write <= 1'b1;
@@ -231,7 +212,7 @@ generate
 
         assign all_csr_rdata [(i+1)*32-1:i*32] = csr_readdata_r;
 
-        always @(posedge clk) begin
+        always @(posedge clk156) begin
             csr_address <= status_addr;
             csr_writedata <= status_writedata;
         end
@@ -242,7 +223,7 @@ endgenerate
 
 wire [31:0] status_readdata_r;
 alt_mux4w32t1s1 mx0 (
-    .clk(clk),
+    .clk(clk156),
     .din(all_csr_rdata),
     .sel(port_sel),
     .dout(status_readdata_r)
@@ -252,7 +233,7 @@ alt_mux4w32t1s1 mx0 (
 // hook up to the management port
 ////////////////////////////////////////////////////////////////////////////////
 
-always @(posedge clk) begin
+always @(posedge clk156) begin
     case (prmgmt_addr[3:0])
         4'h0 : prmgmt_dout_r <= 32'h0 | scratch;
         4'h1 : prmgmt_dout_r <= 32'h0 | {csr_rst,rx_rst,tx_rst};
@@ -275,7 +256,7 @@ always @(posedge clk) begin
 end
 //assign hssi.a2f_prmgmt_dout = prmgmt_dout_r;
 
-always @(posedge clk) begin
+always @(posedge clk156) begin
     status_read <= 1'b0;
     status_write <= 1'b0;
 

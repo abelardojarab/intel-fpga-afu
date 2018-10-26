@@ -12,7 +12,7 @@
 # or its authorized distributors. Please refer to the applicable 
 # agreement for further details.
 
-# ACDS 18.1 221 linux 2018.09.21.11:12:18
+# ACDS 18.1 222 linux 2018.10.17.11:03:34
 
 # ----------------------------------------
 # vcs - auto-generated simulation script
@@ -96,12 +96,12 @@
 # within the Quartus project, and generate a unified
 # script which supports all the Intel IP within the design.
 # ----------------------------------------
-# ACDS 18.1 221 linux 2018.09.21.11:12:18
+# ACDS 18.1 222 linux 2018.10.17.11:03:34
 # ----------------------------------------
 # initialize variables
 TOP_LEVEL_NAME="altera_eth_10g_mac"
 QSYS_SIMDIR="./../../"
-QUARTUS_INSTALL_DIR="/swip_build/releases/acds/18.1/221/linux64/quartus/"
+QUARTUS_INSTALL_DIR="/swip_build/releases/acds/18.1/222/linux64/quartus/"
 SKIP_FILE_COPY=0
 SKIP_SIM=0
 USER_DEFINED_ELAB_OPTIONS=""

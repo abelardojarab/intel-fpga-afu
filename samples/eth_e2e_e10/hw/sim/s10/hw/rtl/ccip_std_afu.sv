@@ -48,7 +48,6 @@ module ccip_std_afu
     input  logic        pck_cp2af_error,      // CCI-P Protocol Error Detected
 
     // Raw HSSI interface
-    // JTX: remove HSSI interface
     //pr_hssi_if.to_fiu   hssi,
 
     // CCI-P structures
@@ -181,20 +180,18 @@ logic init_done;
     .csr_init_done(init_done),
 
     // Connection to BBS
-    // JTX: remove HSSI interface
     //.hssi(hssi)
 
-    // JTX: add necessary signals
-    .clk(uClk_usr),
-    .reset(pck_cp2af_softReset),
-    .clk312(uClk_usrDiv2)
+    .clk156(uClk_usrDiv2),              // 156
+    .clk312(uClk_usr),                  // 312
+    .clk100(clk),                       // 100
+    .reset(pck_cp2af_softReset_T1)
     );
 
 logic action_r = 0;
 
-// JTX: replace clock with user clock, reset with CCI-P reset
 //always @(posedge hssi.f2a_prmgmt_ctrl_clk or posedge hssi.f2a_prmgmt_arst)
-always @(posedge uClk_usr or posedge pck_cp2af_softReset)
+always @(posedge clk or posedge pck_cp2af_softReset)
 begin
 	if (pck_cp2af_softReset) begin
 		action_r <= 0;
@@ -214,9 +211,7 @@ alt_sync_regs_m2 #(
 	.WIDTH(64),
 	.DEPTH(2)
 ) sy01(
-    // JTX: replace clock with user clock
-    //.clk(hssi.f2a_prmgmt_ctrl_clk),
-    .clk(uClk_usr),
+    .clk(clk),
 	.din({ctrl_addr,wr_data}),
 	.dout({eth_ctrl_addr_o,eth_wr_data})
 );

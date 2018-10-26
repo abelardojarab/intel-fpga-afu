@@ -48,7 +48,7 @@ module ccip_std_afu
     input  logic        pck_cp2af_error,      // CCI-P Protocol Error Detected
 
     // Raw HSSI interface
-    pr_hssi_if.to_fiu   hssi,
+    //pr_hssi_if.to_fiu   hssi,
 
     // CCI-P structures
     input  t_if_ccip_Rx pck_cp2af_sRx,        // CCI-P Rx Port
@@ -76,6 +76,18 @@ localparam ETH_RD_DATA   = 16'h0040;
 localparam AFU_SCRATCH   = 16'h0048;
 
 //------------------------------------------------------------------------------
+// Pick the proper clk, as chosen by the AFU's JSON file
+//------------------------------------------------------------------------------
+
+// The platform may transform the CCI-P clock from pClk to a clock
+// chosen in the AFU's JSON file.
+logic clk;
+assign clk = `PLATFORM_PARAM_CCI_P_CLOCK;
+
+logic reset;
+assign reset = `PLATFORM_PARAM_CCI_P_RESET;
+
+//------------------------------------------------------------------------------
 // Register PR <--> PR signals near interface before consuming it
 //------------------------------------------------------------------------------
 
@@ -88,8 +100,8 @@ t_if_ccip_Tx pck_af2cp_sTx_T0;
 
 ccip_interface_reg inst_green_ccip_interface_reg
 (
-    .pClk                   (uClk_usr),
-    .pck_cp2af_softReset_T0 (pck_cp2af_softReset),
+    .pClk                   (clk),
+    .pck_cp2af_softReset_T0 (reset),
     .pck_cp2af_pwrState_T0  (pck_cp2af_pwrState), 
     .pck_cp2af_error_T0     (pck_cp2af_error),    
     .pck_cp2af_sRx_T0       (pck_cp2af_sRx),      
@@ -168,18 +180,17 @@ logic init_done;
     .csr_init_done(init_done),
 
     // Connection to BBS
-    .hssi(hssi),
+    //.hssi(hssi)
 
-    // JTX: add necessary signals
-    .clk(uClk_usr),
+    .clk156(uClk_usrDiv2),              // 156
+    .clk312(uClk_usr),                  // 312
     .reset(pck_cp2af_softReset_T1)
     );
 
 logic action_r = 0;
 
-// JTX: replace clock with user clock, reset with CCI-P reset
 //always @(posedge hssi.f2a_prmgmt_ctrl_clk or posedge hssi.f2a_prmgmt_arst)
-always @(posedge uClk_usr or posedge pck_cp2af_softReset_T1)
+always @(posedge uClk_usrDiv2 or posedge pck_cp2af_softReset_T1)
 begin
 	if (pck_cp2af_softReset_T1) begin
 		action_r <= 0;
@@ -199,7 +210,7 @@ alt_sync_regs_m2 #(
 	.WIDTH(64),
 	.DEPTH(2)
 ) sy01(
-    .clk(uClk_usr),
+    .clk(uClk_usrDiv2),
 	.din({ctrl_addr,wr_data}),
 	.dout({eth_ctrl_addr_o,eth_wr_data})
 );
@@ -208,18 +219,18 @@ alt_sync_regs_m2 #(
 	.WIDTH(32),
 	.DEPTH(2)
 ) sy02(
-	.clk(uClk_usr),
+	.clk(clk),
 	.din(eth_rd_data),
 	.dout(rd_data)
 );
 
-always @(posedge uClk_usr)
+always @(posedge clk)
 begin
 	init_start    <= afu_init[0];
 	init_done_r   <= init_done;
 end
 
-always @(posedge uClk_usr or posedge pck_cp2af_softReset_T1)
+always @(posedge clk or posedge pck_cp2af_softReset_T1)
 begin
     if (pck_cp2af_softReset_T1)
     begin
@@ -241,7 +252,7 @@ begin
     end
 end
 
-always @(posedge uClk_usr)
+always @(posedge clk)
 begin
     case (csr_addr_8B[3:0])
         AFU_DFH	     [6:3]: csr_rd_data <= 'h1000000000000001;	
@@ -274,7 +285,7 @@ end
 logic           csr_ren_T1;
 t_ccip_tid      csr_tid_T1;
 
-always @(posedge uClk_usr or posedge pck_cp2af_softReset_T1)
+always @(posedge clk or posedge pck_cp2af_softReset_T1)
 begin
     if (pck_cp2af_softReset_T1)
     begin
@@ -290,7 +301,7 @@ begin
     end
 end    
 
-always @(posedge uClk_usr)
+always @(posedge clk)
 begin
     // Pipe Stage T1
     csr_tid_T1 <= cp2csr_MmioHdr.tid;

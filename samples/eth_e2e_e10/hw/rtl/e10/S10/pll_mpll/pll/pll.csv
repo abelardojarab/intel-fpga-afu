@@ -1,4 +1,4 @@
-# system info pll on 2018.09.21.11:11:24
+# system info pll on 2018.10.17.11:02:49
 system_info:
 name,value
 DEVICE,1SG280HU2F50E2VG
@@ -6,7 +6,7 @@ DEVICE_FAMILY,Stratix 10
 GENERATION_ID,0
 #
 #
-# Files generated for pll on 2018.09.21.11:11:24
+# Files generated for pll on 2018.10.17.11:02:49
 files:
 filepath,kind,attributes,module,is_top
 sim/pll.v,VERILOG,CONTAINS_INLINE_CONFIGURATION,pll,true

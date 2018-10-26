@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <deploy
- date="2018.09.21.11:07:57"
- outputDirectory="/tmp/arc/829409691/alt7795_6890625537810218528.dir/0005_alt_em10g32_0_gen/rtl/address_decoder/ip/address_decode/address_decode_tx_xcvr_clk/">
+ date="2018.10.17.14:49:25"
+ outputDirectory="/data/jixia/eth/181_10g_mac_ip/alt_em10g32_0_EXAMPLE_DESIGN/LL10G_10GBASER/rtl/address_decoder/ip/address_decode/address_decode_tx_xcvr_clk/">
  <perimeter>
   <parameter
      name="AUTO_GENERATION_ID"
@@ -92,17 +92,17 @@
   <parameter name="AUTO_DEVICE_SPEEDGRADE" value="2" />
   <generatedFiles>
    <file
-       path="/tmp/arc/829409691/alt7795_6890625537810218528.dir/0005_alt_em10g32_0_gen/rtl/address_decoder/ip/address_decode/address_decode_tx_xcvr_clk/synth/address_decode_tx_xcvr_clk.v"
+       path="/data/jixia/eth/181_10g_mac_ip/alt_em10g32_0_EXAMPLE_DESIGN/LL10G_10GBASER/rtl/address_decoder/ip/address_decode/address_decode_tx_xcvr_clk/synth/address_decode_tx_xcvr_clk.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="/tmp/arc/829409691/alt7795_6890625537810218528.dir/0005_alt_em10g32_0_gen/rtl/address_decoder/ip/address_decode/address_decode_tx_xcvr_clk/synth/address_decode_tx_xcvr_clk.v"
+       path="/data/jixia/eth/181_10g_mac_ip/alt_em10g32_0_EXAMPLE_DESIGN/LL10G_10GBASER/rtl/address_decoder/ip/address_decode/address_decode_tx_xcvr_clk/synth/address_decode_tx_xcvr_clk.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </childGeneratedFiles>
   <sourceFiles>
    <file
-       path="/tmp/arc/829409691/alt7795_6890625537810218528.dir/0005_alt_em10g32_0_gen/rtl/address_decoder/ip/address_decode/address_decode_tx_xcvr_clk.ip" />
+       path="/data/jixia/eth/181_10g_mac_ip/alt_em10g32_0_EXAMPLE_DESIGN/LL10G_10GBASER/rtl/address_decoder/ip/address_decode/address_decode_tx_xcvr_clk.ip" />
   </sourceFiles>
   <childSourceFiles/>
   <messages>

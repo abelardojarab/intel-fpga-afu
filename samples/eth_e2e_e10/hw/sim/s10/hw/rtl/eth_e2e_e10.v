@@ -30,13 +30,12 @@
 module eth_e2e_e10 #(
     parameter NUM_LN = 4   // no override
 )(
-    // JTX: remove HSSI interface
 	//pr_hssi_if.to_fiu hssi,
 
-    // JTX: add signals removed from HSSI interface
-    input clk,
-    input reset,
+    input clk156,
     input clk312,
+    input clk100,
+    input reset,
 
     // ETH CSR ports
     input  [31:0] eth_ctrl_addr,
@@ -55,7 +54,6 @@ reg [31:0] scratch = {GBS_ID, GBS_VER};
 reg [31:0] prmgmt_dout_r = 32'h0;
 
 reg [NUM_ETH-1:0] sloop;
-//assign hssi.a2f_rx_seriallpbken[NUM_ETH-1:0] = sloop;
 
 ////////////////////////////////////////////////////////////////////////////////
 // MUX for HSSI PR MGMT bus access 
@@ -65,8 +63,7 @@ reg  [15:0] prmgmt_cmd;
 reg  [15:0] prmgmt_addr;   
 reg  [31:0] prmgmt_din;   
 
-always @(posedge clk)
-//always @(posedge hssi.f2a_prmgmt_ctrl_clk)
+always @(posedge clk100)
 begin
     // RD/WR request from AFU CSR
 	prmgmt_cmd <= 16'b0;
@@ -137,17 +134,13 @@ generate
         wire [63:0]    xgmii_tx_data;
         wire [7:0]     xgmii_rx_control;
         wire [63:0]    xgmii_rx_data;
-        wire err_ins = 1'b0;
+        wire           rx_enh_data_valid;
+        wire           tx_enh_data_valid;
+        //wire err_ins = 1'b0;
 
-        // JTX: loopback XGMII
-        /*
-        assign xgmii_rx_control = hssi.f2a_rx_control [(i*20)+7:(i*20)];
-        assign xgmii_rx_data = hssi.f2a_rx_parallel_data [(i*128)+63:(i*128)];
-        assign hssi.a2f_tx_control [(i+1)*18-1:(i*18)] = {9'b0,err_ins,xgmii_tx_control};
-        assign hssi.a2f_tx_parallel_data [(i+1)*128-1:(i*128)] = {64'b0,xgmii_tx_data};
-        */
         assign xgmii_rx_control = xgmii_tx_control;
         assign xgmii_rx_data    = xgmii_tx_data;
+        assign rx_enh_data_valid = tx_enh_data_valid;
 
         reg         csr_read = 1'b0;
         reg         csr_write = 1'b0;
@@ -157,15 +150,15 @@ generate
         wire         csr_waitrequest;
 
         altera_eth_10g_mac_base_r eth0 (
-            .csr_clk(clk),
-            .csr_rst_n(~csr_rst),
-            .tx_rst_n(~tx_rst),
-            .rx_rst_n(~rx_rst),
+            .csr_clk(clk100),
+            .csr_rst_n(!csr_rst),
+            .tx_rst_n(!tx_rst),
+            .rx_rst_n(!rx_rst),
 
             .tx_clk_312(clk312),
             .rx_clk_312(clk312),
-            .tx_clk_156(clk),
-            .rx_clk_156(clk),
+            .tx_clk_156(clk156),
+            .rx_clk_156(clk156),
 
             .iopll_locked(~reset),
 
@@ -182,12 +175,12 @@ generate
             .rx_ready_export(rx_ready_export[i]),
 
             // serdes data pipe
-            .xgmii_tx_valid(~reset),
+            .xgmii_tx_valid(tx_enh_data_valid),
             .xgmii_tx_control(xgmii_tx_control),
             .xgmii_tx_data(xgmii_tx_data),
             .xgmii_rx_control(xgmii_rx_control),
             .xgmii_rx_data(xgmii_rx_data),
-            .xgmii_rx_valid(~reset),
+            .xgmii_rx_valid(rx_enh_data_valid),
 
             // csr interface
             .csr_read(csr_read),
@@ -199,7 +192,7 @@ generate
         );
 
         reg [31:0] csr_readdata_r = 32'h0;
-        always @(posedge clk) begin
+        always @(posedge clk100) begin
             if (reset) csr_read <= 1'b0;
             else begin
                 if (status_read && (port_sel == i[1:0])) csr_read <= 1'b1;
@@ -208,7 +201,7 @@ generate
             if (csr_read) csr_readdata_r <= csr_readdata;
         end
 
-        always @(posedge clk) begin
+        always @(posedge clk100) begin
             if (reset) csr_write <= 1'b0;
             else begin
                 if (status_write && (port_sel == i[1:0])) csr_write <= 1'b1;
@@ -218,7 +211,7 @@ generate
 
         assign all_csr_rdata [(i+1)*32-1:i*32] = csr_readdata_r;
 
-        always @(posedge clk) begin
+        always @(posedge clk100) begin
             csr_address <= status_addr;
             csr_writedata <= status_writedata;
         end
@@ -229,7 +222,7 @@ endgenerate
 
 wire [31:0] status_readdata_r;
 alt_mux4w32t1s1 mx0 (
-    .clk(clk),
+    .clk(clk100),
     .din(all_csr_rdata),
     .sel(port_sel),
     .dout(status_readdata_r)
@@ -239,7 +232,7 @@ alt_mux4w32t1s1 mx0 (
 // hook up to the management port
 ////////////////////////////////////////////////////////////////////////////////
 
-always @(posedge clk) begin
+always @(posedge clk100) begin
     case (prmgmt_addr[3:0])
         4'h0 : prmgmt_dout_r <= 32'h0 | scratch;
         4'h1 : prmgmt_dout_r <= 32'h0 | {csr_rst,rx_rst,tx_rst};
@@ -262,8 +255,7 @@ always @(posedge clk) begin
 end
 //assign hssi.a2f_prmgmt_dout = prmgmt_dout_r;
 
-always @(posedge clk or posedge reset) begin
-//always @(posedge hssi.f2a_prmgmt_ctrl_clk) begin
+always @(posedge clk100) begin
     status_read <= 1'b0;
     status_write <= 1'b0;
 
@@ -289,7 +281,6 @@ always @(posedge clk or posedge reset) begin
         i2c_ctrl_wdata_r[8] <= 1'b0;
     */
     if (reset) begin
-    //if (hssi.f2a_prmgmt_arst) begin
         scratch <= {GBS_ID, GBS_VER};
         //hssi.a2f_prmgmt_fatal_err <= 1'b0;
         status_read <= 1'b0;
@@ -371,28 +362,19 @@ assign oen_I2C1_rstn = 1'b0;
 
 assign oen_GPIO_a = 5'b0;
 assign oen_GPIO_b = 5'b0;
-
+*/
 
 ////////////////////////////////////
 // drive the unused channels into a civilized state
 
-
+// TODO
 generate
 for (i=4; i<NUM_LN; i=i+1) begin : unused_ln
-    assign hssi.a2f_tx_analogreset[i] = 1'b1;
-    assign hssi.a2f_tx_digitalreset[i] = 1'b1;
-    assign hssi.a2f_rx_analogreset[i] = 1'b1;
-    assign hssi.a2f_rx_digitalreset[i] = 1'b1;
-    assign hssi.a2f_rx_seriallpbken[i] = 1'b1;
-    assign hssi.a2f_rx_set_locktodata[i] = 1'b0;
-    assign hssi.a2f_rx_set_locktoref[i] = 1'b0;
-    assign hssi.a2f_tx_enh_data_valid[i] = 1'b0;
-    assign hssi.a2f_rx_enh_fifo_rd_en[i] = 1'b0;
-
-    assign hssi.a2f_tx_parallel_data[(i+1)*128-1:i*128] = 128'h0;
-    assign hssi.a2f_tx_control[(i+1)*18-1:i*18] = 18'h0;
+    assign hssi.a2f_rx_bitslip[i] = 1'b0;       // TODO
+    assign hssi.a2f_rx_fifo_rd_en[i] = 1'b0;    // TODO
+    assign hssi.a2f_tx_parallel_data[(i+1)*80-1:i*80] = 80'h0;
 end
 endgenerate
-*/
+
 
 endmodule

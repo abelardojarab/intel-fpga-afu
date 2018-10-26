@@ -48,7 +48,7 @@
 	input 	wire 		avl_st_rx_val
 );
 
-parameter DEVICE_FAMILY = "Stratix 10";
+parameter DEVICE_FAMILY = "Arria 10";
 
  // ________________________________________________
  //  traffic generator

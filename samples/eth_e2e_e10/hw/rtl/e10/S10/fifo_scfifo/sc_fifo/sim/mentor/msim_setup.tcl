@@ -94,7 +94,7 @@
 # within the Quartus project, and generate a unified
 # script which supports all the Intel IP within the design.
 # ----------------------------------------
-# ACDS 18.1 221 linux 2018.09.21.11:10:01
+# ACDS 18.1 222 linux 2018.10.17.11:01:54
 
 # ----------------------------------------
 # Initialize variables
@@ -113,7 +113,7 @@ if ![info exists QSYS_SIMDIR] {
 }
 
 if ![info exists QUARTUS_INSTALL_DIR] { 
-  set QUARTUS_INSTALL_DIR "/swip_build/releases/acds/18.1/221/linux64/quartus/"
+  set QUARTUS_INSTALL_DIR "/swip_build/releases/acds/18.1/222/linux64/quartus/"
 }
 
 if ![info exists USER_DEFINED_COMPILE_OPTIONS] { 

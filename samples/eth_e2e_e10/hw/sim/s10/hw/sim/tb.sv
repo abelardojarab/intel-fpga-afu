@@ -38,12 +38,13 @@ logic pck_cp2af_softReset = 1;
 logic [1:0] pck_cp2af_pwrState = 0;
 logic pck_cp2af_error = 0;
 	
-always #2.5 pClk = ~pClk;
+//always #2.5 pClk = ~pClk;
+always #3.2 pClk = ~pClk;
 always #5 pClkDiv2 = ~pClkDiv2;
 always #10 pClkDiv4 = ~pClkDiv4;
 
-always #3.2 uClk_usr = ~uClk_usr;	// 156.25
-always #1.6 uClk_usrDiv2 = ~uClk_usrDiv2; // actually *2 (312.5)
+always #3.2 uClk_usrDiv2 = ~uClk_usrDiv2;	// 156.25
+always #1.6 uClk_usr = ~uClk_usr; 			// 312.5
 
 //pr_hssi_if hssi();
 /*
@@ -270,7 +271,6 @@ begin
 	e10write(16'h3c03,1);       // go bit
 end	
 endtask
-
 
 logic [3:0] rxstatus = 0;
 logic [3:0] txstatus = 0;

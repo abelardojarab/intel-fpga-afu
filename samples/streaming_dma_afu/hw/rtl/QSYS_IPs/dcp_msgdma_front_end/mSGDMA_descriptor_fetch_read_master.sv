@@ -78,9 +78,14 @@ Set new block address --> enable module
 
 ------------------
 Author:  JCJB
-Date:    10/01/2018
-Version: 1.1
+Date:    10/24/2018
+Version: 1.2
 ------------------
+
+Version 1.2 - 10/24/2018 - Added check to enable_fetch to make sure the FSM doesn't return
+                           to the idle state in the middle of a read.  The FSM state value
+                           is also added so that software can queue the state of the hardware
+                           for debug purposes.
 
 Version 1.1 - 10/01/2018 - Updated next descriptor to live at start of block instead of
                            the end.  This allows fetch engine to move onto the next block
@@ -128,7 +133,8 @@ module mSGDMA_descriptor_fetch_read_master #
   output logic [FIFO_DEPTH_LOG2-1:0] outstanding_reads,   // number outstanding descriptor reads
   output logic [ADDRESS_WIDTH-1:0] current_location,      // outputs address counter in case software wants to read it back
   output logic [FIFO_DEPTH_LOG2:0] descriptor_fill_level, // using FIFO_DEPTH_LOG2 so that the fifo full can be added to the MSB
-  output logic fetch_idle
+  output logic fetch_idle,
+  output logic [2:0] current_state
 );
 
   // 64 bytes or 256 bytes depending on if the master is issuing a 1CL or 4CL read
@@ -229,12 +235,16 @@ the FSM returns to LOAD_COUNTER to prepare for the next descriptor block read.
 RETRY_FIRST_LOAD counts until the timeout is reached before returning to LOAD_COUNTER
 
 WAIT_FOR_ADDRESS_RELOAD stalls until the host writes a new descriptor block location
-*/  
+*/ 
   always @ (posedge clk)
   begin
-    if (reset | flush | (enable_fetch == 1'b0))
+    if (reset | flush)
     begin
       state <= IDLE;
+    end
+    else if ((enable_fetch == 1'b0) & ((m_read == 1'b0) | ((m_read == 1'b1) & (m_waitrequest == 1'b0))))
+    begin
+      state <= IDLE;  // need to make sure if read and waitrequest are asserted at the same time the FSM lets that read complete first
     end
     else
     begin
@@ -301,6 +311,7 @@ WAIT_FOR_ADDRESS_RELOAD stalls until the host writes a new descriptor block loca
     end
   end
 
+  assign current_state = state;  // sent to the top so that software can read this for debug purposes
 
   always @ (posedge clk)
   begin
@@ -536,6 +547,6 @@ WAIT_FOR_ADDRESS_RELOAD stalls until the host writes a new descriptor block loca
   assign m_burst = (enable_4cl_fetch == 1)? 'h4 : 'h1;
   assign m_byteenable = {(DESCRIPTOR_FORMAT_A_WIDTH/8){1'b1}};
   
-  assign fetch_idle = (enable_fetch == 1'b0) | (state == WAIT_FOR_ADDRESS_RELOAD);
+  assign fetch_idle = (state == IDLE) | (state == WAIT_FOR_ADDRESS_RELOAD);
   
 endmodule

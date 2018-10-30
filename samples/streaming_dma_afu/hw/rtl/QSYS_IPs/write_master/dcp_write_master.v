@@ -58,6 +58,11 @@
       in flight and when it's told to wait for all write responses it will wait until
       they are all responded.  It is recommended to only enable this on the last
       descriptor since this prevents the master from accepting more transfer commands.
+      
+  2.7 Removed unaligned access support from the hw.tcl file and hardcoded the no
+      byte enables button on for aligned accesses to suppress partial writes at the
+      end of a transfer.  Added the write response tracker so that the master doesn't
+      have to wait for all write responses to return before moving to the next descriptor.
 
 */
 
@@ -151,7 +156,8 @@ module dcp_write_master (
 
   // response source port
   output wire [255:0] src_response_data;
-  output reg src_response_valid;
+//  output reg src_response_valid;
+  output wire src_response_valid;  // write response tracker will drive this now
   input src_response_ready;
 
   // data path sink port
@@ -252,13 +258,25 @@ module dcp_write_master (
   wire last_access;  // JCJB: new signal to flag that the final access is occuring, will be used to supress the burst counter from reloading incorrectly at the end of the transfer
   reg [LENGTH_WIDTH-1:0] streaming_counter;
   
-  wire [9:0] outstanding_bursts;    // this signal tracks how many bursts at out in the system that haven't been responded to yet
-  reg [9:0] outstanding_bursts_d1;  // using to detect transistion from 1 to 0 to create a one cycle strobe to send response to dispatcher 
+  wire [11:0] outstanding_bursts;    // this signal tracks how many bursts at out in the system that haven't been responded to yet
+  reg [11:0] outstanding_bursts_d1;  // using to detect transistion from 1 to 0 to create a one cycle strobe to send response to dispatcher 
   wire all_writes_complete_strobe;
   wire wait_for_write_responses;
   reg wait_for_write_responses_d1;  // when set after all writes are issued the write master will wait for outstanding_bursts to be 0 before sending response to dispatcher
   reg eop_arrived;                  // copy of eop_seen that will be held after done condition so that it can be fed into the response
   reg response_early_termination;   // copy of early termination held around so that it can be fed into the response
+  // extra pipeline stages for the write response to make sure responses do not arrive at the tracker too early
+  reg [1:0] master_response_d1;
+  reg [1:0] master_response_d2;
+  reg master_writeresponsevalid_d1;
+  reg master_writeresponsevalid_d2;
+  // temporary copy of the transfer response that feeds into the write response tracker.  This response will get buffered by the tracker and released to the dispatcher when the bus responses all return
+  wire [255:0] internal_response;
+  wire internal_response_ready;
+  reg internal_response_valid;
+  // new signals to track when bursts and the last burst complete
+  wire last_burst;
+  wire burst_complete;
 
 /********************************************* REGISTERS ****************************************************************************************/
   // registering the stride control bit
@@ -483,14 +501,16 @@ module dcp_write_master (
       begin
         snk_command_ready <= 0;
       end
-      else if (((src_response_ready == 1) & (src_response_valid == 1)) | (reset_taken == 1))  // need to make sure the response is popped before accepting more commands
+        // now that there is a write response tracker we just need to make sure it captures the response and not the dispatcher.  The write tracker contains a 32-deep FIFO for tempoarily buffering responses.
+//      else if (((src_response_ready == 1) & (src_response_valid == 1)) | (reset_taken == 1))  // need to make sure the response is popped before accepting more commands
+      else if (((internal_response_ready == 1) & (internal_response_valid == 1)) | (reset_taken == 1))  // need to make sure the response is popped before accepting more commands
       begin
         snk_command_ready <= 1;
       end
     end
   end
 
-
+/*  Write response will drive this net moving forward
   // send response after done_strobe fires.  The exception is if wait_for_write_responses_d1 is enabled in which case we need to wait for outstanding_bursts to reach 0
   always @ (posedge clk)
   begin
@@ -511,6 +531,32 @@ module dcp_write_master (
       else if ((src_response_valid == 1) & (src_response_ready == 1))
       begin
         src_response_valid <= 0;  // will be reset only once when the dispatcher captures the data
+      end
+    end
+  end
+*/
+
+  /* A copy of the register above only using internal names.  We need to use a register for this just in case the tracker isn't ready to accept another response.
+     This shouldn't happen frequently because the write response tracker can buffer up to 32 responses and the dispatcher has it's own buffer for these */
+  always @ (posedge clk)
+  begin
+    if (reset)
+    begin
+      internal_response_valid <= 0;
+    end
+    else
+    begin
+      if (reset_taken == 1)
+      begin
+        internal_response_valid <= 0;
+      end
+      else if (((done_strobe == 1) & (wait_for_write_responses_d1 == 0)) | ((all_writes_complete_strobe == 1) & (wait_for_write_responses_d1 == 1)))
+      begin
+        internal_response_valid <= 1;  // will be set only once either when the last write is posted or when the last write response returns
+      end
+      else if ((internal_response_valid == 1) & (internal_response_ready == 1))
+      begin
+        internal_response_valid <= 0;  // will be reset only once when the dispatcher captures the data
       end
     end
   end
@@ -608,7 +654,7 @@ module dcp_write_master (
   begin
     if (reset)
     begin
-      outstanding_bursts_d1 <= 10'h000;
+      outstanding_bursts_d1 <= 12'h000;
     end
     else
     begin
@@ -633,7 +679,41 @@ module dcp_write_master (
     else if (response_early_termination & go)
       response_early_termination <= 1'b0;  
   end
+
+
+  always @ (posedge clk)
+  begin
+    if (reset)
+    begin
+      streaming_counter <= {LENGTH_WIDTH{1'b0}};
+    end
+    else
+    begin
+      if (go == 1)
+      begin
+        // load the streaming counter at the same time as length_counter.  This counter will hit 0 before length_counter.
+        streaming_counter <= descriptor_length[LENGTH_WIDTH-1:0];
+      end
+      else if ((snk_ready == 1) & (snk_valid == 1))
+      begin
+        /* when eop arrives or streaming_counter is about to hit 0 force the counter to 0.  Need to check that it's about to hit
+           0 in the event that descriptor_length wasn't a multiple of NUMBER_OF_SYMBOLS.  If EOP hasn't arrive and we still have more
+           data to buffer then decrement streaming_counter by NUMBER_OF_SYMBOLS since we know the full width is being transfered (EOP isn't set)
+        */
+        streaming_counter <= (((snk_eop == 1) & (eop_enable == 1)) | (streaming_counter < NUMBER_OF_SYMBOLS))?  {LENGTH_WIDTH{1'b0}} : (streaming_counter - NUMBER_OF_SYMBOLS);
+      end
+    end
+  end
   
+  
+  // the write response tracking logic buffers the write burst posting so we need to include 3 cycles of response latency, the NoC provides 1 cycle so adding 2 more here
+  always @ (posedge clk)
+  begin
+     master_response_d1 <=  master_response;
+     master_response_d2 <=  master_response_d1;
+     master_writeresponsevalid_d1 <= master_writeresponsevalid;
+     master_writeresponsevalid_d2 <= master_writeresponsevalid_d1;
+  end
 /********************************************* END REGISTERS ************************************************************************************/
 
 
@@ -730,9 +810,10 @@ module dcp_write_master (
     .stall (write_stall_from_write_burst_control),
     .reset_taken (reset_taken_from_write_burst_control),
 	  .stopped (stopped_from_write_burst_control),
-    .response (master_response),
-    .response_valid (master_writeresponsevalid),
-    .outstanding_bursts (outstanding_bursts)
+    .response (master_response_d2),
+    .response_valid (master_writeresponsevalid_d2),
+    .outstanding_bursts (outstanding_bursts),
+    .burst_complete (burst_complete)
   );
   defparam the_dcp_write_burst_control.BURST_ENABLE = BURST_ENABLE;
   defparam the_dcp_write_burst_control.BURST_COUNT_WIDTH = MAX_BURST_COUNT_WIDTH;
@@ -742,6 +823,25 @@ module dcp_write_master (
   defparam the_dcp_write_burst_control.LENGTH_WIDTH = LENGTH_WIDTH;
   defparam the_dcp_write_burst_control.WRITE_FIFO_USED_WIDTH = FIFO_DEPTH_LOG2;
   defparam the_dcp_write_burst_control.BURST_WRAPPING_SUPPORT = BURST_WRAPPING_SUPPORT;
+
+  /* this block will track write responses and only forward transfer responses to the dispatcher when all the write responses have returned.  This allows the 
+     the write master to move onto the next descriptor before all the writes return assuming the descriptor set the wait for write responses bit to 0.
+  */
+  dcp_write_master_response_tracking the_dcp_write_master_response_tracking (
+    .clk                      (clk),
+    .reset                    (reset),
+    .last_burst               (last_burst),
+    .burst_complete           (burst_complete),
+    .writeresponsevalid       (master_writeresponsevalid_d2),  // this module has an internal latency of 3 cycles so need to make sure write responses return 3 cycles later (NoC provides the other cycle)
+    .internal_response        (internal_response),
+    .internal_response_valid  (internal_response_valid),
+    .internal_response_ready  (internal_response_ready),
+    .external_response        (src_response_data),
+    .external_response_valid  (src_response_valid),
+    .external_response_ready  (src_response_ready)
+  );
+  defparam the_dcp_write_master_response_tracking.RESPONSE_FIFO_DEPTH_LOG2 = 5;  // keeping to a depth of 32 gives Quartus the option to pack into MLABs
+  defparam the_dcp_write_master_response_tracking.BURST_FIFO_DEPTH_LOG2 = 12;    // 4 kilo bursts of tracking
 
 /********************************************* END MODULE INSTANTIATIONS ************************************************************************/
 
@@ -990,40 +1090,20 @@ module dcp_write_master (
 
   assign stop_state = stopped;
   assign reset_delayed = (reset_taken == 0) & (sw_reset_in == 1);
-  assign src_response_data = {{211{1'b0}}, eop_arrived, done_strobe, response_early_termination, response_error, stop_state, reset_delayed, response_actual_bytes_transferred};
+// write response tracking now accepts this response
+//  assign src_response_data = {{211{1'b0}}, eop_arrived, done_strobe, response_early_termination, response_error, stop_state, reset_delayed, response_actual_bytes_transferred};
+  assign internal_response = {{211{1'b0}}, eop_arrived, done_strobe, response_early_termination, response_error, stop_state, reset_delayed, response_actual_bytes_transferred};
 
-
-
-  always @ (posedge clk)
-  begin
-    if (reset)
-    begin
-      streaming_counter <= {LENGTH_WIDTH{1'b0}};
-    end
-    else
-    begin
-      if (go == 1)
-      begin
-        // load the streaming counter at the same time as length_counter.  This counter will hit 0 before length_counter.
-        streaming_counter <= descriptor_length[LENGTH_WIDTH-1:0];
-      end
-      else if ((snk_ready == 1) & (snk_valid == 1))
-      begin
-        /* when eop arrives or streaming_counter is about to hit 0 force the counter to 0.  Need to check that it's about to hit
-           0 in the event that descriptor_length wasn't a multiple of NUMBER_OF_SYMBOLS.  If EOP hasn't arrive and we still have more
-           data to buffer then decrement streaming_counter by NUMBER_OF_SYMBOLS since we know the full width is being transfered (EOP isn't set)
-        */
-        streaming_counter <= (((snk_eop == 1) & (eop_enable == 1)) | (streaming_counter < NUMBER_OF_SYMBOLS))?  {LENGTH_WIDTH{1'b0}} : (streaming_counter - NUMBER_OF_SYMBOLS);
-      end
-    end
-  end
+  
+  // Since the hw.tcl file now hardcodes byte enables high and removes unaligned access support we don't need to worry about the end of the transfer being broken up into smaller pieces.
+  assign last_burst = (last_access == 1'b1) | ((buffered_eop == 1'b1) & (write_complete));
 
 
   // any time the FIFO is full or all the data has been accepted, backpressure the sink port 
   assign snk_ready = (fifo_full == 0) & (streaming_counter != 0);
   
   // strobe when remaining write responses have returned
-  assign all_writes_complete_strobe = (done == 1'b1) & (outstanding_bursts == 10'h000) & (outstanding_bursts_d1 == 10'h001);
+  assign all_writes_complete_strobe = (done == 1'b1) & (outstanding_bursts == 12'h0000) & (outstanding_bursts_d1 == 12'h0001);
 
 /********************************************* END CONTROL AND COMBINATIONAL SIGNALS ************************************************************/
 

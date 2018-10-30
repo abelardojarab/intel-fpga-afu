@@ -38,9 +38,13 @@ interrutps to the host.
 
 ------------------
 Author:  JCJB
-Date:    10/01/2018
-Version: 1.1
+Date:    10/24/2018
+Version: 1.2
 ------------------
+
+Version 1.2 - 10/24/2018 - Update to ensure when disabled that any current writes are allowed
+                           to complete first.  FSM state bits also brought out so the host
+                           can query them for debug purposes.
 
 Version 1.1 - 10/01/2018 - Update to bring out the descriptor and response FIFO fill levels.
                            Also updated address logic to deal with next_descriptor arriving
@@ -95,7 +99,9 @@ module mSGDMA_descriptor_store_write_master #
 
   output logic [ADDRESS_WIDTH-1:0] current_location,      // outputs address counter in case software wants to read it back
   output logic [FIFO_DEPTH_LOG2:0] descriptor_fill_level, // using FIFO_DEPTH_LOG2 so that the fifo full can be added to the MSB
-  output logic [FIFO_DEPTH_LOG2:0] response_fill_level    // using FIFO_DEPTH_LOG2 so that the fifo full can be added to the MSB
+  output logic [FIFO_DEPTH_LOG2:0] response_fill_level,   // using FIFO_DEPTH_LOG2 so that the fifo full can be added to the MSB
+  output logic store_idle,
+  output logic [1:0] current_state
 );
 
   localparam DESCRIPTOR_INC_AMOUNT = (DESCRIPTOR_FORMAT_A_WIDTH/8);  // write master is issuing bursts of 1CL so only need to increment 64 bytes at a time
@@ -160,12 +166,16 @@ module mSGDMA_descriptor_store_write_master #
                        that the address counter is not being loaded at the same time a descriptor writeback operation is occuring.
   
   STORE_BLOCK:  this state is responsible for writing desciptors to memory.  The master write signal will only be asserted when the FSM is in this state.
-*/  
+*/
   always @ (posedge clk)
   begin
-    if (reset | flush | (enable_store == 1'b0))
+    if (reset | flush)
     begin
       state <= IDLE;
+    end
+    else if ((enable_store == 1'b0) & ((m_write == 1'b0) | ((m_write == 1'b1) & (m_waitrequest == 1'b0))))
+    begin
+      state <= IDLE;  // need to make sure that if a write burst starts then the FSM waits for it to complete before reaching IDLE state
     end
     else
     begin
@@ -198,6 +208,7 @@ module mSGDMA_descriptor_store_write_master #
     end
   end
   
+  assign current_state = state;   // debug signal the host can read back in the status register
   assign block_address_ready = (state == LOAD_BLOCK_ADDRESS);  // assumption made that block_address_valid is still asserted by the time FSM is in LOAD_BLOCK_ADDRESS state
   assign last_descriptor_in_block = (m_write == 1'b1) & (m_waitrequest == 1'b0) & (descriptor_fifo_output.format[1] == 1'b1);  // asserted when the last descriptor in the block is being written to memory
   
@@ -369,5 +380,7 @@ module mSGDMA_descriptor_store_write_master #
                         final_descriptor_writeback.block_size,
                         final_descriptor_writeback.format
                        };
+  
+  assign store_idle = (state == IDLE);
   
 endmodule

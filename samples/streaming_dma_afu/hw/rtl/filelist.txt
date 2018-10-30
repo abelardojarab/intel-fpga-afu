@@ -40,6 +40,7 @@ QSYS_IPs/write_master/dcp_byte_enable_generator.v
 QSYS_IPs/write_master/dcp_write_burst_control.v
 QSYS_IPs/write_master/dcp_write_master.v
 QSYS_IPs/write_master/dcp_ST_to_MM_Adapter.v
+QSYS_IPs/write_master/dcp_write_master_response_tracking.v
 
 # Modified mSGDMA read master
 QSYS_IPs/read_master/dcp_read_master.v

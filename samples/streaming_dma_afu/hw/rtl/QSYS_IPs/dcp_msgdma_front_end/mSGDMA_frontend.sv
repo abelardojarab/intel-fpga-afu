@@ -78,7 +78,11 @@ Bit Offset     Access                 Field
 ----------     ------                 ----- 
     0          R/Wclr         IRQ (write 1 to clear)
     1            R                 Fetch idle
-  15-2          N/A            N/A will return zeros
+    2            R                 Store idle
+   7-2          N/A            N/A will return zeros
+  10-8           R               Fetch state bits
+  12-11          R               Store state bits
+  15-13         N/A            N/A will return zeros
   31-16          R           Outstanding descriptor fetches
   63-32         N/A            N/A will return zeros
 
@@ -96,11 +100,14 @@ Bit Offset     Access                 Field
 
 ------------------
 Author:  JCJB
-Date:    10/01/2018
-Version: 1.1
+Date:    10/24/2018
+Version: 1.2
 ------------------
 
-Version 1.0 - 10/01/2018 - Updated to bring out more software readable status fields
+Version 1.2 - 10/24/2018 - Updated to bring out store_idle, fetch_current_state, and store_current_state
+                           out to the status register so that the driver can query the state of the hardware.
+
+Version 1.1 - 10/01/2018 - Updated to bring out more software readable status fields
 
 Version 1.0 - 9/14/2018 - Initial version of the module
 
@@ -182,9 +189,12 @@ module mSGDMA_frontend #
   logic [63:0] fifo_fill_levels;
   logic [63:0] readdata;
   logic fetch_idle;
+  logic store_idle;
   logic [FETCH_FIFO_DEPTH_LOG2:0] fetch_descriptor_fill_level;
+  logic [2:0] fetch_current_state;
   logic [STORE_FIFO_DEPTH_LOG2:0] store_descriptor_fill_level;
   logic [STORE_FIFO_DEPTH_LOG2:0] store_response_fill_level;
+  logic [1:0] store_current_state;
   
   
 
@@ -308,7 +318,8 @@ module mSGDMA_frontend #
     .outstanding_reads              (outstanding_reads),
     .current_location               (fetch_current_location),
     .descriptor_fill_level          (fetch_descriptor_fill_level),
-    .fetch_idle                     (fetch_idle)
+    .fetch_idle                     (fetch_idle),
+    .current_state                  (fetch_current_state)
   );
 
   // sending reformated descriptor data to dispatcher.  Dispatcher using 256-bit (enhanced) descriptors and this module is using 512-bit descriptors.
@@ -371,7 +382,9 @@ module mSGDMA_frontend #
     .flush                          (flush),
     .current_location               (store_current_location),
     .descriptor_fill_level          (store_descriptor_fill_level),
-    .response_fill_level            (store_response_fill_level)
+    .response_fill_level            (store_response_fill_level),
+    .store_idle                     (store_idle),
+    .current_state                  (store_current_state)
   );
 
   assign store_descriptor_valid = fetch_descriptor_valid & fetch_descriptor_ready;  // need to make sure dispatcher is ready before sending descriptor to store unit
@@ -392,7 +405,7 @@ module mSGDMA_frontend #
       3'b001:  readdata <= start_location;
       3'b010:  readdata <= {{(64-ADDRESS_WIDTH){1'b0}}, fetch_current_location};
       3'b011:  readdata <= {{(64-ADDRESS_WIDTH){1'b0}}, store_current_location};
-      3'b100:  readdata <= {{(32+16-FETCH_FIFO_DEPTH_LOG2){1'b0}}, outstanding_reads, 14'h0000, fetch_idle, irq};
+      3'b100:  readdata <= {{(32+16-FETCH_FIFO_DEPTH_LOG2){1'b0}}, outstanding_reads, 3'h0, store_current_state, fetch_current_state, 5'h00,store_idle, fetch_idle, irq};
       default: readdata <= fifo_fill_levels;
     endcase
   end

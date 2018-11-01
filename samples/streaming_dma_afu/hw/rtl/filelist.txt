@@ -31,6 +31,8 @@ QSYS_IPs/write_master/dcp_write_master_hw.tcl
 QSYS_IPs/far_reach_avalon_mm_bridge/far_reach_avalon_mm_bridge_hw.tcl
 QSYS_IPs/dcp_msgdma_front_end/mSGDMA_frontend_hw.tcl
 QSYS_IPs/read_master/dcp_read_master_hw.tcl
+QSYS_IPs/one_to_two_streaming_demultiplexer/one_to_two_streaming_demultiplexer_hw.tcl
+QSYS_IPs/two_to_one_streaming_multiplexer/two_to_one_streaming_multiplexer_hw.tcl
 
 # DFH Qsys IP component
 QSYS_IPs/afu_id_avmm_slave/afu_id_avmm_slave.sv
@@ -62,6 +64,11 @@ QSYS_IPs/dcp_msgdma_front_end/mSGDMA_frontend_descriptor_format_pkg.sv
 QSYS_IPs/dcp_msgdma_front_end/mSGDMA_frontend.sv
 QSYS_IPs/dcp_msgdma_front_end/mSGDMA_descriptor_fetch_read_master.sv
 QSYS_IPs/dcp_msgdma_front_end/mSGDMA_descriptor_store_write_master.sv
+
+# new mux and demux cores used to select between pattern tests and loopback
+QSYS_IPs/one_to_two_streaming_demultiplexer/one_to_two_streaming_demux.v
+QSYS_IPs/two_to_one_streaming_multiplexer/two_to_one_streaming_mux.v
+
 
 # new write only pipeline bridge that supports Avalon write responses
 #QSYS_IPs/write_response_bridge/write_response_bridge.v

@@ -8,6 +8,7 @@ package ccip_avmm_pkg;
 	parameter CCIP_AVMM_MMIO_ADDR_WIDTH = 18;
 	parameter CCIP_AVMM_MMIO_DATA_WIDTH = 64;
 
+  // MMIO struct as packet comes off CCI-P
 	typedef struct packed { 
 		logic is_read;
 		logic is_32bit;
@@ -23,5 +24,14 @@ package ccip_avmm_pkg;
 	
 	parameter CCIP_AVMM_REQUESTOR_ID_BITS = 2;
 	parameter CCIP_AVMM_NUM_INTERRUPT_LINES = 4;
+  
+  // Avalon-MM struct used to format fields in the command queue that are exposed to NoC
+  typedef struct packed {
+    logic [CCIP_AVMM_MMIO_ADDR_WIDTH-1:0] address;
+    logic [(CCIP_AVMM_MMIO_DATA_WIDTH/8)-1:0] byteenable;
+    logic [CCIP_AVMM_MMIO_DATA_WIDTH-1:0] writedata;
+    logic read;
+    logic write;
+  } t_master_cmd_queue;
 
 endpackage // ccip_feature_list_pkg

@@ -32,8 +32,10 @@ import ccip_avmm_pkg::*;
 
 module ccip_avmm_mmio #(
 	parameter MMIO_BYPASS_ADDRESS = 0,
-	parameter MMIO_BYPASS_SIZE = 0
-	)
+	parameter MMIO_BYPASS_SIZE = 0,
+  parameter TID_FIFO_MLAB_ENABLE = 1,  // 1 to force TID command to be synthesized in MLABs
+  parameter CMD_FIFO_MLAB_ENABLE = 1   // 1 to force TID command to be synthesized in MLABs
+)
 	
 	(
 	input clk,
@@ -54,17 +56,17 @@ module ccip_avmm_mmio #(
 	//output	t_if_ccip_Tx	af2cp_sTxPort
 	output t_if_ccip_c2_Tx c2tx
 );
+
 	localparam TID_FIFO_WIDTH = CCIP_TID_WIDTH+1; //+1 bit to indicate 32/64 bit request
+  localparam AVMM_FIFO_WIDTH = (CCIP_AVMM_MMIO_DATA_WIDTH/8) + CCIP_AVMM_MMIO_ADDR_WIDTH + CCIP_AVMM_MMIO_DATA_WIDTH + 2;  // +2 to buffer read and write seperately
 
-
-	//
 	logic [CCIP_AVMM_MMIO_DATA_WIDTH-1:0] mmio_rsp_data;
 	logic mmio_rsp_valid;
 	logic mmio_rsp_ready;
 	
 	t_ccip_avmm_mmio_cmd mmio_cmd_data;
 	logic mmio_cmd_valid;
-	logic mmio_cmd_ready;
+//	logic mmio_cmd_ready;
 	
 	// cast c0 header into ReqMmioHdr
 	t_ccip_c0_ReqMmioHdr mmioHdr;
@@ -72,13 +74,25 @@ module ccip_avmm_mmio #(
 	wire mmio32_req = (mmioHdr.length == 2'b00);
 	wire mmio32_highword_req = mmio32_req & mmioHdr.address[0];
 	
+  // read response tracking signals
 	logic tid_fifo_wrreq;
 	reg tid_fifo_rdreq;
+   reg tid_fifo_rdreq_reg;
 	logic [TID_FIFO_WIDTH-1:0] tid_fifo_input;
 	wire [TID_FIFO_WIDTH-1:0] tid_fifo_output;
 	reg [63:0] rd_rsp_data_reg;
 	reg [63:0] rd_rsp_data_reg2;
 	reg rd_rsp_valid_reg;
+  
+  // read/write command buffering signals
+  logic cmd_fifo_wrreq;
+  logic cmd_fifo_rdreq;
+  t_master_cmd_queue cmd_fifo_input;
+  t_master_cmd_queue cmd_fifo_output;
+  logic cmd_fifo_empty;
+  
+  
+  
 	
 	wire fifo_mmio32_highword_req = tid_fifo_output[TID_FIFO_WIDTH-1];
 	
@@ -92,7 +106,7 @@ module ccip_avmm_mmio #(
 		.sclr(reset),
 		.clock(clk),
 		.wrreq(tid_fifo_wrreq),
-		.rdreq(tid_fifo_rdreq),
+		.rdreq(tid_fifo_rdreq_reg),  // changed TID fifo from legacy to showahead so this needs to be one cycle later
 		.aclr (),
 		.almost_empty (),
 		.almost_full (),
@@ -104,16 +118,16 @@ module ccip_avmm_mmio #(
 	defparam
 		tid_fifo_inst.add_ram_output_register  = "ON",
 		tid_fifo_inst.enable_ecc  = "FALSE",
-		tid_fifo_inst.intended_device_family  = "Arria 10",
 		tid_fifo_inst.lpm_numwords  = 64,
-		tid_fifo_inst.lpm_showahead  = "OFF",
+    tid_fifo_inst.lpm_showahead  = "ON",
 		tid_fifo_inst.lpm_type  = "scfifo",
 		tid_fifo_inst.lpm_width  = TID_FIFO_WIDTH,
 		tid_fifo_inst.lpm_widthu  = 6,
 		tid_fifo_inst.overflow_checking  = "ON",
-		tid_fifo_inst.underflow_checking  = "ON",
+		tid_fifo_inst.underflow_checking  = "OFF",  // there can never be more pops than pushes
+    tid_fifo_inst.ram_block_type = (TID_FIFO_MLAB_ENABLE)? "MLAB" : "AUTO",
 		tid_fifo_inst.use_eab  = "ON";
-
+    
 	always_ff @(posedge clk)
 	begin
 		mmio_rsp_ready <= reset ? 1'b0 : 1'b1;
@@ -134,6 +148,7 @@ module ccip_avmm_mmio #(
 
 		//MMIO read response
 		tid_fifo_rdreq <= reset ? 1'b0 : mmio_rsp_valid;
+      tid_fifo_rdreq_reg <= tid_fifo_rdreq;
 		rd_rsp_valid_reg <= reset ? 1'b0 : tid_fifo_rdreq;
 		rd_rsp_data_reg <= mmio_rsp_data;
 		rd_rsp_data_reg2 <= rd_rsp_data_reg;
@@ -142,20 +157,55 @@ module ccip_avmm_mmio #(
 		c2tx.data[31:0] <= fifo_mmio32_highword_req ? rd_rsp_data_reg2[63:32] : rd_rsp_data_reg2[31:0];
 		c2tx.data[63:32] <= rd_rsp_data_reg2[63:32];
 	end
-	
-	//handle avmm signals
-	assign avmm_byteenable = mmio_cmd_data.is_32bit ? 
-		(mmio_cmd_data.addr[2] ? 8'b11110000 : 8'b00001111) : 8'b11111111;
 
-	//read/write request
-	assign avmm_address = mmio_cmd_data.addr;
-	assign avmm_writedata = mmio_cmd_data.write_data;
 
-	assign mmio_cmd_ready = !reset & !avmm_waitrequest;	
-	wire avmm_ready = !reset & (!avmm_waitrequest && mmio_cmd_valid);
-	assign avmm_write = avmm_ready & !mmio_cmd_data.is_read;
-	assign avmm_read = avmm_ready & mmio_cmd_data.is_read;
+  // Avalon command queue that has non-blocking input and flow controlled output
+	scfifo  cmd_fifo_inst (
+		.data(cmd_fifo_input),
+		.q(cmd_fifo_output),
+		.sclr(reset),
+		.clock(clk),
+		.wrreq(cmd_fifo_wrreq),
+		.rdreq(cmd_fifo_rdreq),
+		.aclr (),
+		.almost_empty (),
+		.almost_full (),
+		.eccstatus (),
+		.empty (cmd_fifo_empty),
+		.full (),
+		.usedw ()
+	);
+	defparam
+		cmd_fifo_inst.add_ram_output_register  = "ON",
+		cmd_fifo_inst.enable_ecc  = "FALSE",
+		cmd_fifo_inst.lpm_numwords  = 64,
+    cmd_fifo_inst.lpm_showahead  = "ON",
+		cmd_fifo_inst.lpm_type  = "scfifo",
+		cmd_fifo_inst.lpm_width  = AVMM_FIFO_WIDTH,
+		cmd_fifo_inst.lpm_widthu  = 6,
+		cmd_fifo_inst.overflow_checking  = "ON",
+		cmd_fifo_inst.underflow_checking  = "OFF",  // there can never be more pops than pushes
+    cmd_fifo_inst.ram_block_type = (CMD_FIFO_MLAB_ENABLE)? "MLAB" : "AUTO",
+		cmd_fifo_inst.use_eab  = "ON";
 
+  // Avalon command FIFO input fields 
+  assign cmd_fifo_input.address = mmio_cmd_data.addr;
+  assign cmd_fifo_input.byteenable = (mmio_cmd_data.is_32bit == 1'b1) ? ((mmio_cmd_data.addr[2] == 1'b1) ? 8'b11110000 : 8'b00001111) : 8'b11111111;
+  assign cmd_fifo_input.read = mmio_cmd_data.is_read;
+  assign cmd_fifo_input.write = ~mmio_cmd_data.is_read;
+  assign cmd_fifo_input.writedata = mmio_cmd_data.write_data;
+
+  assign cmd_fifo_wrreq = mmio_cmd_valid;  // c0rx does not have backpressure so command FIFO must accept the data 
+  assign cmd_fifo_rdreq = (cmd_fifo_empty == 1'b0) & (avmm_waitrequest == 1'b0);
+
+
+  // Avalon command FIFO output fields
+  assign avmm_write = cmd_fifo_output.write & (cmd_fifo_empty != 1'b1);
+  assign avmm_read = cmd_fifo_output.read & (cmd_fifo_empty != 1'b1);
+  assign avmm_address = cmd_fifo_output.address;
+  assign avmm_writedata = cmd_fifo_output.writedata;
+  assign avmm_byteenable = cmd_fifo_output.byteenable;
+  
 	//handle read response
 	assign mmio_rsp_data = avmm_readdata;
 	assign mmio_rsp_valid = reset ? 1'b0 : avmm_readdatavalid;

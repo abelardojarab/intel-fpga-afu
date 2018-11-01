@@ -155,9 +155,11 @@ module afu
     	.avmm_address(requestor_avmm_wr_address),
     	.avmm_write(requestor_avmm_wr_write),
     	.avmm_burstcount(requestor_avmm_wr_burstcount),
+      .avmm_write_response      (),
+      .avmm_write_responsevalid (),
     	
     	.c1TxAlmFull(cp2af_sRxPort.c1TxAlmFull),
-    	//.c1rx(cp2af_sRxPort.c1),	//write response
+	.c1rx                     (cp2af_sRxPort.c1),
     	.c1tx(af2cp_sTxPort.c1)
     );
     

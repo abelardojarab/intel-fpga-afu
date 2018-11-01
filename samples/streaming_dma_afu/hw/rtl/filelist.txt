@@ -33,6 +33,7 @@ QSYS_IPs/dcp_msgdma_front_end/mSGDMA_frontend_hw.tcl
 QSYS_IPs/read_master/dcp_read_master_hw.tcl
 QSYS_IPs/one_to_two_streaming_demultiplexer/one_to_two_streaming_demultiplexer_hw.tcl
 QSYS_IPs/two_to_one_streaming_multiplexer/two_to_one_streaming_multiplexer_hw.tcl
+QSYS_IPs/avst_decimator/avst_decimator_hw.tcl
 
 # DFH Qsys IP component
 QSYS_IPs/afu_id_avmm_slave/afu_id_avmm_slave.sv
@@ -69,6 +70,8 @@ QSYS_IPs/dcp_msgdma_front_end/mSGDMA_descriptor_store_write_master.sv
 QSYS_IPs/one_to_two_streaming_demultiplexer/one_to_two_streaming_demux.v
 QSYS_IPs/two_to_one_streaming_multiplexer/two_to_one_streaming_mux.v
 
+# new streaming decimator core inserted between the M2S and S2M DMAs
+QSYS_IPs/avst_decimator/streaming_decimator.sv
 
 # new write only pipeline bridge that supports Avalon write responses
 #QSYS_IPs/write_response_bridge/write_response_bridge.v

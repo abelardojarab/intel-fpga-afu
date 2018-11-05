@@ -1,11 +1,8 @@
 +define+E2E_E10
 
-ccip_std_afu.sv
 ccip_interface_reg.sv
 e2e_e10.sdc
-eth_e2e_e10.v
 
 C:e10/${OPAE_PLATFORM_FPGA_FAMILY}/filelist.txt
-eth_e2e_e10.json
 
 QI:../par/extra_tcl.tcl

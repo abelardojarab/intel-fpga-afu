@@ -33,8 +33,7 @@
 
 module ccip_std_afu
   #(
-    parameter NUM_LOCAL_MEM_BANKS = 2,
-    parameter NUM_HSSI_RAW_PR_IFCS = 2
+    parameter NUM_LOCAL_MEM_BANKS = 2
     )
    (
     // CCI-P Clocks and Resets
@@ -49,7 +48,7 @@ module ccip_std_afu
     input  logic        pck_cp2af_error,      // CCI-P Protocol Error Detected
 
     // Raw HSSI interface
-    //pr_hssi_if.to_fiu   hssi,
+    pr_hssi_if.to_fiu   hssi,
 
     // CCI-P structures
     input  t_if_ccip_Rx pck_cp2af_sRx,        // CCI-P Rx Port
@@ -171,12 +170,8 @@ logic init_done;
 `ifdef E2E_E10
  eth_e2e_e10
 `endif
-#(
-    .NUM_HSSI_RAW_PR_IFCS(NUM_HSSI_RAW_PR_IFCS),
-    .NUM_LN(4)
-)
-prz0
-(
+  prz0
+   (
     // ETH CSR ports
     .eth_ctrl_addr(eth_ctrl_addr),
     .eth_wr_data(eth_wr_data),
@@ -185,20 +180,13 @@ prz0
     .csr_init_done(init_done),
 
     // Connection to BBS
-    //.hssi(hssi)
-
-    .clk156(uClk_usrDiv2),              // 156
-    .clk312(uClk_usr),                  // 312
-    .clk100(clk),                       // 100
-    .reset(pck_cp2af_softReset_T1)
+    .hssi(hssi)
     );
 
 logic action_r = 0;
-
-//always @(posedge hssi.f2a_prmgmt_ctrl_clk or posedge hssi.f2a_prmgmt_arst)
-always @(posedge clk or posedge pck_cp2af_softReset)
+always @(posedge hssi.f2a_prmgmt_ctrl_clk or posedge hssi.f2a_prmgmt_arst)
 begin
-	if (pck_cp2af_softReset) begin
+	if (hssi.f2a_prmgmt_arst) begin
 		action_r <= 0;
 	end else begin
 		eth_ctrl_addr[31:16] <= 16'b0;
@@ -216,7 +204,7 @@ alt_sync_regs_m2 #(
 	.WIDTH(64),
 	.DEPTH(2)
 ) sy01(
-    .clk(clk),
+	.clk(hssi.f2a_prmgmt_ctrl_clk),
 	.din({ctrl_addr,wr_data}),
 	.dout({eth_ctrl_addr_o,eth_wr_data})
 );

@@ -1,7 +1,6 @@
-../../e10_avl_st_gen.v
-../../e10_avl_st_mon.v
-../../i2c_contrl.v
-../../trans_bit.v
++define+A10
+i2c_contrl.v
+trans_bit.v
 ./hsl_files/alt_a10_temp_sense.v
 ./hsl_files/alt_and3t0.v
 ./hsl_files/alt_and3t1.v
@@ -56,3 +55,6 @@
 ./pll_mpll/pll/pll.qip
 ./xcvr_reset_controller/reset_control/reset_control.qip
 altera_eth_10g_mac_base_r.v
+eth_e2e_e10.json
+ccip_std_afu.sv
+eth_e2e_e10.v

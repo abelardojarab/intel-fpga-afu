@@ -31,11 +31,8 @@ module eth_e2e_e10 #(
     parameter NUM_HSSI_RAW_PR_IFCS = 2,
     parameter NUM_LN = 4
 )(
-	//pr_hssi_if.to_fiu hssi,
-
     input clk156,
     input clk312,
-    input clk100,
     input reset,
 
     // ETH CSR ports
@@ -64,32 +61,22 @@ reg  [15:0] prmgmt_cmd;
 reg  [15:0] prmgmt_addr;   
 reg  [31:0] prmgmt_din;   
 
-always @(posedge clk100)
+always @(posedge clk156)
 begin
     // RD/WR request from AFU CSR
 	prmgmt_cmd <= 16'b0;
-	/*
-	if (hssi.f2a_prmgmt_cmd != 16'b0)
-    begin
-        prmgmt_cmd  <= hssi.f2a_prmgmt_cmd;
-        prmgmt_addr <= hssi.f2a_prmgmt_addr;
-        prmgmt_din  <= hssi.f2a_prmgmt_din;
-    end
-	*/
+
     if (eth_ctrl_addr[17] | eth_ctrl_addr[16])
     begin
         prmgmt_cmd  <= eth_ctrl_addr[31:16];
         prmgmt_addr <= eth_ctrl_addr[15: 0];
         prmgmt_din  <= eth_wr_data;
     end
-
 end
-
 
 assign eth_rd_data   = prmgmt_dout_r;
 assign csr_init_done = 1'b1;
 
-/*
 ////////////////////////////////////////////////////////////////////////////////
 // PRMGMT registers for I2C controllers
 ////////////////////////////////////////////////////////////////////////////////
@@ -99,7 +86,7 @@ reg  [15:0] i2c_stat_rdata  ;
 wire [15:0] i2c_stat_rdata_0;
 wire [15:0] i2c_stat_rdata_1;
 reg  [ 1:0] i2c_inst_sel_r  ;
-*/
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // MAC signals
@@ -137,7 +124,7 @@ generate
         wire [63:0]    xgmii_rx_data;
         wire           rx_enh_data_valid;
         wire           tx_enh_data_valid;
-        //wire err_ins = 1'b0;
+        wire err_ins = 1'b0;
 
         assign xgmii_rx_control = xgmii_tx_control;
         assign xgmii_rx_data    = xgmii_tx_data;
@@ -151,7 +138,7 @@ generate
         wire         csr_waitrequest;
 
         altera_eth_10g_mac_base_r eth0 (
-            .csr_clk(clk100),
+            .csr_clk(clk156),
             .csr_rst_n(!csr_rst),
             .tx_rst_n(!tx_rst),
             .rx_rst_n(!rx_rst),
@@ -160,20 +147,6 @@ generate
             .rx_clk_312(clk312),
             .tx_clk_156(clk156),
             .rx_clk_156(clk156),
-
-            .iopll_locked(~reset),
-
-            // serdes controls
-            .tx_analogreset(),
-            .tx_digitalreset(),
-            .rx_analogreset(),
-            .rx_digitalreset(),
-            .tx_cal_busy(reset),
-            .rx_cal_busy(reset),
-            .rx_is_lockedtodata(~reset),
-            .atx_pll_locked(~reset),
-            .tx_ready_export(tx_ready_export[i]),
-            .rx_ready_export(rx_ready_export[i]),
 
             // serdes data pipe
             .xgmii_tx_valid(tx_enh_data_valid),
@@ -193,7 +166,7 @@ generate
         );
 
         reg [31:0] csr_readdata_r = 32'h0;
-        always @(posedge clk100) begin
+        always @(posedge clk156) begin
             if (reset) csr_read <= 1'b0;
             else begin
                 if (status_read && (port_sel == i[2:0])) csr_read <= 1'b1;
@@ -202,7 +175,7 @@ generate
             if (csr_read) csr_readdata_r <= csr_readdata;
         end
 
-        always @(posedge clk100) begin
+        always @(posedge clk156) begin
             if (reset) csr_write <= 1'b0;
             else begin
                 if (status_write && (port_sel == i[2:0])) csr_write <= 1'b1;
@@ -212,18 +185,17 @@ generate
 
         assign all_csr_rdata [(i+1)*32-1:i*32] = csr_readdata_r;
 
-        always @(posedge clk100) begin
+        always @(posedge clk156) begin
             csr_address <= status_addr;
             csr_writedata <= status_writedata;
         end
     end
-
 endgenerate
 
 
 wire [31:0] status_readdata_r;
 intc_mux8_t1_w32 mx0 (
-    .clk(clk100),
+    .clk(clk156),
     .din(all_csr_rdata),
     .sel(port_sel),
     .dout(status_readdata_r)
@@ -233,30 +205,25 @@ intc_mux8_t1_w32 mx0 (
 // hook up to the management port
 ////////////////////////////////////////////////////////////////////////////////
 
-always @(posedge clk100) begin
+always @(posedge clk156) begin
     case (prmgmt_addr[3:0])
         4'h0 : prmgmt_dout_r <= 32'h0 | scratch;
         4'h1 : prmgmt_dout_r <= 32'h0 | {csr_rst,rx_rst,tx_rst};
-
         4'h2 : prmgmt_dout_r <= 32'h0 | {status_read,status_write,status_addr};
         4'h3 : prmgmt_dout_r <= status_writedata;
         4'h4 : prmgmt_dout_r <= status_readdata_r;
         4'h5 : prmgmt_dout_r <= 32'h0 | port_sel;
-
         4'h6 : prmgmt_dout_r <= 32'h0 | sloop;
-        //4'h7 : prmgmt_dout_r <= {hssi.f2a_rx_enh_blk_lock, hssi.f2a_rx_is_lockedtodata};
-
-        //4'h8 : prmgmt_dout_r <= 32'h0 | {i2c_inst_sel_r,i2c_ctrl_wdata_r};
-        //4'h9 : prmgmt_dout_r <= 32'h0 | i2c_stat_rdata;
-        
-        //4'hd : prmgmt_dout_r <= 32'h0 | {hssi.a2f_prmgmt_fatal_err, hssi.f2a_init_done};
-
+        /*
+        4'h7 : prmgmt_dout_r <= {hssi.f2a_rx_enh_blk_lock, hssi.f2a_rx_is_lockedtodata};
+        4'h8 : prmgmt_dout_r <= 32'h0 | {i2c_inst_sel_r,i2c_ctrl_wdata_r};
+        4'h9 : prmgmt_dout_r <= 32'h0 | i2c_stat_rdata;
+        4'hd : prmgmt_dout_r <= 32'h0 | {hssi.a2f_prmgmt_fatal_err, hssi.f2a_init_done};
+        */
         default : prmgmt_dout_r <= 32'h0;
     endcase
 end
-//assign hssi.a2f_prmgmt_dout = prmgmt_dout_r;
-
-always @(posedge clk100) begin
+always @(posedge clk156) begin
     status_read <= 1'b0;
     status_write <= 1'b0;
 
@@ -264,110 +231,29 @@ always @(posedge clk100) begin
         case (prmgmt_addr[3:0])
             4'h0 : scratch <= prmgmt_din;
             4'h1 : {csr_rst,rx_rst,tx_rst} <= prmgmt_din[2:0];
-
             4'h2 : {status_read,status_write,status_addr} <= prmgmt_din[17:0];
             4'h3 : status_writedata <= prmgmt_din;
             4'h5 : port_sel <= prmgmt_din[2:0];
             4'h6 : sloop <= prmgmt_din[NUM_ETH-1:0];
-            
-            //4'h8 : {i2c_inst_sel_r,i2c_ctrl_wdata_r} <= prmgmt_din[17:0];
-
-            //4'hd : hssi.a2f_prmgmt_fatal_err <= prmgmt_din[1];
+            /*
+            4'h8 : {i2c_inst_sel_r,i2c_ctrl_wdata_r} <= prmgmt_din[17:0];
+            4'hd : hssi.a2f_prmgmt_fatal_err <= prmgmt_din[1];
+            */
         endcase
     end
-    /*
-    // This is the Configuration Trigger for I2C controllers
-    if (i2c_ctrl_wdata_r[8]) 
-        i2c_ctrl_wdata_r[8] <= 1'b0;
-    */
+
     if (reset) begin
         scratch <= {GBS_ID, GBS_VER};
-        //hssi.a2f_prmgmt_fatal_err <= 1'b0;
         status_read <= 1'b0;
         status_write <= 1'b0;
         sloop <= 'b0;
-        //i2c_ctrl_wdata_r <= 'b0;
     end
 end
-/*
-assign hssi.a2f_init_start = csr_init_start;
-
-////////////////////////////////////////////////////////////////////////////////
-// I2C instances access decoding
-////////////////////////////////////////////////////////////////////////////////
-
-wire cfg_trigger_0 = i2c_ctrl_wdata_r[8] & (i2c_inst_sel_r == 2'h0);
-wire cfg_trigger_1 = i2c_ctrl_wdata_r[8] & (i2c_inst_sel_r == 2'h1);
-
-always @(*)
-begin
-    case (i2c_inst_sel_r)
-        2'h0 :  i2c_stat_rdata = i2c_stat_rdata_0;
-        2'h1 :  i2c_stat_rdata = i2c_stat_rdata_1;
-        default i2c_stat_rdata = 'b0;
-    endcase
-end
-
-////////////////////////////////////////////////////////////////////////////////
-// I2C (SMBUS) instance 0
-////////////////////////////////////////////////////////////////////////////////
-
-i2c_contrl inst_i2c_contrl_0 
-(
-    .clk		(hssi.f2a_prmgmt_ctrl_clk),
-    .reset_n	(~hssi.f2a_prmgmt_arst  ),
-    .i2c_wdata	(i2c_ctrl_wdata_r[ 7:0] ),
-    .i2c_control(i2c_ctrl_wdata_r[15:8] ),
-    .i2c_rdata	(i2c_stat_rdata_0[ 7:0] ),
-    .i2c_status	(i2c_stat_rdata_0[15:8] ),
-    .cfg_trigger(cfg_trigger_0          ),
-    .i2c_sda_i	(b2g_I2C0_sda           ),
-    .i2c_sda_o	(g2b_I2C0_sda           ),
-    .i2c_sda_e	(oen_I2C0_sda           ),
-    .i2c_sclk	(g2b_I2C0_scl           )
-);
-
-assign oen_I2C0_scl  = 1'b1;    // always enabled because it is a master
-
-assign g2b_I2C0_rstn = 1'b0;
-assign oen_I2C0_rstn = 1'b0;
-
-////////////////////////////////////////////////////////////////////////////////
-// I2C (SMBUS) instance 1
-////////////////////////////////////////////////////////////////////////////////
-
-i2c_contrl inst_i2c_contrl_1 
-(
-    .clk		(hssi.f2a_prmgmt_ctrl_clk),
-    .reset_n	(~hssi.f2a_prmgmt_arst  ),
-    .i2c_wdata	(i2c_ctrl_wdata_r[ 7:0] ),
-    .i2c_control(i2c_ctrl_wdata_r[15:8] ),
-    .i2c_rdata	(i2c_stat_rdata_1[ 7:0] ),
-    .i2c_status	(i2c_stat_rdata_1[15:8] ),
-    .cfg_trigger(cfg_trigger_1          ),
-    .i2c_sda_i	(b2g_I2C1_sda           ),
-    .i2c_sda_o	(g2b_I2C1_sda           ),
-    .i2c_sda_e	(oen_I2C1_sda           ),
-    .i2c_sclk	(g2b_I2C1_scl           )
-);
-
-assign oen_I2C1_scl  = 1'b1;    // always enabled because it is a master
-
-assign g2b_I2C1_rstn = 1'b0;
-assign oen_I2C1_rstn = 1'b0;
-
-////////////////////////////////////////////////////////////////////////////////
-// GPIOs (not used for Retimer Card)
-////////////////////////////////////////////////////////////////////////////////
-
-assign oen_GPIO_a = 5'b0;
-assign oen_GPIO_b = 5'b0;
-*/
 
 ////////////////////////////////////
 // drive the unused channels into a civilized state
 
-// TODO
+/*
 generate
 for (i=4; i<NUM_LN; i=i+1) begin : unused_ln
     assign hssi.a2f_rx_bitslip[i] = 1'b0;       // TODO
@@ -375,6 +261,6 @@ for (i=4; i<NUM_LN; i=i+1) begin : unused_ln
     assign hssi.a2f_tx_parallel_data[(i+1)*80-1:i*80] = 80'h0;
 end
 endgenerate
-
+*/
 
 endmodule

@@ -94,7 +94,7 @@ always #5 hssi.f2a_prmgmt_ctrl_clk = ~hssi.f2a_prmgmt_ctrl_clk;
 assign hssi.f2a_rx_parallel_data = hssi.a2f_tx_parallel_data;
 
 generate 
-for (x = 0;x<4;x=x+1) begin : gv1
+for (x = 0;x<8;x=x+1) begin : gv1
 	assign hssi.f2a_rx_control[(x*20)+19:(x*20)] = {2'b0,hssi.a2f_tx_control[(x*18)+17:(x*18)]};
 end
 endgenerate
@@ -251,8 +251,8 @@ begin
 	prmgread(8,test[31:0]);
 	$display("Word lock : %x",test[31:0]);
 	$display("");
-	for (i=0;i<4;i=i+1) begin
-		$display("*** 10GE port %d\n",i[1:0]);
+	for (i=0;i<8;i=i+1) begin
+		$display("*** 10GE port %d\n",i[2:0]);
 		prmgwrite(5,i);
 		e10_tx_stat();
 		e10_rx_stat();
@@ -261,10 +261,10 @@ end
 endtask
 
 task e10_pkt_send;
-input [1:0] port;
+input [2:0] port;
 input [31:0] numpkts;
 begin
-	$display("*** 10GE port %d sending %d packets...",port[1:0],numpkts);
+	$display("*** 10GE port %d sending %d packets...",port[2:0],numpkts);
 	prmgwrite(5,port);
 	e10write(16'h3c00,numpkts);
 	e10write(16'h3c0d,150);
@@ -277,21 +277,21 @@ logic [3:0] txstatus = 0;
 
 
 generate
-    for (x=0; x<4; x=x+1) begin : xn0
+    for (x=0; x<8; x=x+1) begin : xn0
 		always begin
 			@(posedge afu.prz0.lp0[x].eth0.tx_ready_export);
-			$display("10G Port %d : TX path is UP!",x[1:0]);
+			$display("10G Port %d : TX path is UP!",x[2:0]);
 			txstatus[x] = 1;
 			@(negedge afu.prz0.lp0[x].eth0.tx_ready_export);
-			$display("10G Port %d : TX path is DOWN!",x[1:0]);
+			$display("10G Port %d : TX path is DOWN!",x[2:0]);
 			txstatus[x] = 0;
 		end
 		always begin
 			@(posedge afu.prz0.lp0[x].eth0.rx_ready_export);
-			$display("10G Port %d : RX path is UP!",x[1:0]);
+			$display("10G Port %d : RX path is UP!",x[2:0]);
 			rxstatus[x] = 1;
 			@(negedge afu.prz0.lp0[x].eth0.rx_ready_export);
-			$display("10G Port %d : RX path is DOWN!",x[1:0]);
+			$display("10G Port %d : RX path is DOWN!",x[2:0]);
 			rxstatus[x] = 0;
 		end
 	end
@@ -353,11 +353,16 @@ initial begin
 	e10_pkt_send(1,10);
 	e10_pkt_send(2,10);
 	e10_pkt_send(3,10);
+	e10_pkt_send(4,10);
+	e10_pkt_send(5,10);
+	e10_pkt_send(6,10);
+	e10_pkt_send(7,10);
+
 	#10000;
 	e10_stat();
 	
-	for (i=0;i<4;i=i+1) begin
-		$display("Comparing port %d packet counts...",i[1:0]);
+	for (i=0;i<8;i=i+1) begin
+		$display("Comparing port %d packet counts...",i[2:0]);
 		prmgwrite(5,i);
 		e10read(16'h1c00+2,test[31:0]);
 		e10read(16'h1c00+3,test[63:32]);
@@ -366,7 +371,7 @@ initial begin
 		
 		assert (test == test2) else begin
 			$display("FAILED!");
-			$fatal(1,"Port %d TX Packet Count != Rx Packet Count! (TX: %d, RX: %d)",i[1:0],test,test2);
+			$fatal(1,"Port %d TX Packet Count != Rx Packet Count! (TX: %d, RX: %d)",i[2:0],test,test2);
 		end
 		$display("Packet counts are GOOD!");
 	end

@@ -14,6 +14,17 @@ $ make TBB=/opt/intel/tbb/
 ```
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD:$TBB_HOME/lib/intel64_lin/gcc4.7
 ```
+* Reserve hugepages if required.
+If test data size is less than 4KB, hugepages need not be reserved.
+If test data size is greater than 4KB, less than 2MB, at-least 1 2MB hugepage needs to be reserved.
+```
+echo 1 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
+```
+If test data size is greater than 2MB, less than 1GB, at-least 1 1GB hugepage needs to be set.
+```
+echo 1 > /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages
+```
+
 * Run a simple bandwidth test. This example transfers a single 10MB data packet 
 from host memory to FPGA stream using 4KB DMA payload.
 ```

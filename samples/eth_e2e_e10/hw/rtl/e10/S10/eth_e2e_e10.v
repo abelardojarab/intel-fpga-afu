@@ -118,18 +118,25 @@ wire [NUM_ETH*32-1:0] all_csr_rdata;
 genvar i;
 generate
     for (i=0; i<NUM_ETH; i=i+1) begin : lp0
-        wire [7:0]     xgmii_tx_control;
-        wire [63:0]    xgmii_tx_data;
-        wire [7:0]     xgmii_rx_control;
-        wire [63:0]    xgmii_rx_data;
-        wire           rx_enh_data_valid;
-        wire           tx_enh_data_valid;
-        wire err_ins = 1'b0;
+        reg [7:0]     xgmii_tx_control;
+        reg [63:0]    xgmii_tx_data;
+        reg [7:0]     xgmii_rx_control;
+        reg [63:0]    xgmii_rx_data;
+        reg           rx_enh_data_valid;
+        reg           tx_enh_data_valid;
+        reg err_ins = 1'b0;
 
-        assign xgmii_rx_control = xgmii_tx_control;
-        assign xgmii_rx_data    = xgmii_tx_data;
-        assign rx_enh_data_valid = tx_enh_data_valid;
-
+        always @ (*) begin
+        if (!sloop)
+            begin
+                /*do nothing*/
+            end else begin
+                xgmii_rx_control = xgmii_tx_control;
+                xgmii_rx_data    = xgmii_tx_data;
+                rx_enh_data_valid = tx_enh_data_valid;
+            end
+        end
+        
         reg         csr_read = 1'b0;
         reg         csr_write = 1'b0;
         reg [31:0]    csr_writedata = 32'h0 /* synthesis preserve */;

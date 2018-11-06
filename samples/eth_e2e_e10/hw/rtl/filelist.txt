@@ -1,7 +1,6 @@
 +define+E2E_E10
 
 ccip_interface_reg.sv
-e2e_e10.sdc
 
 C:e10/${OPAE_PLATFORM_FPGA_FAMILY}/filelist.txt
 

@@ -1,4 +1,5 @@
 +define+A10
+eth_e10.sdc
 i2c_contrl.v
 trans_bit.v
 ./hsl_files/alt_a10_temp_sense.v

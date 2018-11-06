@@ -8,7 +8,7 @@ $ export TBB_HOME=/opt/intel/tbb/
 ```
 * Compile the driver
 ```
-$ make TBB=/opt/intel/tbb/
+$ make
 ```
 * Set LD_LIBRARY_PATH
 ```

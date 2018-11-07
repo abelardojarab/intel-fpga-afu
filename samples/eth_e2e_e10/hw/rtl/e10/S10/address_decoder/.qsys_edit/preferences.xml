@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<preferences>
- <debug showDebugMenu="0" />
- <window width="1924" height="1059" x="-2" y="25" />
- <library
-   expandedCategories="Library,Project,IP-XACT Components,Existing IP Variants" />
- <systemtable filter="All Interfaces" />
- <generation path="" block_symbol_file="0" documentation="0" clear_previous="1" />
-</preferences>

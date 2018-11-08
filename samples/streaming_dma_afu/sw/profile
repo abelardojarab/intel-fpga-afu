@@ -23,12 +23,12 @@ my $bw_mtos;
 my $bw_stom;
 foreach my $payload (@payloads)
 {
-	my $output_mtos = `./fpga_dma_st_test -s $total_data_size -p $payload -r mtos -t fixed`;
+	my $output_mtos = `./fpga_dma_st_test -l off -s $total_data_size -p $payload -r mtos -t fixed`;
 	if($output_mtos =~ /(\d+)/) {
 		$bw_mtos = $1;
 	}
 
-	my $output_stom = `./fpga_dma_st_test -s $total_data_size -p $payload -r stom -t fixed`;
+	my $output_stom = `./fpga_dma_st_test -l off -s $total_data_size -p $payload -r stom -t fixed`;
 	if($output_stom =~ /(\d+)/) {
 		$bw_stom = $1;
 	}

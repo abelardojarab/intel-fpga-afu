@@ -49,21 +49,25 @@ static void printUsage()
 	printf(
 "Usage:\n"
 "     fpga_dma_st_test [-h] [-B <bus>] [-D <device>] [-F <function>] [-S <segment>]\n"
-"                       -s <data size (bytes)> -p <payload size (bytes)>\n"
-"                       -r <transfer direction> -t <transfer type>\n\n"
+"                       -l <loopback on/off> -s <data size (bytes)> -p <payload size (bytes)>\n"
+"                       -r <transfer direction> -t <transfer type> [-f <decimation factor>]\n\n"
 "         -h,--help           Print this help\n"
 "         -B,--bus            Set target bus number\n"
 "         -D,--device         Set target device number\n"
 "         -F,--function       Set target function number\n"
 "         -S,--segment        Set PCIe segment\n"
+"         -l,--loopback       Loopback mode\n"
+"            on               Turn on channel loopback\n" 
+"            off              Turn off channel loopback (must specify channel using -r/--direction)\n"
 "         -s,--data_size      Total data size\n"
 "         -p,--payload_size   Payload size (per DMA transaction)\n"
 "         -r,--direction      Transfer direction\n"
-"           mtos              Memory to stream\n"
-"           stom              Stream to memory\n"
+"            mtos             Memory to stream\n"
+"            stom             Stream to memory\n"
 "         -t,--type           Transfer type\n"
-"           fixed             Deterministic length transfer\n"
-"           packet            Packet transfer (uses SOP and EOP markers)\n"
+"            fixed            Deterministic length transfer\n"
+"            packet           Packet transfer (uses SOP and EOP markers)\n"
+"         -f,--decim_factor   Optional decimation factor\n"
 );
 
 	exit(1);
@@ -87,12 +91,14 @@ static void parse_args(struct config *config, int argc, char *argv[])
 			{"payload_size", required_argument, 0, 'p'},
 			{"direction", required_argument, 0, 'r'},
 			{"type", required_argument, 0, 't'},
+			{"loopback", required_argument, 0, 'l'},
+			{"decim_factor", required_argument, 0, 'f'},
 			{0, 0, 0, 0}
 		};
 		char *endptr;
 		const char *tmp_optarg;
 
-		c = getopt_long(argc, argv, "hlB:D:F:S:s:p:r:t:", options, NULL);
+		c = getopt_long(argc, argv, "hB:D:F:S:s:p:r:l:f:t:", options, NULL);
 		if (c == -1) {
 			break;
 		}
@@ -195,6 +201,35 @@ static void parse_args(struct config *config, int argc, char *argv[])
 			}
 			break;
 
+		case 'l':    /* loopback mode */
+			if (NULL == tmp_optarg)
+				break;
+			if (!STR_CONST_CMP(tmp_optarg, "on")) {
+				config->loopback = STDMA_LOOPBACK_ON;
+				debug_print("loopback = on\n");
+			}
+			else if (!STR_CONST_CMP(tmp_optarg, "off")) {
+				config->loopback = STDMA_LOOPBACK_OFF;
+				debug_print("loopback = off\n");
+			}
+			else {
+				config->loopback = STDMA_INVAL_LOOPBACK;
+				fprintf(stderr, "Invalid loopback mode\n");
+				printUsage();
+			}
+			break;
+
+		case 'f':    /* decimation factor */
+			if (NULL == tmp_optarg)
+				break;
+			config->decim_factor = (uint64_t) strtoull(tmp_optarg, &endptr, 0);
+			if(config->decim_factor > 65536) {
+				fprintf(stderr, "Maximum decimation factor = %d bytes\n", 65536);
+				printUsage();
+			}
+			debug_print("decimation factor = %ld bytes\n", (uint64_t)config->decim_factor);
+			break;
+
 		default:
 			fprintf(stderr, "unknown op %c\n", c);
 			printUsage();
@@ -215,14 +250,21 @@ int main(int argc, char *argv[]) {
 		.data_size = CONFIG_UNINIT,
 		.payload_size = CONFIG_UNINIT,
 	 	.direction = STDMA_INVAL_DIRECTION,
-	 	.transfer_type = STDMA_INVAL_TRANSFER_TYPE
+	 	.transfer_type = STDMA_INVAL_TRANSFER_TYPE,
+	 	.loopback = STDMA_INVAL_LOOPBACK
 	};
 
 	parse_args(&config, argc, argv);
 	if(config.data_size == CONFIG_UNINIT ||
+		config.loopback == STDMA_INVAL_LOOPBACK ||
 		config.payload_size == CONFIG_UNINIT ||
-		config.direction == STDMA_INVAL_DIRECTION ||
 		config.transfer_type == STDMA_INVAL_TRANSFER_TYPE) {
+		printUsage();
+		exit(1);
+	}
+
+	// must specify direction when loopback is turned off
+	if(config.loopback == STDMA_LOOPBACK_OFF && config.direction == STDMA_INVAL_DIRECTION) {
 		printUsage();
 		exit(1);
 	}

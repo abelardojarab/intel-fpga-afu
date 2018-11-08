@@ -32,6 +32,8 @@
 #include "fpga_dma_st_test_utils.h"
 #include "fpga_dma_st_common.h"
 
+using namespace std;
+
 static sem_t transfer_done;
 
 static int err_cnt = 0;
@@ -49,27 +51,33 @@ static void transferComplete(void *ctx, fpga_dma_transfer_status_t status) {
 }
 
 //Verify repeating pattern 0x00...0xFF of payload_size
-static fpga_result verify_buffer(unsigned char *buf, size_t payload_size) {
+static fpga_result verify_buffer(unsigned char *buf, size_t payload_size, uint16_t decim_factor) {
 	size_t i,j;
 	unsigned char test_word = 0;
+	uint64_t byte_cnt = 1;
+
 	while(payload_size) {
 		test_word = 0x00;
 		for (i = 0; i < PATTERN_LENGTH; i++) {
 			for (j = 0; j < (PATTERN_WIDTH/sizeof(test_word)); j++) {
 				if(!payload_size)
 					goto out;
+
 				if((*buf) != test_word) {
-					printf("Invalid data at %zx Expected = %x Actual = %x\n",i,test_word,(*buf));
+					printf("Invalid data at byte %zd Expected = %x Actual = %x\n",byte_cnt,test_word,(*buf));
 					return FPGA_EXCEPTION;
 				}
-				payload_size -= sizeof(test_word);
+				if(byte_cnt % BEAT_SIZE == 0 &&	byte_cnt / BEAT_SIZE != 0 /*beat boundary*/ && decim_factor != 0)
+					test_word += (decim_factor * BEAT_SIZE);
+				++test_word;
+
 				buf++;
-				test_word += 0x01;
+				byte_cnt++;
+				payload_size--;
 			}
 		}
 	}
 out:
-	//printf("S2M: Data Verification Success!\n");
 	return FPGA_OK;
 }
 
@@ -212,11 +220,168 @@ static fpga_result free_buffer(fpga_handle afc_h, struct buf_attrs *attrs)
 	return fpgaReleaseBuffer(afc_h, attrs->wsid);
 }
 
-static fpga_result bandwidth_test(fpga_handle afc_h, fpga_dma_handle_t dma_h, struct config *config) {
+
+static fpga_result loopback_test(fpga_handle afc_h, fpga_dma_handle_t tx_dma_h, fpga_dma_handle_t rx_dma_h, struct config *config) {
+	uint64_t total_size;
+	int64_t tid;
+	uint64_t src;
+	fpga_dma_transfer_t transfer;
 	fpga_result res = FPGA_OK;
 	struct timespec start, end;
 
-	// TODO: specify alloc. policy
+	// configure loopback on
+	uint64_t loopback_en = (uint64_t)0x1;
+	fpgaWriteMMIO64(afc_h, 0, FPGA_DMA_TWO_TO_ONE_MUX_CSR, loopback_en);
+	fpgaWriteMMIO64(afc_h, 0, FPGA_DMA_ONE_TO_TWO_MUX_CSR, loopback_en);
+
+	// configure decimation factor and turn on decimator
+	decimator_config_t dconfig = {0};
+	dconfig.dc.en = 0;
+	dconfig.dc.counter = 0;
+	dconfig.dc.factor = config->decim_factor;
+	fpgaWriteMMIO64(afc_h, 0, FPGA_DMA_DECIMATOR_CSR, dconfig.reg);
+	dconfig.dc.en = 1;
+	fpgaWriteMMIO64(afc_h, 0, FPGA_DMA_DECIMATOR_CSR, dconfig.reg);
+	debug_print("decimation config = %x\n", dconfig.reg);
+
+	struct buf_attrs battrs_src = {
+		.va = NULL,
+		.iova = 0,
+		.wsid = 0,
+		.size = 0
+	};
+
+	struct buf_attrs battrs_dst = {
+		.va = NULL,
+		.iova = 0,
+		.wsid = 0,
+		.size = 0
+	};
+
+	battrs_src.size = config->data_size;
+	res = allocate_buffer(afc_h, &battrs_src);	
+	ON_ERR_GOTO(res, out, "allocating battrs_src");
+	debug_print("allocated src test buffer va = %p, iova = %lx, wsid = %lx, size = %ld\n", battrs_src.va, battrs_src.iova, battrs_src.wsid, battrs_src.size);
+	fill_buffer((unsigned char *)battrs_src.va, config->data_size);
+
+	battrs_dst.size = config->data_size;
+	res = allocate_buffer(afc_h, &battrs_dst);	
+	ON_ERR_GOTO(res, out, "allocating battrs_dst");
+	debug_print("allocated dst test buffer va = %p, iova = %lx, wsid = %lx, size = %ld\n", battrs_dst.va, battrs_dst.iova, battrs_dst.wsid, battrs_dst.size);
+	memset(battrs_dst.va, 0, config->data_size);
+
+	res = fpgaDMATransferInit(&transfer);
+	ON_ERR_GOTO(res, out, "allocating transfer");
+	debug_print("init transfer\n");
+
+	// do memory to stream transfer
+	total_size = config->data_size;
+	tid = ceil(config->data_size / config->payload_size);
+	src = battrs_src.iova;
+
+	clock_gettime(CLOCK_MONOTONIC, &start);
+	fpga_dma_tx_ctrl_t tx_ctrl;
+	if(config->transfer_type == STDMA_TRANSFER_FIXED)
+		tx_ctrl = TX_NO_PACKET;
+	else
+		tx_ctrl = GENERATE_SOP_AND_EOP;
+	while(total_size > 0) {
+		uint64_t transfer_bytes = MIN(total_size, config->payload_size);
+		//debug_print("Transfer src=%lx, dst=%lx, bytes=%ld\n", (uint64_t)src, (uint64_t)0, transfer_bytes);
+
+		fpgaDMATransferSetSrc(transfer, src);
+		fpgaDMATransferSetDst(transfer, (uint64_t)0);
+		fpgaDMATransferSetLen(transfer, transfer_bytes);
+		fpgaDMATransferSetTransferType(transfer, HOST_MM_TO_FPGA_ST);
+		fpgaDMATransferSetTxControl(transfer, tx_ctrl);
+		// perform non-blocking transfers
+		if(tid == 1)
+			fpgaDMATransferSetLast(transfer, true);
+		else
+			fpgaDMATransferSetLast(transfer, false);
+		fpgaDMATransferSetTransferCallback(transfer, transferComplete, NULL);
+
+		res = fpgaDMATransfer(tx_dma_h, transfer);
+		ON_ERR_GOTO(res, free_transfer, "transfer error");
+		total_size -= transfer_bytes;
+		src += transfer_bytes;
+		tid--;
+	}
+
+	// do stream to memory transfer
+	fpga_dma_rx_ctrl_t rx_ctrl;
+	if(config->transfer_type == STDMA_TRANSFER_FIXED)
+		rx_ctrl = RX_NO_PACKET;
+	else
+		rx_ctrl = END_ON_EOP;
+
+	// calculate expected bytes based on decimation factor
+	uint64_t required_beats;
+	uint64_t expected_beats;
+
+	required_beats = ceil(config->data_size / BEAT_SIZE); // beat = 64 bytes
+	if(config->decim_factor >= required_beats)
+		expected_beats = 1;
+	else
+		expected_beats = ceil(required_beats / (config->decim_factor + 1));
+	
+	uint64_t tsize;		
+	total_size = expected_beats * BEAT_SIZE;
+	tsize = total_size;
+	tid = ceil(total_size / config->payload_size);
+	uint64_t dst;
+	dst = battrs_dst.iova;
+	while(total_size > 0) {
+		uint64_t transfer_bytes = MIN(total_size, config->payload_size);
+		fpgaDMATransferSetSrc(transfer, (uint64_t)0);
+		fpgaDMATransferSetDst(transfer, dst);
+		fpgaDMATransferSetLen(transfer, transfer_bytes);
+		fpgaDMATransferSetTransferType(transfer, FPGA_ST_TO_HOST_MM);
+		fpgaDMATransferSetRxControl(transfer, rx_ctrl);
+		if(tid == 1) {
+			fpgaDMATransferSetLast(transfer, true);
+			fpgaDMATransferSetTransferCallback(transfer, NULL, NULL);
+		} else {
+			fpgaDMATransferSetLast(transfer, false);
+			fpgaDMATransferSetTransferCallback(transfer, transferComplete, NULL);
+		}
+
+		res = fpgaDMATransfer(rx_dma_h, transfer);
+		ON_ERR_GOTO(res, free_transfer, "transfer error");
+		total_size -= transfer_bytes;
+		dst += transfer_bytes;
+		tid--;	
+	}
+	clock_gettime(CLOCK_MONOTONIC, &end);
+
+	res = verify_buffer((unsigned char *)battrs_dst.va, tsize, config->decim_factor);
+	ON_ERR_GOTO(res, free_transfer, "buffer verify failed");
+	std::cout << "PASS! Bandwidth = " << getBandwidth(config->data_size+tsize, getTime(start,end)) << " MB/s" << std::endl;
+
+free_transfer:
+	debug_print("destroying transfer\n");
+	res = fpgaDMATransferDestroy(&transfer);
+	ON_ERR_GOTO(res, out, "destroy transfer");
+	debug_print("destroyed transfer\n");
+
+out:
+	if(battrs_src.va) {
+		debug_print("free app buffer\n");
+		free_buffer(afc_h, &battrs_src);
+	}
+
+	if(battrs_dst.va) {
+		debug_print("free app buffer\n");
+		free_buffer(afc_h, &battrs_dst);
+	}
+	return res;
+}
+
+static fpga_result non_loopback_test(fpga_handle afc_h, fpga_dma_handle_t dma_h, struct config *config) {
+	fpga_dma_transfer_t transfer;
+	fpga_result res = FPGA_OK;
+	struct timespec start, end;
+
 	struct buf_attrs battrs = {
 		.va = NULL,
 		.iova = 0,
@@ -224,12 +389,16 @@ static fpga_result bandwidth_test(fpga_handle afc_h, fpga_dma_handle_t dma_h, st
 		.size = 0
 	};
 
+	// configure loopback off
+	uint64_t loopback_en = (uint64_t)0x0;
+	fpgaWriteMMIO64(afc_h, 0, FPGA_DMA_TWO_TO_ONE_MUX_CSR, loopback_en);
+	fpgaWriteMMIO64(afc_h, 0, FPGA_DMA_ONE_TO_TWO_MUX_CSR, loopback_en);
+
 	battrs.size = config->data_size;
 	res = allocate_buffer(afc_h, &battrs);	
 	ON_ERR_GOTO(res, out, "allocating buffer");
 	debug_print("allocated test buffer va = %p, iova = %lx, wsid = %lx, size = %ld\n", battrs.va, battrs.iova, battrs.wsid, battrs.size);
 
-	fpga_dma_transfer_t transfer;
 	res = fpgaDMATransferInit(&transfer);
 	ON_ERR_GOTO(res, out, "allocating transfer");
 	debug_print("init transfer\n");
@@ -328,7 +497,7 @@ static fpga_result bandwidth_test(fpga_handle afc_h, fpga_dma_handle_t dma_h, st
 		ON_ERR_GOTO(res, free_transfer, "wait generator");
 		debug_print("generator complete\n");
 
-		res = verify_buffer((unsigned char *)battrs.va, config->data_size);
+		res = verify_buffer((unsigned char *)battrs.va, config->data_size, 0/*decimation factor*/);
 		ON_ERR_GOTO(res, free_transfer, "buffer verify failed");
 		printf("Transfer pass!\n");
 	}
@@ -467,6 +636,8 @@ out:
 fpga_result do_action(struct config *config, fpga_token afc_tok)
 {
 	fpga_dma_handle_t dma_h = NULL;
+	fpga_dma_handle_t tx_dma_h = NULL;
+	fpga_dma_handle_t rx_dma_h = NULL;
 	fpga_handle afc_h = NULL;
 	fpga_result res;
 	#ifndef USE_ASE
@@ -501,22 +672,38 @@ fpga_result do_action(struct config *config, fpga_token afc_tok)
 
 	debug_print("found %ld dma channels\n", ch_count);
 
-	if(config->direction == STDMA_MTOS) {
-		// Memory to stream -> Channel 0
-		res = fpgaDMAOpen(afc_h, 0, &dma_h);
-		ON_ERR_GOTO(res, out_unmap, "fpgaDMAOpen");
-		debug_print("opened memory to stream channel\n");
-	} else {
-		// Stream to memory -> Channel 1
-		res = fpgaDMAOpen(afc_h, 1, &dma_h);
-		ON_ERR_GOTO(res, out_unmap, "fpgaDMAOpen");
-		debug_print("opened stream to memory channel\n");
-	}
+	if(config->loopback == STDMA_LOOPBACK_OFF) {
+		if(config->direction == STDMA_MTOS) {
+			// Memory to stream -> Channel 0
+			res = fpgaDMAOpen(afc_h, 0, &dma_h);
+			ON_ERR_GOTO(res, out_unmap, "fpgaDMAOpen");
+			debug_print("opened memory to stream channel\n");
+		} else {
+			// Stream to memory -> Channel 1
+			res = fpgaDMAOpen(afc_h, 1, &dma_h);
+			ON_ERR_GOTO(res, out_unmap, "fpgaDMAOpen");
+			debug_print("opened stream to memory channel\n");
+		}
 
-	// Run a bandwidth test
-	res = bandwidth_test(afc_h, dma_h, config);
-	ON_ERR_GOTO(res, out_dma_close, "fpgaDMAOpen");
-	debug_print("bandwidth test success\n");
+		// Run test
+		res = non_loopback_test(afc_h, dma_h, config);
+		ON_ERR_GOTO(res, out_dma_close, "fpgaDMAOpen");
+		debug_print("non loopback test success\n");
+	} else {
+		res = fpgaDMAOpen(afc_h, 0, &tx_dma_h);
+		ON_ERR_GOTO(res, out_unmap, "fpgaDMAOpen tx");
+
+		res = fpgaDMAOpen(afc_h, 1, &rx_dma_h);
+		ON_ERR_GOTO(res, out_unmap, "fpgaDMAOpen rx");
+
+		// Run test
+		res = loopback_test(afc_h, tx_dma_h, rx_dma_h, config);
+		ON_ERR_GOTO(res, out_unmap, "loopback test failed");
+		debug_print("loopback test success\n");
+	}
+ 
+
+
 
 out_dma_close:
 	if(dma_h) {

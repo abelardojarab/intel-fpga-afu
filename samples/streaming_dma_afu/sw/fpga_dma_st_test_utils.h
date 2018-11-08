@@ -51,12 +51,23 @@
 #define PATTERN_LENGTH 32
 #define MIN_PAYLOAD_LEN 64
 #define CONFIG_UNINIT (0)
+#define BEAT_SIZE (64) // bytes
+
+#define FPGA_DMA_TWO_TO_ONE_MUX_CSR (0x40)
+#define FPGA_DMA_ONE_TO_TWO_MUX_CSR (0x50)
+#define FPGA_DMA_DECIMATOR_CSR (0x48)
 
 #ifndef USE_ASE
 //#include <hwloc.h>
 #endif
 
 #define STR_CONST_CMP(str, str_const) strncmp(str, str_const, sizeof(str_const))
+
+enum stdma_loopback {
+	STDMA_INVAL_LOOPBACK = 0,
+	STDMA_LOOPBACK_ON,
+	STDMA_LOOPBACK_OFF
+};
 
 enum stdma_test_direction {
 	STDMA_INVAL_DIRECTION = 0,
@@ -79,7 +90,20 @@ struct config {
 	uint64_t payload_size;
 	enum stdma_test_direction direction;
 	enum stdma_test_transfer_type transfer_type;
+	enum stdma_loopback loopback;
+	uint16_t decim_factor;
 };
+
+typedef union {
+	uint64_t reg;
+	struct {
+		uint64_t en:1;
+		uint64_t rsvd1:15;
+		uint64_t factor:16;
+		uint64_t counter:16;
+		uint64_t rsvd2:16;
+	} dc;
+} decimator_config_t;
 
 int find_accelerator(const char *afu_id, struct config *config, fpga_token *afu_tok);
 fpga_result configure_numa(fpga_token afc_token, bool cpu_affinity, bool memory_affinity);

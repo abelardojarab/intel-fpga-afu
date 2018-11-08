@@ -36,22 +36,22 @@ set_module_property REPORT_HIERARCHY false
 # file sets
 # 
 add_fileset QUARTUS_SYNTH QUARTUS_SYNTH "" ""
-set_fileset_property QUARTUS_SYNTH TOP_LEVEL streaming_decimator
+set_fileset_property QUARTUS_SYNTH TOP_LEVEL avst_decimator
 set_fileset_property QUARTUS_SYNTH ENABLE_RELATIVE_INCLUDE_PATHS false
 set_fileset_property QUARTUS_SYNTH ENABLE_FILE_OVERWRITE_MODE false
-add_fileset_file streaming_decimator.sv SYSTEM_VERILOG PATH streaming_decimator.sv TOP_LEVEL_FILE
+add_fileset_file avst_decimator.sv SYSTEM_VERILOG PATH avst_decimator.sv TOP_LEVEL_FILE
 
 add_fileset SIM_VERILOG SIM_VERILOG "" ""
-set_fileset_property SIM_VERILOG TOP_LEVEL streaming_decimator
+set_fileset_property SIM_VERILOG TOP_LEVEL avst_decimator
 set_fileset_property SIM_VERILOG ENABLE_RELATIVE_INCLUDE_PATHS false
 set_fileset_property SIM_VERILOG ENABLE_FILE_OVERWRITE_MODE false
-add_fileset_file streaming_decimator.sv SYSTEM_VERILOG PATH streaming_decimator.sv
+add_fileset_file avst_decimator.sv SYSTEM_VERILOG PATH avst_decimator.sv
 
 add_fileset SIM_VHDL SIM_VHDL "" ""
-set_fileset_property SIM_VHDL TOP_LEVEL streaming_decimator
+set_fileset_property SIM_VHDL TOP_LEVEL avst_decimator
 set_fileset_property SIM_VHDL ENABLE_RELATIVE_INCLUDE_PATHS false
 set_fileset_property SIM_VHDL ENABLE_FILE_OVERWRITE_MODE false
-add_fileset_file streaming_decimator.sv SYSTEM_VERILOG PATH streaming_decimator.sv
+add_fileset_file avst_decimator.sv SYSTEM_VERILOG PATH avst_decimator.sv
 
 
 

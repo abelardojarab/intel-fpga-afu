@@ -10,19 +10,19 @@
    tool="QsysPro" />
  <parameter name="bonusData"><![CDATA[bonusData 
 {
-   element avst_decimator_0
+   element avst_decimator
    {
       datum _sortIndex
       {
-         value = "17";
+         value = "16";
          type = "int";
       }
    }
-   element avst_decimator_0.csr
+   element avst_decimator.csr
    {
       datum baseAddress
       {
-         value = "64";
+         value = "72";
          type = "String";
       }
    }
@@ -235,19 +235,19 @@
          type = "String";
       }
    }
-   element one_to_two_streaming_demultiplexer_0
+   element one_to_two_streaming_demultiplexer
    {
       datum _sortIndex
       {
-         value = "16";
+         value = "15";
          type = "int";
       }
    }
-   element one_to_two_streaming_demultiplexer_0.csr
+   element one_to_two_streaming_demultiplexer.csr
    {
       datum baseAddress
       {
-         value = "72";
+         value = "80";
          type = "String";
       }
    }
@@ -370,19 +370,19 @@
          type = "int";
       }
    }
-   element two_to_one_streaming_multiplexer_0
+   element two_to_one_streaming_multiplexer
    {
       datum _sortIndex
       {
-         value = "15";
+         value = "17";
          type = "int";
       }
    }
-   element two_to_one_streaming_multiplexer_0.csr
+   element two_to_one_streaming_multiplexer.csr
    {
       datum baseAddress
       {
-         value = "80";
+         value = "64";
          type = "String";
       }
    }
@@ -436,7 +436,7 @@
                 <consumedSystemInfos>
                     <entry>
                         <key>ADDRESS_MAP</key>
-                        <value>&lt;address-map&gt;&lt;slave name='streaming_dma_afu_id.afu_cfg_slave' start='0x0' end='0x40' datawidth='64' /&gt;&lt;slave name='avst_decimator_0.csr' start='0x40' end='0x48' datawidth='64' /&gt;&lt;slave name='one_to_two_streaming_demultiplexer_0.csr' start='0x48' end='0x50' datawidth='64' /&gt;&lt;slave name='two_to_one_streaming_multiplexer_0.csr' start='0x50' end='0x58' datawidth='64' /&gt;&lt;slave name='m2s_dma_bbb.csr' start='0x100' end='0x200' datawidth='64' /&gt;&lt;slave name='s2m_dma_bbb.csr' start='0x200' end='0x300' datawidth='64' /&gt;&lt;slave name='null_dfh.afu_cfg_slave' start='0x300' end='0x340' datawidth='64' /&gt;&lt;slave name='m2s_custom_pattern_checker.pattern_access' start='0x1000' end='0x2000' datawidth='512' /&gt;&lt;slave name='s2m_custom_pattern_generator.pattern_access' start='0x2000' end='0x3000' datawidth='512' /&gt;&lt;slave name='m2s_custom_pattern_checker.csr' start='0x3000' end='0x3010' datawidth='32' /&gt;&lt;slave name='s2m_custom_pattern_generator.csr' start='0x3010' end='0x3020' datawidth='32' /&gt;&lt;/address-map&gt;</value>
+                        <value>&lt;address-map&gt;&lt;slave name='streaming_dma_afu_id.afu_cfg_slave' start='0x0' end='0x40' datawidth='64' /&gt;&lt;slave name='two_to_one_streaming_multiplexer.csr' start='0x40' end='0x48' datawidth='64' /&gt;&lt;slave name='avst_decimator.csr' start='0x48' end='0x50' datawidth='64' /&gt;&lt;slave name='one_to_two_streaming_demultiplexer.csr' start='0x50' end='0x58' datawidth='64' /&gt;&lt;slave name='m2s_dma_bbb.csr' start='0x100' end='0x200' datawidth='64' /&gt;&lt;slave name='s2m_dma_bbb.csr' start='0x200' end='0x300' datawidth='64' /&gt;&lt;slave name='null_dfh.afu_cfg_slave' start='0x300' end='0x340' datawidth='64' /&gt;&lt;slave name='m2s_custom_pattern_checker.pattern_access' start='0x1000' end='0x2000' datawidth='512' /&gt;&lt;slave name='s2m_custom_pattern_generator.pattern_access' start='0x2000' end='0x3000' datawidth='512' /&gt;&lt;slave name='m2s_custom_pattern_checker.csr' start='0x3000' end='0x3010' datawidth='32' /&gt;&lt;slave name='s2m_custom_pattern_generator.csr' start='0x3010' end='0x3020' datawidth='32' /&gt;&lt;/address-map&gt;</value>
                     </entry>
                     <entry>
                         <key>ADDRESS_WIDTH</key>
@@ -490,7 +490,7 @@
  <interface name="mmio_avmm" internal="mmio_bridge.s0" type="avalon" dir="end" />
  <interface name="reset" internal="reset_in.in_reset" type="reset" dir="end" />
  <module
-   name="avst_decimator_0"
+   name="avst_decimator"
    kind="altera_generic_component"
    version="1.0"
    enabled="1">
@@ -1057,30 +1057,30 @@
     </systemInfos>
 </componentDefinition>]]></parameter>
   <parameter name="generationInfoDefinition"><![CDATA[<generationInfoDefinition>
-    <hdlLibraryName>streaming_dma_test_system_avst_decimator_0</hdlLibraryName>
+    <hdlLibraryName>avst_decimator</hdlLibraryName>
     <fileSets>
         <fileSet>
-            <fileSetName>streaming_dma_test_system_avst_decimator_0</fileSetName>
-            <fileSetFixedName>streaming_dma_test_system_avst_decimator_0</fileSetFixedName>
+            <fileSetName>avst_decimator</fileSetName>
+            <fileSetFixedName>avst_decimator</fileSetFixedName>
             <fileSetKind>QUARTUS_SYNTH</fileSetKind>
             <fileSetFiles/>
         </fileSet>
         <fileSet>
-            <fileSetName>streaming_dma_test_system_avst_decimator_0</fileSetName>
-            <fileSetFixedName>streaming_dma_test_system_avst_decimator_0</fileSetFixedName>
+            <fileSetName>avst_decimator</fileSetName>
+            <fileSetFixedName>avst_decimator</fileSetFixedName>
             <fileSetKind>SIM_VERILOG</fileSetKind>
             <fileSetFiles/>
         </fileSet>
         <fileSet>
-            <fileSetName>streaming_dma_test_system_avst_decimator_0</fileSetName>
-            <fileSetFixedName>streaming_dma_test_system_avst_decimator_0</fileSetFixedName>
+            <fileSetName>avst_decimator</fileSetName>
+            <fileSetFixedName>avst_decimator</fileSetFixedName>
             <fileSetKind>SIM_VHDL</fileSetKind>
             <fileSetFiles/>
         </fileSet>
     </fileSets>
 </generationInfoDefinition>]]></parameter>
   <parameter name="hlsFile" value="" />
-  <parameter name="logicalView">ip/streaming_dma_test_system/streaming_dma_test_system_avst_decimator_0.ip</parameter>
+  <parameter name="logicalView">ip/streaming_dma_test_system/avst_decimator.ip</parameter>
   <parameter name="moduleAssignmentDefinition"><![CDATA[<assignmentDefinition>
     <assignmentValueMap/>
 </assignmentDefinition>]]></parameter>
@@ -7662,7 +7662,7 @@
   <parameter name="svInterfaceDefinition" value="" />
  </module>
  <module
-   name="one_to_two_streaming_demultiplexer_0"
+   name="one_to_two_streaming_demultiplexer"
    kind="altera_generic_component"
    version="1.0"
    enabled="1">
@@ -8342,30 +8342,30 @@
     </systemInfos>
 </componentDefinition>]]></parameter>
   <parameter name="generationInfoDefinition"><![CDATA[<generationInfoDefinition>
-    <hdlLibraryName>streaming_dma_test_system_one_to_two_streaming_demultiplexer_0</hdlLibraryName>
+    <hdlLibraryName>one_to_two_streaming_demultiplexer</hdlLibraryName>
     <fileSets>
         <fileSet>
-            <fileSetName>streaming_dma_test_system_one_to_two_streaming_demultiplexer_0</fileSetName>
-            <fileSetFixedName>streaming_dma_test_system_one_to_two_streaming_demultiplexer_0</fileSetFixedName>
+            <fileSetName>one_to_two_streaming_demultiplexer</fileSetName>
+            <fileSetFixedName>one_to_two_streaming_demultiplexer</fileSetFixedName>
             <fileSetKind>QUARTUS_SYNTH</fileSetKind>
             <fileSetFiles/>
         </fileSet>
         <fileSet>
-            <fileSetName>streaming_dma_test_system_one_to_two_streaming_demultiplexer_0</fileSetName>
-            <fileSetFixedName>streaming_dma_test_system_one_to_two_streaming_demultiplexer_0</fileSetFixedName>
+            <fileSetName>one_to_two_streaming_demultiplexer</fileSetName>
+            <fileSetFixedName>one_to_two_streaming_demultiplexer</fileSetFixedName>
             <fileSetKind>SIM_VERILOG</fileSetKind>
             <fileSetFiles/>
         </fileSet>
         <fileSet>
-            <fileSetName>streaming_dma_test_system_one_to_two_streaming_demultiplexer_0</fileSetName>
-            <fileSetFixedName>streaming_dma_test_system_one_to_two_streaming_demultiplexer_0</fileSetFixedName>
+            <fileSetName>one_to_two_streaming_demultiplexer</fileSetName>
+            <fileSetFixedName>one_to_two_streaming_demultiplexer</fileSetFixedName>
             <fileSetKind>SIM_VHDL</fileSetKind>
             <fileSetFiles/>
         </fileSet>
     </fileSets>
 </generationInfoDefinition>]]></parameter>
   <parameter name="hlsFile" value="" />
-  <parameter name="logicalView">ip/streaming_dma_test_system/streaming_dma_test_system_one_to_two_streaming_demultiplexer_0.ip</parameter>
+  <parameter name="logicalView">ip/streaming_dma_test_system/one_to_two_streaming_demultiplexer.ip</parameter>
   <parameter name="moduleAssignmentDefinition"><![CDATA[<assignmentDefinition>
     <assignmentValueMap/>
 </assignmentDefinition>]]></parameter>
@@ -11255,7 +11255,7 @@
   <parameter name="svInterfaceDefinition" value="" />
  </module>
  <module
-   name="two_to_one_streaming_multiplexer_0"
+   name="two_to_one_streaming_multiplexer"
    kind="altera_generic_component"
    version="1.0"
    enabled="1">
@@ -11935,30 +11935,30 @@
     </systemInfos>
 </componentDefinition>]]></parameter>
   <parameter name="generationInfoDefinition"><![CDATA[<generationInfoDefinition>
-    <hdlLibraryName>streaming_dma_test_system_two_to_one_streaming_multiplexer_0</hdlLibraryName>
+    <hdlLibraryName>two_to_one_streaming_multiplexer</hdlLibraryName>
     <fileSets>
         <fileSet>
-            <fileSetName>streaming_dma_test_system_two_to_one_streaming_multiplexer_0</fileSetName>
-            <fileSetFixedName>streaming_dma_test_system_two_to_one_streaming_multiplexer_0</fileSetFixedName>
+            <fileSetName>two_to_one_streaming_multiplexer</fileSetName>
+            <fileSetFixedName>two_to_one_streaming_multiplexer</fileSetFixedName>
             <fileSetKind>QUARTUS_SYNTH</fileSetKind>
             <fileSetFiles/>
         </fileSet>
         <fileSet>
-            <fileSetName>streaming_dma_test_system_two_to_one_streaming_multiplexer_0</fileSetName>
-            <fileSetFixedName>streaming_dma_test_system_two_to_one_streaming_multiplexer_0</fileSetFixedName>
+            <fileSetName>two_to_one_streaming_multiplexer</fileSetName>
+            <fileSetFixedName>two_to_one_streaming_multiplexer</fileSetFixedName>
             <fileSetKind>SIM_VERILOG</fileSetKind>
             <fileSetFiles/>
         </fileSet>
         <fileSet>
-            <fileSetName>streaming_dma_test_system_two_to_one_streaming_multiplexer_0</fileSetName>
-            <fileSetFixedName>streaming_dma_test_system_two_to_one_streaming_multiplexer_0</fileSetFixedName>
+            <fileSetName>two_to_one_streaming_multiplexer</fileSetName>
+            <fileSetFixedName>two_to_one_streaming_multiplexer</fileSetFixedName>
             <fileSetKind>SIM_VHDL</fileSetKind>
             <fileSetFiles/>
         </fileSet>
     </fileSets>
 </generationInfoDefinition>]]></parameter>
   <parameter name="hlsFile" value="" />
-  <parameter name="logicalView">ip/streaming_dma_test_system/streaming_dma_test_system_two_to_one_streaming_multiplexer_0.ip</parameter>
+  <parameter name="logicalView">ip/streaming_dma_test_system/two_to_one_streaming_multiplexer.ip</parameter>
   <parameter name="moduleAssignmentDefinition"><![CDATA[<assignmentDefinition>
     <assignmentValueMap/>
 </assignmentDefinition>]]></parameter>
@@ -12052,21 +12052,21 @@
    kind="avalon"
    version="17.1"
    start="mmio_bridge.m0"
-   end="two_to_one_streaming_multiplexer_0.csr">
+   end="one_to_two_streaming_demultiplexer.csr">
   <parameter name="baseAddress" value="0x0050" />
  </connection>
  <connection
    kind="avalon"
    version="17.1"
    start="mmio_bridge.m0"
-   end="one_to_two_streaming_demultiplexer_0.csr">
+   end="avst_decimator.csr">
   <parameter name="baseAddress" value="0x0048" />
  </connection>
  <connection
    kind="avalon"
    version="17.1"
    start="mmio_bridge.m0"
-   end="avst_decimator_0.csr">
+   end="two_to_one_streaming_multiplexer.csr">
   <parameter name="baseAddress" value="0x0040" />
  </connection>
  <connection
@@ -12115,32 +12115,32 @@
    kind="avalon_streaming"
    version="17.1"
    start="m2s_dma_bbb.m2s_st_source"
-   end="one_to_two_streaming_demultiplexer_0.sink" />
+   end="one_to_two_streaming_demultiplexer.sink" />
  <connection
    kind="avalon_streaming"
    version="17.1"
-   start="two_to_one_streaming_multiplexer_0.source"
+   start="two_to_one_streaming_multiplexer.source"
    end="s2m_dma_bbb.s2m_st_sink" />
  <connection
    kind="avalon_streaming"
    version="17.1"
-   start="avst_decimator_0.source"
-   end="two_to_one_streaming_multiplexer_0.sink_b" />
+   start="avst_decimator.source"
+   end="two_to_one_streaming_multiplexer.sink_b" />
  <connection
    kind="avalon_streaming"
    version="17.1"
-   start="one_to_two_streaming_demultiplexer_0.source_a"
+   start="one_to_two_streaming_demultiplexer.source_a"
    end="m2s_custom_pattern_checker.st_pattern_input" />
  <connection
    kind="avalon_streaming"
    version="17.1"
-   start="one_to_two_streaming_demultiplexer_0.source_b"
-   end="avst_decimator_0.sink" />
+   start="one_to_two_streaming_demultiplexer.source_b"
+   end="avst_decimator.sink" />
  <connection
    kind="avalon_streaming"
    version="17.1"
    start="s2m_custom_pattern_generator.st_pattern_output"
-   end="two_to_one_streaming_multiplexer_0.sink_a" />
+   end="two_to_one_streaming_multiplexer.sink_a" />
  <connection
    kind="clock"
    version="17.1"
@@ -12195,17 +12195,17 @@
    kind="clock"
    version="17.1"
    start="dma_clock.out_clk"
-   end="two_to_one_streaming_multiplexer_0.clock" />
+   end="one_to_two_streaming_demultiplexer.clock" />
  <connection
    kind="clock"
    version="17.1"
    start="dma_clock.out_clk"
-   end="one_to_two_streaming_demultiplexer_0.clock" />
+   end="avst_decimator.clock" />
  <connection
    kind="clock"
    version="17.1"
    start="dma_clock.out_clk"
-   end="avst_decimator_0.clock" />
+   end="two_to_one_streaming_multiplexer.clock" />
  <connection
    kind="clock"
    version="17.1"
@@ -12285,17 +12285,17 @@
    kind="reset"
    version="17.1"
    start="reset_in.out_reset"
-   end="two_to_one_streaming_multiplexer_0.reset" />
+   end="one_to_two_streaming_demultiplexer.reset" />
  <connection
    kind="reset"
    version="17.1"
    start="reset_in.out_reset"
-   end="one_to_two_streaming_demultiplexer_0.reset" />
+   end="avst_decimator.reset" />
  <connection
    kind="reset"
    version="17.1"
    start="reset_in.out_reset"
-   end="avst_decimator_0.reset" />
+   end="two_to_one_streaming_multiplexer.reset" />
  <connection
    kind="reset"
    version="17.1"

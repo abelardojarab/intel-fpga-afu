@@ -71,7 +71,7 @@ QSYS_IPs/one_to_two_streaming_demultiplexer/one_to_two_streaming_demux.v
 QSYS_IPs/two_to_one_streaming_multiplexer/two_to_one_streaming_mux.v
 
 # new streaming decimator core inserted between the M2S and S2M DMAs
-QSYS_IPs/avst_decimator/streaming_decimator.sv
+QSYS_IPs/avst_decimator/avst_decimator.sv
 
 # new write only pipeline bridge that supports Avalon write responses
 #QSYS_IPs/write_response_bridge/write_response_bridge.v
@@ -105,6 +105,9 @@ TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/nul
 TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/host_wr_bridge.ip
 TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/s2m_custom_pattern_generator.ip
 TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/m2s_custom_pattern_checker.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/avst_decimator.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/one_to_two_streaming_demultiplexer.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/two_to_one_streaming_multiplexer.ip
 
 # Memory to streaming DMA BBB Qsys system .ip files
 memory_to_stream_dma_bbb/

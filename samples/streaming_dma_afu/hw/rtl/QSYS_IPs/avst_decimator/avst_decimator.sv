@@ -67,7 +67,7 @@ Version 1.0 - Initial version of the module
 
 */
 
-module streaming_decimator #
+module avst_decimator #
 (
   DATA_WIDTH = 512,
   EMPTY_WIDTH = 6     // log2(DATA_WIDTH/8), will be calculated in hardware .tcl

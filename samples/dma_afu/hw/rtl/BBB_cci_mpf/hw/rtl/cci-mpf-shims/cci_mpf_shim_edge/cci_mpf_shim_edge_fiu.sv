@@ -71,7 +71,8 @@ module cci_mpf_shim_edge_fiu
     cci_mpf_shim_vtp_pt_walk_if.mem_read pt_walk,
 
     // Interface to the partial write emulator
-    cci_mpf_shim_pwrite_if.pwrite_edge_fiu pwrite
+    cci_mpf_shim_pwrite_if.pwrite_edge_fiu pwrite,
+    cci_mpf_shim_pwrite_lock_if.pwrite_edge_fiu pwrite_lock
     );
 
     logic reset = 1'b1;
@@ -190,6 +191,7 @@ module cci_mpf_shim_edge_fiu
                 .reset,
                 .afu_edge,
                 .pwrite,
+                .pwrite_lock,
                 .wr_heap_deq_en,
                 .wr_heap_deq_idx,
 
@@ -208,12 +210,13 @@ module cci_mpf_shim_edge_fiu
         .N_ENTRIES(N_UNIQUE_WRITE_HEAP_ENTRIES),
         .N_DATA_BITS(CCI_CLDATA_WIDTH),
         .N_OUTPUT_REG_STAGES(1),
-        .OPERATION_MODE("DUAL_PORT")
+        .OPERATION_MODE("DUAL_PORT"),
+        .PORT1_CLOCK("CLOCK0")
         )
       wr_heap_data
        (
         .clk0(clk),
-        .clk1(clk),
+        .clk1(),
 
         .wen0(heap_wen),
         .byteena0(heap_wbyteena),
@@ -345,9 +348,8 @@ module cci_mpf_shim_edge_fiu
     t_ccip_clNum stg1_fiu_wr_beats_rem;
     logic stg1_fiu_c1Tx_sop;
     logic stg1_packet_done;
-    logic stg1_packet_is_new;
     logic stg1_flit_en;
-    logic wr_req_may_fire;
+    logic stg1_fiu_blocked;
 
     // Pipeline stages
     t_if_cci_mpf_c1_Tx stg1_fiu_c1Tx;
@@ -356,17 +358,11 @@ module cci_mpf_shim_edge_fiu
 
     always_comb
     begin
-        // Write request may fire if the downstream pipeline isn't full and
-        // if the wr_heap_data read port is available to retrieve the store
-        // data.  The wr_heap_data read port is used as a write port for
-        // updates to partial write data, which are given priority.
-        wr_req_may_fire = ! fiu.c1TxAlmFull;
-
         // Processing is complete when all beats have been emitted.
-        stg1_packet_done = wr_req_may_fire && (stg1_fiu_wr_beats_rem == 0);
+        stg1_packet_done = (stg1_fiu_wr_beats_rem == 0) && ! fiu.c1TxAlmFull;
 
         // Ready to process a write flit?
-        stg1_flit_en = wr_req_may_fire && cci_mpf_c1TxIsWriteReq(stg1_fiu_c1Tx);
+        stg1_flit_en = cci_mpf_c1TxIsWriteReq(stg1_fiu_c1Tx);
         wr_heap_deq_clNum = stg1_fiu_wr_beat_idx;
 
         // Release the write data heap entry when a write retires
@@ -375,6 +371,7 @@ module cci_mpf_shim_edge_fiu
         // Take the next request from the buffering FIFO when the current
         // packet is done or there is no packet being processed.
         deqC1Tx = cci_mpf_c1TxIsValid(afu_buf.c1Tx) &&
+                  ! fiu.c1TxAlmFull &&
                   (stg1_packet_done || ! cci_mpf_c1TxIsValid(stg1_fiu_c1Tx));
     end
 
@@ -385,54 +382,48 @@ module cci_mpf_shim_edge_fiu
 
     always_ff @(posedge clk)
     begin
-        stg1_packet_is_new <= deqC1Tx;
-
         // Head of the pipeline
-        if (deqC1Tx)
+        stg1_fiu_blocked <= fiu.c1TxAlmFull;
+        if (! fiu.c1TxAlmFull)
         begin
-            // Pipeline is moving and a new request is available
-            stg1_fiu_c1Tx <= c1Tx;
+            if (deqC1Tx)
+            begin
+                // Pipeline is moving and a new request is available
+                stg1_fiu_c1Tx <= c1Tx;
 
-            // The heap data for the SOP is definitely available
-            // since it arrived with the header.
-            stg1_fiu_c1Tx_sop <= 1'b1;
-            stg1_fiu_wr_beat_idx <= 0;
-            stg1_fiu_wr_beats_rem <= c1Tx.hdr.base.cl_len;
+                // The heap data for the SOP is definitely available
+                // since it arrived with the header.
+                stg1_fiu_c1Tx_sop <= 1'b1;
+                stg1_fiu_wr_beat_idx <= 0;
+                stg1_fiu_wr_beats_rem <= c1Tx.hdr.base.cl_len;
 
-            wr_heap_deq_idx <= t_write_heap_idx'(c1Tx.data);
-        end
-        else if (stg1_packet_done)
-        begin
-            // Pipeline is moving but no new request is available
-            stg1_fiu_c1Tx <= cci_c1Tx_clearValids();
-        end
-        else if (stg1_flit_en)
-        begin
-            // In the middle of a multi-beat request
-            stg1_fiu_c1Tx_sop <= 1'b0;
-            stg1_fiu_wr_beat_idx <= stg1_fiu_wr_beat_idx + 1;
-            stg1_fiu_wr_beats_rem <= stg1_fiu_wr_beats_rem - 1;
+                wr_heap_deq_idx <= t_write_heap_idx'(c1Tx.data);
+            end
+            else if (stg1_packet_done)
+            begin
+                // Pipeline is moving but no new request is available
+                stg1_fiu_c1Tx <= cci_c1Tx_clearValids();
+            end
+            else if (stg1_flit_en)
+            begin
+                // In the middle of a multi-beat request
+                stg1_fiu_c1Tx_sop <= 1'b0;
+                stg1_fiu_wr_beat_idx <= stg1_fiu_wr_beat_idx + 1;
+                stg1_fiu_wr_beats_rem <= stg1_fiu_wr_beats_rem - 1;
+            end
         end
 
-        if (wr_req_may_fire)
-        begin
-            // Write request this cycle
-            stg2_fiu_c1Tx <= stg1_fiu_c1Tx;
-            // SOP set only first first beat in a multi-beat packet.
-            // Only write requests use SOP.
-            stg2_fiu_c1Tx.hdr.base.sop <=
-                cci_mpf_c1TxIsWriteReq_noCheckValid(stg1_fiu_c1Tx) &&
-                stg1_fiu_c1Tx_sop;
-            // Low bits of aligned address reflect the beat
-            stg2_fiu_c1Tx.hdr.base.address[$bits(t_ccip_clNum)-1 : 0] <=
-                stg1_fiu_c1Tx.hdr.base.address[$bits(t_ccip_clNum)-1 : 0] |
-                stg1_fiu_wr_beat_idx;
-        end
-        else
-        begin
-            // Nothing starting this cycle
-            stg2_fiu_c1Tx <= cci_c1Tx_clearValids();
-        end
+        // Continue the pipeline, unless stg1 has stopped producing data.
+        stg2_fiu_c1Tx <= cci_mpf_c1TxMaskValids(stg1_fiu_c1Tx, ! stg1_fiu_blocked);
+        // SOP set only first first beat in a multi-beat packet.
+        // Only write requests use SOP.
+        stg2_fiu_c1Tx.hdr.base.sop <=
+            cci_mpf_c1TxIsWriteReq_noCheckValid(stg1_fiu_c1Tx) &&
+            stg1_fiu_c1Tx_sop;
+        // Low bits of aligned address reflect the beat
+        stg2_fiu_c1Tx.hdr.base.address[$bits(t_ccip_clNum)-1 : 0] <=
+            stg1_fiu_c1Tx.hdr.base.address[$bits(t_ccip_clNum)-1 : 0] |
+            stg1_fiu_wr_beat_idx;
 
         stg3_fiu_c1Tx <= stg2_fiu_c1Tx;
 
@@ -442,7 +433,6 @@ module cci_mpf_shim_edge_fiu
             stg1_fiu_wr_beat_idx <= 1'b0;
             stg1_fiu_wr_beats_rem <= 1'b0;
 
-            stg1_packet_is_new <= 1'b0;
             stg1_fiu_c1Tx <= cci_c1Tx_clearValids();
             stg2_fiu_c1Tx <= cci_c1Tx_clearValids();
             stg3_fiu_c1Tx <= cci_c1Tx_clearValids();
@@ -517,6 +507,7 @@ module cci_mpf_shim_edge_fiu_pwrite_mux
 
     cci_mpf_shim_edge_if.edge_fiu afu_edge,
     cci_mpf_shim_pwrite_if.pwrite_edge_fiu pwrite,
+    cci_mpf_shim_pwrite_lock_if.pwrite_edge_fiu pwrite_lock,
 
     input  logic wr_heap_deq_en,
     input  logic [$clog2(N_WRITE_HEAP_ENTRIES)-1 : 0] wr_heap_deq_idx,
@@ -538,12 +529,16 @@ module cci_mpf_shim_edge_fiu_pwrite_mux
     // prevents overflow.
     //
     logic fifo_notEmpty;
+    logic fifo_weop;
+    t_write_heap_idx fifo_widx;
+    t_cci_clNum fifo_wclnum;
     t_unique_write_heap_idx fifo_waddr;
     t_cci_clData fifo_wdata;
 
     cci_mpf_prim_fifo_lutram
       #(
-        .N_DATA_BITS($bits(t_unique_write_heap_idx) + $bits(t_cci_clData)),
+        .N_DATA_BITS(1 + $bits(t_unique_write_heap_idx) + $bits(t_cci_clData)),
+        // This value must match wr_heap_locks in cci_mpf_shim_pwrite!
         .N_ENTRIES(CCI_TX_ALMOST_FULL_THRESHOLD + 6),
         // In normal conditions the FIFO drains immediately.  Signal almost
         // full as soon as partial writes cause the FIFO to block.
@@ -554,16 +549,17 @@ module cci_mpf_shim_edge_fiu_pwrite_mux
         .clk,
         .reset,
 
-        .enq_data({ afu_edge.widx, afu_edge.wclnum, afu_edge.wdata }),
+        .enq_data({ afu_edge.weop, afu_edge.widx, afu_edge.wclnum, afu_edge.wdata }),
         .enq_en(afu_edge.wen),
         .notFull(),
         .almostFull(afu_edge.wAlmFull),
 
-        .first({ fifo_waddr, fifo_wdata }),
+        .first({ fifo_weop, fifo_widx, fifo_wclnum, fifo_wdata }),
         .deq_en(fifo_notEmpty && ! pwrite.upd_en),
         .notEmpty(fifo_notEmpty)
         );
 
+    assign fifo_waddr = { fifo_widx, fifo_wclnum };
 
     //
     // Choose between pwrite and normal data write.
@@ -588,6 +584,27 @@ module cci_mpf_shim_edge_fiu_pwrite_mux
         if (reset)
         begin
             heap_wen <= 1'b0;
+        end
+    end
+
+
+    //
+    // Track pending AFU write data updates. Since these writes may be blocked in
+    // the FIFO above when there are partial write updates, we must prove that
+    // the AFU write data has been written to the heap before trying to access it.
+    //
+    always_ff @(posedge clk)
+    begin
+        pwrite_lock.lock_idx_en <= afu_edge.wsop;
+        pwrite_lock.lock_idx <= afu_edge.widx;
+
+        pwrite_lock.unlock_idx_en <= ! pwrite.upd_en && fifo_notEmpty && fifo_weop;
+        pwrite_lock.unlock_idx <= fifo_widx;
+
+        if (reset)
+        begin
+            pwrite_lock.lock_idx_en <= 1'b0;
+            pwrite_lock.unlock_idx_en <= 1'b0;
         end
     end
 

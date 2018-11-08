@@ -29,20 +29,25 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include "test_mem_perf.h"
+// Generated from the AFU JSON file by afu_json_mgr
+#include "afu_json_info.h"
+
+#include <unistd.h>
 #include <time.h>
 
 const char* testAFUID()
 {
-    return "6DA50A7D-C76F-42B1-9018-EC1AA7629471";
+    return AFU_ACCEL_UUID;
 }
 
 bool
 TEST_MEM_PERF::initMem(bool enableWarmup, bool cached)
 {
     // Allocate memory for control
-    dsm = (uint64_t*) this->malloc(4096);
+    dsm_buf_handle = this->allocBuffer(getpagesize());
+    dsm = reinterpret_cast<volatile uint64_t*>(dsm_buf_handle->c_type());
     if (dsm == NULL) return false;
-    memset((void*)dsm, 0, 4096);
+    memset((void*)dsm, 0, getpagesize());
 
     // Allocate memory for read/write tests.  The HW indicates the size
     // of the memory buffer in CSR 0.
@@ -54,10 +59,11 @@ TEST_MEM_PERF::initMem(bool enableWarmup, bool cached)
 
     // Allocate two buffers worth plus an extra 2MB page to allow for alignment
     // changes.
-    rd_mem = (uint64_t*) this->malloc(2 * buffer_bytes + 2048 * 1024);
+    buffer_handle = this->allocBuffer(2 * buffer_bytes + 2048 * 1024);
+    rd_mem = (uint64_t*)(buffer_handle->c_type());
     if (rd_mem == NULL) return false;
     // Align to minimize cache conflicts
-    wr_mem = (uint64_t*) (uint64_t(rd_mem) + buffer_bytes + 512 * CL(1));
+    wr_mem = (uint64_t*)(uint64_t(rd_mem) + buffer_bytes + 512 * CL(1));
 
     memset((void*)rd_mem, 0, buffer_bytes);
     memset((void*)wr_mem, 0, buffer_bytes);
@@ -180,9 +186,9 @@ TEST_MEM_PERF::runTest(const t_test_config* config, t_test_stats* stats)
     stats->read_almost_full_cycles = readCommonCSR(CCI_TEST::CSR_COMMON_RD_ALMOST_FULL_CYCLES) - stats->read_almost_full_cycles;
     stats->write_almost_full_cycles = readCommonCSR(CCI_TEST::CSR_COMMON_WR_ALMOST_FULL_CYCLES) - stats->write_almost_full_cycles;
 
-    // Inflight counters are in DSM.  Convert packets to lines.
-    stats->read_max_inflight_lines = (dsm[1] & 0xffffffff) * (config->mcl + 1);
-    stats->write_max_inflight_lines = (dsm[1] >> 32) * (config->mcl + 1);
+    // Inflight counters are in DSM.
+    stats->read_max_inflight_lines = dsm[1] & 0xffffffff;
+    stats->write_max_inflight_lines = dsm[1] >> 32;
 
     if (stats->actual_cycles == 0)
     {
@@ -191,12 +197,8 @@ TEST_MEM_PERF::runTest(const t_test_config* config, t_test_stats* stats)
         return 1;
     }
 
-    // Convert read/write counts to packets
-    uint64_t read_packets = stats->read_lines / (config->mcl + 1);
-    uint64_t write_packets = stats->write_lines / (config->mcl + 1);
-
-    stats->read_average_latency = (read_packets ? dsm[2] / read_packets : 0);
-    stats->write_average_latency = (write_packets ? dsm[3] / write_packets : 0);
+    stats->read_average_latency = (stats->read_lines ? dsm[2] / stats->read_lines : 0);
+    stats->write_average_latency = (stats->write_lines ? dsm[3] / stats->write_lines : 0);
 
     *dsm = 0;
 

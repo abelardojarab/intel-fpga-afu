@@ -145,16 +145,18 @@ module cci_mpf
     );
 
     // Maximum number of outstanding read and write requests per channel
-`ifdef MPF_PLATFORM_SKX
-    localparam MAX_ACTIVE_REQS = 1024;
+`ifdef PLATFORM_IF_AVAIL
+    // Use the platform database.  VA will have the largest buffer requirements.
+    // The value in the database doesn't include the latency effects of reorder
+    // buffers and the other MPF shims.  Add 50%.
+    localparam MAX_ACTIVE_REQS_RAW = (ccip_cfg_pkg::C0_MAX_BW_ACTIVE_LINES[0] +
+                                      (ccip_cfg_pkg::C0_MAX_BW_ACTIVE_LINES[0] >> 1));
+    // Round up to a power of 2.
+    localparam MAX_ACTIVE_REQS = (2 ** $clog2(MAX_ACTIVE_REQS_RAW));
 `elsif MPF_PLATFORM_DCP_PCIE
     localparam MAX_ACTIVE_REQS = 512;
-`elsif MPF_PLATFORM_BDX
-    localparam MAX_ACTIVE_REQS = 1024;
-`elsif MPF_PLATFORM_OME
-    localparam MAX_ACTIVE_REQS = 128;
 `else
-    ** ERROR: Unknown platform
+    localparam MAX_ACTIVE_REQS = 1024;
 `endif
 
     // Reserved bits in the mdata field, used by various modules.
@@ -241,6 +243,12 @@ module cci_mpf
         )
       pwrite();
 
+    cci_mpf_shim_pwrite_lock_if
+      #(
+        .N_WRITE_HEAP_ENTRIES(N_WRITE_HEAP_ENTRIES)
+        )
+      pwrite_lock();
+
     cci_mpf_shim_vtp_pt_walk_if pt_walk();
 
     cci_mpf_shim_edge_fiu
@@ -262,7 +270,8 @@ module cci_mpf
         .afu(stgm2_mpf_fiu),
         .afu_edge(edge_if),
         .pt_walk,
-        .pwrite
+        .pwrite,
+        .pwrite_lock
         );
 
 
@@ -366,6 +375,8 @@ module cci_mpf
         .mpf_csrs,
         .edge_if,
         .pwrite,
+        .pwrite_afu(pwrite),
+        .pwrite_lock,
         .vtp_svc(vtp_svc_ports[0:1])
         );
 

@@ -16,13 +16,8 @@
 //     and are named t_cci_mpf_....
 //
 
-// ========================================================================
-//
-//  Before importing this module, define exactly one preprocessor macro
-//  to specify the physical interface.  E.g. MPF_PLATFORM_BDX.
-//
-// ========================================================================
-
+// Load platform configuration.  The MPF interface configuration adapts
+// to the requested platform.
 `include "cci_mpf_platform.vh"
 
 package cci_mpf_if_pkg;
@@ -745,6 +740,21 @@ package cci_mpf_if_pkg;
         );
 
         return r.valid && cci_mpf_c1TxIsWriteFenceReq_noCheckValid(r);
+    endfunction
+
+
+    function automatic logic cci_mpf_c1TxIsInterruptReq_noCheckValid(
+        input t_if_cci_mpf_c1_Tx r
+        );
+
+        return (r.hdr.base.req_type == eREQ_INTR);
+    endfunction
+
+    function automatic logic cci_mpf_c1TxIsInterruptReq(
+        input t_if_cci_mpf_c1_Tx r
+        );
+
+        return r.valid && cci_mpf_c1TxIsInterruptReq_noCheckValid(r);
     endfunction
 
 

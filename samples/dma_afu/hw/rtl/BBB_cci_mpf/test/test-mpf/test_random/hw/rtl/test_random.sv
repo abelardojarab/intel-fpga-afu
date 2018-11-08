@@ -31,6 +31,9 @@
 `include "cci_mpf_if.vh"
 `include "cci_test_csrs.vh"
 
+// Generated from the AFU JSON file by afu_json_mgr
+`include "afu_json_info.vh"
+
 
 module test_afu
    (
@@ -224,7 +227,7 @@ module test_afu
 
     always_comb
     begin
-        csrs.afu_id = 128'h5037b187_e561_4ca2_ad5b_d6c7816273c2;
+        csrs.afu_id = `AFU_ACCEL_UUID;
 
         // Default
         for (int i = 0; i < NUM_TEST_CSRS; i = i + 1)
@@ -922,6 +925,8 @@ module test_afu
         .N_ENTRIES(1 << N_CHECKED_ADDR_BITS),
         .N_DATA_BITS($bits(t_mem_tag)),
         .N_OUTPUT_REG_STAGES(2),
+        .OPERATION_MODE("DUAL_PORT"),
+        .PORT1_CLOCK("CLOCK0"),
         .READ_DURING_WRITE_MODE_MIXED_PORTS("OLD_DATA")
         )
       chk_ram

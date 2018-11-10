@@ -33,22 +33,26 @@ PASS! Bandwidth = 2584 MB/s
 
 Usage:
      fpga_dma_st_test [-h] [-B <bus>] [-D <device>] [-F <function>] [-S <segment>]
-                       -s <data size (bytes)> -p <payload size (bytes)>
-                       -r <transfer direction> -t <transfer type>
+                       -l <loopback on/off> -s <data size (bytes)> -p <payload size (bytes)>
+                       -r <transfer direction> -t <transfer type> [-f <decimation factor>]
 
          -h,--help           Print this help
          -B,--bus            Set target bus number
          -D,--device         Set target device number
          -F,--function       Set target function number
          -S,--segment        Set PCIe segment
+         -l,--loopback       Loopback mode
+            on               Turn on channel loopback
+            off              Turn off channel loopback (must specify channel using -r/--direction)
          -s,--data_size      Total data size
          -p,--payload_size   Payload size (per DMA transaction)
          -r,--direction      Transfer direction
-           mtos              Memory to stream
-           stom              Stream to memory
+            mtos             Memory to stream
+            stom             Stream to memory
          -t,--type           Transfer type
-           fixed             Deterministic length transfer
-           packet            Packet transfer (uses SOP and EOP markers)
+            fixed            Deterministic length transfer
+            packet           Packet transfer (uses SOP and EOP markers)
+         -f,--decim_factor   Optional decimation factor
 ```
 * Sweep payloads and profile the driver
 ```
@@ -85,6 +89,36 @@ master DMA drives a pattern checker and Avalon-ST port of the
 write master DMA is driven from a pattern generator. Refer to the
 Streaming DMA user guide for a detailed description of the
 hardware architecture.
+
+The reference AFU is wired in the topology shown below.
+```
+                            /|------> Pattern checker
+Memory to Stream DMA ----> | |
+                            \|----
+                                 |
+                                Decimator
+                                 |
+                            /|<--- 
+Stream to Memory DMA <---- | |
+                            \|<----- Pattern generator
+
+
+```
+The loopback between memory to stream and stream to memory
+channels can be turned on/off from the test application
+by setting the -l/--loopback flag to on/off. When
+the loopback is turned on, traffic runs through 
+a decimator between the channels. This module 
+recieves a stream of data and removes a 
+programmable number of beats before forwarding the data.
+The number of beats to remove is called the decimation factor so
+a value of 0 means no removal, 1 means every
+other beat is removed, 2 means one beat out of three is removed, etc....
+The module *always* forwards beats with SOP 
+or EOP set so that packet boundaries do notice
+get filtered out. Decimation factor can be specified
+using -f/--decim_factor flag. Default is 0 (all traffic
+is forwarded).
 
 ## Software Driver Use Model
 

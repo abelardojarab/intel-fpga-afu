@@ -1,0 +1,79 @@
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_TOOL_NAME "QsysPrimePro"
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_TOOL_VERSION "18.1"
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_TOOL_ENV "QsysPrimePro"
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_TOOL_VENDOR_NAME "Intel Corporation"
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_TOP_LEVEL_COMPONENT_NAME "altera_xcvr_reset_control_s10"
+set_global_assignment -library "reset_control" -name SOPCINFO_FILE [file join $::quartus(qip_path) "reset_control.sopcinfo"]
+set_global_assignment -entity "reset_control" -library "reset_control" -name SLD_INFO "QSYS_NAME reset_control HAS_SOPCINFO 1 GENERATION_ID 0"
+set_global_assignment -library "reset_control" -name MISC_FILE [file join $::quartus(qip_path) "reset_control.cmp"]
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_TARGETED_DEVICE_FAMILY "Stratix 10"
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_GENERATED_DEVICE_FAMILY "{Stratix 10}"
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_QSYS_MODE "STANDALONE"
+set_global_assignment -name SYNTHESIS_ONLY_QIP ON
+set_global_assignment -library "reset_control" -name MISC_FILE [file join $::quartus(qip_path) "../reset_control.ip"]
+
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_NAME "YWx0ZXJhX3hjdnJfcmVzZXRfY29udHJvbF9zMTA="
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_DISPLAY_NAME "U3RyYXRpeCAxMCBUcmFuc2NlaXZlciBQSFkgUmVzZXQgQ29udHJvbGxlcg=="
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_REPORT_HIERARCHY "Off"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_INTERNAL "Off"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_AUTHOR "SW50ZWwgQ29ycG9yYXRpb24="
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_VERSION "MTguMQ=="
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_DESCRIPTION "U3RyYXRpeCAxMCBMLVRpbGUgYW5kIEgtVGlsZSBUcmFuc2NlaXZlciBSZXNldCBDb250cm9sbGVy"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "ZGV2aWNlX2ZhbWlseQ==::U3RyYXRpeCAxMA==::ZGV2aWNlX2ZhbWlseQ=="
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "VElMRV9UWVBF::bF90aWxl::VGlsZSB0eXBlIG9mIE5hdGl2ZSBQSFkgSVA="
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "Q0hBTk5FTFM=::MQ==::TnVtYmVyIG9mIHRyYW5zY2VpdmVyIGNoYW5uZWxz"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "UExMUw==::MQ==::TnVtYmVyIG9mIFRYIFBMTHM="
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "U1lTX0NMS19JTl9NSFo=::MTI1::SW5wdXQgY2xvY2sgZnJlcXVlbmN5"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "UkVEVUNFRF9TSU1fVElNRQ==::MQ==::VXNlIGZhc3QgcmVzZXQgZm9yIHNpbXVsYXRpb24="
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "RU5BQkxFX0RJR0lUQUxfU0VR::MA==::U2VxdWVuY2UgUlggZGlnaXRhbCByZXNldCBhZnRlciBUWCBkaWdpdGFsIHJlc2V0"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "Z3VpX3NwbGl0X2ludGVyZmFjZXM=::MA==::U2VwYXJhdGUgaW50ZXJmYWNlIHBlciBjaGFubmVsL1BMTA=="
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "VFhfUExMX0VOQUJMRQ==::MA==::RW5hYmxlIFRYIFBMTCByZXNldCBjb250cm9s"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "VFhfRU5BQkxF::MQ==::RW5hYmxlIFRYIGNoYW5uZWwgcmVzZXQgY29udHJvbA=="
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "VFhfUEVSX0NIQU5ORUw=::MA==::VXNlIHNlcGFyYXRlIFRYIHJlc2V0IHBlciBjaGFubmVs"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "VFhfTUFOVUFMX1JFU0VU::MA==::VFggZGlnaXRhbCByZXNldCBtb2Rl"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "VF9UWF9BTkFMT0dSRVNFVA==::MA==::dHhfYW5hbG9ncmVzZXQgZHVyYXRpb24="
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "VF9UWF9ESUdJVEFMUkVTRVQ=::MjA=::dHhfZGlnaXRhbHJlc2V0IGR1cmF0aW9u"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "VF9QTExfTE9DS19IWVNU::MA==::cGxsX2xvY2tlZCBpbnB1dCBoeXN0ZXJlc2lz"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "Z3VpX3BsbF9jYWxfYnVzeQ==::MA==::RW5hYmxlIHBsbF9jYWxfYnVzeSBpbnB1dCBwb3J0"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "RU5fUExMX0NBTF9CVVNZ::MA==::RU5fUExMX0NBTF9CVVNZ"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "UlhfRU5BQkxF::MQ==::RW5hYmxlIFJYIGNoYW5uZWwgcmVzZXQgY29udHJvbA=="
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "UlhfUEVSX0NIQU5ORUw=::MA==::VXNlIHNlcGFyYXRlIFJYIHJlc2V0IHBlciBjaGFubmVs"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "UlhfTUFOVUFMX1JFU0VU::MA==::UlggZGlnaXRhbCByZXNldCBtb2Rl"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "VF9SWF9BTkFMT0dSRVNFVA==::NDA=::cnhfYW5hbG9ncmVzZXQgZHVyYXRpb24="
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "VF9SWF9ESUdJVEFMUkVTRVQ=::NDAwMA==::cnhfZGlnaXRhbHJlc2V0IGR1cmF0aW9u"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "bF90ZXJtaW5hdGVfcGxs::MQ==::bF90ZXJtaW5hdGVfcGxs"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "bF90ZXJtaW5hdGVfdHg=::MA==::bF90ZXJtaW5hdGVfdHg="
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "bF90ZXJtaW5hdGVfcng=::MA==::bF90ZXJtaW5hdGVfcng="
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "bF9wbGxfc2VsZWN0X3NwbGl0::MA==::bF9wbGxfc2VsZWN0X3NwbGl0"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "bF9wbGxfc2VsZWN0X3dpZHRo::MQ==::bF9wbGxfc2VsZWN0X3dpZHRo"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_PARAMETER "bF9wbGxfc2VsZWN0X2Jhc2U=::MQ==::bF9wbGxfc2VsZWN0X2Jhc2U="
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_GROUP "SW50ZXJmYWNlIFByb3RvY29scy9UcmFuc2NlaXZlciBQSFk="
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuYWx0ZXJhLmNvbS9jb250ZW50L2RhbS9hbHRlcmEtd3d3L2dsb2JhbC9lbl9VUy9wZGZzL2xpdGVyYXR1cmUvaGIvc3RyYXRpeC0xMC91Z19zdHJhdGl4MTBfbF9odGlsZV94Y3ZyX3BoeS5wZGY="
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_COMPONENT_NAME "cmVzZXRfY29udHJvbA=="
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_COMPONENT_DISPLAY_NAME "c3lzdGVt"
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_COMPONENT_REPORT_HIERARCHY "On"
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_COMPONENT_INTERNAL "Off"
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_COMPONENT_AUTHOR "SW50ZWwgQ29ycG9yYXRpb24="
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_COMPONENT_VERSION "MS4w"
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_COMPONENT_PARAMETER "QVVUT19HRU5FUkFUSU9OX0lE::MA==::QXV0byBHRU5FUkFUSU9OX0lE"
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0VfRkFNSUxZ::U3RyYXRpeCAxMA==::QXV0byBERVZJQ0VfRkFNSUxZ"
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0U=::MVNHMjgwSFUyRjUwRTJWRw==::QXV0byBERVZJQ0U="
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0VfU1BFRURHUkFERQ==::Mg==::QXV0byBERVZJQ0VfU1BFRURHUkFERQ=="
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_COMPONENT_PARAMETER "QVVUT19DTE9DS19DTE9DS19SQVRF::LTE=::QXV0byBDTE9DS19SQVRF"
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_COMPONENT_PARAMETER "QVVUT19DTE9DS19DTE9DS19ET01BSU4=::LTE=::QXV0byBDTE9DS19ET01BSU4="
+set_global_assignment -entity "reset_control" -library "reset_control" -name IP_COMPONENT_PARAMETER "QVVUT19DTE9DS19SRVNFVF9ET01BSU4=::LTE=::QXV0byBSRVNFVF9ET01BSU4="
+
+
+set_global_assignment -library "altera_xcvr_reset_control_s10_181" -name VERILOG_FILE [file join $::quartus(qip_path) "altera_xcvr_reset_control_s10_181/synth/altera_std_synchronizer_nocut.v"]
+set_global_assignment -library "altera_xcvr_reset_control_s10_181" -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "altera_xcvr_reset_control_s10_181/synth/alt_xcvr_resync_std.sv"]
+set_global_assignment -library "altera_xcvr_reset_control_s10_181" -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "altera_xcvr_reset_control_s10_181/synth/altera_xcvr_reset_control_s10.sv"]
+set_global_assignment -library "altera_xcvr_reset_control_s10_181" -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "altera_xcvr_reset_control_s10_181/synth/alt_xcvr_reset_counter_s10.sv"]
+set_global_assignment -library "altera_xcvr_reset_control_s10_181" -name SOURCE_FILE [file join $::quartus(qip_path) "altera_xcvr_reset_control_s10_181/synth/plain_files.txt"]
+set_instance_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name SDC_ENTITY_FILE [file join $::quartus(qip_path) "altera_xcvr_reset_control_s10_181/synth/alt_xcvr_reset_s10.sdc"]
+set_global_assignment -library "reset_control" -name VERILOG_FILE [file join $::quartus(qip_path) "synth/reset_control.v"]
+
+
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_TOOL_NAME "altera_xcvr_reset_control_s10"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_TOOL_VERSION "18.1"
+set_global_assignment -entity "altera_xcvr_reset_control_s10" -library "altera_xcvr_reset_control_s10_181" -name IP_TOOL_ENV "QsysPrimePro"
+

@@ -1,0 +1,500 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system name="dc_fifo">
+ <component
+   name="$${FILENAME}"
+   displayName="$${FILENAME}"
+   version="1.0"
+   description=""
+   tags=""
+   categories="System"
+   tool="QsysPro" />
+ <parameter name="bonusData"><![CDATA[bonusData 
+{
+   element $system
+   {
+   }
+   element dc_fifo_0
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
+}
+]]></parameter>
+ <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
+ <parameter name="device" value="10AX115N3F40E2SG" />
+ <parameter name="deviceFamily" value="Arria 10" />
+ <parameter name="deviceSpeedGrade" value="2" />
+ <parameter name="fabricMode" value="QSYS" />
+ <parameter name="generateLegacySim" value="false" />
+ <parameter name="generationId" value="0" />
+ <parameter name="globalResetBus" value="false" />
+ <parameter name="hdlLanguage" value="VERILOG" />
+ <parameter name="hideFromIPCatalog" value="false" />
+ <parameter name="lockedInterfaceDefinition" value="" />
+ <parameter name="maxAdditionalLatency" value="1" />
+ <parameter name="sopcBorderPoints" value="false" />
+ <parameter name="systemHash" value="0" />
+ <parameter name="systemInfos"><![CDATA[<systemInfosDefinition>
+    <connPtSystemInfos/>
+</systemInfosDefinition>]]></parameter>
+ <parameter name="systemScripts" value="" />
+ <parameter name="testBenchDutName" value="" />
+ <parameter name="timeStamp" value="0" />
+ <parameter name="useTestBenchNamingPattern" value="false" />
+ <instanceScript></instanceScript>
+ <interface
+   name="dc_fifo_0_in"
+   internal="dc_fifo_0.in"
+   type="avalon_streaming"
+   dir="end" />
+ <interface
+   name="dc_fifo_0_in_clk"
+   internal="dc_fifo_0.in_clk"
+   type="clock"
+   dir="end" />
+ <interface
+   name="dc_fifo_0_in_clk_reset"
+   internal="dc_fifo_0.in_clk_reset"
+   type="reset"
+   dir="end" />
+ <interface
+   name="dc_fifo_0_out"
+   internal="dc_fifo_0.out"
+   type="avalon_streaming"
+   dir="start" />
+ <interface
+   name="dc_fifo_0_out_clk"
+   internal="dc_fifo_0.out_clk"
+   type="clock"
+   dir="end" />
+ <interface
+   name="dc_fifo_0_out_clk_reset"
+   internal="dc_fifo_0.out_clk_reset"
+   type="reset"
+   dir="end" />
+ <module
+   name="dc_fifo_0"
+   kind="altera_generic_component"
+   version="1.0"
+   enabled="1">
+  <parameter name="componentDefinition"><![CDATA[<componentDefinition>
+    <boundary>
+        <interfaces>
+            <interface>
+                <name>in</name>
+                <type>avalon_streaming</type>
+                <isStart>false</isStart>
+                <ports>
+                    <port>
+                        <name>in_data</name>
+                        <role>data</role>
+                        <direction>Input</direction>
+                        <width>32</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC_VECTOR</vhdlType>
+                    </port>
+                    <port>
+                        <name>in_valid</name>
+                        <role>valid</role>
+                        <direction>Input</direction>
+                        <width>1</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC</vhdlType>
+                    </port>
+                    <port>
+                        <name>in_ready</name>
+                        <role>ready</role>
+                        <direction>Output</direction>
+                        <width>1</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC</vhdlType>
+                    </port>
+                    <port>
+                        <name>in_startofpacket</name>
+                        <role>startofpacket</role>
+                        <direction>Input</direction>
+                        <width>1</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC</vhdlType>
+                    </port>
+                    <port>
+                        <name>in_endofpacket</name>
+                        <role>endofpacket</role>
+                        <direction>Input</direction>
+                        <width>1</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC</vhdlType>
+                    </port>
+                    <port>
+                        <name>in_empty</name>
+                        <role>empty</role>
+                        <direction>Input</direction>
+                        <width>2</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC_VECTOR</vhdlType>
+                    </port>
+                    <port>
+                        <name>in_error</name>
+                        <role>error</role>
+                        <direction>Input</direction>
+                        <width>1</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC_VECTOR</vhdlType>
+                    </port>
+                </ports>
+                <assignments>
+                    <assignmentValueMap/>
+                </assignments>
+                <parameters>
+                    <parameterValueMap>
+                        <entry>
+                            <key>associatedClock</key>
+                            <value>in_clk</value>
+                        </entry>
+                        <entry>
+                            <key>associatedReset</key>
+                            <value>in_clk_reset</value>
+                        </entry>
+                        <entry>
+                            <key>beatsPerCycle</key>
+                            <value>1</value>
+                        </entry>
+                        <entry>
+                            <key>dataBitsPerSymbol</key>
+                            <value>8</value>
+                        </entry>
+                        <entry>
+                            <key>emptyWithinPacket</key>
+                            <value>false</value>
+                        </entry>
+                        <entry>
+                            <key>errorDescriptor</key>
+                        </entry>
+                        <entry>
+                            <key>firstSymbolInHighOrderBits</key>
+                            <value>true</value>
+                        </entry>
+                        <entry>
+                            <key>highOrderSymbolAtMSB</key>
+                            <value>false</value>
+                        </entry>
+                        <entry>
+                            <key>maxChannel</key>
+                            <value>0</value>
+                        </entry>
+                        <entry>
+                            <key>packetDescription</key>
+                            <value></value>
+                        </entry>
+                        <entry>
+                            <key>prSafe</key>
+                            <value>false</value>
+                        </entry>
+                        <entry>
+                            <key>readyLatency</key>
+                            <value>0</value>
+                        </entry>
+                        <entry>
+                            <key>symbolsPerBeat</key>
+                            <value>4</value>
+                        </entry>
+                    </parameterValueMap>
+                </parameters>
+            </interface>
+            <interface>
+                <name>in_clk</name>
+                <type>clock</type>
+                <isStart>false</isStart>
+                <ports>
+                    <port>
+                        <name>in_clk</name>
+                        <role>clk</role>
+                        <direction>Input</direction>
+                        <width>1</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC</vhdlType>
+                    </port>
+                </ports>
+                <assignments>
+                    <assignmentValueMap/>
+                </assignments>
+                <parameters>
+                    <parameterValueMap>
+                        <entry>
+                            <key>clockRate</key>
+                            <value>0</value>
+                        </entry>
+                        <entry>
+                            <key>externallyDriven</key>
+                            <value>false</value>
+                        </entry>
+                        <entry>
+                            <key>ptfSchematicName</key>
+                        </entry>
+                    </parameterValueMap>
+                </parameters>
+            </interface>
+            <interface>
+                <name>in_clk_reset</name>
+                <type>reset</type>
+                <isStart>false</isStart>
+                <ports>
+                    <port>
+                        <name>in_reset_n</name>
+                        <role>reset_n</role>
+                        <direction>Input</direction>
+                        <width>1</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC</vhdlType>
+                    </port>
+                </ports>
+                <assignments>
+                    <assignmentValueMap/>
+                </assignments>
+                <parameters>
+                    <parameterValueMap>
+                        <entry>
+                            <key>associatedClock</key>
+                            <value>in_clk</value>
+                        </entry>
+                        <entry>
+                            <key>synchronousEdges</key>
+                            <value>DEASSERT</value>
+                        </entry>
+                    </parameterValueMap>
+                </parameters>
+            </interface>
+            <interface>
+                <name>out</name>
+                <type>avalon_streaming</type>
+                <isStart>true</isStart>
+                <ports>
+                    <port>
+                        <name>out_data</name>
+                        <role>data</role>
+                        <direction>Output</direction>
+                        <width>32</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC_VECTOR</vhdlType>
+                    </port>
+                    <port>
+                        <name>out_valid</name>
+                        <role>valid</role>
+                        <direction>Output</direction>
+                        <width>1</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC</vhdlType>
+                    </port>
+                    <port>
+                        <name>out_ready</name>
+                        <role>ready</role>
+                        <direction>Input</direction>
+                        <width>1</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC</vhdlType>
+                    </port>
+                    <port>
+                        <name>out_startofpacket</name>
+                        <role>startofpacket</role>
+                        <direction>Output</direction>
+                        <width>1</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC</vhdlType>
+                    </port>
+                    <port>
+                        <name>out_endofpacket</name>
+                        <role>endofpacket</role>
+                        <direction>Output</direction>
+                        <width>1</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC</vhdlType>
+                    </port>
+                    <port>
+                        <name>out_empty</name>
+                        <role>empty</role>
+                        <direction>Output</direction>
+                        <width>2</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC_VECTOR</vhdlType>
+                    </port>
+                    <port>
+                        <name>out_error</name>
+                        <role>error</role>
+                        <direction>Output</direction>
+                        <width>1</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC_VECTOR</vhdlType>
+                    </port>
+                </ports>
+                <assignments>
+                    <assignmentValueMap/>
+                </assignments>
+                <parameters>
+                    <parameterValueMap>
+                        <entry>
+                            <key>associatedClock</key>
+                            <value>out_clk</value>
+                        </entry>
+                        <entry>
+                            <key>associatedReset</key>
+                            <value>out_clk_reset</value>
+                        </entry>
+                        <entry>
+                            <key>beatsPerCycle</key>
+                            <value>1</value>
+                        </entry>
+                        <entry>
+                            <key>dataBitsPerSymbol</key>
+                            <value>8</value>
+                        </entry>
+                        <entry>
+                            <key>emptyWithinPacket</key>
+                            <value>false</value>
+                        </entry>
+                        <entry>
+                            <key>errorDescriptor</key>
+                        </entry>
+                        <entry>
+                            <key>firstSymbolInHighOrderBits</key>
+                            <value>true</value>
+                        </entry>
+                        <entry>
+                            <key>highOrderSymbolAtMSB</key>
+                            <value>false</value>
+                        </entry>
+                        <entry>
+                            <key>maxChannel</key>
+                            <value>0</value>
+                        </entry>
+                        <entry>
+                            <key>packetDescription</key>
+                            <value></value>
+                        </entry>
+                        <entry>
+                            <key>prSafe</key>
+                            <value>false</value>
+                        </entry>
+                        <entry>
+                            <key>readyLatency</key>
+                            <value>0</value>
+                        </entry>
+                        <entry>
+                            <key>symbolsPerBeat</key>
+                            <value>4</value>
+                        </entry>
+                    </parameterValueMap>
+                </parameters>
+            </interface>
+            <interface>
+                <name>out_clk</name>
+                <type>clock</type>
+                <isStart>false</isStart>
+                <ports>
+                    <port>
+                        <name>out_clk</name>
+                        <role>clk</role>
+                        <direction>Input</direction>
+                        <width>1</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC</vhdlType>
+                    </port>
+                </ports>
+                <assignments>
+                    <assignmentValueMap/>
+                </assignments>
+                <parameters>
+                    <parameterValueMap>
+                        <entry>
+                            <key>clockRate</key>
+                            <value>0</value>
+                        </entry>
+                        <entry>
+                            <key>externallyDriven</key>
+                            <value>false</value>
+                        </entry>
+                        <entry>
+                            <key>ptfSchematicName</key>
+                        </entry>
+                    </parameterValueMap>
+                </parameters>
+            </interface>
+            <interface>
+                <name>out_clk_reset</name>
+                <type>reset</type>
+                <isStart>false</isStart>
+                <ports>
+                    <port>
+                        <name>out_reset_n</name>
+                        <role>reset_n</role>
+                        <direction>Input</direction>
+                        <width>1</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC</vhdlType>
+                    </port>
+                </ports>
+                <assignments>
+                    <assignmentValueMap/>
+                </assignments>
+                <parameters>
+                    <parameterValueMap>
+                        <entry>
+                            <key>associatedClock</key>
+                            <value>out_clk</value>
+                        </entry>
+                        <entry>
+                            <key>synchronousEdges</key>
+                            <value>DEASSERT</value>
+                        </entry>
+                    </parameterValueMap>
+                </parameters>
+            </interface>
+        </interfaces>
+    </boundary>
+    <originalModuleInfo>
+        <className>altera_avalon_dc_fifo</className>
+        <version>17.0</version>
+        <displayName>Avalon-ST Dual Clock FIFO</displayName>
+    </originalModuleInfo>
+    <systemInfoParameterDescriptors>
+        <descriptors/>
+    </systemInfoParameterDescriptors>
+    <systemInfos>
+        <connPtSystemInfos/>
+    </systemInfos>
+</componentDefinition>]]></parameter>
+  <parameter name="generationInfoDefinition"><![CDATA[<generationInfoDefinition>
+    <hdlLibraryName>dc_fifo_0</hdlLibraryName>
+    <fileSets>
+        <fileSet>
+            <fileSetName>dc_fifo_0</fileSetName>
+            <fileSetFixedName>dc_fifo_0</fileSetFixedName>
+            <fileSetKind>QUARTUS_SYNTH</fileSetKind>
+            <fileSetFiles/>
+        </fileSet>
+        <fileSet>
+            <fileSetName>dc_fifo_0</fileSetName>
+            <fileSetFixedName>dc_fifo_0</fileSetFixedName>
+            <fileSetKind>SIM_VERILOG</fileSetKind>
+            <fileSetFiles/>
+        </fileSet>
+        <fileSet>
+            <fileSetName>dc_fifo_0</fileSetName>
+            <fileSetFixedName>dc_fifo_0</fileSetFixedName>
+            <fileSetKind>SIM_VHDL</fileSetKind>
+            <fileSetFiles/>
+        </fileSet>
+    </fileSets>
+</generationInfoDefinition>]]></parameter>
+  <parameter name="hlsFile" value="" />
+  <parameter name="logicalView">ip/dc_fifo/dc_fifo_0.ip</parameter>
+  <parameter name="moduleAssignmentDefinition"><![CDATA[<assignmentDefinition>
+    <assignmentValueMap/>
+</assignmentDefinition>]]></parameter>
+ </module>
+ <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
+ <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
+</system>

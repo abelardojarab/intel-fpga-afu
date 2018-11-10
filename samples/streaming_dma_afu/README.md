@@ -120,6 +120,9 @@ get filtered out. Decimation factor can be specified
 using -f/--decim_factor flag. Default is 0 (all traffic
 is forwarded).
 
+Note: For this release, we recommend testing with decimation factor = 1
+and integral multiples of 2 for data size in loopback mode.
+
 ## Software Driver Use Model
 
 ### Streams, Packets and Buffers

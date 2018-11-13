@@ -62,13 +62,13 @@ static fpga_result verify_buffer(unsigned char *buf, size_t payload_size, uint16
 			for (j = 0; j < (PATTERN_WIDTH/sizeof(test_word)); j++) {
 				if(!payload_size)
 					goto out;
-
 				if((*buf) != test_word) {
 					printf("Invalid data at byte %zd Expected = %x Actual = %x\n",byte_cnt,test_word,(*buf));
 					return FPGA_EXCEPTION;
 				}
-				if(byte_cnt % BEAT_SIZE == 0 &&	byte_cnt / BEAT_SIZE != 0 /*beat boundary*/ && decim_factor != 0)
+				if(byte_cnt % BEAT_SIZE == 0 &&	byte_cnt / BEAT_SIZE != 0 /*beat boundary*/ && decim_factor != 0) {
 					test_word += (decim_factor * BEAT_SIZE);
+				}
 				++test_word;
 
 				buf++;
@@ -242,7 +242,6 @@ static fpga_result loopback_test(fpga_handle afc_h, fpga_dma_handle_t tx_dma_h, 
 	fpgaWriteMMIO64(afc_h, 0, FPGA_DMA_DECIMATOR_CSR, dconfig.reg);
 	dconfig.dc.en = 1;
 	fpgaWriteMMIO64(afc_h, 0, FPGA_DMA_DECIMATOR_CSR, dconfig.reg);
-	debug_print("decimation config = %x\n", dconfig.reg);
 
 	struct buf_attrs battrs_src = {
 		.va = NULL,
@@ -315,17 +314,22 @@ static fpga_result loopback_test(fpga_handle afc_h, fpga_dma_handle_t tx_dma_h, 
 	else
 		rx_ctrl = END_ON_EOP;
 
-	// calculate expected bytes based on decimation factor
-	uint64_t required_beats;
+	int64_t required_beats;
 	uint64_t expected_beats;
-
+	expected_beats = 0;
 	required_beats = ceil(config->data_size / BEAT_SIZE); // beat = 64 bytes
-	if(config->decim_factor >= required_beats)
-		expected_beats = 1;
-	else
-		expected_beats = ceil(required_beats / (config->decim_factor + 1));
-	
-	uint64_t tsize;		
+	uint64_t beat_cnt;
+	beat_cnt = 0;
+
+	// calculate expected bytes based on decimation factor
+	while (required_beats) {
+		if(beat_cnt % (config->decim_factor + 1) == 0)
+			expected_beats++;
+		beat_cnt++;
+		required_beats--;
+	}
+
+	uint64_t tsize;
 	total_size = expected_beats * BEAT_SIZE;
 	tsize = total_size;
 	tid = ceil(total_size / config->payload_size);

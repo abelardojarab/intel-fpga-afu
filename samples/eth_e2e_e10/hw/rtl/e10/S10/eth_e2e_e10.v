@@ -31,8 +31,9 @@ module eth_e2e_e10 #(
     parameter NUM_HSSI_RAW_PR_IFCS = 2,
     parameter NUM_LN = 4
 )(
-    input clk156,
-    input clk312,
+	pr_hssi_if.to_fiu   hssi[NUM_HSSI_RAW_PR_IFCS],
+
+    input clk,      // 100MHz
     input reset,
 
     // ETH CSR ports
@@ -51,6 +52,7 @@ localparam NUM_ETH = NUM_HSSI_RAW_PR_IFCS*NUM_LN;
 reg [31:0] scratch = {GBS_ID, GBS_VER};
 reg [31:0] prmgmt_dout_r = 32'h0;
 
+// TODO
 reg [NUM_ETH-1:0] sloop;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -61,7 +63,7 @@ reg  [15:0] prmgmt_cmd;
 reg  [15:0] prmgmt_addr;   
 reg  [31:0] prmgmt_din;   
 
-always @(posedge clk156)
+always @(posedge clk)
 begin
     // RD/WR request from AFU CSR
 	prmgmt_cmd <= 16'b0;
@@ -76,6 +78,7 @@ end
 
 assign eth_rd_data   = prmgmt_dout_r;
 assign csr_init_done = 1'b1;
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // PRMGMT registers for I2C controllers
@@ -126,9 +129,17 @@ generate
         wire           tx_enh_data_valid;
         wire err_ins = 1'b0;
 
-        assign xgmii_rx_control = xgmii_tx_control;
-        assign xgmii_rx_data    = xgmii_tx_data;
-        assign rx_enh_data_valid = tx_enh_data_valid;
+        // TODO: hssi[0] if lanes 0-3, hssi[1] if lanes 4-7
+        assign xgmii_rx_control[3:0] = hssi[0].f2a_rx_parallel_data [(i*80)+35:(i*80)+32];
+        assign xgmii_rx_control[7:4] = hssi[0].f2a_rx_parallel_data [(i*80)+77:(i*80)+72];     // 9th and 10th bits unused
+        assign xgmii_rx_data[31:0] = hssi[0].f2a_rx_parallel_data [(i*80)+31:(i*80)];
+        assign xgmii_rx_data[63:32] = hssi[0].f2a_rx_parallel_data [(i*80)+71:(i*80)+40];
+        assign rx_enh_data_valid = hssi[0].f2a_rx_parallel_data [(i*80)+36];
+        assign hssi[0].a2f_tx_parallel_data [(i*80)+35:(i*80)+32] = xgmii_tx_control[3:0];
+        assign hssi[0].a2f_tx_parallel_data [(i*80)+77:(i*80)+72] = xgmii_tx_control[7:4];     // 9th bit unused
+        assign hssi[0].a2f_tx_parallel_data [(i*80)+31:(i*80)] = xgmii_tx_data[31:0];
+        assign hssi[0].a2f_tx_parallel_data [(i*80)+71:(i*80)+40] = xgmii_tx_data[63:32];
+        assign hssi[0].a2f_tx_parallel_data [(i*80)+36] = tx_enh_data_valid;
 
         reg         csr_read = 1'b0;
         reg         csr_write = 1'b0;
@@ -138,15 +149,15 @@ generate
         wire         csr_waitrequest;
 
         altera_eth_10g_mac_base_r eth0 (
-            .csr_clk(clk156),
+            .csr_clk(clk),
             .csr_rst_n(!csr_rst),
             .tx_rst_n(!tx_rst),
             .rx_rst_n(!rx_rst),
 
-            .tx_clk_312(clk312),
-            .rx_clk_312(clk312),
-            .tx_clk_156(clk156),
-            .rx_clk_156(clk156),
+            .tx_clk_312(hssi[0].f2a_tx_parallel_clk_x2[0]),
+            .rx_clk_312(hssi[0].f2a_rx_parallel_clk_x2[0]),
+            .tx_clk_156(hssi[0].f2a_tx_parallel_clk_x1[0]),
+            .rx_clk_156(hssi[0].f2a_rx_parallel_clk_x1[0]),
 
             // serdes data pipe
             .xgmii_tx_valid(tx_enh_data_valid),
@@ -166,7 +177,7 @@ generate
         );
 
         reg [31:0] csr_readdata_r = 32'h0;
-        always @(posedge clk156) begin
+        always @(posedge clk) begin
             if (reset) csr_read <= 1'b0;
             else begin
                 if (status_read && (port_sel == i[2:0])) csr_read <= 1'b1;
@@ -175,7 +186,7 @@ generate
             if (csr_read) csr_readdata_r <= csr_readdata;
         end
 
-        always @(posedge clk156) begin
+        always @(posedge clk) begin
             if (reset) csr_write <= 1'b0;
             else begin
                 if (status_write && (port_sel == i[2:0])) csr_write <= 1'b1;
@@ -185,17 +196,18 @@ generate
 
         assign all_csr_rdata [(i+1)*32-1:i*32] = csr_readdata_r;
 
-        always @(posedge clk156) begin
+        always @(posedge clk) begin
             csr_address <= status_addr;
             csr_writedata <= status_writedata;
         end
     end
+
 endgenerate
 
 
 wire [31:0] status_readdata_r;
 intc_mux8_t1_w32 mx0 (
-    .clk(clk156),
+    .clk(clk),
     .din(all_csr_rdata),
     .sel(port_sel),
     .dout(status_readdata_r)
@@ -205,7 +217,7 @@ intc_mux8_t1_w32 mx0 (
 // hook up to the management port
 ////////////////////////////////////////////////////////////////////////////////
 
-always @(posedge clk156) begin
+always @(posedge clk) begin
     case (prmgmt_addr[3:0])
         4'h0 : prmgmt_dout_r <= 32'h0 | scratch;
         4'h1 : prmgmt_dout_r <= 32'h0 | {csr_rst,rx_rst,tx_rst};
@@ -214,8 +226,7 @@ always @(posedge clk156) begin
         4'h4 : prmgmt_dout_r <= status_readdata_r;
         4'h5 : prmgmt_dout_r <= 32'h0 | port_sel;
         4'h6 : prmgmt_dout_r <= 32'h0 | sloop;
-        /*
-        4'h7 : prmgmt_dout_r <= {hssi.f2a_rx_enh_blk_lock, hssi.f2a_rx_is_lockedtodata};
+        /*4'h7 : prmgmt_dout_r <= {hssi.f2a_rx_enh_blk_lock, hssi.f2a_rx_is_lockedtodata};
         4'h8 : prmgmt_dout_r <= 32'h0 | {i2c_inst_sel_r,i2c_ctrl_wdata_r};
         4'h9 : prmgmt_dout_r <= 32'h0 | i2c_stat_rdata;
         4'hd : prmgmt_dout_r <= 32'h0 | {hssi.a2f_prmgmt_fatal_err, hssi.f2a_init_done};
@@ -223,7 +234,8 @@ always @(posedge clk156) begin
         default : prmgmt_dout_r <= 32'h0;
     endcase
 end
-always @(posedge clk156) begin
+
+always @(posedge clk) begin
     status_read <= 1'b0;
     status_write <= 1'b0;
 
@@ -235,10 +247,8 @@ always @(posedge clk156) begin
             4'h3 : status_writedata <= prmgmt_din;
             4'h5 : port_sel <= prmgmt_din[2:0];
             4'h6 : sloop <= prmgmt_din[NUM_ETH-1:0];
-            /*
-            4'h8 : {i2c_inst_sel_r,i2c_ctrl_wdata_r} <= prmgmt_din[17:0];
-            4'hd : hssi.a2f_prmgmt_fatal_err <= prmgmt_din[1];
-            */
+            //4'h8 : {i2c_inst_sel_r,i2c_ctrl_wdata_r} <= prmgmt_din[17:0];
+            //4'hd : hssi.a2f_prmgmt_fatal_err <= prmgmt_din[1];
         endcase
     end
 
@@ -256,9 +266,9 @@ end
 /*
 generate
 for (i=4; i<NUM_LN; i=i+1) begin : unused_ln
-    assign hssi.a2f_rx_bitslip[i] = 1'b0;       // TODO
-    assign hssi.a2f_rx_fifo_rd_en[i] = 1'b0;    // TODO
-    assign hssi.a2f_tx_parallel_data[(i+1)*80-1:i*80] = 80'h0;
+    assign hssi[0].a2f_rx_bitslip[i] = 1'b0;       // TODO
+    assign hssi[0].a2f_rx_fifo_rd_en[i] = 1'b0;    // TODO
+    assign hssi[0].a2f_tx_parallel_data[(i+1)*80-1:i*80] = 80'h0;
 end
 endgenerate
 */

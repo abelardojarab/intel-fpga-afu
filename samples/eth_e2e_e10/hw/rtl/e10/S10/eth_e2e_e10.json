@@ -2,7 +2,7 @@
    "version": 1,
    "afu-image": {
       "power": 0,
-      "clock-frequency-high": 312.5,
+      "clock-frequency-high": 100,
       "afu-top-interface":
       {
             "class": "ccip_std_afu",
@@ -14,6 +14,13 @@
                         {
                            "clock": "uClk_usr"
                         }
+                  },
+                  {
+                     "class": "hssi",
+                     "interface": "raw_pr",
+                     "vector": true,
+                     "min-entries": 1,
+                     "max-entries": 1
                   }
                ]
       },

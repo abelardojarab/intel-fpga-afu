@@ -34,7 +34,7 @@
 module ccip_std_afu
   #(
     parameter NUM_LOCAL_MEM_BANKS = 2,
-    parameter NUM_HSSI_RAW_PR_IFCS = 2
+    parameter NUM_HSSI_RAW_PR_IFCS = 1
     )
    (
     // CCI-P Clocks and Resets
@@ -49,7 +49,7 @@ module ccip_std_afu
     input  logic        pck_cp2af_error,      // CCI-P Protocol Error Detected
 
     // Raw HSSI interface
-    //pr_hssi_if.to_fiu   hssi,
+    pr_hssi_if.to_fiu   hssi[NUM_HSSI_RAW_PR_IFCS],
 
     // CCI-P structures
     input  t_if_ccip_Rx pck_cp2af_sRx,        // CCI-P Rx Port
@@ -101,7 +101,7 @@ t_if_ccip_Tx pck_af2cp_sTx_T0;
 
 ccip_interface_reg inst_green_ccip_interface_reg
 (
-    .pClk                   (clk),
+    .pClk                   (pClk),
     .pck_cp2af_softReset_T0 (reset),
     .pck_cp2af_pwrState_T0  (pck_cp2af_pwrState), 
     .pck_cp2af_error_T0     (pck_cp2af_error),    
@@ -166,34 +166,32 @@ logic init_start;
 logic init_done;
 
 `ifdef E2E_E40
-eth_e2e_e40
+ eth_e2e_e40
 `endif
 `ifdef E2E_E10
-eth_e2e_e10
+ eth_e2e_e10
 `endif
 #(
     .NUM_HSSI_RAW_PR_IFCS(NUM_HSSI_RAW_PR_IFCS),
     .NUM_LN(4)
 )
-prz0
-(
+  prz0
+   (
     // ETH CSR ports
     .eth_ctrl_addr(eth_ctrl_addr),
     .eth_wr_data(eth_wr_data),
     .eth_rd_data(eth_rd_data),
     .csr_init_start(init_start),
     .csr_init_done(init_done),
+    .clk(clk),         // 100MHz
+    .reset(pck_cp2af_softReset_T1),
 
-    //.hssi(hssi),
-
-    .clk156(uClk_usrDiv2),              // 156
-    .clk312(uClk_usr),                  // 312
-    .reset(pck_cp2af_softReset_T1)
+    .hssi(hssi)
     );
 
 logic action_r = 0;
 
-always @(posedge uClk_usrDiv2 or posedge pck_cp2af_softReset_T1)
+always @(posedge clk or posedge pck_cp2af_softReset_T1)
 begin
 	if (pck_cp2af_softReset_T1) begin
 		action_r <= 0;
@@ -213,7 +211,7 @@ alt_sync_regs_m2 #(
 	.WIDTH(64),
 	.DEPTH(2)
 ) sy01(
-    .clk(uClk_usrDiv2),
+    .clk(clk),
 	.din({ctrl_addr,wr_data}),
 	.dout({eth_ctrl_addr_o,eth_wr_data})
 );

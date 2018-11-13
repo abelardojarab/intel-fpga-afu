@@ -83,7 +83,7 @@ endif
 
 all: pac_hssi_e10
 
-afu_json_info.h: ../hw/rtl/eth_e2e_e10.json
+afu_json_info.h: ../hw/rtl/e10/${OPAE_PLATFORM_FPGA_FAMILY}/eth_e2e_e10.json
 	$(AFU_JSON_MGR) json-info --afu-json=$^ --c-hdr=$@
 
 pac_hssi_e10: pac_hssi_e10.o fpga_hssi.so

@@ -34,7 +34,7 @@
 module ccip_std_afu
   #(
     parameter NUM_LOCAL_MEM_BANKS = 2,
-    parameter NUM_HSSI_RAW_PR_IFCS = 1
+    parameter NUM_HSSI_RAW_PR_IFCS = 2
     )
    (
     // CCI-P Clocks and Resets
@@ -172,7 +172,7 @@ logic init_done;
  eth_e2e_e10
 `endif
 #(
-    .NUM_HSSI_RAW_PR_IFCS(NUM_HSSI_RAW_PR_IFCS),
+    .NUM_HSSI_RAW_PR_IFCS(1),
     .NUM_LN(4)
 )
   prz0
@@ -185,8 +185,12 @@ logic init_done;
     .csr_init_done(init_done),
     .clk(clk),         // 100MHz
     .reset(pck_cp2af_softReset_T1),
-
-    .hssi(hssi)
+    `ifdef USE_QSFP0
+    .hssi(hssi[0])
+     `endif
+     `ifdef USE_QSFP1
+    .hssi(hssi[1])
+     `endif
     );
 
 logic action_r = 0;

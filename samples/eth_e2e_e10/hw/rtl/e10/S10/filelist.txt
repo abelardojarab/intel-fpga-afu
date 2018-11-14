@@ -1,4 +1,4 @@
-+define+S10
++define+QSFP0
 ./hsl_files/alt_and3t0.v
 ./hsl_files/alt_and3t1.v
 ./hsl_files/alt_and4t0.v
@@ -33,27 +33,6 @@
 ./hsl_files/alt_sync20m.v
 ./hsl_files/alt_sync_regs_m2.v
 ./hsl_files/alt_times_1pt8.v
-
-#./address_decoder/address_decode/address_decode.qip
-#./address_decoder/ip/address_decode/address_decode_clk_csr/address_decode_clk_csr.qip
-#./address_decoder/ip/address_decode/address_decode_eth_gen_mon/address_decode_eth_gen_mon.qip
-#./address_decoder/address_decode/altera_mm_interconnect_181/synth/address_decode_altera_mm_interconnect_181_45dh3vi.v
-#./address_decoder/ip/address_decode/address_decode_merlin_master_translator_0/address_decode_merlin_master_translator_0.qip
-#./address_decoder/ip/address_decode/address_decode_mm_to_mac/address_decode_mm_to_mac.qip
-#./address_decoder/ip/address_decode/address_decode_mm_to_phy/address_decode_mm_to_phy.qip
-#./address_decoder/ip/address_decode/address_decode_rx_sc_fifo/address_decode_rx_sc_fifo.qip
-#./address_decoder/ip/address_decode/address_decode_rx_xcvr_clk/address_decode_rx_xcvr_clk.qip
-#./address_decoder/ip/address_decode/address_decode_tx_sc_fifo/address_decode_tx_sc_fifo.qip
-#./address_decoder/ip/address_decode/address_decode_tx_xcvr_clk/address_decode_tx_xcvr_clk.qip
-#./address_decoder/ip/address_decode/address_decode_tx_xcvr_half_clk/address_decode_tx_xcvr_half_clk.qip
-#./eth_traffic_controller/crc32/crc32.qip
-#./eth_traffic_controller/eth_std_traffic_controller_top.qip
-#./fifo_dcfifo/dc_fifo/dc_fifo.qip
-#./fifo_scfifo/sc_fifo/sc_fifo.qip
-#./fifo_scfifo/ip/sc_fifo/sc_fifo_rx_sc_fifo/sc_fifo_rx_sc_fifo.qip
-#./fifo_scfifo/ip/sc_fifo/sc_fifo_tx_sc_fifo/sc_fifo_tx_sc_fifo.qip
-#./mac/altera_eth_10g_mac/altera_eth_10g_mac.qip
-#./pll_mpll/pll/pll.qip
 
 ./address_decoder/ip/address_decode/address_decode_clk_csr.ip
 ./address_decoder/ip/address_decode/address_decode_eth_gen_mon.ip

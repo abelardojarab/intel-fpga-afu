@@ -28,7 +28,7 @@
 // ecustodi - Feb/2018 modifications for DCP testing
 
 module eth_e2e_e10 #(
-    parameter NUM_HSSI_RAW_PR_IFCS = 2,
+    parameter NUM_HSSI_RAW_PR_IFCS = 1,
     parameter NUM_LN = 4
 )(
 	pr_hssi_if.to_fiu   hssi[NUM_HSSI_RAW_PR_IFCS],
@@ -52,7 +52,6 @@ localparam NUM_ETH = NUM_HSSI_RAW_PR_IFCS*NUM_LN;
 reg [31:0] scratch = {GBS_ID, GBS_VER};
 reg [31:0] prmgmt_dout_r = 32'h0;
 
-// TODO
 reg [NUM_ETH-1:0] sloop;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -129,17 +128,24 @@ generate
         wire           tx_enh_data_valid;
         wire err_ins = 1'b0;
 
-        // TODO: hssi[0] if lanes 0-3, hssi[1] if lanes 4-7
-        assign xgmii_rx_control[3:0] = hssi[0].f2a_rx_parallel_data [(i*80)+35:(i*80)+32];
-        assign xgmii_rx_control[7:4] = hssi[0].f2a_rx_parallel_data [(i*80)+77:(i*80)+72];     // 9th and 10th bits unused
-        assign xgmii_rx_data[31:0] = hssi[0].f2a_rx_parallel_data [(i*80)+31:(i*80)];
-        assign xgmii_rx_data[63:32] = hssi[0].f2a_rx_parallel_data [(i*80)+71:(i*80)+40];
-        assign rx_enh_data_valid = hssi[0].f2a_rx_parallel_data [(i*80)+36];
-        assign hssi[0].a2f_tx_parallel_data [(i*80)+35:(i*80)+32] = xgmii_tx_control[3:0];
-        assign hssi[0].a2f_tx_parallel_data [(i*80)+77:(i*80)+72] = xgmii_tx_control[7:4];     // 9th bit unused
-        assign hssi[0].a2f_tx_parallel_data [(i*80)+31:(i*80)] = xgmii_tx_data[31:0];
-        assign hssi[0].a2f_tx_parallel_data [(i*80)+71:(i*80)+40] = xgmii_tx_data[63:32];
-        assign hssi[0].a2f_tx_parallel_data [(i*80)+36] = tx_enh_data_valid;
+        if (!sloop[i])
+        begin
+            // TODO: hssi[0] if lanes 0-3, hssi[1] if lanes 4-7
+            assign xgmii_rx_control[3:0] = hssi[0].f2a_rx_parallel_data [(i*80)+35:(i*80)+32];
+            assign xgmii_rx_control[7:4] = hssi[0].f2a_rx_parallel_data [(i*80)+77:(i*80)+72];     // 9th and 10th bits unused
+            assign xgmii_rx_data[31:0] = hssi[0].f2a_rx_parallel_data [(i*80)+31:(i*80)];
+            assign xgmii_rx_data[63:32] = hssi[0].f2a_rx_parallel_data [(i*80)+71:(i*80)+40];
+            assign rx_enh_data_valid = hssi[0].f2a_rx_parallel_data [(i*80)+36];
+            assign hssi[0].a2f_tx_parallel_data [(i*80)+35:(i*80)+32] = xgmii_tx_control[3:0];
+            assign hssi[0].a2f_tx_parallel_data [(i*80)+77:(i*80)+72] = xgmii_tx_control[7:4];     // 9th bit unused
+            assign hssi[0].a2f_tx_parallel_data [(i*80)+31:(i*80)] = xgmii_tx_data[31:0];
+            assign hssi[0].a2f_tx_parallel_data [(i*80)+71:(i*80)+40] = xgmii_tx_data[63:32];
+            assign hssi[0].a2f_tx_parallel_data [(i*80)+36] = tx_enh_data_valid;
+        end else begin
+             assign xgmii_rx_control = xgmii_tx_control;
+             assign xgmii_rx_data    = xgmii_tx_data;
+             assign rx_enh_data_valid = tx_enh_data_valid;
+        end
 
         reg         csr_read = 1'b0;
         reg         csr_write = 1'b0;

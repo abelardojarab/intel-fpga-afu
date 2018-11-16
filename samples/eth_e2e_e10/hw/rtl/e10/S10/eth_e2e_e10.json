@@ -20,7 +20,7 @@
                      "interface": "raw_pr",
                      "vector": true,
                      "min-entries": 1,
-                     "max-entries": 1
+                     "max-entries": 2
                   }
                ]
       },

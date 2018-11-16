@@ -101,7 +101,7 @@ t_if_ccip_Tx pck_af2cp_sTx_T0;
 
 ccip_interface_reg inst_green_ccip_interface_reg
 (
-    .pClk                   (pClk),
+    .pClk                   (clk),
     .pck_cp2af_softReset_T0 (reset),
     .pck_cp2af_pwrState_T0  (pck_cp2af_pwrState), 
     .pck_cp2af_error_T0     (pck_cp2af_error),    
@@ -141,7 +141,6 @@ begin
     pck_af2cp_sTx_T0.c2.mmioRdValid   = csr2cp_MmioDout_v;
 end
 
-
 //------------------------------------------------------------------------------
 // CSR registers 
 //------------------------------------------------------------------------------
@@ -149,7 +148,6 @@ wire [15:0] csr_addr_4B = cp2csr_MmioHdr.address;
 wire [14:0] csr_addr_8B = cp2csr_MmioHdr.address[15:1];
 
 t_ccip_mmioData csr_rd_data;
-
 
 //------------------------------------------------------------------------------
 // Instantiate an Ethernet MAC
@@ -172,7 +170,11 @@ logic init_done;
  eth_e2e_e10
 `endif
 #(
+    `ifndef USE_BOTH
     .NUM_HSSI_RAW_PR_IFCS(1),
+    `else
+    .NUM_HSSI_RAW_PR_IFCS(2),
+    `endif
     .NUM_LN(4)
 )
   prz0
@@ -187,9 +189,10 @@ logic init_done;
     .reset(pck_cp2af_softReset_T1),
     `ifdef USE_QSFP0
     .hssi(hssi[0])
-     `endif
-     `ifdef USE_QSFP1
+     `elsif USE_QSFP1
     .hssi(hssi[1])
+     `elsif USE_BOTH
+    .hssi(hssi)
      `endif
     );
 

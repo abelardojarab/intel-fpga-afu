@@ -1,4 +1,4 @@
-+define+QSFP0
++define+USE_QSFP0
 ./hsl_files/alt_and3t0.v
 ./hsl_files/alt_and3t1.v
 ./hsl_files/alt_and4t0.v
@@ -90,3 +90,4 @@ altera_eth_10g_mac_base_r.v
 eth_e2e_e10.json
 ccip_std_afu.sv
 eth_e2e_e10.v
+e2e_e10.sdc

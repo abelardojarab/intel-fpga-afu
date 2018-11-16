@@ -289,5 +289,5 @@ int main(int argc, char *argv[]) {
 
 out:
 	fpgaDestroyToken(&afc_tok);
-	return ret;
+	return res;
 }

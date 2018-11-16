@@ -51,8 +51,6 @@ module eth_e2e_e10 #(
 localparam [23:0] GBS_ID = "E2E";
 localparam [7:0] GBS_VER = 8'h10;
 
-localparam NUM_ETH = NUM_HSSI_RAW_PR_IFCS*NUM_LN;
-
 reg [31:0] scratch = {GBS_ID, GBS_VER};
 reg [31:0] prmgmt_dout_r = 32'h0;
 
@@ -105,50 +103,54 @@ wire  [0:0] status_read_timeout;
 reg csr_rst = 1'b1;
 reg rx_rst = 1'b1;
 reg tx_rst = 1'b1;
-wire [NUM_ETH-1:0] tx_ready_export;
-wire [NUM_ETH-1:0] rx_ready_export;
+wire [NUM_LN-1:0] tx_ready_export;
+wire [NUM_LN-1:0] rx_ready_export;
 reg [2:0] port_sel = 3'b0;
 
-wire [NUM_ETH*32-1:0] all_csr_rdata;
+wire [NUM_LN*32-1:0] all_csr_rdata;
 
 ////////////////////////////////////
 // Ethernet MAC 
 ////////////////////////////////////
-reg [NUM_ETH-1:0] sloop;
-reg [NUM_ETH-1:0] sloop_156;
-reg [NUM_ETH-1:0] f2a_tx_ready_100;
-reg [NUM_ETH-1:0] f2a_rx_ready_100;
+reg [NUM_LN-1:0] sloop;
+reg [NUM_LN-1:0] sloop_156;
 
-alt_sync_regs_m2 #(
-    .WIDTH(NUM_ETH),
-    .DEPTH(2)
-) sync_sloop (
-    .clk(hssi.f2a_rx_parallel_clk_x1[0]),
-    .din(sloop),
-    .dout(sloop_156)
-);
+`ifndef USE_BOTH
+    alt_sync_regs_m2 #(
+        .WIDTH(NUM_LN),
+        .DEPTH(2)
+    ) sync_sloop (
+        .clk(hssi.f2a_rx_parallel_clk_x1[0]),
+        .din(sloop),
+        .dout(sloop_156)
+    );
 
-alt_sync_regs_m2 #(
-    .WIDTH(NUM_ETH),
-    .DEPTH(2)
-) sync_tx_ready (
-    .clk(clk),
-    .din(hssi.f2a_tx_ready),
-    .dout(f2a_tx_ready_100)
-);
+    reg [NUM_LN-1:0] f2a_tx_ready_100;
+    reg [NUM_LN-1:0] f2a_rx_ready_100;
+    alt_sync_regs_m2 #(
+        .WIDTH(NUM_LN),
+        .DEPTH(2)
+    ) sync_tx_ready (
+        .clk(clk),
+        .din(hssi.f2a_tx_ready),
+        .dout(f2a_tx_ready_100)
+    );
 
-alt_sync_regs_m2 #(
-    .WIDTH(NUM_ETH),
-    .DEPTH(2)
-) sync_rx_ready (
-    .clk(clk),
-    .din(hssi.f2a_rx_ready),
-    .dout(f2a_rx_ready_100)
-);
+    alt_sync_regs_m2 #(
+        .WIDTH(NUM_LN),
+        .DEPTH(2)
+    ) sync_rx_ready (
+        .clk(clk),
+        .din(hssi.f2a_rx_ready),
+        .dout(f2a_rx_ready_100)
+    );
+`else
+    // TODO: synchronize for both QSFP
+`endif
 
-genvar i;
+genvar i, j;
 generate
-    for (i=0; i<NUM_ETH; i=i+1) begin : lp0
+    for (i=0; i<NUM_LN; i=i+1) begin : lp0
         reg [7:0]     xgmii_tx_control;
         reg [63:0]    xgmii_tx_data;
         reg [7:0]     xgmii_rx_control;
@@ -158,19 +160,21 @@ generate
         reg err_ins = 1'b0;
 
         always @(*) begin
-            if (!sloop_156[i]) begin
-                // TODO: QSFP1: hssi[1] if lanes 4-7                
-                // TODO: BOTH: hssi[0] if lanes 0-3, hssi[1] if lanes 4-7
-                xgmii_rx_control[3:0] = hssi.f2a_rx_parallel_data [(i*80)+35:(i*80)+32];
-                xgmii_rx_control[7:4] = hssi.f2a_rx_parallel_data [(i*80)+77:(i*80)+72];     // 9th and 10th bits unused
-                xgmii_rx_data[31:0] = hssi.f2a_rx_parallel_data [(i*80)+31:(i*80)];
-                xgmii_rx_data[63:32] = hssi.f2a_rx_parallel_data [(i*80)+71:(i*80)+40];
-                rx_enh_data_valid = hssi.f2a_rx_parallel_data [(i*80)+36];
-                hssi.a2f_tx_parallel_data [(i*80)+35:(i*80)+32] = xgmii_tx_control[3:0];
-                hssi.a2f_tx_parallel_data [(i*80)+77:(i*80)+72] = xgmii_tx_control[7:4];     // 9th bit unused
-                hssi.a2f_tx_parallel_data [(i*80)+31:(i*80)] = xgmii_tx_data[31:0];
-                hssi.a2f_tx_parallel_data [(i*80)+71:(i*80)+40] = xgmii_tx_data[63:32];
-                hssi.a2f_tx_parallel_data [(i*80)+36] = tx_enh_data_valid;
+            if (!sloop_156[i]) begin              
+                `ifndef USE_BOTH
+                    xgmii_rx_control[3:0] = hssi.f2a_rx_parallel_data [(i*80)+35:(i*80)+32];
+                    xgmii_rx_control[7:4] = hssi.f2a_rx_parallel_data [(i*80)+77:(i*80)+72];     // 9th and 10th bits unused
+                    xgmii_rx_data[31:0] = hssi.f2a_rx_parallel_data [(i*80)+31:(i*80)];
+                    xgmii_rx_data[63:32] = hssi.f2a_rx_parallel_data [(i*80)+71:(i*80)+40];
+                    rx_enh_data_valid = hssi.f2a_rx_parallel_data [(i*80)+36];
+                    hssi.a2f_tx_parallel_data [(i*80)+35:(i*80)+32] = xgmii_tx_control[3:0];
+                    hssi.a2f_tx_parallel_data [(i*80)+77:(i*80)+72] = xgmii_tx_control[7:4];     // 9th bit unused
+                    hssi.a2f_tx_parallel_data [(i*80)+31:(i*80)] = xgmii_tx_data[31:0];
+                    hssi.a2f_tx_parallel_data [(i*80)+71:(i*80)+40] = xgmii_tx_data[63:32];
+                    hssi.a2f_tx_parallel_data [(i*80)+36] = tx_enh_data_valid;
+                `else
+                    // TODO: hssi[0] for lanes 0-3 and hssi[1] for lanes 4-7, Verilog doesn't support nested for loops
+                `endif
             end else begin
                 xgmii_rx_control = xgmii_tx_control;
                 xgmii_rx_data    = xgmii_tx_data;
@@ -190,12 +194,17 @@ generate
             .csr_rst_n(!csr_rst),
             .tx_rst_n((!tx_rst)&&(f2a_tx_ready_100[i])),
             .rx_rst_n((!rx_rst)&&(f2a_rx_ready_100[i])),
-
+            `ifndef USE_BOTH
             .tx_clk_312(hssi.f2a_tx_parallel_clk_x2[0]),
             .rx_clk_312(hssi.f2a_rx_parallel_clk_x2[0]),
             .tx_clk_156(hssi.f2a_tx_parallel_clk_x1[0]),
             .rx_clk_156(hssi.f2a_rx_parallel_clk_x1[0]),
-
+            `else
+            .tx_clk_312(hssi[j].f2a_tx_parallel_clk_x2[0]),
+            .rx_clk_312(hssi[j].f2a_rx_parallel_clk_x2[0]),
+            .tx_clk_156(hssi[j].f2a_tx_parallel_clk_x1[0]),
+            .rx_clk_156(hssi[j].f2a_rx_parallel_clk_x1[0]),
+            `endif
             // serdes data pipe
             .xgmii_tx_valid(tx_enh_data_valid),
             .xgmii_tx_control(xgmii_tx_control),
@@ -238,7 +247,6 @@ generate
             csr_writedata <= status_writedata;
         end
     end
-
 endgenerate
 
 wire [31:0] status_readdata_r;
@@ -285,7 +293,7 @@ always @(posedge clk) begin
             4'h2 : {status_read,status_write,status_addr} <= prmgmt_din[17:0];
             4'h3 : status_writedata <= prmgmt_din;
             4'h5 : port_sel <= prmgmt_din[2:0];
-            4'h6 : sloop <= prmgmt_din[NUM_ETH-1:0];
+            4'h6 : sloop <= prmgmt_din[NUM_LN-1:0];
             //4'h8 : {i2c_inst_sel_r,i2c_ctrl_wdata_r} <= prmgmt_din[17:0];
             //4'hd : hssi.a2f_prmgmt_fatal_err <= prmgmt_din[1];
         endcase

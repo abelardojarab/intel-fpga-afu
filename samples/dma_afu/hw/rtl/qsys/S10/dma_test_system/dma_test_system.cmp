@@ -1,35 +1,5 @@
 	component dma_test_system is
 		port (
-			ccip_avmm_mmio_waitrequest           : out std_logic;                                         -- waitrequest
-			ccip_avmm_mmio_readdata              : out std_logic_vector(63 downto 0);                     -- readdata
-			ccip_avmm_mmio_readdatavalid         : out std_logic;                                         -- readdatavalid
-			ccip_avmm_mmio_burstcount            : in  std_logic_vector(0 downto 0)   := (others => 'X'); -- burstcount
-			ccip_avmm_mmio_writedata             : in  std_logic_vector(63 downto 0)  := (others => 'X'); -- writedata
-			ccip_avmm_mmio_address               : in  std_logic_vector(17 downto 0)  := (others => 'X'); -- address
-			ccip_avmm_mmio_write                 : in  std_logic                      := 'X';             -- write
-			ccip_avmm_mmio_read                  : in  std_logic                      := 'X';             -- read
-			ccip_avmm_mmio_byteenable            : in  std_logic_vector(7 downto 0)   := (others => 'X'); -- byteenable
-			ccip_avmm_mmio_debugaccess           : in  std_logic                      := 'X';             -- debugaccess
-			ccip_avmm_requestor_rd_waitrequest   : in  std_logic                      := 'X';             -- waitrequest
-			ccip_avmm_requestor_rd_readdata      : in  std_logic_vector(511 downto 0) := (others => 'X'); -- readdata
-			ccip_avmm_requestor_rd_readdatavalid : in  std_logic                      := 'X';             -- readdatavalid
-			ccip_avmm_requestor_rd_burstcount    : out std_logic_vector(2 downto 0);                      -- burstcount
-			ccip_avmm_requestor_rd_writedata     : out std_logic_vector(511 downto 0);                    -- writedata
-			ccip_avmm_requestor_rd_address       : out std_logic_vector(47 downto 0);                     -- address
-			ccip_avmm_requestor_rd_write         : out std_logic;                                         -- write
-			ccip_avmm_requestor_rd_read          : out std_logic;                                         -- read
-			ccip_avmm_requestor_rd_byteenable    : out std_logic_vector(63 downto 0);                     -- byteenable
-			ccip_avmm_requestor_rd_debugaccess   : out std_logic;                                         -- debugaccess
-			ccip_avmm_requestor_wr_waitrequest   : in  std_logic                      := 'X';             -- waitrequest
-			ccip_avmm_requestor_wr_readdata      : in  std_logic_vector(511 downto 0) := (others => 'X'); -- readdata
-			ccip_avmm_requestor_wr_readdatavalid : in  std_logic                      := 'X';             -- readdatavalid
-			ccip_avmm_requestor_wr_burstcount    : out std_logic_vector(2 downto 0);                      -- burstcount
-			ccip_avmm_requestor_wr_writedata     : out std_logic_vector(511 downto 0);                    -- writedata
-			ccip_avmm_requestor_wr_address       : out std_logic_vector(48 downto 0);                     -- address
-			ccip_avmm_requestor_wr_write         : out std_logic;                                         -- write
-			ccip_avmm_requestor_wr_read          : out std_logic;                                         -- read
-			ccip_avmm_requestor_wr_byteenable    : out std_logic_vector(63 downto 0);                     -- byteenable
-			ccip_avmm_requestor_wr_debugaccess   : out std_logic;                                         -- debugaccess
 			ddr4a_clk_clk                        : in  std_logic                      := 'X';             -- clk
 			ddr4a_master_waitrequest             : in  std_logic                      := 'X';             -- waitrequest
 			ddr4a_master_readdata                : in  std_logic_vector(511 downto 0) := (others => 'X'); -- readdata
@@ -74,8 +44,38 @@
 			ddr4d_master_read                    : out std_logic;                                         -- read
 			ddr4d_master_byteenable              : out std_logic_vector(63 downto 0);                     -- byteenable
 			ddr4d_master_debugaccess             : out std_logic;                                         -- debugaccess
-			dma_irq_irq                          : out std_logic;                                         -- irq
+			ccip_avmm_mmio_waitrequest           : out std_logic;                                         -- waitrequest
+			ccip_avmm_mmio_readdata              : out std_logic_vector(63 downto 0);                     -- readdata
+			ccip_avmm_mmio_readdatavalid         : out std_logic;                                         -- readdatavalid
+			ccip_avmm_mmio_burstcount            : in  std_logic_vector(0 downto 0)   := (others => 'X'); -- burstcount
+			ccip_avmm_mmio_writedata             : in  std_logic_vector(63 downto 0)  := (others => 'X'); -- writedata
+			ccip_avmm_mmio_address               : in  std_logic_vector(17 downto 0)  := (others => 'X'); -- address
+			ccip_avmm_mmio_write                 : in  std_logic                      := 'X';             -- write
+			ccip_avmm_mmio_read                  : in  std_logic                      := 'X';             -- read
+			ccip_avmm_mmio_byteenable            : in  std_logic_vector(7 downto 0)   := (others => 'X'); -- byteenable
+			ccip_avmm_mmio_debugaccess           : in  std_logic                      := 'X';             -- debugaccess
 			host_clk_clk                         : in  std_logic                      := 'X';             -- clk
+			dma_irq_irq                          : out std_logic;                                         -- irq
+			ccip_avmm_requestor_rd_waitrequest   : in  std_logic                      := 'X';             -- waitrequest
+			ccip_avmm_requestor_rd_readdata      : in  std_logic_vector(511 downto 0) := (others => 'X'); -- readdata
+			ccip_avmm_requestor_rd_readdatavalid : in  std_logic                      := 'X';             -- readdatavalid
+			ccip_avmm_requestor_rd_burstcount    : out std_logic_vector(2 downto 0);                      -- burstcount
+			ccip_avmm_requestor_rd_writedata     : out std_logic_vector(511 downto 0);                    -- writedata
+			ccip_avmm_requestor_rd_address       : out std_logic_vector(47 downto 0);                     -- address
+			ccip_avmm_requestor_rd_write         : out std_logic;                                         -- write
+			ccip_avmm_requestor_rd_read          : out std_logic;                                         -- read
+			ccip_avmm_requestor_rd_byteenable    : out std_logic_vector(63 downto 0);                     -- byteenable
+			ccip_avmm_requestor_rd_debugaccess   : out std_logic;                                         -- debugaccess
+			ccip_avmm_requestor_wr_waitrequest   : in  std_logic                      := 'X';             -- waitrequest
+			ccip_avmm_requestor_wr_readdata      : in  std_logic_vector(511 downto 0) := (others => 'X'); -- readdata
+			ccip_avmm_requestor_wr_readdatavalid : in  std_logic                      := 'X';             -- readdatavalid
+			ccip_avmm_requestor_wr_burstcount    : out std_logic_vector(2 downto 0);                      -- burstcount
+			ccip_avmm_requestor_wr_writedata     : out std_logic_vector(511 downto 0);                    -- writedata
+			ccip_avmm_requestor_wr_address       : out std_logic_vector(48 downto 0);                     -- address
+			ccip_avmm_requestor_wr_write         : out std_logic;                                         -- write
+			ccip_avmm_requestor_wr_read          : out std_logic;                                         -- read
+			ccip_avmm_requestor_wr_byteenable    : out std_logic_vector(63 downto 0);                     -- byteenable
+			ccip_avmm_requestor_wr_debugaccess   : out std_logic;                                         -- debugaccess
 			reset_reset                          : in  std_logic                      := 'X'              -- reset
 		);
 	end component dma_test_system;

@@ -281,8 +281,8 @@
    }
 }
 ]]></parameter>
- <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
- <parameter name="device" value="1SX280HN3F43E2VGS1" />
+ <parameter name="clockCrossingAdapter" value="FIFO" />
+ <parameter name="device" value="1SX280HN2F43E2VG" />
  <parameter name="deviceFamily" value="Stratix 10" />
  <parameter name="deviceSpeedGrade" value="2" />
  <parameter name="fabricMode" value="QSYS" />
@@ -292,7 +292,7 @@
  <parameter name="hdlLanguage" value="VERILOG" />
  <parameter name="hideFromIPCatalog" value="false" />
  <parameter name="lockedInterfaceDefinition" value="" />
- <parameter name="maxAdditionalLatency" value="1" />
+ <parameter name="maxAdditionalLatency" value="2" />
  <parameter name="sopcBorderPoints" value="false" />
  <parameter name="systemHash" value="0" />
  <parameter name="systemInfos"><![CDATA[<systemInfosDefinition>
@@ -4303,19 +4303,19 @@
     <hdlLibraryName>dma_test_system_clock_bridge_3</hdlLibraryName>
     <fileSets>
         <fileSet>
-            <fileSetName>ddr4a_clk_4</fileSetName>
+            <fileSetName>dma_test_system_clock_bridge_3</fileSetName>
             <fileSetFixedName>dma_test_system_clock_bridge_3</fileSetFixedName>
             <fileSetKind>QUARTUS_SYNTH</fileSetKind>
             <fileSetFiles/>
         </fileSet>
         <fileSet>
-            <fileSetName>ddr4a_clk_4</fileSetName>
+            <fileSetName>dma_test_system_clock_bridge_3</fileSetName>
             <fileSetFixedName>dma_test_system_clock_bridge_3</fileSetFixedName>
             <fileSetKind>SIM_VERILOG</fileSetKind>
             <fileSetFiles/>
         </fileSet>
         <fileSet>
-            <fileSetName>ddr4a_clk_4</fileSetName>
+            <fileSetName>dma_test_system_clock_bridge_3</fileSetName>
             <fileSetFixedName>dma_test_system_clock_bridge_3</fileSetFixedName>
             <fileSetKind>SIM_VHDL</fileSetKind>
             <fileSetFiles/>
@@ -5025,19 +5025,19 @@
     <hdlLibraryName>dma_test_system_mm_clock_crossing_bridge_3</hdlLibraryName>
     <fileSets>
         <fileSet>
-            <fileSetName>ddr4a_clk_cross_host_2</fileSetName>
+            <fileSetName>dma_test_system_mm_clock_crossing_bridge_3</fileSetName>
             <fileSetFixedName>dma_test_system_mm_clock_crossing_bridge_3</fileSetFixedName>
             <fileSetKind>QUARTUS_SYNTH</fileSetKind>
             <fileSetFiles/>
         </fileSet>
         <fileSet>
-            <fileSetName>ddr4a_clk_cross_host_2</fileSetName>
+            <fileSetName>dma_test_system_mm_clock_crossing_bridge_3</fileSetName>
             <fileSetFixedName>dma_test_system_mm_clock_crossing_bridge_3</fileSetFixedName>
             <fileSetKind>SIM_VERILOG</fileSetKind>
             <fileSetFiles/>
         </fileSet>
         <fileSet>
-            <fileSetName>ddr4a_clk_cross_host_2</fileSetName>
+            <fileSetName>dma_test_system_mm_clock_crossing_bridge_3</fileSetName>
             <fileSetFixedName>dma_test_system_mm_clock_crossing_bridge_3</fileSetFixedName>
             <fileSetKind>SIM_VHDL</fileSetKind>
             <fileSetFiles/>
@@ -5684,19 +5684,19 @@
     <hdlLibraryName>ddr4a_mm_bridge_1</hdlLibraryName>
     <fileSets>
         <fileSet>
-            <fileSetName>ddr4a_mm_bridge_2</fileSetName>
+            <fileSetName>ddr4a_mm_bridge_1</fileSetName>
             <fileSetFixedName>ddr4a_mm_bridge_1</fileSetFixedName>
             <fileSetKind>QUARTUS_SYNTH</fileSetKind>
             <fileSetFiles/>
         </fileSet>
         <fileSet>
-            <fileSetName>ddr4a_mm_bridge_2</fileSetName>
+            <fileSetName>ddr4a_mm_bridge_1</fileSetName>
             <fileSetFixedName>ddr4a_mm_bridge_1</fileSetFixedName>
             <fileSetKind>SIM_VERILOG</fileSetKind>
             <fileSetFiles/>
         </fileSet>
         <fileSet>
-            <fileSetName>ddr4a_mm_bridge_2</fileSetName>
+            <fileSetName>ddr4a_mm_bridge_1</fileSetName>
             <fileSetFixedName>ddr4a_mm_bridge_1</fileSetFixedName>
             <fileSetKind>SIM_VHDL</fileSetKind>
             <fileSetFiles/>
@@ -5845,19 +5845,19 @@
     <hdlLibraryName>dma_test_system_clock_bridge_4</hdlLibraryName>
     <fileSets>
         <fileSet>
-            <fileSetName>ddr4a_clk_5</fileSetName>
+            <fileSetName>dma_test_system_clock_bridge_4</fileSetName>
             <fileSetFixedName>dma_test_system_clock_bridge_4</fileSetFixedName>
             <fileSetKind>QUARTUS_SYNTH</fileSetKind>
             <fileSetFiles/>
         </fileSet>
         <fileSet>
-            <fileSetName>ddr4a_clk_5</fileSetName>
+            <fileSetName>dma_test_system_clock_bridge_4</fileSetName>
             <fileSetFixedName>dma_test_system_clock_bridge_4</fileSetFixedName>
             <fileSetKind>SIM_VERILOG</fileSetKind>
             <fileSetFiles/>
         </fileSet>
         <fileSet>
-            <fileSetName>ddr4a_clk_5</fileSetName>
+            <fileSetName>dma_test_system_clock_bridge_4</fileSetName>
             <fileSetFixedName>dma_test_system_clock_bridge_4</fileSetFixedName>
             <fileSetKind>SIM_VHDL</fileSetKind>
             <fileSetFiles/>
@@ -6513,7 +6513,7 @@
     </boundary>
     <originalModuleInfo>
         <className>altera_avalon_mm_clock_crossing_bridge</className>
-        <version>18.0</version>
+        <version>18.1</version>
         <displayName>Avalon-MM Clock Crossing Bridge Intel FPGA IP</displayName>
     </originalModuleInfo>
     <systemInfoParameterDescriptors>
@@ -6567,19 +6567,19 @@
     <hdlLibraryName>dma_test_system_mm_clock_crossing_bridge_4</hdlLibraryName>
     <fileSets>
         <fileSet>
-            <fileSetName>ddr4a_clk_cross_host_3</fileSetName>
+            <fileSetName>dma_test_system_mm_clock_crossing_bridge_4</fileSetName>
             <fileSetFixedName>dma_test_system_mm_clock_crossing_bridge_4</fileSetFixedName>
             <fileSetKind>QUARTUS_SYNTH</fileSetKind>
             <fileSetFiles/>
         </fileSet>
         <fileSet>
-            <fileSetName>ddr4a_clk_cross_host_3</fileSetName>
+            <fileSetName>dma_test_system_mm_clock_crossing_bridge_4</fileSetName>
             <fileSetFixedName>dma_test_system_mm_clock_crossing_bridge_4</fileSetFixedName>
             <fileSetKind>SIM_VERILOG</fileSetKind>
             <fileSetFiles/>
         </fileSet>
         <fileSet>
-            <fileSetName>ddr4a_clk_cross_host_3</fileSetName>
+            <fileSetName>dma_test_system_mm_clock_crossing_bridge_4</fileSetName>
             <fileSetFixedName>dma_test_system_mm_clock_crossing_bridge_4</fileSetFixedName>
             <fileSetKind>SIM_VHDL</fileSetKind>
             <fileSetFiles/>
@@ -7226,19 +7226,19 @@
     <hdlLibraryName>ddr4a_mm_bridge_2</hdlLibraryName>
     <fileSets>
         <fileSet>
-            <fileSetName>ddr4a_mm_bridge_3</fileSetName>
+            <fileSetName>ddr4a_mm_bridge_2</fileSetName>
             <fileSetFixedName>ddr4a_mm_bridge_2</fileSetFixedName>
             <fileSetKind>QUARTUS_SYNTH</fileSetKind>
             <fileSetFiles/>
         </fileSet>
         <fileSet>
-            <fileSetName>ddr4a_mm_bridge_3</fileSetName>
+            <fileSetName>ddr4a_mm_bridge_2</fileSetName>
             <fileSetFixedName>ddr4a_mm_bridge_2</fileSetFixedName>
             <fileSetKind>SIM_VERILOG</fileSetKind>
             <fileSetFiles/>
         </fileSet>
         <fileSet>
-            <fileSetName>ddr4a_mm_bridge_3</fileSetName>
+            <fileSetName>ddr4a_mm_bridge_2</fileSetName>
             <fileSetFixedName>ddr4a_mm_bridge_2</fileSetFixedName>
             <fileSetKind>SIM_VHDL</fileSetKind>
             <fileSetFiles/>
@@ -8490,6 +8490,41 @@
                 </parameters>
             </interface>
             <interface>
+                <name>reset</name>
+                <type>reset</type>
+                <isStart>false</isStart>
+                <ports>
+                    <port>
+                        <name>reset_reset_n</name>
+                        <role>reset_n</role>
+                        <direction>Input</direction>
+                        <width>1</width>
+                        <lowerBound>0</lowerBound>
+                        <vhdlType>STD_LOGIC</vhdlType>
+                    </port>
+                </ports>
+                <assignments>
+                    <assignmentValueMap>
+                        <entry>
+                            <key>qsys.ui.export_name</key>
+                            <value>reset</value>
+                        </entry>
+                    </assignmentValueMap>
+                </assignments>
+                <parameters>
+                    <parameterValueMap>
+                        <entry>
+                            <key>associatedClock</key>
+                            <value>clk</value>
+                        </entry>
+                        <entry>
+                            <key>synchronousEdges</key>
+                            <value>BOTH</value>
+                        </entry>
+                    </parameterValueMap>
+                </parameters>
+            </interface>
+            <interface>
                 <name>csr</name>
                 <type>avalon</type>
                 <isStart>false</isStart>
@@ -9495,41 +9530,6 @@
                     </parameterValueMap>
                 </parameters>
             </interface>
-            <interface>
-                <name>reset</name>
-                <type>reset</type>
-                <isStart>false</isStart>
-                <ports>
-                    <port>
-                        <name>reset_reset_n</name>
-                        <role>reset_n</role>
-                        <direction>Input</direction>
-                        <width>1</width>
-                        <lowerBound>0</lowerBound>
-                        <vhdlType>STD_LOGIC</vhdlType>
-                    </port>
-                </ports>
-                <assignments>
-                    <assignmentValueMap>
-                        <entry>
-                            <key>qsys.ui.export_name</key>
-                            <value>reset</value>
-                        </entry>
-                    </assignmentValueMap>
-                </assignments>
-                <parameters>
-                    <parameterValueMap>
-                        <entry>
-                            <key>associatedClock</key>
-                            <value>clk</value>
-                        </entry>
-                        <entry>
-                            <key>synchronousEdges</key>
-                            <value>BOTH</value>
-                        </entry>
-                    </parameterValueMap>
-                </parameters>
-            </interface>
         </interfaces>
     </boundary>
     <originalModuleInfo>
@@ -9560,7 +9560,7 @@
                 <systemInfotype>RESET_DOMAIN</systemInfotype>
             </descriptor>
             <descriptor>
-                <parameterDefaultValue>1SX280HN3F43E2VGS1</parameterDefaultValue>
+                <parameterDefaultValue>1SX280HN2F43E2VG</parameterDefaultValue>
                 <parameterName>AUTO_DEVICE</parameterName>
                 <parameterType>java.lang.String</parameterType>
                 <systemInfotype>DEVICE</systemInfotype>
@@ -9929,248 +9929,248 @@
  </module>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="dma_test_system_mm_bridge_0.m0"
    end="dma_test_system_afu_id_avmm_slave_0.afu_cfg_slave">
   <parameter name="baseAddress" value="0x0000" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="dma_test_system_mm_bridge_0.m0"
    end="msgdma_bbb_inst.csr">
   <parameter name="baseAddress" value="0x00020000" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="ddr4_mm_bridge.m0"
    end="ddr4a_clk_cross_host.s0">
   <parameter name="baseAddress" value="0x0000" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="ddr4a_clk_cross_host.m0"
    end="ddr4a_mm_bridge.s0">
   <parameter name="baseAddress" value="0x0000" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="ddr4_mm_bridge.m0"
    end="ddr4b_clk_cross_host.s0">
   <parameter name="baseAddress" value="0x0000000100000000" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="ddr4b_clk_cross_host.m0"
    end="ddr4b_mm_bridge.s0">
   <parameter name="baseAddress" value="0x0000" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="ddr4c_clk_cross_host.m0"
    end="ddr4c_mm_bridge.s0">
   <parameter name="baseAddress" value="0x0000" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="ddr4_mm_bridge.m0"
    end="ddr4c_clk_cross_host.s0">
   <parameter name="baseAddress" value="0x0000000200000000" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="ddr4d_clk_cross_host.m0"
    end="ddr4d_mm_bridge.s0">
   <parameter name="baseAddress" value="0x0000" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="ddr4_mm_bridge.m0"
    end="ddr4d_clk_cross_host.s0">
   <parameter name="baseAddress" value="0x0000000300000000" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="msgdma_bbb_inst.mem"
    end="ddr4_mm_bridge.s0">
   <parameter name="baseAddress" value="0x0000" />
  </connection>
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="host_clk.out_clk"
    end="ddr4_mm_bridge.clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="host_clk.out_clk"
    end="msgdma_bbb_inst.clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="ddr4a_clk.out_clk"
    end="ddr4a_mm_bridge.clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="ddr4b_clk.out_clk"
    end="ddr4b_mm_bridge.clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="host_clk.out_clk"
    end="reset_in.clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="host_clk.out_clk"
    end="dma_test_system_mm_bridge_0.clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="ddr4c_clk.out_clk"
    end="ddr4c_mm_bridge.clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="ddr4d_clk.out_clk"
    end="ddr4d_mm_bridge.clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="host_clk.out_clk"
    end="dma_test_system_afu_id_avmm_slave_0.clock" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="ddr4a_clk.out_clk"
    end="ddr4a_clk_cross_host.m0_clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="ddr4b_clk.out_clk"
    end="ddr4b_clk_cross_host.m0_clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="ddr4c_clk.out_clk"
    end="ddr4c_clk_cross_host.m0_clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="ddr4d_clk.out_clk"
    end="ddr4d_clk_cross_host.m0_clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="host_clk.out_clk"
    end="ddr4a_clk_cross_host.s0_clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="host_clk.out_clk"
    end="ddr4b_clk_cross_host.s0_clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="host_clk.out_clk"
    end="ddr4c_clk_cross_host.s0_clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="host_clk.out_clk"
    end="ddr4d_clk_cross_host.s0_clk" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="reset_in.out_reset"
    end="ddr4a_clk_cross_host.m0_reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="reset_in.out_reset"
    end="ddr4b_clk_cross_host.m0_reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="reset_in.out_reset"
    end="ddr4c_clk_cross_host.m0_reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="reset_in.out_reset"
    end="ddr4d_clk_cross_host.m0_reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="reset_in.out_reset"
    end="dma_test_system_mm_bridge_0.reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="reset_in.out_reset"
    end="dma_test_system_afu_id_avmm_slave_0.reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="reset_in.out_reset"
    end="ddr4a_mm_bridge.reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="reset_in.out_reset"
    end="ddr4b_mm_bridge.reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="reset_in.out_reset"
    end="ddr4_mm_bridge.reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="reset_in.out_reset"
    end="msgdma_bbb_inst.reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="reset_in.out_reset"
    end="ddr4c_mm_bridge.reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="reset_in.out_reset"
    end="ddr4d_mm_bridge.reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="reset_in.out_reset"
    end="ddr4a_clk_cross_host.s0_reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="reset_in.out_reset"
    end="ddr4b_clk_cross_host.s0_reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="reset_in.out_reset"
    end="ddr4c_clk_cross_host.s0_reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="reset_in.out_reset"
    end="ddr4d_clk_cross_host.s0_reset" />
- <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
+ <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="FIFO" />
  <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />
  <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
- <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
+ <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="2" />
 </system>

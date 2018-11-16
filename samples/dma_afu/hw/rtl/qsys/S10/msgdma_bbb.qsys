@@ -363,7 +363,7 @@
 }
 ]]></parameter>
  <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
- <parameter name="device" value="1SX280HN3F43E2VGS1" />
+ <parameter name="device" value="1SX280HN2F43E2VG" />
  <parameter name="deviceFamily" value="Stratix 10" />
  <parameter name="deviceSpeedGrade" value="2" />
  <parameter name="fabricMode" value="QSYS" />
@@ -373,7 +373,7 @@
  <parameter name="hdlLanguage" value="VERILOG" />
  <parameter name="hideFromIPCatalog" value="false" />
  <parameter name="lockedInterfaceDefinition" value="" />
- <parameter name="maxAdditionalLatency" value="0" />
+ <parameter name="maxAdditionalLatency" value="2" />
  <parameter name="sopcBorderPoints" value="false" />
  <parameter name="systemHash" value="0" />
  <parameter name="systemInfos"><![CDATA[<systemInfosDefinition>
@@ -9230,8 +9230,8 @@
     </boundary>
     <originalModuleInfo>
         <className>altera_avalon_mm_bridge</className>
-        <version>17.0</version>
-        <displayName>Avalon-MM Pipeline Bridge</displayName>
+        <version>18.1</version>
+        <displayName>Avalon-MM Pipeline Bridge Intel FPGA IP</displayName>
     </originalModuleInfo>
     <systemInfoParameterDescriptors>
         <descriptors>
@@ -9312,243 +9312,243 @@
  </module>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="dma_read_master.Data_Read_Master"
    end="pipe_stage_dma_read.s0">
   <parameter name="baseAddress" value="0x0000" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="dma_write_master.Data_Write_Master"
    end="pipe_stage_dma_write.s0">
   <parameter name="baseAddress" value="0x0000" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="address_span_extender_0.expanded_master"
    end="pipe_stage_ase.s0">
   <parameter name="baseAddress" value="0x0000" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="csr.m0"
    end="modular_sgdma_dispatcher_0.CSR">
   <parameter name="baseAddress" value="0x0040" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="csr.m0"
    end="modular_sgdma_dispatcher_0.Descriptor_Slave">
   <parameter name="baseAddress" value="0x0060" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="csr.m0"
    end="msgdma_bbb_afu_id_avmm_slave_0.afu_cfg_slave">
   <parameter name="baseAddress" value="0x0000" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="csr.m0"
    end="address_span_extender_0.cntl">
   <parameter name="baseAddress" value="0x0200" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="pipe_stage_ase.m0"
    end="pipe_stage_mem.s0">
   <parameter name="baseAddress" value="0x0000" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="pipe_stage_dma_write.m0"
    end="pipe_stage_mem.s0">
   <parameter name="baseAddress" value="0x0000" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="pipe_stage_dma_write.m0"
    end="pipe_stage_host_wr.s0">
   <parameter name="baseAddress" value="0x0002000000000000" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="pipe_stage_dma_read.m0"
    end="pipe_stage_host_rd.s0">
   <parameter name="baseAddress" value="0x0002000000000000" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="pipe_stage_dma_read.m0"
    end="pipe_stage_mem.s0">
   <parameter name="baseAddress" value="0x0000" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="pipe_stage_dma_read.m0"
    end="magic_number_rom.slave">
   <parameter name="baseAddress" value="0x0001000000000000" />
  </connection>
  <connection
    kind="avalon"
-   version="18.0"
+   version="18.1"
    start="csr.m0"
    end="address_span_extender_0.windowed_slave">
   <parameter name="baseAddress" value="0x1000" />
  </connection>
  <connection
    kind="avalon_streaming"
-   version="18.0"
+   version="18.1"
    start="dma_read_master.Data_Source"
    end="dma_write_master.Data_Sink" />
  <connection
    kind="avalon_streaming"
-   version="18.0"
+   version="18.1"
    start="modular_sgdma_dispatcher_0.Read_Command_Source"
    end="dma_read_master.Command_Sink" />
  <connection
    kind="avalon_streaming"
-   version="18.0"
+   version="18.1"
    start="dma_read_master.Response_Source"
    end="modular_sgdma_dispatcher_0.Read_Response_Sink" />
  <connection
    kind="avalon_streaming"
-   version="18.0"
+   version="18.1"
    start="dma_write_master.Response_Source"
    end="modular_sgdma_dispatcher_0.Write_Response_Sink" />
  <connection
    kind="avalon_streaming"
-   version="18.0"
+   version="18.1"
    start="modular_sgdma_dispatcher_0.Write_Command_Source"
    end="dma_write_master.Command_Sink" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="clk.clk"
    end="dma_read_master.Clock" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="clk.clk"
    end="dma_write_master.Clock" />
- <connection kind="clock" version="18.0" start="clk.clk" end="csr.clk" />
- <connection kind="clock" version="18.0" start="clk.clk" end="pipe_stage_ase.clk" />
+ <connection kind="clock" version="18.1" start="clk.clk" end="csr.clk" />
+ <connection kind="clock" version="18.1" start="clk.clk" end="pipe_stage_ase.clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="clk.clk"
    end="pipe_stage_host_rd.clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="clk.clk"
    end="pipe_stage_dma_read.clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="clk.clk"
    end="pipe_stage_dma_write.clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="clk.clk"
    end="pipe_stage_host_wr.clk" />
- <connection kind="clock" version="18.0" start="clk.clk" end="pipe_stage_mem.clk" />
+ <connection kind="clock" version="18.1" start="clk.clk" end="pipe_stage_mem.clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="clk.clk"
    end="magic_number_rom.clk" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="clk.clk"
    end="msgdma_bbb_afu_id_avmm_slave_0.clock" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="clk.clk"
    end="address_span_extender_0.clock" />
  <connection
    kind="clock"
-   version="18.0"
+   version="18.1"
    start="clk.clk"
    end="modular_sgdma_dispatcher_0.clock" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="clk.clk_reset"
    end="dma_read_master.Clock_reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="clk.clk_reset"
    end="dma_write_master.Clock_reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="clk.clk_reset"
    end="modular_sgdma_dispatcher_0.clock_reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="clk.clk_reset"
    end="msgdma_bbb_afu_id_avmm_slave_0.reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="clk.clk_reset"
    end="address_span_extender_0.reset" />
- <connection kind="reset" version="18.0" start="clk.clk_reset" end="csr.reset" />
+ <connection kind="reset" version="18.1" start="clk.clk_reset" end="csr.reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="clk.clk_reset"
    end="pipe_stage_ase.reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="clk.clk_reset"
    end="pipe_stage_host_rd.reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="clk.clk_reset"
    end="pipe_stage_dma_read.reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="clk.clk_reset"
    end="pipe_stage_dma_write.reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="clk.clk_reset"
    end="pipe_stage_host_wr.reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="clk.clk_reset"
    end="pipe_stage_mem.reset" />
  <connection
    kind="reset"
-   version="18.0"
+   version="18.1"
    start="clk.clk_reset"
    end="magic_number_rom.reset" />
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
  <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />
  <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
- <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="0" />
+ <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="2" />
 </system>

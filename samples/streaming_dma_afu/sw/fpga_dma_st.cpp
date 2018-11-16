@@ -254,8 +254,8 @@ static void assign_hw_desc(msgdma_sw_desc_t *sw_desc,
 	}
 
 	hw_descp->hw_desc->len = sw_desc->transfer->len;
-	hw_descp->hw_desc->wr_stride = 1;
-	hw_descp->hw_desc->rd_stride = 1;
+	//hw_descp->hw_desc->wr_stride = 1;
+	//hw_descp->hw_desc->rd_stride = 1;
 
 	if (sw_desc->transfer->tx_ctrl == GENERATE_SOP) {
 		hw_descp->hw_desc->ctrl.generate_sop = 1;

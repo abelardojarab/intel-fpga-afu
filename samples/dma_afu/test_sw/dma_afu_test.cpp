@@ -328,7 +328,7 @@ int run_basic_tests_with_mmio(fpga_handle afc_handle)
 	const long PAGE_SIZE	 = (1024*64);
 	const long NUM_PAGES	 = (1024);
 	char test_buffer[PAGE_SIZE];
-	const long NUM_MEMS	 = 2;
+	const long NUM_MEMS	 = 4;
 #endif
 	
 	RC4Memtest rc4_obj;
@@ -439,7 +439,7 @@ int run_basic_32bit_mmio(fpga_handle afc_handle)
 	const long PAGE_SIZE	 = (1024*64);
 	const long NUM_PAGES	 = (1024);
 	char test_buffer[PAGE_SIZE];
-	const long NUM_MEMS	 = 2;
+	const long NUM_MEMS	 = 4;
 #endif
 	
 	RC4Memtest rc4_obj;

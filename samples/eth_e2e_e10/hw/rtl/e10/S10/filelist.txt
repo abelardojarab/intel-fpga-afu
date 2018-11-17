@@ -91,3 +91,4 @@ eth_e2e_e10.json
 ccip_std_afu.sv
 eth_e2e_e10.v
 e2e_e10.sdc
+../../../par/${OPAE_PLATFORM_FPGA_FAMILY}/hssi.stp

@@ -4,4 +4,4 @@ ccip_interface_reg.sv
 
 C:e10/${OPAE_PLATFORM_FPGA_FAMILY}/filelist.txt
 
-QI:../par/extra_tcl.tcl
+QI:../${OPAE_PLATFORM_FPGA_FAMILY}/par/extra_tcl.tcl

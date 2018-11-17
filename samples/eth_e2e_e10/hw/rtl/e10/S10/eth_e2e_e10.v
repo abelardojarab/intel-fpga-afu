@@ -28,14 +28,10 @@
 // ecustodi - Feb/2018 modifications for DCP testing
 
 module eth_e2e_e10 #(
-    parameter NUM_HSSI_RAW_PR_IFCS = 2,
+    parameter NUM_HSSI_RAW_PR_IFCS = 1,
     parameter NUM_LN = 4
 )(
-    `ifndef USE_BOTH
     pr_hssi_if.to_fiu   hssi,
-    `else
-    pr_hssi_if.to_fiu   hssi[NUM_HSSI_RAW_PR_IFCS],
-    `endif
 
     input clk,      // 100MHz
     input reset,
@@ -115,40 +111,36 @@ wire [NUM_LN*32-1:0] all_csr_rdata;
 reg [NUM_LN-1:0] sloop;
 reg [NUM_LN-1:0] sloop_156;
 
-`ifndef USE_BOTH
-    alt_sync_regs_m2 #(
-        .WIDTH(NUM_LN),
-        .DEPTH(2)
-    ) sync_sloop (
-        .clk(hssi.f2a_rx_parallel_clk_x1[0]),
-        .din(sloop),
-        .dout(sloop_156)
-    );
+alt_sync_regs_m2 #(
+    .WIDTH(NUM_LN),
+    .DEPTH(2)
+) sync_sloop (
+    .clk(hssi.f2a_rx_parallel_clk_x1[0]),
+    .din(sloop),
+    .dout(sloop_156)
+);
 
-    reg [NUM_LN-1:0] f2a_tx_ready_100;
-    reg [NUM_LN-1:0] f2a_rx_ready_100;
-    alt_sync_regs_m2 #(
-        .WIDTH(NUM_LN),
-        .DEPTH(2)
-    ) sync_tx_ready (
-        .clk(clk),
-        .din(hssi.f2a_tx_ready),
-        .dout(f2a_tx_ready_100)
-    );
+reg [NUM_LN-1:0] f2a_tx_ready_100;
+reg [NUM_LN-1:0] f2a_rx_ready_100;
+alt_sync_regs_m2 #(
+    .WIDTH(NUM_LN),
+    .DEPTH(2)
+) sync_tx_ready (
+    .clk(clk),
+    .din(hssi.f2a_tx_ready),
+    .dout(f2a_tx_ready_100)
+);
 
-    alt_sync_regs_m2 #(
-        .WIDTH(NUM_LN),
-        .DEPTH(2)
-    ) sync_rx_ready (
-        .clk(clk),
-        .din(hssi.f2a_rx_ready),
-        .dout(f2a_rx_ready_100)
-    );
-`else
-    // TODO: synchronize for both QSFP
-`endif
+alt_sync_regs_m2 #(
+    .WIDTH(NUM_LN),
+    .DEPTH(2)
+) sync_rx_ready (
+    .clk(clk),
+    .din(hssi.f2a_rx_ready),
+    .dout(f2a_rx_ready_100)
+);
 
-genvar i, j;
+genvar i;
 generate
     for (i=0; i<NUM_LN; i=i+1) begin : lp0
         reg [7:0]     xgmii_tx_control;
@@ -161,20 +153,16 @@ generate
 
         always @(*) begin
             if (!sloop_156[i]) begin              
-                `ifndef USE_BOTH
-                    xgmii_rx_control[3:0] = hssi.f2a_rx_parallel_data [(i*80)+35:(i*80)+32];
-                    xgmii_rx_control[7:4] = hssi.f2a_rx_parallel_data [(i*80)+77:(i*80)+72];     // 9th and 10th bits unused
-                    xgmii_rx_data[31:0] = hssi.f2a_rx_parallel_data [(i*80)+31:(i*80)];
-                    xgmii_rx_data[63:32] = hssi.f2a_rx_parallel_data [(i*80)+71:(i*80)+40];
-                    rx_enh_data_valid = hssi.f2a_rx_parallel_data [(i*80)+36];
-                    hssi.a2f_tx_parallel_data [(i*80)+35:(i*80)+32] = xgmii_tx_control[3:0];
-                    hssi.a2f_tx_parallel_data [(i*80)+77:(i*80)+72] = xgmii_tx_control[7:4];     // 9th bit unused
-                    hssi.a2f_tx_parallel_data [(i*80)+31:(i*80)] = xgmii_tx_data[31:0];
-                    hssi.a2f_tx_parallel_data [(i*80)+71:(i*80)+40] = xgmii_tx_data[63:32];
-                    hssi.a2f_tx_parallel_data [(i*80)+36] = tx_enh_data_valid;
-                `else
-                    // TODO: hssi[0] for lanes 0-3 and hssi[1] for lanes 4-7, Verilog doesn't support nested for loops
-                `endif
+                xgmii_rx_control[3:0] = hssi.f2a_rx_parallel_data [(i*80)+35:(i*80)+32];
+                xgmii_rx_control[7:4] = hssi.f2a_rx_parallel_data [(i*80)+77:(i*80)+72];     // 9th and 10th bits unused
+                xgmii_rx_data[31:0] = hssi.f2a_rx_parallel_data [(i*80)+31:(i*80)];
+                xgmii_rx_data[63:32] = hssi.f2a_rx_parallel_data [(i*80)+71:(i*80)+40];
+                rx_enh_data_valid = hssi.f2a_rx_parallel_data [(i*80)+36];
+                hssi.a2f_tx_parallel_data [(i*80)+35:(i*80)+32] = xgmii_tx_control[3:0];
+                hssi.a2f_tx_parallel_data [(i*80)+77:(i*80)+72] = xgmii_tx_control[7:4];     // 9th bit unused
+                hssi.a2f_tx_parallel_data [(i*80)+31:(i*80)] = xgmii_tx_data[31:0];
+                hssi.a2f_tx_parallel_data [(i*80)+71:(i*80)+40] = xgmii_tx_data[63:32];
+                hssi.a2f_tx_parallel_data [(i*80)+36] = tx_enh_data_valid;
             end else begin
                 xgmii_rx_control = xgmii_tx_control;
                 xgmii_rx_data    = xgmii_tx_data;
@@ -194,17 +182,11 @@ generate
             .csr_rst_n(!csr_rst),
             .tx_rst_n((!tx_rst)&&(f2a_tx_ready_100[i])),
             .rx_rst_n((!rx_rst)&&(f2a_rx_ready_100[i])),
-            `ifndef USE_BOTH
+
             .tx_clk_312(hssi.f2a_tx_parallel_clk_x2[0]),
             .rx_clk_312(hssi.f2a_rx_parallel_clk_x2[0]),
             .tx_clk_156(hssi.f2a_tx_parallel_clk_x1[0]),
             .rx_clk_156(hssi.f2a_rx_parallel_clk_x1[0]),
-            `else
-            .tx_clk_312(hssi[j].f2a_tx_parallel_clk_x2[0]),
-            .rx_clk_312(hssi[j].f2a_rx_parallel_clk_x2[0]),
-            .tx_clk_156(hssi[j].f2a_tx_parallel_clk_x1[0]),
-            .rx_clk_156(hssi[j].f2a_rx_parallel_clk_x1[0]),
-            `endif
             // serdes data pipe
             .xgmii_tx_valid(tx_enh_data_valid),
             .xgmii_tx_control(xgmii_tx_control),

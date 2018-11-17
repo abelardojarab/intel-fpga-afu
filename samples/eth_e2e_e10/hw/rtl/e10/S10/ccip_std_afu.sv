@@ -163,6 +163,7 @@ logic   [31:0] rd_data;
 logic init_start;
 logic init_done;
 
+`ifndef USE_QSFP1 // USE_QSFP0 or USE_BOTH
 `ifdef E2E_E40
  eth_e2e_e40
 `endif
@@ -170,11 +171,7 @@ logic init_done;
  eth_e2e_e10
 `endif
 #(
-    `ifndef USE_BOTH
     .NUM_HSSI_RAW_PR_IFCS(1),
-    `else
-    .NUM_HSSI_RAW_PR_IFCS(2),
-    `endif
     .NUM_LN(4)
 )
   prz0
@@ -187,14 +184,34 @@ logic init_done;
     .csr_init_done(init_done),
     .clk(clk),         // 100MHz
     .reset(pck_cp2af_softReset_T1),
-    `ifdef USE_QSFP0
     .hssi(hssi[0])
-     `elsif USE_QSFP1
-    .hssi(hssi[1])
-     `elsif USE_BOTH
-    .hssi(hssi)
-     `endif
     );
+`endif
+
+`ifndef USE_QSFP0 // USE_QSFP1 or USE_BOTH
+`ifdef E2E_E40
+    eth_e2e_e40
+`endif
+`ifdef E2E_E10
+    eth_e2e_e10
+`endif
+#(
+    .NUM_HSSI_RAW_PR_IFCS(1),
+    .NUM_LN(4)
+)
+    prz0
+    (
+    // ETH CSR ports
+    .eth_ctrl_addr(eth_ctrl_addr),
+    .eth_wr_data(eth_wr_data),
+    .eth_rd_data(eth_rd_data),
+    .csr_init_start(init_start),
+    .csr_init_done(init_done),
+    .clk(clk),         // 100MHz
+    .reset(pck_cp2af_softReset_T1),
+    .hssi(hssi[1])
+    );
+`endif
 
 logic action_r = 0;
 

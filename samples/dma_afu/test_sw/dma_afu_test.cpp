@@ -328,7 +328,7 @@ int run_basic_tests_with_mmio(fpga_handle afc_handle)
 	const long PAGE_SIZE	 = (1024*64);
 	const long NUM_PAGES	 = (1024);
 	char test_buffer[PAGE_SIZE];
-	const long NUM_MEMS	 = 4;
+	const long NUM_MEMS	 = 2;
 #endif
 	
 	RC4Memtest rc4_obj;
@@ -337,13 +337,17 @@ int run_basic_tests_with_mmio(fpga_handle afc_handle)
 	const char *RC4_KEY = "mytestkey";
 	
 	rc4_obj.setup_key(RC4_KEY);
-	
+
+	assert((NEXT_MEMORY_OFFSET % NUM_PAGES) == 0);
+	assert(PAGE_SIZE < NEXT_MEMORY_OFFSET/NUM_PAGES);
+
 	for(long m = 0; m < NUM_MEMS; m++)
 	{
 		for(long p = 0; p < NUM_PAGES; p++)
 		{
 			rc4_obj.write_bytes(test_buffer, PAGE_SIZE);
-			uint64_t dev_addr = m*NEXT_MEMORY_OFFSET+ASE_MEM_PAGE_SIZE*p;
+			// uint64_t dev_addr = m*NEXT_MEMORY_OFFSET+ASE_MEM_PAGE_SIZE*p;
+			uint64_t dev_addr = m*NEXT_MEMORY_OFFSET+(NEXT_MEMORY_OFFSET/NUM_PAGES)*p;
 			copy_to_dev_with_mmio(afc_handle, (uint64_t*)test_buffer, dev_addr, PAGE_SIZE);
 		}
 	}
@@ -355,7 +359,8 @@ int run_basic_tests_with_mmio(fpga_handle afc_handle)
 	{
 		for(long p = 0; p < NUM_PAGES; p++)
 		{
-			uint64_t dev_addr = m*NEXT_MEMORY_OFFSET+ASE_MEM_PAGE_SIZE*p;
+			// uint64_t dev_addr = m*NEXT_MEMORY_OFFSET+ASE_MEM_PAGE_SIZE*p;
+		        uint64_t dev_addr = m*NEXT_MEMORY_OFFSET+(NEXT_MEMORY_OFFSET/NUM_PAGES)*p;
 			copy_from_dev_with_mmio(afc_handle, (uint64_t*)test_buffer, dev_addr, PAGE_SIZE);
 			long errors = rc4_obj.check_bytes(test_buffer, PAGE_SIZE);
 			if(errors)
@@ -448,13 +453,17 @@ int run_basic_32bit_mmio(fpga_handle afc_handle)
 	const char *RC4_KEY = "mytestkey";
 	
 	rc4_obj.setup_key(RC4_KEY);
+
+	assert((NEXT_MEMORY_OFFSET % NUM_PAGES) == 0);
+	assert(PAGE_SIZE < NEXT_MEMORY_OFFSET/NUM_PAGES);
 	
 	for(long m = 0; m < NUM_MEMS; m++)
 	{
 		for(long p = 0; p < NUM_PAGES; p++)
 		{
 			rc4_obj.write_bytes(test_buffer, PAGE_SIZE);
-			uint64_t dev_addr = m*NEXT_MEMORY_OFFSET+ASE_MEM_PAGE_SIZE*p;
+			uint64_t dev_addr = m*NEXT_MEMORY_OFFSET+(NEXT_MEMORY_OFFSET/NUM_PAGES)*p;
+			// uint64_t dev_addr = m*NEXT_MEMORY_OFFSET+ASE_MEM_PAGE_SIZE*p;
 			copy_to_dev_with_mmio32(afc_handle, (uint32_t*)test_buffer, dev_addr, PAGE_SIZE);
 		}
 	}
@@ -466,7 +475,8 @@ int run_basic_32bit_mmio(fpga_handle afc_handle)
 	{
 		for(long p = 0; p < NUM_PAGES; p++)
 		{
-			uint64_t dev_addr = m*NEXT_MEMORY_OFFSET+ASE_MEM_PAGE_SIZE*p;
+			uint64_t dev_addr = m*NEXT_MEMORY_OFFSET+(NEXT_MEMORY_OFFSET/NUM_PAGES)*p;
+			// uint64_t dev_addr = m*NEXT_MEMORY_OFFSET+ASE_MEM_PAGE_SIZE*p;
 			copy_from_dev_with_mmio32(afc_handle, (uint32_t*)test_buffer, dev_addr, PAGE_SIZE);
 			long errors = rc4_obj.check_bytes(test_buffer, PAGE_SIZE);
 			if(errors)

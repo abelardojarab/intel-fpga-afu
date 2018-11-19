@@ -6625,7 +6625,7 @@
     </fileSets>
 </generationInfoDefinition>]]></parameter>
   <parameter name="hlsFile" value="" />
-  <parameter name="logicalView">/data/dunnikri/qshell/new_dcp/p4/afu/samples/streaming_dma_afu/hw/rtl/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb.qsys</parameter>
+  <parameter name="logicalView">../../memory_to_stream_dma_bbb/memory_to_stream_dma_bbb.qsys</parameter>
   <parameter name="moduleAssignmentDefinition"><![CDATA[<assignmentDefinition>
     <assignmentValueMap/>
 </assignmentDefinition>]]></parameter>
@@ -10877,7 +10877,7 @@
     </fileSets>
 </generationInfoDefinition>]]></parameter>
   <parameter name="hlsFile" value="" />
-  <parameter name="logicalView">/data/dunnikri/qshell/new_dcp/p4/afu/samples/streaming_dma_afu/hw/rtl/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb.qsys</parameter>
+  <parameter name="logicalView">../../stream_to_memory_dma_bbb/stream_to_memory_dma_bbb.qsys</parameter>
   <parameter name="moduleAssignmentDefinition"><![CDATA[<assignmentDefinition>
     <assignmentValueMap/>
 </assignmentDefinition>]]></parameter>

@@ -275,7 +275,7 @@ static fpga_result loopback_test(fpga_handle afc_h, fpga_dma_handle_t tx_dma_h, 
 
 	// do memory to stream transfer
 	total_size = config->data_size;
-	tid = ceil(config->data_size / config->payload_size);
+	tid = ceil((double)config->data_size / (double)config->payload_size);
 	src = battrs_src.iova;
 
 	clock_gettime(CLOCK_MONOTONIC, &start);
@@ -317,7 +317,7 @@ static fpga_result loopback_test(fpga_handle afc_h, fpga_dma_handle_t tx_dma_h, 
 	int64_t required_beats;
 	uint64_t expected_beats;
 	expected_beats = 0;
-	required_beats = ceil(config->data_size / BEAT_SIZE); // beat = 64 bytes
+	required_beats = ceil((double)config->data_size / (double)BEAT_SIZE); // beat = 64 bytes
 	uint64_t beat_cnt;
 	beat_cnt = 0;
 
@@ -332,7 +332,7 @@ static fpga_result loopback_test(fpga_handle afc_h, fpga_dma_handle_t tx_dma_h, 
 	uint64_t tsize;
 	total_size = expected_beats * BEAT_SIZE;
 	tsize = total_size;
-	tid = ceil(total_size / config->payload_size);
+	tid = ceil((double)total_size / (double)config->payload_size);
 	uint64_t dst;
 	dst = battrs_dst.iova;
 	while(total_size > 0) {

@@ -25,11 +25,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * \fpga_pattern_checker.c
- * \brief  Pattern Checker
+ * \fpga_pattern_gen.c
+ * \brief  Pattern Generator
  */
 
-#include "fpga_pattern_checker.h"
+#include "fpga_pattern_gen.h"
 #include <math.h>
 /*
  * macro for checking return codes
@@ -43,23 +43,23 @@
 		}\
 	} while (0)
 static int err_cnt = 0;
-/* Helper functions for Pattern Checker  */
-//Populate repeating pattern 0x00...0xFF checker of PATTERN_LENGTH*PATTERN_WIDTH
-fpga_result populate_pattern_checker(fpga_handle fpga_h) {
-	int i, j;
-	if(!fpga_h) 
-		return FPGA_INVALID_PARAM;
 
+// Populate repeating pattern 0x00...0xFF of PATTERN_LENGTH*PATTERN_WIDTH  
+fpga_result populate_pattern_generator(fpga_handle fpga_h) {
+	size_t i, j;
+	if(!fpga_h) {
+		return FPGA_INVALID_PARAM;
+	}
 	fpga_result res = FPGA_OK;
-	uint64_t custom_checker_addr = (uint64_t)M2S_PATTERN_CHECKER_MEMORY_SLAVE;
+	uint64_t custom_generator_mem_addr = (uint64_t)S2M_PATTERN_GENERATOR_MEMORY_SLAVE;
 	uint32_t test_word = 0x03020100;
 	for (i = 0; i < PATTERN_LENGTH; i++) {
 		for (j = 0; j < (PATTERN_WIDTH/sizeof(test_word)); j++) {
-			res = fpgaWriteMMIO32(fpga_h, 0, custom_checker_addr, test_word);
+			res = fpgaWriteMMIO32(fpga_h, 0, custom_generator_mem_addr, test_word);
 			if(res != FPGA_OK)
 				return res;
-			custom_checker_addr += sizeof(test_word);
-			if(test_word == 0xfffefdfc){
+			custom_generator_mem_addr += sizeof(test_word);
+			if(test_word == 0xfffefdfc) {
 				test_word = 0x03020100;
 				continue;
 			}
@@ -69,74 +69,79 @@ fpga_result populate_pattern_checker(fpga_handle fpga_h) {
 	return res;
 }
 
-fpga_result checker_copy_to_mmio(fpga_handle fpga_h, uint32_t *checker_ctrl_addr, int len) {
+fpga_result generator_copy_to_mmio(fpga_handle fpga_h, uint32_t *generator_ctrl_addr, int len) {
 	int i=0;
 	fpga_result res = FPGA_OK;
-	if(len % DWORD_BYTES != 0) 
-		return FPGA_INVALID_PARAM;
-	uint64_t checker_csr = (uint64_t)M2S_PATTERN_CHECKER_CSR;
+	if(len % DWORD_BYTES != 0) return FPGA_INVALID_PARAM;
+	uint64_t generator_csr = (uint64_t)S2M_PATTERN_GENERATOR_CSR;
 	for(i = 0; i < len/DWORD_BYTES; i++) {
-		res = fpgaWriteMMIO32(fpga_h, 0, checker_csr, *checker_ctrl_addr);
+		res = fpgaWriteMMIO32(fpga_h, 0, generator_csr, *generator_ctrl_addr);
 		if(res != FPGA_OK)
 			return res;
-		checker_ctrl_addr += 1;
-		checker_csr += DWORD_BYTES;
+		generator_ctrl_addr += 1;
+		generator_csr += DWORD_BYTES;
 	}
 
 	return FPGA_OK;
 }
-// Write to the pattern checker registers
+// Write to the pattern generator registers
 // Set Payload Length(Represented in terms of 64B elements)
 // Set Pattern Length (Represented in terms of 64B elements)
 // Set Pattern Position
 // Set the control bits
-fpga_result start_checker(fpga_handle fpga_h, uint64_t transfer_len) {
+fpga_result start_generator(fpga_handle fpga_h, uint64_t transfer_len, int pkt_transfer) {
 	fpga_result res = FPGA_OK;
-	pattern_checker_control_t checker_ctrl = {0};
-	pattern_checker_status_t status ={0};
+	pattern_gen_control_t generator_ctrl = {0};
+	pattern_gen_status_t status ={0};
 
-	checker_ctrl.payload_len = ceil(transfer_len/(double)PATTERN_WIDTH);
-	checker_ctrl.pattern_len = PATTERN_LENGTH;
-	checker_ctrl.pattern_pos = 0;
-	checker_ctrl.control.pkt_data_only_en = 0;
-	checker_ctrl.control.stop_on_failure_en = 0;
-	// start the checker
-	checker_ctrl.control.go = 1;
+	generator_ctrl.payload_len = ceil(transfer_len/(double)PATTERN_WIDTH);
+	generator_ctrl.pattern_len = PATTERN_LENGTH;
+	generator_ctrl.pattern_pos = 0;
+	if(pkt_transfer) {
+		generator_ctrl.control.generate_sop = 1;
+		generator_ctrl.control.generate_eop = 1;
+	} else {
+		generator_ctrl.control.generate_sop = 0;
+		generator_ctrl.control.generate_eop = 0;
+	}
+	//Set to no. of valid bytes in last transfer
+	//last_tf_size = transfer_len % 64
+	generator_ctrl.control.last_tf_size = transfer_len%64;
+	generator_ctrl.control.go = 1;
 
 	do {
-		res = fpgaReadMMIO32(fpga_h, 0, M2S_PATTERN_CHECKER_CSR+offsetof(pattern_checker_control_t, status), &status.reg);
+		res = fpgaReadMMIO32(fpga_h, 0, S2M_PATTERN_GENERATOR_CSR+offsetof(pattern_gen_control_t, status), &status.reg);
 		ON_ERR_GOTO(res, out, "fpgaReadMMIO32");
 	}while(status.st.busy);
-	
-	// Write to Registers using MMIO Api's
-	res = checker_copy_to_mmio(fpga_h, (uint32_t*)&checker_ctrl, (sizeof(checker_ctrl)-sizeof(checker_ctrl.status)));
-out:	
-	return res;
-}
 
-fpga_result wait_for_checker_complete(fpga_handle fpga_h) {
-	fpga_result res = FPGA_OK;
-	pattern_checker_status_t status ={0};
-	
-	do {
-		res = fpgaReadMMIO32(fpga_h, 0, M2S_PATTERN_CHECKER_CSR+offsetof(pattern_checker_control_t, status), &status.reg);
-		ON_ERR_GOTO(res, out, "fpgaReadMMIO32");
-	} while(status.st.complete != 1);
-	if(status.st.err == 0)
-		printf("M2S Checker:Data Verification Success!\n");
-	else
-		printf("M2S Checker:Data Verification Failed!\n");
-
+	res = generator_copy_to_mmio(fpga_h, (uint32_t*)&generator_ctrl, (sizeof(generator_ctrl)-sizeof(generator_ctrl.status)));
+	ON_ERR_GOTO(res, out, "generator_copy_to_mmio");
 out:
 	return res;
 }
-// Checker should be stopped before populating the Checker registers and starting pattern checker
-fpga_result stop_checker(fpga_handle fpga_h) {
+
+
+fpga_result wait_for_generator_complete(fpga_handle fpga_h) {
+	fpga_result res = FPGA_OK;
+	pattern_gen_status_t status ={0};
+
+	do {
+		res = fpgaReadMMIO32(fpga_h, 0, S2M_PATTERN_GENERATOR_CSR+offsetof(pattern_gen_control_t, status), &status.reg);
+		ON_ERR_GOTO(res, out, "fpgaReadMMIO32");
+	} while(status.st.complete != 1);
+#ifdef DEBUG
+	printf("S2M Generator:Finished sending data\n");
+#endif
+out:
+	return res;
+}
+
+fpga_result stop_generator(fpga_handle fpga_h) {
 	fpga_result res = FPGA_OK;
 
-	res = fpgaWriteMMIO32(fpga_h, 0, M2S_PATTERN_CHECKER_CSR+offsetof(pattern_checker_control_t, control), 0x0);
+	res = fpgaWriteMMIO32(fpga_h, 0, S2M_PATTERN_GENERATOR_CSR+offsetof(pattern_gen_control_t, control), 0x0);
 	ON_ERR_GOTO(res, out, "fpgaWriteMMIO32");
 out:
 	return res;
 }
-
+/* END of Helper functions for Pattern Generator */

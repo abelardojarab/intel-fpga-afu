@@ -1,21 +1,24 @@
+CXX = g++
 LDFLAGS ?=
-CFLAGS = -g -O2 -fPIC
-CFLAGS += -D FPGA_DMA_DEBUG=0
+CXXFLAGS += -D FPGA_DMA_DEBUG=0 -g -O2 -fPIC -D EMU_MODE=0 -Wall -Wno-unknown-pragmas -I$(TBB_HOME)/include -fpermissive -std=c++11
+CXXFLAGS += -DFPGA_DMA_MAX_BLOCKS=256 -DFPGA_DMA_BLOCK_SIZE=64
+
 # Flush and avoid use of DMA descriptors from previous transfer
 CFLAGS += -D FORCE_DESC_FLUSH=1
 ifdef prefix
-CFLAGS += -I$(prefix)/include
-LDFLAGS += -L$(prefix)/lib -L$(prefix)/lib64
+CXXFLAGS += -I$(prefix)/include
+LDFLAGS += -L$(prefix)/lib -L$(prefix)/lib64 
 endif
 
-CFLAGS += -Wall -Werror -Wno-unknown-pragmas
 LDFLAGS += -luuid
 LDFLAGS += -lsafestr
 LDFLAGS += -lrt
+LDFLAGS += -ltbb
+LDFLAGS += -L$(TBB_HOME)/lib/intel64_lin/gcc4.7/
 
 ifeq ($(USE_ASE),1)
 	LDFLAGS += -lopae-c-ase
-	CFLAGS += -DUSE_ASE
+	CXXFLAGS += -DUSE_ASE
 else
 	LDFLAGS += -ljson-c
 	LDFLAGS += -lopae-c
@@ -25,34 +28,17 @@ endif
 LDFLAGS += -pthread
 LDFLAGS += -lm
 
-all: fpga_dma_st_test fpga_dma_st.so
-
-# FPGA DMA Driver
-fpga_dma_st_test: fpga_dma_st_test.o fpga_pattern_gen.o fpga_pattern_checker.o fpga_dma_st.a
-	gcc -o $@ $^ $(LDFLAGS)
-
-fpga_dma_st_test.o: fpga_dma_st_test.c
-	gcc $(CFLAGS) -o $@ -c $^
-
-fpga_dma_st.so: fpga_dma_st.o x86-sse2.o
-	gcc $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
+SRCS=$(wildcard *.cpp)
+OBJS=$(SRCS:.cpp=.o)
+all: $(OBJS) fpga_dma_st_test
 
 fpga_dma_st.a: fpga_dma_st.o x86-sse2.o
 	ar rcs $@ $^
 
-fpga_dma_st.o: fpga_dma_st.c
-	gcc $(CFLAGS) -c -o $@ $^
-
-fpga_pattern_gen.o: fpga_pattern_gen.c
-	gcc $(CFLAGS) -c -o $@ $^
-
-fpga_pattern_checker.o: fpga_pattern_checker.c
-	gcc $(CFLAGS) -c -o $@ $^
-	 
-x86-sse2.o: x86-sse2.S
-	gcc $(CFLAGS) -c -o $@ $^
+fpga_dma_st_test: $(OBJS) fpga_dma_st.a
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:
-	$(RM) fpga_dma_st_test *.o *.so
+	$(RM) fpga_dma_st_test *.o *.so *.a *.dat *.log
 
 .PHONY:all clean

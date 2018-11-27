@@ -1,0 +1,47 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+my $total_data_size = 1024*1024*512;
+
+my @directions = ('mtos', 'stom');
+
+my @payloads = (128, 1408, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576);
+# modify to install path of TBB
+$ENV{'LD_LIBRARY_PATH'} = '/opt/intel/tbb/lib/intel64_lin/gcc4.7/';
+
+print "-----------------------------\n";
+print "payload\t\tmtos\tstom\n";
+print "-----------------------------\n";
+
+
+my $report = "bw.dat";	
+open(my $fh, '>', $report) or die "Could not open $report";
+
+my $i = 1;
+my $bw_mtos;
+my $bw_stom;
+foreach my $payload (@payloads)
+{
+	my $output_mtos = `./fpga_dma_st_test -l off -s $total_data_size -p $payload -r mtos -t fixed`;
+	if($output_mtos =~ /(\d+)/) {
+		$bw_mtos = $1;
+	}
+
+	my $output_stom = `./fpga_dma_st_test -l off -s $total_data_size -p $payload -r stom -t fixed`;
+	if($output_stom =~ /(\d+)/) {
+		$bw_stom = $1;
+	}
+	if($payload > 1024) {
+		$payload = $payload/1024;
+		print $payload."KB\t\t$bw_mtos\t$bw_stom\n";
+		print $fh "$payload"."KB $bw_mtos $bw_stom\n";
+	} else {
+		print $payload."B\t\t$bw_mtos\t$bw_stom\n";
+		print $fh "$payload"."B $bw_mtos $bw_stom\n";
+	}
+	$i++;
+}
+
+close $fh
+#system("plot $report using 1:2 title 'Column' with lines");

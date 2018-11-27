@@ -43,6 +43,9 @@
       
   1.3 Added "dcp_" to all module names to avoid namespace collisions with the mSGDMA
       shipped in the ACDS.
+      
+  1.4 Added burst_complete output so that it can pulse into the burst tracking block
+      to signal when a burst is completing.
 
 */
 
@@ -87,7 +90,8 @@ module dcp_write_burst_control (
   stopped,
   response,
   response_valid,
-  outstanding_bursts
+  outstanding_bursts,
+  burst_complete
 );
 
   parameter BURST_ENABLE = 1;  // set to 0 to hardwire the address and write signals straight out
@@ -131,7 +135,8 @@ module dcp_write_burst_control (
   output wire stopped;  // if a stop occurs in the middle of a burst larger than 1 then the write master needs to know that the burst hasn't completed yet
   input [1:0] response; // for now not going to handle decoding this
   input response_valid; // used to decrement outstanding_bursts counter
-  output wire [9:0] outstanding_bursts;
+  output wire [11:0] outstanding_bursts;
+  output wire burst_complete;  // new signal when the last beat of a burst is sent to the fabric (when waitrequest is low)
 
   reg [ADDRESS_WIDTH-1:0] address_d1;
   reg [BURST_COUNT_WIDTH-1:0] burst_counter;  // interal statemachine register
@@ -156,7 +161,7 @@ module dcp_write_burst_control (
   wire quick_burst_masked;
   wire [BURST_OFFSET_WIDTH-1:0] burst_offset;
   
-  reg [9:0] outstanding_transactions_counter;
+  reg [11:0] outstanding_transactions_counter;
   wire increment_outstanding_transactions_counter;
   wire decrement_outstanding_transactions_counter;
 
@@ -242,7 +247,7 @@ module dcp_write_burst_control (
   begin
     if (reset)
     begin
-      outstanding_transactions_counter <= 10'h000;
+      outstanding_transactions_counter <= 12'h0000;
     end
     else
     begin
@@ -341,6 +346,7 @@ generate
     assign stall = (idle_state == 1);
     assign reset_taken = (sw_reset == 1) & (idle_state == 1);  // for bursts of 1 the write master logic will handle the correct reset timing
 	  assign stopped = (sw_stop == 1) & (idle_state == 1);       // for bursts of 1 the write master logic will handle the correct stop timing
+    assign burst_complete = (burst_counter == 'h1) & (write_out == 1'b1) & (waitrequest == 1'b0);  // when burst counter hits one there is only one beat to go
   end
   else
   begin
@@ -349,7 +355,8 @@ generate
     assign write_out = write_in;
     assign stall = 0;
     assign reset_taken = sw_reset;
-	assign stopped = sw_stop;
+	  assign stopped = sw_stop;
+    assign burst_complete = (write_out == 1'b1) & (waitrequest == 1'b0);  // burst counter isn't used but every burst is of length one so when that beat completes the entire burst is done
   end
 endgenerate
 

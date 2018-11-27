@@ -70,6 +70,7 @@ add_fileset_file dcp_write_master.v VERILOG PATH dcp_write_master.v TOP_LEVEL_FI
 add_fileset_file dcp_byte_enable_generator.v VERILOG PATH dcp_byte_enable_generator.v 
 add_fileset_file dcp_ST_to_MM_Adapter.v VERILOG PATH dcp_ST_to_MM_Adapter.v 
 add_fileset_file dcp_write_burst_control.v VERILOG PATH dcp_write_burst_control.v 
+add_fileset_file dcp_write_master_response_tracking.v VERILOG PATH dcp_write_master_response_tracking.v
 
 add_fileset SIM_VERILOG SIM_VERILOG "" ""
 set_fileset_property SIM_VERILOG TOP_LEVEL dcp_write_master
@@ -78,6 +79,7 @@ add_fileset_file dcp_write_master.v VERILOG PATH dcp_write_master.v
 add_fileset_file dcp_byte_enable_generator.v VERILOG PATH dcp_byte_enable_generator.v 
 add_fileset_file dcp_ST_to_MM_Adapter.v VERILOG PATH dcp_ST_to_MM_Adapter.v 
 add_fileset_file dcp_write_burst_control.v VERILOG PATH dcp_write_burst_control.v 
+add_fileset_file dcp_write_master_response_tracking.v VERILOG PATH dcp_write_master_response_tracking.v
 
 add_fileset SIM_VHDL SIM_VHDL "" ""
 set_fileset_property SIM_VHDL TOP_LEVEL dcp_write_master
@@ -86,6 +88,7 @@ add_fileset_file dcp_write_master.v VERILOG PATH dcp_write_master.v
 add_fileset_file dcp_byte_enable_generator.v VERILOG PATH dcp_byte_enable_generator.v 
 add_fileset_file dcp_ST_to_MM_Adapter.v VERILOG PATH dcp_ST_to_MM_Adapter.v 
 add_fileset_file dcp_write_burst_control.v VERILOG PATH dcp_write_burst_control.v 
+add_fileset_file dcp_write_master_response_tracking.v VERILOG PATH dcp_write_master_response_tracking.v
 
 # | 
 # +-----------------------------------
@@ -109,7 +112,8 @@ set_parameter_property DATA_WIDTH HDL_PARAMETER true
 set_parameter_property DATA_WIDTH AFFECTS_ELABORATION true
 add_display_item "Transfer Options" DATA_WIDTH parameter
 
-add_parameter GUI_NO_BYTEENABLES INTEGER 0 "Enable to force byte enables to always high."
+# to ensure byte enable generator never gets enabled (CCIP doesn't support byte enables) hardcoding this parameter to on)
+add_parameter GUI_NO_BYTEENABLES INTEGER 1 "Enable to force byte enables to always high."
 set_parameter_property GUI_NO_BYTEENABLES DISPLAY_NAME "No Byteenables"
 set_parameter_property GUI_NO_BYTEENABLES DISPLAY_HINT boolean
 set_parameter_property GUI_NO_BYTEENABLES AFFECTS_GENERATION false
@@ -215,7 +219,9 @@ add_display_item "Transfer Options" GUI_BURST_WRAPPING_SUPPORT parameter
 
 # this parameter will be displayed instead of "UNALIGNED_ACCESS_ENABLE" and "ONLY_FULL_ACCESS_ENABLE".  It will be used to control the unaligned and only full access enable parameters
 add_parameter TRANSFER_TYPE STRING "Aligned Accesses" "Setting the access types will allow you to reduce the hardware footprint and increase the fmax when unnecessary features like unaligned accesses are not necessary for your system."
-set_parameter_property TRANSFER_TYPE ALLOWED_RANGES { "Full Word Accesses Only" "Aligned Accesses" "Unaligned Accesses" }
+# Many changes have been made to the hardware and since none of those changes have any unaligned access test coverage (and the fact that DCP doesn't need that feature) removing it as an option.
+#set_parameter_property TRANSFER_TYPE ALLOWED_RANGES { "Full Word Accesses Only" "Aligned Accesses" "Unaligned Accesses" }
+set_parameter_property TRANSFER_TYPE ALLOWED_RANGES { "Full Word Accesses Only" "Aligned Accesses" }
 set_parameter_property TRANSFER_TYPE DISPLAY_NAME "Transfer Type"
 set_parameter_property TRANSFER_TYPE DISPLAY_HINT radio
 set_parameter_property TRANSFER_TYPE AFFECTS_GENERATION false
@@ -576,7 +582,9 @@ proc validate_me {}  {
     if { [get_parameter_value TRANSFER_TYPE] == "Aligned Accesses" }  {
       set_parameter_value UNALIGNED_ACCESSES_ENABLE 0
       set_parameter_value ONLY_FULL_ACCESS_ENABLE 0
-      set_parameter_property GUI_NO_BYTEENABLES ENABLED true
+# hardcoding no byte enables to be always on for aligned accesses.  This ensures the last transfer doesn't get turned into multiple transfers which will confuse the response tracking logic
+#      set_parameter_property GUI_NO_BYTEENABLES ENABLED true
+      set_parameter_property GUI_NO_BYTEENABLES ENABLED false
       set_parameter_value NO_BYTEENABLES [get_parameter_value GUI_NO_BYTEENABLES]
     } else {
       set_parameter_value UNALIGNED_ACCESSES_ENABLE 1

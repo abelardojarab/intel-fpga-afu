@@ -39,8 +39,13 @@
 extern "C" {
 #endif
 
+typedef struct {
+	bool eop_arrived;
+	size_t bytes_transferred;
+} fpga_dma_transfer_status_t;
+
 // Callback for asynchronous DMA transfers
-typedef void (*fpga_dma_transfer_cb)(void *context);
+typedef void (*fpga_dma_transfer_cb)(void *context, fpga_dma_transfer_status_t status);
 
 // Supported Streaming DMA transfers
 typedef enum {

@@ -26,16 +26,30 @@ QSYS_IPs/afu_id_avmm_slave/afu_id_avmm_slave_hw.tcl
 QSYS_IPs/custom_pattern_checker/custom_pattern_checker_hw.tcl
 QSYS_IPs/custom_pattern_generator/custom_pattern_generator_hw.tcl
 QSYS_IPs/dispatcher/dcp_dispatcher_hw.tcl
-QSYS_IPs/streaming_valve/m2s_streaming_valve_hw.tcl
+#QSYS_IPs/streaming_valve/m2s_streaming_valve_hw.tcl
 QSYS_IPs/write_master/dcp_write_master_hw.tcl
 QSYS_IPs/far_reach_avalon_mm_bridge/far_reach_avalon_mm_bridge_hw.tcl
+QSYS_IPs/dcp_msgdma_front_end/mSGDMA_frontend_hw.tcl
+QSYS_IPs/read_master/dcp_read_master_hw.tcl
+QSYS_IPs/one_to_two_streaming_demultiplexer/one_to_two_streaming_demultiplexer_hw.tcl
+QSYS_IPs/two_to_one_streaming_multiplexer/two_to_one_streaming_multiplexer_hw.tcl
+QSYS_IPs/avst_decimator/avst_decimator_hw.tcl
+
+# DFH Qsys IP component
+QSYS_IPs/afu_id_avmm_slave/afu_id_avmm_slave.sv
 
 # Modified mSGDMA write master
-QSYS_IPs/afu_id_avmm_slave/afu_id_avmm_slave.sv
 QSYS_IPs/write_master/dcp_byte_enable_generator.v
 QSYS_IPs/write_master/dcp_write_burst_control.v
 QSYS_IPs/write_master/dcp_write_master.v
 QSYS_IPs/write_master/dcp_ST_to_MM_Adapter.v
+QSYS_IPs/write_master/dcp_write_master_response_tracking.v
+
+# Modified mSGDMA read master
+QSYS_IPs/read_master/dcp_read_master.v
+QSYS_IPs/read_master/dcp_read_burst_control.v
+QSYS_IPs/read_master/dcp_MM_to_ST_Adapter.v
+QSYS_IPs/read_master/dcp_read_master_response_tracking.v
 
 # Modified mSGDMA dispatcher
 QSYS_IPs/dispatcher/dcp_csr_block.v
@@ -46,6 +60,19 @@ QSYS_IPs/dispatcher/dcp_response_block.v
 QSYS_IPs/dispatcher/dcp_dispatcher.v
 QSYS_IPs/dispatcher/dcp_write_signal_breakout.v
 
+# mSGDMA frontend that will feed descriptors into dispatcher
+QSYS_IPs/dcp_msgdma_front_end/mSGDMA_frontend_descriptor_format_pkg.sv
+QSYS_IPs/dcp_msgdma_front_end/mSGDMA_frontend.sv
+QSYS_IPs/dcp_msgdma_front_end/mSGDMA_descriptor_fetch_read_master.sv
+QSYS_IPs/dcp_msgdma_front_end/mSGDMA_descriptor_store_write_master.sv
+
+# new mux and demux cores used to select between pattern tests and loopback
+QSYS_IPs/one_to_two_streaming_demultiplexer/one_to_two_streaming_demux.v
+QSYS_IPs/two_to_one_streaming_multiplexer/two_to_one_streaming_mux.v
+
+# new streaming decimator core inserted between the M2S and S2M DMAs
+QSYS_IPs/avst_decimator/avst_decimator.sv
+
 # new write only pipeline bridge that supports Avalon write responses
 #QSYS_IPs/write_response_bridge/write_response_bridge.v
 QSYS_IPs/far_reach_avalon_mm_bridge/far_reach_avalon_mm_bridge.sv
@@ -53,7 +80,7 @@ QSYS_IPs/far_reach_avalon_mm_bridge/far_reach_avalon_mm_bridge_stall_free_pipeli
 
 
 # streaming valve used in the stream-to-memory DMA to prohibit additional data entering DMA after an EOP
-QSYS_IPs/streaming_valve/s2m_streaming_valve.sv
+#QSYS_IPs/streaming_valve/s2m_streaming_valve.sv
 
 # Pattern checker
 QSYS_IPs/custom_pattern_checker/mtm_custom_pattern_checker.v
@@ -78,6 +105,9 @@ TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/nul
 TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/host_wr_bridge.ip
 TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/s2m_custom_pattern_generator.ip
 TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/m2s_custom_pattern_checker.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/avst_decimator.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/one_to_two_streaming_demultiplexer.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/two_to_one_streaming_multiplexer.ip
 
 # Memory to streaming DMA BBB Qsys system .ip files
 memory_to_stream_dma_bbb/
@@ -89,6 +119,7 @@ memory_to_stream_dma_bbb/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_ho
 memory_to_stream_dma_bbb/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_id.ip
 memory_to_stream_dma_bbb/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_memory_bridge.ip
 memory_to_stream_dma_bbb/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_reset_in.ip
+memory_to_stream_dma_bbb/ip/memory_to_stream_dma_bbb/memory_to_stream_dma_bbb_mSGDMA_frontend.ip
 
 # Streaming to memory DMA BBB Qsys system .ip files
 stream_to_memory_dma_bbb/
@@ -101,5 +132,6 @@ stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_re
 stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_write_master.ip
 #stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_write_response_bridge.ip
 stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_host_bridge.ip
-stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_streaming_valve.ip
+#stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_streaming_valve.ip
+stream_to_memory_dma_bbb/ip/stream_to_memory_dma_bbb/stream_to_memory_dma_bbb_mSGDMA_frontend.ip
 

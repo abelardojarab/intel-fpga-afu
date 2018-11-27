@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <spirit:component xmlns:altera="http://www.altera.com/XMLSchema/IPXact/extensions" xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
-  <spirit:vendor>jcjb</spirit:vendor>
-  <spirit:library>stream_to_memory_dma_bbb_streaming_valve</spirit:library>
-  <spirit:name>stream_to_memory_dma_bbb_streaming_valve</spirit:name>
+  <spirit:vendor>JCJB</spirit:vendor>
+  <spirit:library>avst_decimator</spirit:library>
+  <spirit:name>avst_decimator</spirit:name>
   <spirit:version>1.0</spirit:version>
   <spirit:busInterfaces>
     <spirit:busInterface>
@@ -44,10 +44,10 @@
       <spirit:portMaps>
         <spirit:portMap>
           <spirit:logicalPort>
-            <spirit:name>address</spirit:name>
+            <spirit:name>write</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>csr_address</spirit:name>
+            <spirit:name>csr_write</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -56,14 +56,6 @@
           </spirit:logicalPort>
           <spirit:physicalPort>
             <spirit:name>csr_writedata</spirit:name>
-          </spirit:physicalPort>
-        </spirit:portMap>
-        <spirit:portMap>
-          <spirit:logicalPort>
-            <spirit:name>write</spirit:name>
-          </spirit:logicalPort>
-          <spirit:physicalPort>
-            <spirit:name>csr_write</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -105,7 +97,7 @@
         <spirit:parameter>
           <spirit:name>addressSpan</spirit:name>
           <spirit:displayName>Address span</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="addressSpan">32</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="addressSpan">8</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>addressUnits</spirit:name>
@@ -322,7 +314,34 @@
       </spirit:vendorExtensions>
     </spirit:busInterface>
     <spirit:busInterface>
-      <spirit:name>input_data</spirit:name>
+      <spirit:name>reset</spirit:name>
+      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="reset" spirit:version="17.1"></spirit:busType>
+      <spirit:slave></spirit:slave>
+      <spirit:portMaps>
+        <spirit:portMap>
+          <spirit:logicalPort>
+            <spirit:name>reset</spirit:name>
+          </spirit:logicalPort>
+          <spirit:physicalPort>
+            <spirit:name>reset</spirit:name>
+          </spirit:physicalPort>
+        </spirit:portMap>
+      </spirit:portMaps>
+      <spirit:parameters>
+        <spirit:parameter>
+          <spirit:name>associatedClock</spirit:name>
+          <spirit:displayName>Associated clock</spirit:displayName>
+          <spirit:value spirit:format="string" spirit:id="associatedClock">clock</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>synchronousEdges</spirit:name>
+          <spirit:displayName>Synchronous edges</spirit:displayName>
+          <spirit:value spirit:format="string" spirit:id="synchronousEdges">BOTH</spirit:value>
+        </spirit:parameter>
+      </spirit:parameters>
+    </spirit:busInterface>
+    <spirit:busInterface>
+      <spirit:name>sink</spirit:name>
       <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="avalon_streaming" spirit:version="17.1"></spirit:busType>
       <spirit:slave></spirit:slave>
       <spirit:portMaps>
@@ -336,10 +355,10 @@
         </spirit:portMap>
         <spirit:portMap>
           <spirit:logicalPort>
-            <spirit:name>empty</spirit:name>
+            <spirit:name>startofpacket</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>snk_empty</spirit:name>
+            <spirit:name>snk_sop</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -352,18 +371,10 @@
         </spirit:portMap>
         <spirit:portMap>
           <spirit:logicalPort>
-            <spirit:name>ready</spirit:name>
+            <spirit:name>empty</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>snk_ready</spirit:name>
-          </spirit:physicalPort>
-        </spirit:portMap>
-        <spirit:portMap>
-          <spirit:logicalPort>
-            <spirit:name>startofpacket</spirit:name>
-          </spirit:logicalPort>
-          <spirit:physicalPort>
-            <spirit:name>snk_sop</spirit:name>
+            <spirit:name>snk_empty</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -372,6 +383,14 @@
           </spirit:logicalPort>
           <spirit:physicalPort>
             <spirit:name>snk_valid</spirit:name>
+          </spirit:physicalPort>
+        </spirit:portMap>
+        <spirit:portMap>
+          <spirit:logicalPort>
+            <spirit:name>ready</spirit:name>
+          </spirit:logicalPort>
+          <spirit:physicalPort>
+            <spirit:name>snk_ready</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
       </spirit:portMaps>
@@ -444,7 +463,7 @@
       </spirit:parameters>
     </spirit:busInterface>
     <spirit:busInterface>
-      <spirit:name>output_data</spirit:name>
+      <spirit:name>source</spirit:name>
       <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="avalon_streaming" spirit:version="17.1"></spirit:busType>
       <spirit:master></spirit:master>
       <spirit:portMaps>
@@ -458,10 +477,10 @@
         </spirit:portMap>
         <spirit:portMap>
           <spirit:logicalPort>
-            <spirit:name>empty</spirit:name>
+            <spirit:name>startofpacket</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>src_empty</spirit:name>
+            <spirit:name>src_sop</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -474,18 +493,18 @@
         </spirit:portMap>
         <spirit:portMap>
           <spirit:logicalPort>
-            <spirit:name>ready</spirit:name>
+            <spirit:name>empty</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>src_ready</spirit:name>
+            <spirit:name>src_empty</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
           <spirit:logicalPort>
-            <spirit:name>startofpacket</spirit:name>
+            <spirit:name>ready</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>src_sop</spirit:name>
+            <spirit:name>src_ready</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -565,40 +584,13 @@
         </spirit:parameter>
       </spirit:parameters>
     </spirit:busInterface>
-    <spirit:busInterface>
-      <spirit:name>reset</spirit:name>
-      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="reset" spirit:version="17.1"></spirit:busType>
-      <spirit:slave></spirit:slave>
-      <spirit:portMaps>
-        <spirit:portMap>
-          <spirit:logicalPort>
-            <spirit:name>reset</spirit:name>
-          </spirit:logicalPort>
-          <spirit:physicalPort>
-            <spirit:name>reset</spirit:name>
-          </spirit:physicalPort>
-        </spirit:portMap>
-      </spirit:portMaps>
-      <spirit:parameters>
-        <spirit:parameter>
-          <spirit:name>associatedClock</spirit:name>
-          <spirit:displayName>Associated clock</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="associatedClock">clock</spirit:value>
-        </spirit:parameter>
-        <spirit:parameter>
-          <spirit:name>synchronousEdges</spirit:name>
-          <spirit:displayName>Synchronous edges</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="synchronousEdges">BOTH</spirit:value>
-        </spirit:parameter>
-      </spirit:parameters>
-    </spirit:busInterface>
   </spirit:busInterfaces>
   <spirit:model>
     <spirit:views>
       <spirit:view>
         <spirit:name>QUARTUS_SYNTH</spirit:name>
         <spirit:envIdentifier>:quartus.altera.com:</spirit:envIdentifier>
-        <spirit:modelName>streaming_valve</spirit:modelName>
+        <spirit:modelName>avst_decimator</spirit:modelName>
         <spirit:fileSetRef>
           <spirit:localName>QUARTUS_SYNTH</spirit:localName>
         </spirit:fileSetRef>
@@ -630,38 +622,6 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>csr_address</spirit:name>
-        <spirit:wire>
-          <spirit:direction>in</spirit:direction>
-          <spirit:vector>
-            <spirit:left>0</spirit:left>
-            <spirit:right>2</spirit:right>
-          </spirit:vector>
-          <spirit:wireTypeDefs>
-            <spirit:wireTypeDef>
-              <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
-              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
-            </spirit:wireTypeDef>
-          </spirit:wireTypeDefs>
-        </spirit:wire>
-      </spirit:port>
-      <spirit:port>
-        <spirit:name>csr_writedata</spirit:name>
-        <spirit:wire>
-          <spirit:direction>in</spirit:direction>
-          <spirit:vector>
-            <spirit:left>0</spirit:left>
-            <spirit:right>31</spirit:right>
-          </spirit:vector>
-          <spirit:wireTypeDefs>
-            <spirit:wireTypeDef>
-              <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
-              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
-            </spirit:wireTypeDef>
-          </spirit:wireTypeDefs>
-        </spirit:wire>
-      </spirit:port>
-      <spirit:port>
         <spirit:name>csr_write</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
@@ -674,12 +634,28 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
+        <spirit:name>csr_writedata</spirit:name>
+        <spirit:wire>
+          <spirit:direction>in</spirit:direction>
+          <spirit:vector>
+            <spirit:left>0</spirit:left>
+            <spirit:right>63</spirit:right>
+          </spirit:vector>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
+              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
         <spirit:name>csr_byteenable</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
             <spirit:left>0</spirit:left>
-            <spirit:right>3</spirit:right>
+            <spirit:right>7</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
@@ -707,91 +683,11 @@
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
             <spirit:left>0</spirit:left>
-            <spirit:right>31</spirit:right>
+            <spirit:right>63</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
               <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
-              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
-            </spirit:wireTypeDef>
-          </spirit:wireTypeDefs>
-        </spirit:wire>
-      </spirit:port>
-      <spirit:port>
-        <spirit:name>snk_data</spirit:name>
-        <spirit:wire>
-          <spirit:direction>in</spirit:direction>
-          <spirit:vector>
-            <spirit:left>0</spirit:left>
-            <spirit:right>511</spirit:right>
-          </spirit:vector>
-          <spirit:wireTypeDefs>
-            <spirit:wireTypeDef>
-              <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
-              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
-            </spirit:wireTypeDef>
-          </spirit:wireTypeDefs>
-        </spirit:wire>
-      </spirit:port>
-      <spirit:port>
-        <spirit:name>snk_empty</spirit:name>
-        <spirit:wire>
-          <spirit:direction>in</spirit:direction>
-          <spirit:vector>
-            <spirit:left>0</spirit:left>
-            <spirit:right>5</spirit:right>
-          </spirit:vector>
-          <spirit:wireTypeDefs>
-            <spirit:wireTypeDef>
-              <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
-              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
-            </spirit:wireTypeDef>
-          </spirit:wireTypeDefs>
-        </spirit:wire>
-      </spirit:port>
-      <spirit:port>
-        <spirit:name>snk_eop</spirit:name>
-        <spirit:wire>
-          <spirit:direction>in</spirit:direction>
-          <spirit:wireTypeDefs>
-            <spirit:wireTypeDef>
-              <spirit:typeName>STD_LOGIC</spirit:typeName>
-              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
-            </spirit:wireTypeDef>
-          </spirit:wireTypeDefs>
-        </spirit:wire>
-      </spirit:port>
-      <spirit:port>
-        <spirit:name>snk_ready</spirit:name>
-        <spirit:wire>
-          <spirit:direction>out</spirit:direction>
-          <spirit:wireTypeDefs>
-            <spirit:wireTypeDef>
-              <spirit:typeName>STD_LOGIC</spirit:typeName>
-              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
-            </spirit:wireTypeDef>
-          </spirit:wireTypeDefs>
-        </spirit:wire>
-      </spirit:port>
-      <spirit:port>
-        <spirit:name>snk_sop</spirit:name>
-        <spirit:wire>
-          <spirit:direction>in</spirit:direction>
-          <spirit:wireTypeDefs>
-            <spirit:wireTypeDef>
-              <spirit:typeName>STD_LOGIC</spirit:typeName>
-              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
-            </spirit:wireTypeDef>
-          </spirit:wireTypeDefs>
-        </spirit:wire>
-      </spirit:port>
-      <spirit:port>
-        <spirit:name>snk_valid</spirit:name>
-        <spirit:wire>
-          <spirit:direction>in</spirit:direction>
-          <spirit:wireTypeDefs>
-            <spirit:wireTypeDef>
-              <spirit:typeName>STD_LOGIC</spirit:typeName>
               <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
             </spirit:wireTypeDef>
           </spirit:wireTypeDefs>
@@ -814,16 +710,12 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>src_empty</spirit:name>
+        <spirit:name>src_sop</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
-          <spirit:vector>
-            <spirit:left>0</spirit:left>
-            <spirit:right>5</spirit:right>
-          </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
-              <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
               <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
             </spirit:wireTypeDef>
           </spirit:wireTypeDefs>
@@ -842,21 +734,25 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>src_ready</spirit:name>
+        <spirit:name>src_empty</spirit:name>
         <spirit:wire>
-          <spirit:direction>in</spirit:direction>
+          <spirit:direction>out</spirit:direction>
+          <spirit:vector>
+            <spirit:left>0</spirit:left>
+            <spirit:right>5</spirit:right>
+          </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
-              <spirit:typeName>STD_LOGIC</spirit:typeName>
+              <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
               <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
             </spirit:wireTypeDef>
           </spirit:wireTypeDefs>
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>src_sop</spirit:name>
+        <spirit:name>src_ready</spirit:name>
         <spirit:wire>
-          <spirit:direction>out</spirit:direction>
+          <spirit:direction>in</spirit:direction>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
               <spirit:typeName>STD_LOGIC</spirit:typeName>
@@ -877,20 +773,100 @@
           </spirit:wireTypeDefs>
         </spirit:wire>
       </spirit:port>
+      <spirit:port>
+        <spirit:name>snk_data</spirit:name>
+        <spirit:wire>
+          <spirit:direction>in</spirit:direction>
+          <spirit:vector>
+            <spirit:left>0</spirit:left>
+            <spirit:right>511</spirit:right>
+          </spirit:vector>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
+              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>snk_sop</spirit:name>
+        <spirit:wire>
+          <spirit:direction>in</spirit:direction>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
+              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>snk_eop</spirit:name>
+        <spirit:wire>
+          <spirit:direction>in</spirit:direction>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
+              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>snk_empty</spirit:name>
+        <spirit:wire>
+          <spirit:direction>in</spirit:direction>
+          <spirit:vector>
+            <spirit:left>0</spirit:left>
+            <spirit:right>5</spirit:right>
+          </spirit:vector>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
+              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>snk_valid</spirit:name>
+        <spirit:wire>
+          <spirit:direction>in</spirit:direction>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
+              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>snk_ready</spirit:name>
+        <spirit:wire>
+          <spirit:direction>out</spirit:direction>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
+              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
     </spirit:ports>
   </spirit:model>
   <spirit:vendorExtensions>
     <altera:entity_info>
-      <spirit:vendor>jcjb</spirit:vendor>
-      <spirit:library>stream_to_memory_dma_bbb_streaming_valve</spirit:library>
-      <spirit:name>streaming_valve</spirit:name>
+      <spirit:vendor>JCJB</spirit:vendor>
+      <spirit:library>avst_decimator</spirit:library>
+      <spirit:name>avst_decimator</spirit:name>
       <spirit:version>1.0</spirit:version>
     </altera:entity_info>
     <altera:altera_module_parameters>
       <spirit:parameters>
         <spirit:parameter>
           <spirit:name>DATA_WIDTH</spirit:name>
-          <spirit:displayName>DATA_WIDTH</spirit:displayName>
+          <spirit:displayName>Data Width</spirit:displayName>
           <spirit:value spirit:format="long" spirit:id="DATA_WIDTH">512</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
@@ -910,7 +886,7 @@
         <spirit:parameter>
           <spirit:name>deviceFamily</spirit:name>
           <spirit:displayName>Device family</spirit:displayName>
-          <spirit:value spirit:format="string" spirit:id="deviceFamily">Stratix 10</spirit:value>
+          <spirit:value spirit:format="string" spirit:id="deviceFamily">Arria 10</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>deviceSpeedGrade</spirit:name>
@@ -927,9 +903,6 @@
           <spirit:displayName>bonusData</spirit:displayName>
           <spirit:value spirit:format="string" spirit:id="bonusData">bonusData 
 {
-   element streaming_valve_0
-   {
-   }
 }
 </spirit:value>
         </spirit:parameter>
@@ -982,22 +955,6 @@
             <isStart>false</isStart>
             <ports>
                 <port>
-                    <name>csr_address</name>
-                    <role>address</role>
-                    <direction>Input</direction>
-                    <width>3</width>
-                    <lowerBound>0</lowerBound>
-                    <vhdlType>STD_LOGIC_VECTOR</vhdlType>
-                </port>
-                <port>
-                    <name>csr_writedata</name>
-                    <role>writedata</role>
-                    <direction>Input</direction>
-                    <width>32</width>
-                    <lowerBound>0</lowerBound>
-                    <vhdlType>STD_LOGIC_VECTOR</vhdlType>
-                </port>
-                <port>
                     <name>csr_write</name>
                     <role>write</role>
                     <direction>Input</direction>
@@ -1006,10 +963,18 @@
                     <vhdlType>STD_LOGIC</vhdlType>
                 </port>
                 <port>
+                    <name>csr_writedata</name>
+                    <role>writedata</role>
+                    <direction>Input</direction>
+                    <width>64</width>
+                    <lowerBound>0</lowerBound>
+                    <vhdlType>STD_LOGIC_VECTOR</vhdlType>
+                </port>
+                <port>
                     <name>csr_byteenable</name>
                     <role>byteenable</role>
                     <direction>Input</direction>
-                    <width>4</width>
+                    <width>8</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
@@ -1025,7 +990,7 @@
                     <name>csr_readdata</name>
                     <role>readdata</role>
                     <direction>Output</direction>
-                    <width>32</width>
+                    <width>64</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
@@ -1062,7 +1027,7 @@
                     </entry>
                     <entry>
                         <key>addressSpan</key>
-                        <value>32</value>
+                        <value>8</value>
                     </entry>
                     <entry>
                         <key>addressUnits</key>
@@ -1219,7 +1184,37 @@
             </parameters>
         </interface>
         <interface>
-            <name>input_data</name>
+            <name>reset</name>
+            <type>reset</type>
+            <isStart>false</isStart>
+            <ports>
+                <port>
+                    <name>reset</name>
+                    <role>reset</role>
+                    <direction>Input</direction>
+                    <width>1</width>
+                    <lowerBound>0</lowerBound>
+                    <vhdlType>STD_LOGIC</vhdlType>
+                </port>
+            </ports>
+            <assignments>
+                <assignmentValueMap/>
+            </assignments>
+            <parameters>
+                <parameterValueMap>
+                    <entry>
+                        <key>associatedClock</key>
+                        <value>clock</value>
+                    </entry>
+                    <entry>
+                        <key>synchronousEdges</key>
+                        <value>BOTH</value>
+                    </entry>
+                </parameterValueMap>
+            </parameters>
+        </interface>
+        <interface>
+            <name>sink</name>
             <type>avalon_streaming</type>
             <isStart>false</isStart>
             <ports>
@@ -1232,12 +1227,12 @@
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
                 <port>
-                    <name>snk_empty</name>
-                    <role>empty</role>
+                    <name>snk_sop</name>
+                    <role>startofpacket</role>
                     <direction>Input</direction>
-                    <width>6</width>
+                    <width>1</width>
                     <lowerBound>0</lowerBound>
-                    <vhdlType>STD_LOGIC_VECTOR</vhdlType>
+                    <vhdlType>STD_LOGIC</vhdlType>
                 </port>
                 <port>
                     <name>snk_eop</name>
@@ -1248,25 +1243,25 @@
                     <vhdlType>STD_LOGIC</vhdlType>
                 </port>
                 <port>
-                    <name>snk_ready</name>
-                    <role>ready</role>
-                    <direction>Output</direction>
-                    <width>1</width>
-                    <lowerBound>0</lowerBound>
-                    <vhdlType>STD_LOGIC</vhdlType>
-                </port>
-                <port>
-                    <name>snk_sop</name>
-                    <role>startofpacket</role>
+                    <name>snk_empty</name>
+                    <role>empty</role>
                     <direction>Input</direction>
-                    <width>1</width>
+                    <width>6</width>
                     <lowerBound>0</lowerBound>
-                    <vhdlType>STD_LOGIC</vhdlType>
+                    <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
                 <port>
                     <name>snk_valid</name>
                     <role>valid</role>
                     <direction>Input</direction>
+                    <width>1</width>
+                    <lowerBound>0</lowerBound>
+                    <vhdlType>STD_LOGIC</vhdlType>
+                </port>
+                <port>
+                    <name>snk_ready</name>
+                    <role>ready</role>
+                    <direction>Output</direction>
                     <width>1</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC</vhdlType>
@@ -1332,7 +1327,7 @@
             </parameters>
         </interface>
         <interface>
-            <name>output_data</name>
+            <name>source</name>
             <type>avalon_streaming</type>
             <isStart>true</isStart>
             <ports>
@@ -1345,12 +1340,12 @@
                     <vhdlType>STD_LOGIC_VECTOR</vhdlType>
                 </port>
                 <port>
-                    <name>src_empty</name>
-                    <role>empty</role>
+                    <name>src_sop</name>
+                    <role>startofpacket</role>
                     <direction>Output</direction>
-                    <width>6</width>
+                    <width>1</width>
                     <lowerBound>0</lowerBound>
-                    <vhdlType>STD_LOGIC_VECTOR</vhdlType>
+                    <vhdlType>STD_LOGIC</vhdlType>
                 </port>
                 <port>
                     <name>src_eop</name>
@@ -1361,17 +1356,17 @@
                     <vhdlType>STD_LOGIC</vhdlType>
                 </port>
                 <port>
+                    <name>src_empty</name>
+                    <role>empty</role>
+                    <direction>Output</direction>
+                    <width>6</width>
+                    <lowerBound>0</lowerBound>
+                    <vhdlType>STD_LOGIC_VECTOR</vhdlType>
+                </port>
+                <port>
                     <name>src_ready</name>
                     <role>ready</role>
                     <direction>Input</direction>
-                    <width>1</width>
-                    <lowerBound>0</lowerBound>
-                    <vhdlType>STD_LOGIC</vhdlType>
-                </port>
-                <port>
-                    <name>src_sop</name>
-                    <role>startofpacket</role>
-                    <direction>Output</direction>
                     <width>1</width>
                     <lowerBound>0</lowerBound>
                     <vhdlType>STD_LOGIC</vhdlType>
@@ -1444,36 +1439,6 @@
                 </parameterValueMap>
             </parameters>
         </interface>
-        <interface>
-            <name>reset</name>
-            <type>reset</type>
-            <isStart>false</isStart>
-            <ports>
-                <port>
-                    <name>reset</name>
-                    <role>reset</role>
-                    <direction>Input</direction>
-                    <width>1</width>
-                    <lowerBound>0</lowerBound>
-                    <vhdlType>STD_LOGIC</vhdlType>
-                </port>
-            </ports>
-            <assignments>
-                <assignmentValueMap/>
-            </assignments>
-            <parameters>
-                <parameterValueMap>
-                    <entry>
-                        <key>associatedClock</key>
-                        <value>clock</value>
-                    </entry>
-                    <entry>
-                        <key>synchronousEdges</key>
-                        <value>BOTH</value>
-                    </entry>
-                </parameterValueMap>
-            </parameters>
-        </interface>
     </interfaces>
 </boundaryDefinition>]]></spirit:value>
         </spirit:parameter>
@@ -1490,15 +1455,15 @@
                 <consumedSystemInfos>
                     <entry>
                         <key>ADDRESS_MAP</key>
-                        <value>&lt;address-map&gt;&lt;slave name='csr' start='0x0' end='0x20' datawidth='32' /&gt;&lt;/address-map&gt;</value>
+                        <value>&lt;address-map&gt;&lt;slave name='csr' start='0x0' end='0x8' datawidth='64' /&gt;&lt;/address-map&gt;</value>
                     </entry>
                     <entry>
                         <key>ADDRESS_WIDTH</key>
-                        <value>5</value>
+                        <value>3</value>
                     </entry>
                     <entry>
                         <key>MAX_SLAVE_DATA_WIDTH</key>
-                        <value>32</value>
+                        <value>64</value>
                     </entry>
                 </consumedSystemInfos>
             </value>
@@ -1509,18 +1474,20 @@
       </spirit:parameters>
     </altera:altera_system_parameters>
     <altera:altera_interface_boundary>
-      <altera:interface_mapping altera:name="clock" altera:internal="stream_to_memory_dma_bbb_streaming_valve.clock" altera:type="clock" altera:dir="end">
+      <altera:interface_mapping altera:name="clock" altera:internal="avst_decimator.clock" altera:type="clock" altera:dir="end">
         <altera:port_mapping altera:name="clk" altera:internal="clk"></altera:port_mapping>
       </altera:interface_mapping>
-      <altera:interface_mapping altera:name="csr" altera:internal="stream_to_memory_dma_bbb_streaming_valve.csr" altera:type="avalon" altera:dir="end">
-        <altera:port_mapping altera:name="csr_address" altera:internal="csr_address"></altera:port_mapping>
+      <altera:interface_mapping altera:name="csr" altera:internal="avst_decimator.csr" altera:type="avalon" altera:dir="end">
         <altera:port_mapping altera:name="csr_byteenable" altera:internal="csr_byteenable"></altera:port_mapping>
         <altera:port_mapping altera:name="csr_read" altera:internal="csr_read"></altera:port_mapping>
         <altera:port_mapping altera:name="csr_readdata" altera:internal="csr_readdata"></altera:port_mapping>
         <altera:port_mapping altera:name="csr_write" altera:internal="csr_write"></altera:port_mapping>
         <altera:port_mapping altera:name="csr_writedata" altera:internal="csr_writedata"></altera:port_mapping>
       </altera:interface_mapping>
-      <altera:interface_mapping altera:name="input_data" altera:internal="stream_to_memory_dma_bbb_streaming_valve.input_data" altera:type="avalon_streaming" altera:dir="end">
+      <altera:interface_mapping altera:name="reset" altera:internal="avst_decimator.reset" altera:type="reset" altera:dir="end">
+        <altera:port_mapping altera:name="reset" altera:internal="reset"></altera:port_mapping>
+      </altera:interface_mapping>
+      <altera:interface_mapping altera:name="sink" altera:internal="avst_decimator.sink" altera:type="avalon_streaming" altera:dir="end">
         <altera:port_mapping altera:name="snk_data" altera:internal="snk_data"></altera:port_mapping>
         <altera:port_mapping altera:name="snk_empty" altera:internal="snk_empty"></altera:port_mapping>
         <altera:port_mapping altera:name="snk_eop" altera:internal="snk_eop"></altera:port_mapping>
@@ -1528,16 +1495,13 @@
         <altera:port_mapping altera:name="snk_sop" altera:internal="snk_sop"></altera:port_mapping>
         <altera:port_mapping altera:name="snk_valid" altera:internal="snk_valid"></altera:port_mapping>
       </altera:interface_mapping>
-      <altera:interface_mapping altera:name="output_data" altera:internal="stream_to_memory_dma_bbb_streaming_valve.output_data" altera:type="avalon_streaming" altera:dir="start">
+      <altera:interface_mapping altera:name="source" altera:internal="avst_decimator.source" altera:type="avalon_streaming" altera:dir="start">
         <altera:port_mapping altera:name="src_data" altera:internal="src_data"></altera:port_mapping>
         <altera:port_mapping altera:name="src_empty" altera:internal="src_empty"></altera:port_mapping>
         <altera:port_mapping altera:name="src_eop" altera:internal="src_eop"></altera:port_mapping>
         <altera:port_mapping altera:name="src_ready" altera:internal="src_ready"></altera:port_mapping>
         <altera:port_mapping altera:name="src_sop" altera:internal="src_sop"></altera:port_mapping>
         <altera:port_mapping altera:name="src_valid" altera:internal="src_valid"></altera:port_mapping>
-      </altera:interface_mapping>
-      <altera:interface_mapping altera:name="reset" altera:internal="stream_to_memory_dma_bbb_streaming_valve.reset" altera:type="reset" altera:dir="end">
-        <altera:port_mapping altera:name="reset" altera:internal="reset"></altera:port_mapping>
       </altera:interface_mapping>
     </altera:altera_interface_boundary>
     <altera:altera_has_warnings>false</altera:altera_has_warnings>

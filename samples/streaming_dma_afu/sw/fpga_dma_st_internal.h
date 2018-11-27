@@ -325,6 +325,7 @@ typedef struct msgdma_sw_desc {
 	struct fpga_dma_transfer *transfer;
 	sem_t tf_status; // When locked, the transfer in progress
 	bool kill_worker;
+	uint64_t last;
 } msgdma_sw_desc_t;
 
 // DMA handle
@@ -342,7 +343,8 @@ struct fpga_dma_handle {
 	msgdma_block_mem_t *block_mem;
 	concurrent_queue<struct msgdma_sw_desc*> ingress_queue;
 	concurrent_queue<struct msgdma_sw_desc*> pending_queue;	
-	concurrent_queue<struct msgdma_hw_descp*> free_desc;	
+	concurrent_queue<struct msgdma_hw_descp*> free_desc;
+	concurrent_queue<struct msgdma_hw_descp*> invalid_desc_queue;
 	// channel type
 	fpga_dma_channel_type_t ch_type;
         #define INVALID_CHANNEL (0x7fffffffffffffffULL)

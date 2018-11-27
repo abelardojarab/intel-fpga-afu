@@ -300,6 +300,7 @@ static msgdma_sw_desc* init_sw_desc(fpga_dma_transfer_t transfer) {
 
  	local_memcpy(sw_desc->transfer, transfer, sizeof(struct fpga_dma_transfer));
 	sw_desc->kill_worker = false;
+	sw_desc->last = 0;
 	return sw_desc;
 
 out:
@@ -447,6 +448,8 @@ static void *dispatcherWorker(void* dma_handle) {
 				uint64_t k;
 				for(k=1; k <= desc_count; k++) {
 					dump_hw_desc_log(0, sw_desc[k]->hw_descp->hw_desc, disp_log);
+					if(k == desc_count)
+						sw_desc[k]->last = 1;
 					dma_h->pending_queue.push(sw_desc[k]);
 				}
 
@@ -456,6 +459,7 @@ static void *dispatcherWorker(void* dma_handle) {
 					while(dma_h->free_desc.empty());
 					dma_h->free_desc.try_pop(unused_hw_descp);
 					dump_hw_desc_log(0, unused_hw_descp->hw_desc, disp_log);
+					dma_h->invalid_desc_queue.push(unused_hw_descp);
 				}
 
 				// reset descriptor count
@@ -474,6 +478,7 @@ static void *dispatcherWorker(void* dma_handle) {
 // callback associated with the corresponding buffer transfer
 static void *completionWorker(void* dma_handle) {
 	fpga_dma_handle_t dma_h = (fpga_dma_handle_t )dma_handle;
+	uint64_t i;
 	if(!dma_h) {
 		FPGA_DMA_ST_ERR("Invalid DMA handle\n");
 		return NULL;
@@ -493,8 +498,14 @@ static void *completionWorker(void* dma_handle) {
 			// return hw_descp to free pool
 			dma_h->free_desc.push(sw_desc->hw_descp);
 
-			// mark transfer complete
-			sem_post(&sw_desc->tf_status);
+			if(sw_desc->last == 1 && (sw_desc->hw_descp->hw_desc_id < (FPGA_DMA_BLOCK_SIZE - 1))) {
+				for(i = (sw_desc->hw_descp->hw_desc_id + 1) ; i < FPGA_DMA_BLOCK_SIZE ; i++) {
+					msgdma_hw_descp_t *unused_hw_descp;
+					dma_h->invalid_desc_queue.try_pop(unused_hw_descp);
+					dma_h->free_desc.push(unused_hw_descp);
+				}
+			}
+
 			if (sw_desc->transfer->cb) {
 				fpga_dma_transfer_status_t status;
 				status.eop_arrived = sw_desc->hw_descp->hw_desc->eop_arrived;
@@ -502,6 +513,8 @@ static void *completionWorker(void* dma_handle) {
 				sw_desc->transfer->cb(sw_desc->transfer->context, status);
 				destroy_sw_desc(sw_desc);
 			}
+			// mark transfer complete
+			sem_post(&sw_desc->tf_status);
 		}
 	}
 	return dma_h;

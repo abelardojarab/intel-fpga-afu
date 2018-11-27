@@ -506,8 +506,6 @@ static void *completionWorker(void* dma_handle) {
 				}
 			}
 
-			// mark transfer complete
-			sem_post(&sw_desc->tf_status);
 			if (sw_desc->transfer->cb) {
 				fpga_dma_transfer_status_t status;
 				status.eop_arrived = sw_desc->hw_descp->hw_desc->eop_arrived;
@@ -515,6 +513,8 @@ static void *completionWorker(void* dma_handle) {
 				sw_desc->transfer->cb(sw_desc->transfer->context, status);
 				destroy_sw_desc(sw_desc);
 			}
+			// mark transfer complete
+			sem_post(&sw_desc->tf_status);
 		}
 	}
 	return dma_h;

@@ -22,10 +22,10 @@
 // must be express and approved by Intel in writing.
 //
 // *****************************************************************************
-// baeckler - 05-11-2016
-// maguirre - Apr/2017
-//          - Edited for ETH E2E validation project
-// ecustodi - Feb/2018 modifications for DCP testing
+// 05-11-2016
+// Apr/2017 - Edited for ETH E2E validation project
+// Feb/2018 - Modifications for A10
+// Nov/2018 - Modification for S10
 
 module eth_e2e_e10 #(
     parameter NUM_HSSI_RAW_PR_IFCS = 1,

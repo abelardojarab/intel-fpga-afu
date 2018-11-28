@@ -19,7 +19,6 @@
 // estoppel or otherwise.  Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //
-// Engineer:    mariano.aguirre@intel.com
 // Create Date: March/2017
 // Module Name: ccip_eth_csr.v
 // Project:     Ethernet
@@ -87,6 +86,11 @@ assign clk = `PLATFORM_PARAM_CCI_P_CLOCK;
 
 logic reset;
 assign reset = `PLATFORM_PARAM_CCI_P_RESET;
+`ifndef USE_QSFP1 // USE_QSFP0 or USE_BOTH
+  localparam HSSI_IDX = 0;
+`else
+  localparam HSSI_IDX = 0;
+`endif
 
 //------------------------------------------------------------------------------
 // Register PR <--> PR signals near interface before consuming it
@@ -163,16 +167,12 @@ logic   [31:0] rd_data;
 logic init_start;
 logic init_done;
 
-`ifndef USE_QSFP1 // USE_QSFP0 or USE_BOTH
-`ifdef E2E_E40
- eth_e2e_e40
-`endif
 `ifdef E2E_E10
  eth_e2e_e10
 `endif
 #(
     .NUM_HSSI_RAW_PR_IFCS(1),
-    .NUM_LN(4)
+    .NUM_LN(1)
 )
   prz0
    (
@@ -184,34 +184,9 @@ logic init_done;
     .csr_init_done(init_done),
     .clk(clk),         // 100MHz
     .reset(pck_cp2af_softReset_T1),
-    .hssi(hssi[0])
+    .hssi(hssi[HSSI_IDX])
     );
-`endif
 
-`ifndef USE_QSFP0 // USE_QSFP1 or USE_BOTH
-`ifdef E2E_E40
-    eth_e2e_e40
-`endif
-`ifdef E2E_E10
-    eth_e2e_e10
-`endif
-#(
-    .NUM_HSSI_RAW_PR_IFCS(1),
-    .NUM_LN(4)
-)
-    prz0
-    (
-    // ETH CSR ports
-    .eth_ctrl_addr(eth_ctrl_addr),
-    .eth_wr_data(eth_wr_data),
-    .eth_rd_data(eth_rd_data),
-    .csr_init_start(init_start),
-    .csr_init_done(init_done),
-    .clk(clk),         // 100MHz
-    .reset(pck_cp2af_softReset_T1),
-    .hssi(hssi[1])
-    );
-`endif
 
 logic action_r = 0;
 

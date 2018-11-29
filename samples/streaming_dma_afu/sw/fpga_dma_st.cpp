@@ -881,6 +881,16 @@ fpga_result fpgaDMAClose(fpga_dma_handle_t dma_h) {
 	}
 	fpgaDMATransferDestroy(&dummy_transfer);
 
+	// Disable prefetcher frontend before freeing descriptor
+	// memory to avoid polling non-existent host buffers
+	msgdma_prefetcher_ctrl_t prefetcher_ctrl;
+	prefetcher_ctrl = {0};
+	prefetcher_ctrl.ct.timeout_val = 0xFF;
+	prefetcher_ctrl.ct.timeout_en = 0;
+	prefetcher_ctrl.ct.fetch_en = 0;	
+	res = MMIOWrite64Blk(dma_h, PREFETCHER_CTRL(dma_h), (uint64_t)&prefetcher_ctrl.reg, sizeof(prefetcher_ctrl.reg));
+	ON_ERR_GOTO(res, out, "disabling fetch engine");
+
 	// Free block buffers
 	for(i=0; i<FPGA_DMA_MAX_BLOCKS; i++) {
 		res = fpgaReleaseBuffer(dma_h->fpga_h, dma_h->block_mem[i].block_wsid);

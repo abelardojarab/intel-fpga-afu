@@ -527,6 +527,7 @@ fpga_result configure_numa(fpga_token afc_token, bool cpu_affinity, bool memory_
 {
 	fpga_result res = FPGA_OK;
 	fpga_properties props;
+	#ifndef USE_ASE
 	// Set up proper affinity if requested
 	if (cpu_affinity || memory_affinity) {
 		unsigned dom = 0, bus = 0, dev = 0, func = 0;
@@ -583,7 +584,7 @@ fpga_result configure_numa(fpga_token afc_token, bool cpu_affinity, bool memory_
 
 out_destroy_prop:
 	res = fpgaDestroyProperties(&props);
-
+	#endif
 out:
 	return res;
 }

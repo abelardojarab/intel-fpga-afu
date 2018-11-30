@@ -41,4 +41,4 @@ wait_for_sim_ready
 setup_app_env
 build_app
 # run the executable
-$app_base/fpga_dma_st_test 1
+$app_base/fpga_dma_st_test -l off -s 4096 -p 4096 -r mtos -t fixed

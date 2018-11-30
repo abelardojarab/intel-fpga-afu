@@ -38,7 +38,9 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <semaphore.h>
+#ifndef USE_ASE
 #include <hwloc.h>
+#endif
 #include "fpga_dma.h"
 #include "fpga_pattern_gen.h"
 #include "fpga_pattern_checker.h"

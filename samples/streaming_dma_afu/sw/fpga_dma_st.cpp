@@ -272,6 +272,12 @@ static void assign_hw_desc(msgdma_sw_desc_t *sw_desc,
 		hw_descp->hw_desc->ctrl.generate_sop = 0;
 		hw_descp->hw_desc->ctrl.generate_eop = 0;
 	}
+
+	if (sw_desc->transfer->rx_ctrl == END_ON_EOP) 
+		hw_descp->hw_desc->ctrl.end_on_eop = 1;
+	else
+		hw_descp->hw_desc->ctrl.end_on_eop = 0;
+	
 	hw_descp->hw_desc->ctrl.go = 1;
 	if (set_owned_by_hw)
 		hw_descp->hw_desc->owned_by_hw = 1;
@@ -509,7 +515,10 @@ static void *completionWorker(void* dma_handle) {
 			if (sw_desc->transfer->cb) {
 				fpga_dma_transfer_status_t status;
 				status.eop_arrived = sw_desc->hw_descp->hw_desc->eop_arrived;
-				status.bytes_transferred = sw_desc->hw_descp->hw_desc->bytes_transferred;
+				if(sw_desc->transfer->transfer_type == HOST_MM_TO_FPGA_ST)
+					status.bytes_transferred = sw_desc->hw_descp->hw_desc->len;
+				else
+					status.bytes_transferred = sw_desc->hw_descp->hw_desc->bytes_transferred;
 				sw_desc->transfer->cb(sw_desc->transfer->context, status);
 				destroy_sw_desc(sw_desc);
 			}
@@ -1265,7 +1274,11 @@ fpga_result fpgaDMATransfer(fpga_dma_handle_t dma, fpga_dma_transfer_t transfer)
 		sem_wait(&sw_desc->tf_status);
 		// copy over EOP and transferred bytes
 		transfer->eop_arrived = sw_desc->hw_descp->hw_desc->eop_arrived;
-		transfer->bytes_transferred = sw_desc->hw_descp->hw_desc->bytes_transferred;
+		// hardware doesn’t track the bytes transferred for memory to stream transfers, copy provided length
+		if(sw_desc->transfer->transfer_type == HOST_MM_TO_FPGA_ST)
+			transfer->bytes_transferred = sw_desc->transfer->len;
+		else
+			transfer->bytes_transferred = sw_desc->hw_descp->hw_desc->bytes_transferred;
 		return destroy_sw_desc(sw_desc);
 	}
 	return FPGA_OK;	

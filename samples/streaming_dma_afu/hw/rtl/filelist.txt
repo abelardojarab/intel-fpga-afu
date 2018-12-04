@@ -105,7 +105,7 @@ TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/nul
 TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/host_wr_bridge.ip
 TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/s2m_custom_pattern_generator.ip
 TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/m2s_custom_pattern_checker.ip
-TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/avst_decimator.ip
+TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/streaming_decimator.ip
 TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/one_to_two_streaming_demultiplexer.ip
 TEST_streaming_dma/${OPAE_PLATFORM_FPGA_FAMILY}/ip/streaming_dma_test_system/two_to_one_streaming_multiplexer.ip
 

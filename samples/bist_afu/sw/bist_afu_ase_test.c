@@ -229,19 +229,17 @@ void get_state(unsigned int state, int ddra_check) {
 
 int main(int argc, char *argv[]) {
    fpga_result res = FPGA_OK;
-   fpga_dma_handle dma_h;
+   fpga_dma_handle dma_h = NULL;
    uint64_t count;
    fpga_properties filter = NULL;
    fpga_token afc_token;
    fpga_handle afc_h;
-   fpga_handle        accelerator_handle;
    fpga_guid guid;
    uint32_t num_matches;
    volatile uint64_t *mmio_ptr = NULL;
    uint64_t *dma_buf_ptr  = NULL;   
    uint32_t use_ase;
 
-   printf("you are here 0\n");
    if(argc < 2) {
       printf("Usage: fpga_dma_test <use_ase = 1 (simulation only), 0 (hardware)>");
       return 1;
@@ -252,14 +250,11 @@ int main(int argc, char *argv[]) {
    } else {
       printf("Running test in HW mode\n");
    }
-   printf("you are here 1\n");
 
    // enumerate the afc
    if(uuid_parse(NLB0_AFUID, guid) < 0) {
       return 1;
    }
-
-  printf("you are here 2\n");
 
    res = fpgaGetProperties(NULL, &filter);
    ON_ERR_GOTO(res, out, "fpgaGetProperties");
@@ -277,7 +272,6 @@ int main(int argc, char *argv[]) {
       printf("Error: Number of matches < 1");
       ON_ERR_GOTO(FPGA_INVALID_PARAM, out_destroy_prop, "num_matches<1");
    }
-  printf("you are here 3\n");
 
    // open the AFC
    res = fpgaOpen(afc_token, &afc_h, 0);
@@ -287,22 +281,9 @@ int main(int argc, char *argv[]) {
       res = fpgaMapMMIO(afc_h, 0, (uint64_t**)&mmio_ptr);
       ON_ERR_GOTO(res, out_close, "fpgaMapMMIO");
    }
-  printf("you are here 4\n");
 
    // reset AFC
    res = fpgaReset(afc_h);
-   ON_ERR_GOTO(res, out_unmap, "fpgaReset");
-  printf("you are here 5\n");
-
-   /*res = fpgaDmaOpen(afc_h, &dma_h);
-   printf("you are here 6\n");
-   ON_ERR_GOTO(res, out_dma_close, "fpgaDmaOpen");
-   printf("you are here 7\n");
-   if(!dma_h) {
-      res = FPGA_EXCEPTION;
-      ON_ERR_GOTO(res, out_dma_close, "Invaid DMA Handle");
-   }*/
-  printf("you are here 8\n");
 
    if(use_ase)
       count = ASE_TEST_BUF_SIZE;
@@ -348,6 +329,7 @@ int main(int argc, char *argv[]) {
 	  printf("Enable Test: reading result #%lf: %04x\n", count_bist, (unsigned int)data);
 	  if (count_bist >= MAX_COUNT){
 		printf("BIST not enabled!\n");
+                free(dma_buf_ptr);
                 return -1;
           }
 	  count_bist++;
@@ -355,7 +337,6 @@ int main(int argc, char *argv[]) {
 	printf("BIST is enabled.  Reading status register\n");
 
 	count_bist = 0;
-	//ON_ERR_GOTO(res, out_free_output, "writing CSR_BIST");
         while ((CHECK_BIT(data,9) != 0x200) && (CHECK_BIT(data,8) != 0x100) && (CHECK_BIT(data,7) != 0x80) && 
             (CHECK_BIT(data,10) != 0x400) && (CHECK_BIT(data,11) != 0x800) && (CHECK_BIT(data,12) != 0x1000)){
           fpga_res = fpgaReadMMIO64(afc_h, 0, DDR_BIST_STATUS_ADDR,
@@ -363,7 +344,6 @@ int main(int argc, char *argv[]) {
 	  printf("DDRA: Reading result #%lf: %04x\n", count_bist, (unsigned int)data);
           printf("DDRA State: ");
           get_state((unsigned int)data, TRUE);
-	  //printf("reading result #%f: %04x\n", count_bist,data);
           if (count_bist >= MAX_COUNT){
 		printf("DDRA BIST Timed Out.\n");
                 break;
@@ -387,7 +367,6 @@ int main(int argc, char *argv[]) {
         bist_mask = ENABLE_DDRB_BIST;
         count_bist = 0;
 	res = fpgaWriteMMIO32(afc_h, 0, DDR_BIST_CTRL_ADDR, bist_mask);
-	//ON_ERR_GOTO(res, out_free_output, "writing CSR_BIST");
         while ((CHECK_BIT(data,10) != 0x400) && (CHECK_BIT(data,11) != 0x800) && (CHECK_BIT(data,12) != 0x1000)){
           fpga_res = fpgaReadMMIO64(afc_h, 0, DDR_BIST_STATUS_ADDR,
                  &data); 

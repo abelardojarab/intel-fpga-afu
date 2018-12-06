@@ -119,8 +119,6 @@ wire            rx_sc_fifo_out_endofpacket;
 wire    [2:0]   rx_sc_fifo_out_empty;        
 wire    [5:0]   rx_sc_fifo_out_error;         
 
-
-
 wire    [2:0]   tx_sc_fifo_csr_address;
 wire            tx_sc_fifo_csr_read;
 wire            tx_sc_fifo_csr_write;
@@ -140,22 +138,17 @@ wire    [31:0]  eth_gen_mon_avalon_anti_slave_0_readdata;
 wire    [31:0]  eth_gen_mon_avalon_anti_slave_0_writedata;
 wire            eth_gen_mon_avalon_anti_slave_0_waitrequest;
 
-
 wire    sync_rx_rst_n;
 wire    sync_rx_half_rst_n;
 wire    sync_tx_half_rst_n;
 wire    sync_tx_rst_n;
-
-
 wire    sync_tx_half_rst;
 wire    sync_rx_half_rst;
-
 wire    sync_tx_rst;
 wire    sync_rx_rst;
 
 assign sync_tx_rst_n = ~sync_tx_rst;
 assign sync_rx_rst_n = ~sync_rx_rst;
-
 assign sync_rx_half_rst_n = ~sync_rx_half_rst;
 assign sync_tx_half_rst_n = ~sync_tx_half_rst;
 
@@ -175,62 +168,44 @@ wire            mac_out_endofpacket;
 wire    [1:0]   mac_out_empty;
 wire    [5:0]   mac_out_error;
 
-
-wire [63:0] tx_st_adapter_0_in_0_data;          
-wire        tx_st_adapter_0_in_0_valid;         
-wire        tx_st_adapter_0_in_0_ready;        
-wire        tx_st_adapter_0_in_0_startofpacket; 
-wire        tx_st_adapter_0_in_0_endofpacket;   
-wire [2:0]  tx_st_adapter_0_in_0_empty;         
-wire [0:0]  tx_st_adapter_0_in_0_error;         
-wire [31:0] tx_st_adapter_0_out_0_data;         
-wire        tx_st_adapter_0_out_0_valid;        
-wire        tx_st_adapter_0_out_0_ready;        
-wire        tx_st_adapter_0_out_0_startofpacket;
-wire        tx_st_adapter_0_out_0_endofpacket;  
-
-wire [1:0]  tx_st_adapter_0_out_0_empty;        
-
-wire [1:0]  tx_st_adapter_0_out_0_error;
-
-wire [31:0] rx_st_adapter_0_in_0_data;          
-wire        rx_st_adapter_0_in_0_valid;         
-wire        rx_st_adapter_0_in_0_ready;         
-wire        rx_st_adapter_0_in_0_startofpacket; 
-wire        rx_st_adapter_0_in_0_endofpacket;   
-wire [1:0]  rx_st_adapter_0_in_0_empty;         
-wire        rx_st_adapter_0_in_0_error;         
-wire [63:0] rx_st_adapter_0_out_0_data;         
-wire        rx_st_adapter_0_out_0_valid;        
-wire        rx_st_adapter_0_out_0_ready;        
-wire        rx_st_adapter_0_out_0_startofpacket;
-wire        rx_st_adapter_0_out_0_endofpacket;  
-wire [2:0]  rx_st_adapter_0_out_0_empty;        
-wire [5:0]  rx_st_adapter_0_out_0_error;  
-
-
+// wire [63:0] tx_st_adapter_0_in_0_data;          
+// wire        tx_st_adapter_0_in_0_valid;         
+// wire        tx_st_adapter_0_in_0_ready;        
+// wire        tx_st_adapter_0_in_0_startofpacket; 
+// wire        tx_st_adapter_0_in_0_endofpacket;   
+// wire [2:0]  tx_st_adapter_0_in_0_empty;         
+// wire [0:0]  tx_st_adapter_0_in_0_error;         
+// wire [31:0] tx_st_adapter_0_out_0_data;         
+// wire        tx_st_adapter_0_out_0_valid;        
+// wire        tx_st_adapter_0_out_0_ready;        
+// wire        tx_st_adapter_0_out_0_startofpacket;
+// wire        tx_st_adapter_0_out_0_endofpacket;  
+// wire [1:0]  tx_st_adapter_0_out_0_empty;        
+// wire [1:0]  tx_st_adapter_0_out_0_error;
+// wire [31:0] rx_st_adapter_0_in_0_data;          
+// wire        rx_st_adapter_0_in_0_valid;         
+// wire        rx_st_adapter_0_in_0_ready;         
+// wire        rx_st_adapter_0_in_0_startofpacket; 
+// wire        rx_st_adapter_0_in_0_endofpacket;   
+// wire [1:0]  rx_st_adapter_0_in_0_empty;         
+// wire        rx_st_adapter_0_in_0_error;         
+// wire [63:0] rx_st_adapter_0_out_0_data;         
+// wire        rx_st_adapter_0_out_0_valid;        
+// wire        rx_st_adapter_0_out_0_ready;        
+// wire        rx_st_adapter_0_out_0_startofpacket;
+// wire        rx_st_adapter_0_out_0_endofpacket;  
+// wire [2:0]  rx_st_adapter_0_out_0_empty;        
+// wire [5:0]  rx_st_adapter_0_out_0_error;  
     
-    altera_std_synchronizer #(.depth(2)) almost_empty_sync (
-        .clk(tx_clk_312),
-        .reset_n(tx_rst_n),
-        .din(avalon_st_pause_data[0]),
-        .dout(avalon_st_pause_data_sync[0])
-
-    );
-
-    altera_std_synchronizer #(.depth(2)) almost_full_sync (
-        .clk(tx_clk_312),
-        .reset_n(tx_rst_n),
-        .din(avalon_st_pause_data[1]),
-        .dout(avalon_st_pause_data_sync[1])
-    );
-
 wire tx_reset;
 wire rx_reset;
 wire tx_reset_n = ~tx_reset;
 wire rx_reset_n = ~rx_reset;
 
 wire [71:0] xgmii_tx;
+reg  [71:0]     xgmii_tx_reg;
+reg  [71:0]     xgmii_rx_reg;
+
 assign xgmii_tx_data = {
    xgmii_tx[70:63],
    xgmii_tx[61:54],
@@ -262,6 +237,16 @@ wire [71:0] xgmii_rx = {
    xgmii_rx_control[2], xgmii_rx_data[23:16],
    xgmii_rx_control[1], xgmii_rx_data[15:8],
    xgmii_rx_control[0], xgmii_rx_data[7:0]};
+
+always @(posedge tx_clk_156)
+begin
+    xgmii_tx_reg <= xgmii_tx;
+end
+    
+always @(posedge rx_clk_156)
+begin
+    xgmii_rx_reg <= xgmii_rx;
+end
    
 altera_eth_10g_mac mac_inst (
 	.csr_read					(mac_csr_read_32),
@@ -274,6 +259,8 @@ altera_eth_10g_mac mac_inst (
 	.csr_rst_n					(csr_rst_n),
 	.tx_rst_n					(tx_reset_n),
 	.rx_rst_n					(rx_reset_n),
+    // .tx_rst_n					(sync_tx_rst_n),
+	// .rx_rst_n					(sync_rx_rst_n),
 	.avalon_st_tx_startofpacket	(mac_in_startofpacket),
 	.avalon_st_tx_endofpacket	(mac_in_endofpacket),
 	.avalon_st_tx_valid			(mac_in_valid),
@@ -304,52 +291,15 @@ altera_eth_10g_mac mac_inst (
 	.xgmii_tx				(xgmii_tx)
 );
 
-/*
-reset_control	reset_controller_inst(
-	.clock				(csr_clk),
-    .reset				(~csr_rst_n),
-    .tx_analogreset		(tx_analogreset),  // output
-    .tx_digitalreset	(tx_digitalreset), // output
-    .tx_ready			(tx_ready_export), // output
-    .pll_locked			(atx_pll_locked),
-    .pll_select			(1'b0),
-    .tx_cal_busy		(tx_cal_busy),
-    .rx_analogreset		(rx_analogreset),
-    .rx_digitalreset	(rx_digitalreset),      // output
-    .rx_ready			(rx_ready_export),      // output
-    .rx_is_lockedtodata	(rx_is_lockedtodata),   // output
-    .rx_cal_busy 		(rx_cal_busy)
-);
-*/
-altera_reset_synchronizer #(
-        .DEPTH      (2),
-        .ASYNC_RESET(1)
-    ) tx_rst_sync (
-        .clk        (tx_clk_312),
-        .reset_in   (~tx_rst_n),
-        .reset_out  (tx_reset)
-    );
-
-altera_reset_synchronizer #(
-        .DEPTH      (2),
-        .ASYNC_RESET(1)
-    ) rx_rst_sync (
-        .clk        (rx_clk_312),
-        .reset_in   (~rx_rst_n),
-        .reset_out  (rx_reset)
-    );
-
 address_decode address_decoder_inst (
-
 	.clk_csr_clk												(csr_clk),                                                
     .csr_reset_n												(csr_rst_n),
-
     .tx_xcvr_half_clk_clk                                       (tx_clk_156),     
     .sync_tx_half_rst_reset_n                                   (sync_tx_half_rst_n), 
     .tx_xcvr_clk_clk                                            (tx_clk_312),          
     .sync_tx_rst_reset_n                                        (sync_tx_rst_n),      
     .rx_xcvr_clk_clk                                            (rx_clk_312),          
-    .sync_rx_rst_reset_n                                        (sync_rx_rst_n),     
+    .sync_rx_rst_reset_n                                        (sync_rx_rst_n),  
 
     .merlin_master_translator_0_avalon_anti_master_0_address	(csr_address),    
     .merlin_master_translator_0_avalon_anti_master_0_waitrequest(csr_waitrequest),
@@ -357,19 +307,21 @@ address_decode address_decoder_inst (
     .merlin_master_translator_0_avalon_anti_master_0_readdata	(csr_readdata),   
     .merlin_master_translator_0_avalon_anti_master_0_write		(csr_write),      
     .merlin_master_translator_0_avalon_anti_master_0_writedata	(csr_writedata),  
+
     .mac_0_avalon_anti_slave_0_address							(mac_csr_address_64[12:0]),                            
-    .mac_0_avalon_anti_slave_0_write								(mac_csr_write_64),                              
+    .mac_0_avalon_anti_slave_0_write							(mac_csr_write_64),                              
     .mac_0_avalon_anti_slave_0_read								(mac_csr_read_64),                               
     .mac_0_avalon_anti_slave_0_readdata							(mac_csr_readdata_64),                           
-    .mac_0_avalon_anti_slave_0_writedata							(mac_csr_writedata_64),                          
-    .mac_0_avalon_anti_slave_0_waitrequest						(mac_csr_waitrequest_64),                        
+    .mac_0_avalon_anti_slave_0_writedata						(mac_csr_writedata_64),                          
+    .mac_0_avalon_anti_slave_0_waitrequest						(mac_csr_waitrequest_64),  
+
     .phy_0_avalon_anti_slave_0_address							(phy_csr_address),                            
-    .phy_0_avalon_anti_slave_0_write								(phy_csr_write),                              
+    .phy_0_avalon_anti_slave_0_write							(phy_csr_write),                              
     .phy_0_avalon_anti_slave_0_read								(phy_csr_read),                               
     .phy_0_avalon_anti_slave_0_readdata							(phy_csr_readdata),                           
-    .phy_0_avalon_anti_slave_0_writedata							(phy_csr_writedata),                          
-    .phy_0_avalon_anti_slave_0_waitrequest                        (phy_csr_waitrequest),
-    
+    .phy_0_avalon_anti_slave_0_writedata						(phy_csr_writedata),                          
+    .phy_0_avalon_anti_slave_0_waitrequest                      (phy_csr_waitrequest),
+
     .tx_sc_fifo_0_avalon_anti_slave_0_address                     (tx_sc_fifo_csr_address),    
     .tx_sc_fifo_0_avalon_anti_slave_0_write                       (tx_sc_fifo_csr_write),      
     .tx_sc_fifo_0_avalon_anti_slave_0_read                        (tx_sc_fifo_csr_read),       
@@ -388,14 +340,9 @@ address_decode address_decoder_inst (
     .eth_gen_mon_0_avalon_anti_slave_0_readdata                   (eth_gen_mon_avalon_anti_slave_0_readdata),  
     .eth_gen_mon_0_avalon_anti_slave_0_writedata                  (eth_gen_mon_avalon_anti_slave_0_writedata),
     .eth_gen_mon_0_avalon_anti_slave_0_waitrequest                (eth_gen_mon_avalon_anti_slave_0_waitrequest)
-    
-    
 );    
 
-
-    
 sc_fifo fifo_inst(
-
     .tx_sc_fifo_csr_address                 (tx_sc_fifo_csr_address),       
 	.tx_sc_fifo_csr_read                    (tx_sc_fifo_csr_read),          
 	.tx_sc_fifo_csr_write                   (tx_sc_fifo_csr_write),         
@@ -446,8 +393,6 @@ sc_fifo fifo_inst(
 eth_std_traffic_controller_top #(
         .DEVICE_FAMILY (DEVICE_FAMILY)
 ) gen_mon_inst (
-
-//here  clocking OK?
     .clk                 (tx_clk_156),
 	.reset_n             (sync_tx_half_rst_n),
 
@@ -481,14 +426,10 @@ eth_std_traffic_controller_top #(
 	.avl_st_rx_ready     (rx_sc_fifo_out_ready),
 	.avl_st_rx_sop       (rx_sc_fifo_out_startofpacket),
 	.avl_st_rx_val       (rx_sc_fifo_out_valid)
-
-
 );
       
-
 // csr adapter
 altera_eth_avalon_mm_adapter csr_adapter_inst(
-
     // Avalon Slave Interface
     .sl_clock               (csr_clk),
     .sl_reset               (~csr_rst_n),    
@@ -508,15 +449,11 @@ altera_eth_avalon_mm_adapter csr_adapter_inst(
     .ms_csr_write_o         (mac_csr_write_32),
     .ms_csr_writedata_o     (mac_csr_writedata_32),
     .ms_csr_waitrequest_i   (mac_csr_waitrequest_32)
-
 );
 
-// tx path clock by rx
-
 altera_eth_avalon_st_adapter #(
-        .DEVICE_FAMILY (DEVICE_FAMILY)
+    .DEVICE_FAMILY (DEVICE_FAMILY)
 ) dc_fifo_adapter_inst(
-
 	.csr_tx_adptdcff_rdwtrmrk	  (3'b010),
 	.csr_tx_adptdcff_vldpkt_minwt (3'b010),
 	.csr_tx_adptdcff_rdwtrmrk_dis (1'b0),
@@ -581,7 +518,6 @@ altera_eth_avalon_st_adapter #(
     .tx_etstamp_ins_ctrl_offset_checksum_correction_156(16'b0),
     
     // TX 1588 signals at 312mhz domain
-
     .tx_egress_timestamp_96b_data_312             (96'b0),
     .tx_egress_timestamp_96b_valid_312            (1'b0),
     .tx_egress_timestamp_96b_fingerprint_312      (4'b0),
@@ -589,12 +525,10 @@ altera_eth_avalon_st_adapter #(
     .tx_egress_timestamp_64b_valid_312            (1'b0),
     .tx_egress_timestamp_64b_fingerprint_312      (4'b0),
     
-
     //TX Status Signals
     .avalon_st_txstatus_valid_156                 (),
     .avalon_st_txstatus_data_156                  (),
     .avalon_st_txstatus_error_156                 (),
-    
     .avalon_st_txstatus_valid_312                 (1'b0),
     .avalon_st_txstatus_data_312                  (40'b0),
     .avalon_st_txstatus_error_312                 (7'b0),
@@ -607,7 +541,6 @@ altera_eth_avalon_st_adapter #(
     // TX Pause Data
     .avalon_st_tx_pause_data_156                 (2'b0),
 
-
     // Pause Quanta (For TX only variant)
     .avalon_st_tx_pause_length_valid_156          (1'b0),
     .avalon_st_tx_pause_length_data_156           (16'b0),     
@@ -618,9 +551,7 @@ altera_eth_avalon_st_adapter #(
     .rx_ingress_timestamp_64b_valid_312           (1'b0),
     .rx_ingress_timestamp_64b_data_312            (64'b0),
 
-    //RX Status Signals
-
-    
+    //RX Status Signals    
    .avalon_st_rxstatus_valid_312                 (1'b0),
    .avalon_st_rxstatus_data_312                  (40'b0),
    .avalon_st_rxstatus_error_312                 (7'b0),
@@ -629,7 +560,6 @@ altera_eth_avalon_st_adapter #(
     .avalon_st_rx_pfc_pause_data_312              (8'b0),
     .avalon_st_rx_pfc_status_valid_312            (1'b0),
     .avalon_st_rx_pfc_status_data_312             (16'b0),      
-    
     
     // Pause Quanta (For RX only variant)
     .avalon_st_rx_pause_length_valid_312           (1'b0),
@@ -676,45 +606,76 @@ altera_eth_avalon_st_adapter #(
     .avalon_st_rx_pfc_status_data_156			(),
     .avalon_st_rx_pause_length_valid_156		(),
     .avalon_st_rx_pause_length_data_156			()
-
 );
 
 altera_reset_synchronizer # (
-        .ASYNC_RESET(1),
-        .DEPTH      (4)  
-    ) tx_reset_synchronizer_inst(
-        .clk(tx_clk_312),
-        .reset_in(~tx_rst_n),
-        .reset_out(sync_tx_rst)
-    );
+    .ASYNC_RESET(1),
+    .DEPTH      (4)  
+) tx_reset_synchronizer_inst(
+    .clk(tx_clk_312),
+    .reset_in(~tx_rst_n),
+    .reset_out(sync_tx_rst)
+);
 
 altera_reset_synchronizer # (
-        .ASYNC_RESET(1),
-        .DEPTH      (4)  
-    ) rx_reset_synchronizer_inst(
-        .clk(rx_clk_312),
-        .reset_in(~rx_rst_n),
-        .reset_out(sync_rx_rst)
-    );   
+    .ASYNC_RESET(1),
+    .DEPTH      (4)  
+) rx_reset_synchronizer_inst(
+    .clk(rx_clk_312),
+    .reset_in(~rx_rst_n),
+    .reset_out(sync_rx_rst)
+);   
 
-    
-altera_reset_synchronizer # (
-        .ASYNC_RESET(1),
-        .DEPTH      (4)  
-    ) tx_half_clk_reset_synchronizer_inst(
-        .clk(tx_clk_156),
-        .reset_in(~tx_rst_n),
-        .reset_out(sync_tx_half_rst)
-    );
+// Fanout
+altera_reset_synchronizer #(
+    .DEPTH      (2),
+    .ASYNC_RESET(1)
+) tx_rst_sync (
+    .clk        (tx_clk_312),
+    .reset_in   (sync_tx_rst),
+    .reset_out  (tx_reset)
+);
+
+// Fanout
+altera_reset_synchronizer #(
+    .DEPTH      (2),
+    .ASYNC_RESET(1)
+) rx_rst_sync (
+    .clk        (rx_clk_312),
+    .reset_in   (sync_rx_rst),
+    .reset_out  (rx_reset)
+);
 
 altera_reset_synchronizer # (
-        .ASYNC_RESET(1),
-        .DEPTH      (4)  
-    ) rx_half_clk_reset_synchronizer_inst(
-        .clk(rx_clk_156),
-        .reset_in(~rx_rst_n),
-        .reset_out(sync_rx_half_rst)
-    );     
-    
-	 
+    .ASYNC_RESET(1),
+    .DEPTH      (4)  
+) tx_half_clk_reset_synchronizer_inst(
+    .clk(tx_clk_156),
+    .reset_in(~tx_rst_n),
+    .reset_out(sync_tx_half_rst)
+);
+
+altera_reset_synchronizer # (
+    .ASYNC_RESET(1),
+    .DEPTH      (4)  
+) rx_half_clk_reset_synchronizer_inst(
+    .clk(rx_clk_156),
+    .reset_in(~rx_rst_n),
+    .reset_out(sync_rx_half_rst)
+);     
+
+altera_std_synchronizer #(.depth(2)) almost_empty_sync (
+    .clk(tx_clk_312),
+    .reset_n(tx_rst_n),
+    .din(avalon_st_pause_data[0]),
+    .dout(avalon_st_pause_data_sync[0])
+);
+
+altera_std_synchronizer #(.depth(2)) almost_full_sync (
+    .clk(tx_clk_312),
+    .reset_n(tx_rst_n),
+    .din(avalon_st_pause_data[1]),
+    .dout(avalon_st_pause_data_sync[1])
+);
+
 endmodule 

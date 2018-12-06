@@ -1098,59 +1098,37 @@
    dir="start" />
  <interface
    name="eth_gen_mon_10_avalon_anti_slave_0"
-   internal="eth_gen_mon_10.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="eth_gen_mon_10.avalon_anti_slave_0" />
  <interface
    name="eth_gen_mon_11_avalon_anti_slave_0"
-   internal="eth_gen_mon_11.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="eth_gen_mon_11.avalon_anti_slave_0" />
  <interface
    name="eth_gen_mon_1_avalon_anti_slave_0"
-   internal="eth_gen_mon_1.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="eth_gen_mon_1.avalon_anti_slave_0" />
  <interface
    name="eth_gen_mon_2_avalon_anti_slave_0"
-   internal="eth_gen_mon_2.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="eth_gen_mon_2.avalon_anti_slave_0" />
  <interface
    name="eth_gen_mon_3_avalon_anti_slave_0"
-   internal="eth_gen_mon_3.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="eth_gen_mon_3.avalon_anti_slave_0" />
  <interface
    name="eth_gen_mon_4_avalon_anti_slave_0"
-   internal="eth_gen_mon_4.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="eth_gen_mon_4.avalon_anti_slave_0" />
  <interface
    name="eth_gen_mon_5_avalon_anti_slave_0"
-   internal="eth_gen_mon_5.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="eth_gen_mon_5.avalon_anti_slave_0" />
  <interface
    name="eth_gen_mon_6_avalon_anti_slave_0"
-   internal="eth_gen_mon_6.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="eth_gen_mon_6.avalon_anti_slave_0" />
  <interface
    name="eth_gen_mon_7_avalon_anti_slave_0"
-   internal="eth_gen_mon_7.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="eth_gen_mon_7.avalon_anti_slave_0" />
  <interface
    name="eth_gen_mon_8_avalon_anti_slave_0"
-   internal="eth_gen_mon_8.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="eth_gen_mon_8.avalon_anti_slave_0" />
  <interface
    name="eth_gen_mon_9_avalon_anti_slave_0"
-   internal="eth_gen_mon_9.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="eth_gen_mon_9.avalon_anti_slave_0" />
  <interface
    name="mac_0_avalon_anti_slave_0"
    internal="mm_to_mac_0.avalon_anti_slave_0"
@@ -1158,59 +1136,37 @@
    dir="start" />
  <interface
    name="mac_10_avalon_anti_slave_0"
-   internal="mm_to_mac_10.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_mac_10.avalon_anti_slave_0" />
  <interface
    name="mac_11_avalon_anti_slave_0"
-   internal="mm_to_mac_11.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_mac_11.avalon_anti_slave_0" />
  <interface
    name="mac_1_avalon_anti_slave_0"
-   internal="mm_to_mac_1.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_mac_1.avalon_anti_slave_0" />
  <interface
    name="mac_2_avalon_anti_slave_0"
-   internal="mm_to_mac_2.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_mac_2.avalon_anti_slave_0" />
  <interface
    name="mac_3_avalon_anti_slave_0"
-   internal="mm_to_mac_3.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_mac_3.avalon_anti_slave_0" />
  <interface
    name="mac_4_avalon_anti_slave_0"
-   internal="mm_to_mac_4.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_mac_4.avalon_anti_slave_0" />
  <interface
    name="mac_5_avalon_anti_slave_0"
-   internal="mm_to_mac_5.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_mac_5.avalon_anti_slave_0" />
  <interface
    name="mac_6_avalon_anti_slave_0"
-   internal="mm_to_mac_6.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_mac_6.avalon_anti_slave_0" />
  <interface
    name="mac_7_avalon_anti_slave_0"
-   internal="mm_to_mac_7.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_mac_7.avalon_anti_slave_0" />
  <interface
    name="mac_8_avalon_anti_slave_0"
-   internal="mm_to_mac_8.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_mac_8.avalon_anti_slave_0" />
  <interface
    name="mac_9_avalon_anti_slave_0"
-   internal="mm_to_mac_9.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_mac_9.avalon_anti_slave_0" />
  <interface
    name="merlin_master_translator_0_avalon_anti_master_0"
    internal="merlin_master_translator_0.avalon_anti_master_0"
@@ -1223,59 +1179,37 @@
    dir="start" />
  <interface
    name="phy_10_avalon_anti_slave_0"
-   internal="mm_to_phy_10.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_phy_10.avalon_anti_slave_0" />
  <interface
    name="phy_11_avalon_anti_slave_0"
-   internal="mm_to_phy_11.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_phy_11.avalon_anti_slave_0" />
  <interface
    name="phy_1_avalon_anti_slave_0"
-   internal="mm_to_phy_1.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_phy_1.avalon_anti_slave_0" />
  <interface
    name="phy_2_avalon_anti_slave_0"
-   internal="mm_to_phy_2.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_phy_2.avalon_anti_slave_0" />
  <interface
    name="phy_3_avalon_anti_slave_0"
-   internal="mm_to_phy_3.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_phy_3.avalon_anti_slave_0" />
  <interface
    name="phy_4_avalon_anti_slave_0"
-   internal="mm_to_phy_4.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_phy_4.avalon_anti_slave_0" />
  <interface
    name="phy_5_avalon_anti_slave_0"
-   internal="mm_to_phy_5.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_phy_5.avalon_anti_slave_0" />
  <interface
    name="phy_6_avalon_anti_slave_0"
-   internal="mm_to_phy_6.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_phy_6.avalon_anti_slave_0" />
  <interface
    name="phy_7_avalon_anti_slave_0"
-   internal="mm_to_phy_7.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_phy_7.avalon_anti_slave_0" />
  <interface
    name="phy_8_avalon_anti_slave_0"
-   internal="mm_to_phy_8.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_phy_8.avalon_anti_slave_0" />
  <interface
    name="phy_9_avalon_anti_slave_0"
-   internal="mm_to_phy_9.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="mm_to_phy_9.avalon_anti_slave_0" />
  <interface
    name="rx_sc_fifo_0_avalon_anti_slave_0"
    internal="rx_sc_fifo_0.avalon_anti_slave_0"
@@ -1283,59 +1217,37 @@
    dir="start" />
  <interface
    name="rx_sc_fifo_10_avalon_anti_slave_0"
-   internal="rx_sc_fifo_10.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="rx_sc_fifo_10.avalon_anti_slave_0" />
  <interface
    name="rx_sc_fifo_11_avalon_anti_slave_0"
-   internal="rx_sc_fifo_11.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="rx_sc_fifo_11.avalon_anti_slave_0" />
  <interface
    name="rx_sc_fifo_1_avalon_anti_slave_0"
-   internal="rx_sc_fifo_1.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="rx_sc_fifo_1.avalon_anti_slave_0" />
  <interface
    name="rx_sc_fifo_2_avalon_anti_slave_0"
-   internal="rx_sc_fifo_2.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="rx_sc_fifo_2.avalon_anti_slave_0" />
  <interface
    name="rx_sc_fifo_3_avalon_anti_slave_0"
-   internal="rx_sc_fifo_3.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="rx_sc_fifo_3.avalon_anti_slave_0" />
  <interface
    name="rx_sc_fifo_4_avalon_anti_slave_0"
-   internal="rx_sc_fifo_4.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="rx_sc_fifo_4.avalon_anti_slave_0" />
  <interface
    name="rx_sc_fifo_5_avalon_anti_slave_0"
-   internal="rx_sc_fifo_5.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="rx_sc_fifo_5.avalon_anti_slave_0" />
  <interface
    name="rx_sc_fifo_6_avalon_anti_slave_0"
-   internal="rx_sc_fifo_6.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="rx_sc_fifo_6.avalon_anti_slave_0" />
  <interface
    name="rx_sc_fifo_7_avalon_anti_slave_0"
-   internal="rx_sc_fifo_7.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="rx_sc_fifo_7.avalon_anti_slave_0" />
  <interface
    name="rx_sc_fifo_8_avalon_anti_slave_0"
-   internal="rx_sc_fifo_8.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="rx_sc_fifo_8.avalon_anti_slave_0" />
  <interface
    name="rx_sc_fifo_9_avalon_anti_slave_0"
-   internal="rx_sc_fifo_9.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="rx_sc_fifo_9.avalon_anti_slave_0" />
  <interface
    name="rx_xcvr_clk"
    internal="rx_xcvr_clk.clk_in"
@@ -1363,59 +1275,37 @@
    dir="start" />
  <interface
    name="tx_sc_fifo_10_avalon_anti_slave_0"
-   internal="tx_sc_fifo_10.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="tx_sc_fifo_10.avalon_anti_slave_0" />
  <interface
    name="tx_sc_fifo_11_avalon_anti_slave_0"
-   internal="tx_sc_fifo_11.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="tx_sc_fifo_11.avalon_anti_slave_0" />
  <interface
    name="tx_sc_fifo_1_avalon_anti_slave_0"
-   internal="tx_sc_fifo_1.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="tx_sc_fifo_1.avalon_anti_slave_0" />
  <interface
    name="tx_sc_fifo_2_avalon_anti_slave_0"
-   internal="tx_sc_fifo_2.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="tx_sc_fifo_2.avalon_anti_slave_0" />
  <interface
    name="tx_sc_fifo_3_avalon_anti_slave_0"
-   internal="tx_sc_fifo_3.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="tx_sc_fifo_3.avalon_anti_slave_0" />
  <interface
    name="tx_sc_fifo_4_avalon_anti_slave_0"
-   internal="tx_sc_fifo_4.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="tx_sc_fifo_4.avalon_anti_slave_0" />
  <interface
    name="tx_sc_fifo_5_avalon_anti_slave_0"
-   internal="tx_sc_fifo_5.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="tx_sc_fifo_5.avalon_anti_slave_0" />
  <interface
    name="tx_sc_fifo_6_avalon_anti_slave_0"
-   internal="tx_sc_fifo_6.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="tx_sc_fifo_6.avalon_anti_slave_0" />
  <interface
    name="tx_sc_fifo_7_avalon_anti_slave_0"
-   internal="tx_sc_fifo_7.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="tx_sc_fifo_7.avalon_anti_slave_0" />
  <interface
    name="tx_sc_fifo_8_avalon_anti_slave_0"
-   internal="tx_sc_fifo_8.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="tx_sc_fifo_8.avalon_anti_slave_0" />
  <interface
    name="tx_sc_fifo_9_avalon_anti_slave_0"
-   internal="tx_sc_fifo_9.avalon_anti_slave_0"
-   type="avalon"
-   dir="start" />
+   internal="tx_sc_fifo_9.avalon_anti_slave_0" />
  <interface
    name="tx_xcvr_clk"
    internal="tx_xcvr_clk.clk_in"
@@ -2309,7 +2199,7 @@
    name="eth_gen_mon_1"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -2950,7 +2840,7 @@
    name="eth_gen_mon_10"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -3591,7 +3481,7 @@
    name="eth_gen_mon_11"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -4145,8 +4035,8 @@
     </boundary>
     <originalModuleInfo>
         <className>altera_merlin_slave_translator</className>
-        <version>16.925</version>
-        <displayName>Avalon MM Slave Translator</displayName>
+        <version>18.1</version>
+        <displayName>Avalon-MM Slave Translator Intel FPGA IP</displayName>
     </originalModuleInfo>
     <systemInfoParameterDescriptors>
         <descriptors>
@@ -4232,7 +4122,7 @@
    name="eth_gen_mon_2"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -4873,7 +4763,7 @@
    name="eth_gen_mon_3"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -5514,7 +5404,7 @@
    name="eth_gen_mon_4"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -6155,7 +6045,7 @@
    name="eth_gen_mon_5"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -6796,7 +6686,7 @@
    name="eth_gen_mon_6"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -7437,7 +7327,7 @@
    name="eth_gen_mon_7"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -8078,7 +7968,7 @@
    name="eth_gen_mon_8"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -8719,7 +8609,7 @@
    name="eth_gen_mon_9"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -10626,7 +10516,7 @@
    name="mm_to_mac_1"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -11267,7 +11157,7 @@
    name="mm_to_mac_10"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -11908,7 +11798,7 @@
    name="mm_to_mac_11"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -12549,7 +12439,7 @@
    name="mm_to_mac_2"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -13190,7 +13080,7 @@
    name="mm_to_mac_3"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -13831,7 +13721,7 @@
    name="mm_to_mac_4"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -14472,7 +14362,7 @@
    name="mm_to_mac_5"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -15113,7 +15003,7 @@
    name="mm_to_mac_6"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -15754,7 +15644,7 @@
    name="mm_to_mac_7"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -16395,7 +16285,7 @@
    name="mm_to_mac_8"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -17036,7 +16926,7 @@
    name="mm_to_mac_9"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -18318,7 +18208,7 @@
    name="mm_to_phy_1"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -18959,7 +18849,7 @@
    name="mm_to_phy_10"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -19600,7 +19490,7 @@
    name="mm_to_phy_11"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -20241,7 +20131,7 @@
    name="mm_to_phy_2"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -20882,7 +20772,7 @@
    name="mm_to_phy_3"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -21523,7 +21413,7 @@
    name="mm_to_phy_4"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -22164,7 +22054,7 @@
    name="mm_to_phy_5"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -22805,7 +22695,7 @@
    name="mm_to_phy_6"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -23446,7 +23336,7 @@
    name="mm_to_phy_7"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -24087,7 +23977,7 @@
    name="mm_to_phy_8"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -24728,7 +24618,7 @@
    name="mm_to_phy_9"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -26002,7 +25892,7 @@
    name="rx_sc_fifo_1"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -26635,7 +26525,7 @@
    name="rx_sc_fifo_10"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -27268,7 +27158,7 @@
    name="rx_sc_fifo_11"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -27901,7 +27791,7 @@
    name="rx_sc_fifo_2"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -28534,7 +28424,7 @@
    name="rx_sc_fifo_3"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -29167,7 +29057,7 @@
    name="rx_sc_fifo_4"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -29800,7 +29690,7 @@
    name="rx_sc_fifo_5"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -30433,7 +30323,7 @@
    name="rx_sc_fifo_6"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -31066,7 +30956,7 @@
    name="rx_sc_fifo_7"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -31699,7 +31589,7 @@
    name="rx_sc_fifo_8"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -32332,7 +32222,7 @@
    name="rx_sc_fifo_9"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -33834,7 +33724,7 @@
    name="tx_sc_fifo_1"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -34467,7 +34357,7 @@
    name="tx_sc_fifo_10"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -35100,7 +34990,7 @@
    name="tx_sc_fifo_11"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -35733,7 +35623,7 @@
    name="tx_sc_fifo_2"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -36366,7 +36256,7 @@
    name="tx_sc_fifo_3"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -36999,7 +36889,7 @@
    name="tx_sc_fifo_4"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -37632,7 +37522,7 @@
    name="tx_sc_fifo_5"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -38265,7 +38155,7 @@
    name="tx_sc_fifo_6"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -38898,7 +38788,7 @@
    name="tx_sc_fifo_7"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -39531,7 +39421,7 @@
    name="tx_sc_fifo_8"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>
@@ -40164,7 +40054,7 @@
    name="tx_sc_fifo_9"
    kind="altera_generic_component"
    version="1.0"
-   enabled="1">
+   enabled="0">
   <parameter name="componentDefinition"><![CDATA[<componentDefinition>
     <boundary>
         <interfaces>

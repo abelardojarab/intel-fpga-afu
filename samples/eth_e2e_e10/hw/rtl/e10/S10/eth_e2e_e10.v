@@ -33,7 +33,7 @@ module eth_e2e_e10 #(
 )(
     pr_hssi_if.to_fiu   hssi,
 
-    input clk,      // 100MHz
+    input clk,
     input reset,
 
     // ETH CSR ports
@@ -109,7 +109,9 @@ wire [NUM_LN*32-1:0] all_csr_rdata;
 // Ethernet MAC 
 ////////////////////////////////////
 reg [NUM_LN-1:0] sloop;
-reg [NUM_LN-1:0] sloop_156;
+reg [NUM_LN-1:0] sloop_sync;
+reg [NUM_LN-1:0] f2a_tx_ready_sync;
+reg [NUM_LN-1:0] f2a_rx_ready_sync;
 
 alt_sync_regs_m2 #(
     .WIDTH(NUM_LN),
@@ -117,18 +119,16 @@ alt_sync_regs_m2 #(
 ) sync_sloop (
     .clk(hssi.f2a_rx_parallel_clk_x1[0]),
     .din(sloop),
-    .dout(sloop_156)
+    .dout(sloop_sync)
 );
 
-reg [NUM_LN-1:0] f2a_tx_ready_100;
-reg [NUM_LN-1:0] f2a_rx_ready_100;
 alt_sync_regs_m2 #(
     .WIDTH(NUM_LN),
     .DEPTH(2)
 ) sync_tx_ready (
     .clk(clk),
     .din(hssi.f2a_tx_ready),
-    .dout(f2a_tx_ready_100)
+    .dout(f2a_tx_ready_sync)
 );
 
 alt_sync_regs_m2 #(
@@ -137,7 +137,7 @@ alt_sync_regs_m2 #(
 ) sync_rx_ready (
     .clk(clk),
     .din(hssi.f2a_rx_ready),
-    .dout(f2a_rx_ready_100)
+    .dout(f2a_rx_ready_sync)
 );
 
 genvar i;
@@ -152,7 +152,7 @@ generate
         reg err_ins = 1'b0;
 
         always @(*) begin
-            if (!sloop_156[i]) begin              
+            if (!sloop_sync[i]) begin              
                 xgmii_rx_control[3:0] = hssi.f2a_rx_parallel_data [(i*80)+35:(i*80)+32];
                 xgmii_rx_control[7:4] = hssi.f2a_rx_parallel_data [(i*80)+77:(i*80)+72];     // 9th and 10th bits unused
                 xgmii_rx_data[31:0] = hssi.f2a_rx_parallel_data [(i*80)+31:(i*80)];
@@ -180,8 +180,8 @@ generate
         altera_eth_10g_mac_base_r eth0 (
             .csr_clk(clk),
             .csr_rst_n(!csr_rst),
-            .tx_rst_n((!tx_rst)&&(f2a_tx_ready_100[i])),
-            .rx_rst_n((!rx_rst)&&(f2a_rx_ready_100[i])),
+            .tx_rst_n((!tx_rst)&&(f2a_tx_ready_sync[i])),
+            .rx_rst_n((!rx_rst)&&(f2a_rx_ready_sync[i])),
 
             .tx_clk_312(hssi.f2a_tx_parallel_clk_x2[0]),
             .rx_clk_312(hssi.f2a_rx_parallel_clk_x2[0]),
@@ -253,7 +253,7 @@ always @(posedge clk) begin
         4'h5 : prmgmt_dout_r <= 32'h0 | port_sel;
         4'h6 : prmgmt_dout_r <= 32'h0 | sloop;
         //4'h7 : prmgmt_dout_r <= {hssi.f2a_rx_enh_blk_lock, hssi.f2a_rx_is_lockedtodata};
-        4'h7 : prmgmt_dout_r <= {f2a_rx_ready_100, f2a_tx_ready_100};
+        4'h7 : prmgmt_dout_r <= {f2a_rx_ready_sync, f2a_tx_ready_sync};
         //4'h8 : prmgmt_dout_r <= 32'h0 | {i2c_inst_sel_r,i2c_ctrl_wdata_r};
         4'h8 : prmgmt_dout_r <= 32'h0 | {2'b0,16'b0};
         //4'h9 : prmgmt_dout_r <= 32'h0 | i2c_stat_rdata;

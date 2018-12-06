@@ -4,7 +4,11 @@ set_false_path -from [get_registers {fpga_top|inst_green_bs*|ccip_std_afu|wr_dat
 set_false_path -from [get_registers {fpga_top|inst_green_bs*|ccip_std_afu|eth_rd_data}] -to [get_registers {fpga_top|inst_green_bs*|ccip_std_afu|rd_data}]
 
 set_false_path -from [get_registers {fpga_top|inst_green_bs*|ccip_std_afu|prz0|sloop[*]}] -to *
-set_false_path -from [get_registers {fpga_top|inst_green_bs*|ccip_std_afu|prz0|hssi.f2a_tx_ready[*]}] -to *
-set_false_path -from [get_registers {fpga_top|inst_green_bs*|ccip_std_afu|prz0|hssi.f2a_rx_ready[*]}] -to *
+
+set_false_path -from [get_registers {fpga_top|inst_green_bs*|ccip_std_afu|prz0|sync_tx_ready|sync_sr[*]}] -to *
+set_false_path -from [get_registers {fpga_top|inst_green_bs*|ccip_std_afu|prz0|sync_rx_ready|sync_sr[*]}] -to *
+#set_false_path -from [get_registers {fpga_top|inst_green_bs*|ccip_std_afu|prz0|hssi.f2a_tx_ready[*]}] -to *
+#set_false_path -from [get_registers {fpga_top|inst_green_bs*|ccip_std_afu|prz0|hssi.f2a_rx_ready[*]}] -to *
+
 set_false_path -from [get_registers {fpga_top|inst_green_bs*|ccip_std_afu|prz0|rx_rst}] -to *
 set_false_path -from [get_registers {fpga_top|inst_green_bs*|ccip_std_afu|prz0|tx_rst}] -to *

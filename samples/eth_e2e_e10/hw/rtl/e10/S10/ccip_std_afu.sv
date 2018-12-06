@@ -86,11 +86,6 @@ assign clk = `PLATFORM_PARAM_CCI_P_CLOCK;
 
 logic reset;
 assign reset = `PLATFORM_PARAM_CCI_P_RESET;
-`ifndef USE_QSFP1 // USE_QSFP0 or USE_BOTH
-  localparam HSSI_IDX = 0;
-`else
-  localparam HSSI_IDX = 0;
-`endif
 
 //------------------------------------------------------------------------------
 // Register PR <--> PR signals near interface before consuming it
@@ -167,12 +162,17 @@ logic   [31:0] rd_data;
 logic init_start;
 logic init_done;
 
+`ifdef USE_QSFP0
+  localparam HSSI_IDX = 0;
+`elsif USE_QSFP1   
+  localparam HSSI_IDX = 1;
+`endif
+
 `ifdef E2E_E10
  eth_e2e_e10
-`endif
 #(
     .NUM_HSSI_RAW_PR_IFCS(1),
-    .NUM_LN(1)
+    .NUM_LN(1) // only one lane
 )
   prz0
    (
@@ -182,11 +182,11 @@ logic init_done;
     .eth_rd_data(eth_rd_data),
     .csr_init_start(init_start),
     .csr_init_done(init_done),
-    .clk(clk),         // 100MHz
+    .clk(clk),
     .reset(pck_cp2af_softReset_T1),
     .hssi(hssi[HSSI_IDX])
-    );
-
+);
+`endif
 
 logic action_r = 0;
 

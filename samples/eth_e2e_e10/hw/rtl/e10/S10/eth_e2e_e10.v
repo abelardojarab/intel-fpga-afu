@@ -31,7 +31,11 @@ module eth_e2e_e10 #(
     parameter NUM_HSSI_RAW_PR_IFCS = 1,
     parameter NUM_LN = 4
 )(
+`ifdef USE_BOTH
+    pr_hssi_if.to_fiu   hssi[NUM_HSSI_RAW_PR_IFCS],
+`else
     pr_hssi_if.to_fiu   hssi,
+`endif
 
     input clk,
     input reset,
@@ -46,6 +50,7 @@ module eth_e2e_e10 #(
 
 localparam [23:0] GBS_ID = "E2E";
 localparam [7:0] GBS_VER = 8'h10;
+localparam [3:0] NUM_ETH = NUM_LN*NUM_HSSI_RAW_PR_IFCS;
 
 reg [31:0] scratch = {GBS_ID, GBS_VER};
 reg [31:0] prmgmt_dout_r = 32'h0;
@@ -103,130 +108,142 @@ wire [NUM_LN-1:0] tx_ready_export;
 wire [NUM_LN-1:0] rx_ready_export;
 reg [2:0] port_sel = 3'b0;
 
-wire [NUM_LN*32-1:0] all_csr_rdata;
+wire [NUM_ETH*32-1:0] all_csr_rdata;
 
 ////////////////////////////////////
 // Ethernet MAC 
 ////////////////////////////////////
-reg [NUM_LN-1:0] sloop;
-reg [NUM_LN-1:0] sloop_sync;
-reg [NUM_LN-1:0] f2a_tx_ready_sync;
-reg [NUM_LN-1:0] f2a_rx_ready_sync;
+reg [NUM_LN-1:0] sloop [NUM_HSSI_RAW_PR_IFCS-1:0];
+reg [NUM_LN-1:0] sloop_sync [NUM_HSSI_RAW_PR_IFCS-1:0];
+reg [NUM_ETH-1:0] f2a_tx_ready_sync;
+reg [NUM_ETH-1:0] f2a_rx_ready_sync;
 
+// TODO: put this in a generate
 alt_sync_regs_m2 #(
     .WIDTH(NUM_LN),
     .DEPTH(2)
-) sync_sloop (
-    .clk(hssi.f2a_rx_parallel_clk_x1[0]),
-    .din(sloop),
-    .dout(sloop_sync)
+) sync_sloop_1 (
+    .clk(hssi[0].f2a_rx_parallel_clk_x1[0]),
+    .din(sloop[0]),
+    .dout(sloop_sync[0])
 );
 
 alt_sync_regs_m2 #(
     .WIDTH(NUM_LN),
     .DEPTH(2)
+) sync_sloop_2 (
+    .clk(hssi[1].f2a_rx_parallel_clk_x1[0]),
+    .din(sloop[1]),
+    .dout(sloop_sync[1])
+);
+
+alt_sync_regs_m2 #(
+    .WIDTH(NUM_ETH),
+    .DEPTH(2)
 ) sync_tx_ready (
     .clk(clk),
-    .din(hssi.f2a_tx_ready),
+    .din({hssi[0].f2a_tx_ready,hssi[1].f2a_tx_ready}),
     .dout(f2a_tx_ready_sync)
 );
 
 alt_sync_regs_m2 #(
-    .WIDTH(NUM_LN),
+    .WIDTH(NUM_ETH),
     .DEPTH(2)
 ) sync_rx_ready (
     .clk(clk),
-    .din(hssi.f2a_rx_ready),
+    .din({hssi[0].f2a_rx_ready,hssi[1].f2a_rx_ready}),
     .dout(f2a_rx_ready_sync)
 );
 
-genvar i;
+genvar i,j;
 generate
-    for (i=0; i<NUM_LN; i=i+1) begin : lp0
-        reg [7:0]     xgmii_tx_control;
-        reg [63:0]    xgmii_tx_data;
-        reg [7:0]     xgmii_rx_control;
-        reg [63:0]    xgmii_rx_data;
-        reg           rx_enh_data_valid;
-        reg           tx_enh_data_valid;
-        reg err_ins = 1'b0;
+    for (j=0; j<NUM_HSSI_RAW_PR_IFCS; j=j+1) begin : lp1
+        for (i=0; i<NUM_LN; i=i+1) begin : lp0
+            reg [7:0]     xgmii_tx_control;
+            reg [63:0]    xgmii_tx_data;
+            reg [7:0]     xgmii_rx_control;
+            reg [63:0]    xgmii_rx_data;
+            reg           rx_enh_data_valid;
+            reg           tx_enh_data_valid;
+            reg err_ins = 1'b0;
 
-        always @(*) begin
-            if (!sloop_sync[i]) begin              
-                xgmii_rx_control[3:0] = hssi.f2a_rx_parallel_data [(i*80)+35:(i*80)+32];
-                xgmii_rx_control[7:4] = hssi.f2a_rx_parallel_data [(i*80)+77:(i*80)+72];     // 9th and 10th bits unused
-                xgmii_rx_data[31:0] = hssi.f2a_rx_parallel_data [(i*80)+31:(i*80)];
-                xgmii_rx_data[63:32] = hssi.f2a_rx_parallel_data [(i*80)+71:(i*80)+40];
-                rx_enh_data_valid = hssi.f2a_rx_parallel_data [(i*80)+36];
-                hssi.a2f_tx_parallel_data [(i*80)+35:(i*80)+32] = xgmii_tx_control[3:0];
-                hssi.a2f_tx_parallel_data [(i*80)+77:(i*80)+72] = xgmii_tx_control[7:4];     // 9th bit unused
-                hssi.a2f_tx_parallel_data [(i*80)+31:(i*80)] = xgmii_tx_data[31:0];
-                hssi.a2f_tx_parallel_data [(i*80)+71:(i*80)+40] = xgmii_tx_data[63:32];
-                hssi.a2f_tx_parallel_data [(i*80)+36] = tx_enh_data_valid;
-            end else begin
-                xgmii_rx_control = xgmii_tx_control;
-                xgmii_rx_data    = xgmii_tx_data;
-                rx_enh_data_valid = tx_enh_data_valid;
+            always @(*) begin
+                if (!sloop_sync[j][i]) begin              
+                    xgmii_rx_control[3:0] = hssi[j].f2a_rx_parallel_data [(i*80)+35:(i*80)+32];
+                    xgmii_rx_control[7:4] = hssi[j].f2a_rx_parallel_data [(i*80)+77:(i*80)+72];     // 9th and 10th bits unused
+                    xgmii_rx_data[31:0] = hssi[j].f2a_rx_parallel_data [(i*80)+31:(i*80)];
+                    xgmii_rx_data[63:32] = hssi[j].f2a_rx_parallel_data [(i*80)+71:(i*80)+40];
+                    rx_enh_data_valid = hssi[j].f2a_rx_parallel_data [(i*80)+36];
+                    hssi[j].a2f_tx_parallel_data [(i*80)+35:(i*80)+32] = xgmii_tx_control[3:0];
+                    hssi[j].a2f_tx_parallel_data [(i*80)+77:(i*80)+72] = xgmii_tx_control[7:4];     // 9th bit unused
+                    hssi[j].a2f_tx_parallel_data [(i*80)+31:(i*80)] = xgmii_tx_data[31:0];
+                    hssi[j].a2f_tx_parallel_data [(i*80)+71:(i*80)+40] = xgmii_tx_data[63:32];
+                    hssi[j].a2f_tx_parallel_data [(i*80)+36] = tx_enh_data_valid;
+                end else begin
+                    xgmii_rx_control = xgmii_tx_control;
+                    xgmii_rx_data    = xgmii_tx_data;
+                    rx_enh_data_valid = tx_enh_data_valid;
+                end
             end
-        end
 
-        reg           csr_read = 1'b0;
-        reg           csr_write = 1'b0;
-        reg [31:0]    csr_writedata = 32'h0 /* synthesis preserve */;
-        reg [15:0]    csr_address = 32'h0 /* synthesis preserve */;
-        wire [31:0]   csr_readdata;
-        wire          csr_waitrequest;
+            reg           csr_read = 1'b0;
+            reg           csr_write = 1'b0;
+            reg [31:0]    csr_writedata = 32'h0 /* synthesis preserve */;
+            reg [15:0]    csr_address = 32'h0 /* synthesis preserve */;
+            wire [31:0]   csr_readdata;
+            wire          csr_waitrequest;
 
-        altera_eth_10g_mac_base_r eth0 (
-            .csr_clk(clk),
-            .csr_rst_n(!csr_rst),
-            .tx_rst_n((!tx_rst)&&(f2a_tx_ready_sync[i])),
-            .rx_rst_n((!rx_rst)&&(f2a_rx_ready_sync[i])),
+            altera_eth_10g_mac_base_r eth0 (
+                .csr_clk(clk),
+                .csr_rst_n(!csr_rst),
+                .tx_rst_n((!tx_rst)&&(f2a_tx_ready_sync[i])),
+                .rx_rst_n((!rx_rst)&&(f2a_rx_ready_sync[i])),
 
-            .tx_clk_312(hssi.f2a_tx_parallel_clk_x2[0]),
-            .rx_clk_312(hssi.f2a_rx_parallel_clk_x2[0]),
-            .tx_clk_156(hssi.f2a_tx_parallel_clk_x1[0]),
-            .rx_clk_156(hssi.f2a_rx_parallel_clk_x1[0]),
-            // serdes data pipe
-            .xgmii_tx_valid(tx_enh_data_valid),
-            .xgmii_tx_control(xgmii_tx_control),
-            .xgmii_tx_data(xgmii_tx_data),
-            .xgmii_rx_control(xgmii_rx_control),
-            .xgmii_rx_data(xgmii_rx_data),
-            .xgmii_rx_valid(rx_enh_data_valid),
+                .tx_clk_312(hssi[j].f2a_tx_parallel_clk_x2[0]),
+                .rx_clk_312(hssi[j].f2a_rx_parallel_clk_x2[0]),
+                .tx_clk_156(hssi[j].f2a_tx_parallel_clk_x1[0]),
+                .rx_clk_156(hssi[j].f2a_rx_parallel_clk_x1[0]),
+                // serdes data pipe
+                .xgmii_tx_valid(tx_enh_data_valid),
+                .xgmii_tx_control(xgmii_tx_control),
+                .xgmii_tx_data(xgmii_tx_data),
+                .xgmii_rx_control(xgmii_rx_control),
+                .xgmii_rx_data(xgmii_rx_data),
+                .xgmii_rx_valid(rx_enh_data_valid),
 
-            // csr interface
-            .csr_read(csr_read),
-            .csr_write(csr_write),
-            .csr_writedata(csr_writedata),
-            .csr_readdata(csr_readdata),
-            .csr_address(csr_address),
-            .csr_waitrequest(csr_waitrequest)
-        );
+                // csr interface
+                .csr_read(csr_read),
+                .csr_write(csr_write),
+                .csr_writedata(csr_writedata),
+                .csr_readdata(csr_readdata),
+                .csr_address(csr_address),
+                .csr_waitrequest(csr_waitrequest)
+            );
 
-        reg [31:0] csr_readdata_r = 32'h0;
-        always @(posedge clk) begin
-            if (reset) csr_read <= 1'b0;
-            else begin
-                if (status_read && (port_sel == i[2:0])) csr_read <= 1'b1;
-                if (csr_read & ~csr_waitrequest) csr_read <= 1'b0;
+            reg [31:0] csr_readdata_r = 32'h0;
+            always @(posedge clk) begin
+                if (reset) csr_read <= 1'b0;
+                else begin
+                    if (status_read && (port_sel == NUM_LN*j+i)) csr_read <= 1'b1;
+                    if (csr_read & ~csr_waitrequest) csr_read <= 1'b0;
+                end
+                if (csr_read) csr_readdata_r <= csr_readdata;
             end
-            if (csr_read) csr_readdata_r <= csr_readdata;
-        end
 
-        always @(posedge clk) begin
-            if (reset) csr_write <= 1'b0;
-            else begin
-                if (status_write && (port_sel == i[2:0])) csr_write <= 1'b1;
-                if (csr_write & ~csr_waitrequest) csr_write <= 1'b0;
+            always @(posedge clk) begin
+                if (reset) csr_write <= 1'b0;
+                else begin
+                    if (status_write && (port_sel == NUM_LN*j+i)) csr_write <= 1'b1;
+                    if (csr_write & ~csr_waitrequest) csr_write <= 1'b0;
+                end
             end
-        end
 
-        assign all_csr_rdata [(i+1)*32-1:i*32] = csr_readdata_r;
+            assign all_csr_rdata [((NUM_LN*j+i+1)*32-1):((NUM_LN*j+i)*32)] = csr_readdata_r;
 
-        always @(posedge clk) begin
-            csr_address <= status_addr;
-            csr_writedata <= status_writedata;
+            always @(posedge clk) begin
+                csr_address <= status_addr;
+                csr_writedata <= status_writedata;
+            end
         end
     end
 endgenerate
@@ -251,7 +268,7 @@ always @(posedge clk) begin
         4'h3 : prmgmt_dout_r <= status_writedata;
         4'h4 : prmgmt_dout_r <= status_readdata_r;
         4'h5 : prmgmt_dout_r <= 32'h0 | port_sel;
-        4'h6 : prmgmt_dout_r <= 32'h0 | sloop;
+        4'h6 : prmgmt_dout_r <= 32'h0 | {sloop[0],sloop[1]};
         //4'h7 : prmgmt_dout_r <= {hssi.f2a_rx_enh_blk_lock, hssi.f2a_rx_is_lockedtodata};
         4'h7 : prmgmt_dout_r <= {f2a_rx_ready_sync, f2a_tx_ready_sync};
         //4'h8 : prmgmt_dout_r <= 32'h0 | {i2c_inst_sel_r,i2c_ctrl_wdata_r};
@@ -275,7 +292,7 @@ always @(posedge clk) begin
             4'h2 : {status_read,status_write,status_addr} <= prmgmt_din[17:0];
             4'h3 : status_writedata <= prmgmt_din;
             4'h5 : port_sel <= prmgmt_din[2:0];
-            4'h6 : sloop <= prmgmt_din[NUM_LN-1:0];
+            4'h6 : {sloop[0],sloop[1]} <= prmgmt_din[NUM_ETH-1:0];
             //4'h8 : {i2c_inst_sel_r,i2c_ctrl_wdata_r} <= prmgmt_din[17:0];
             //4'hd : hssi.a2f_prmgmt_fatal_err <= prmgmt_din[1];
         endcase
@@ -285,7 +302,8 @@ always @(posedge clk) begin
         scratch <= {GBS_ID, GBS_VER};
         status_read <= 1'b0;
         status_write <= 1'b0;
-        sloop <= 'b0;
+        sloop[0] <= 'b0;
+        sloop[1] <= 'b0;
     end
 end
 

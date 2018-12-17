@@ -338,6 +338,7 @@ static int do_action(struct config *config, fpga_token afc_tok)
 		printf("Cleared RX stats on channel %d\n", config->channel);
 		break;
 	case ETH_ACT_LOOP_ENABLE:
+		fpgaHssiReset(hssi_h);
 		fpgaHssiCtrlLoopback(hssi_h, config->channel, true);
 		printf("Enabled loopback on channel %d\n", config->channel);
 		break;

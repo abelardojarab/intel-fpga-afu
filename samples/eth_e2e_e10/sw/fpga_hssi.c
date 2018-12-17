@@ -395,11 +395,9 @@ fpga_result fpgaHssiGetWordLockStatus(fpga_hssi_handle hssi,
 }
 
 fpga_result fpgaHssiSendPacket(fpga_hssi_handle hssi,
-	uint32_t channel_num, uint64_t num_packets, char *dst_mac)
+	uint32_t channel_num, uint64_t num_packets, struct ether_addr *src_mac, struct ether_addr *dst_mac, uint64_t pkt_len)
 {
-	hssi_csr csr, dest_mac0, dest_mac1;
-	unsigned char dmac[6];
-	uint32_t lo_mac, hi_mac;
+	uint32_t dst_lo_mac, dst_hi_mac, src_lo_mac, src_hi_mac;
 
 	if (!hssi)
 		return FPGA_INVALID_PARAM;
@@ -410,44 +408,72 @@ fpga_result fpgaHssiSendPacket(fpga_hssi_handle hssi,
 	if (!dst_mac)
 		return FPGA_INVALID_PARAM;
 
+	// configure source mac address
+	src_lo_mac = src_mac->ether_addr_octet[5] |
+		(src_mac->ether_addr_octet[4] << 8) |
+		(src_mac->ether_addr_octet[3] << 16) |
+		(src_mac->ether_addr_octet[2] << 24);
+
+	src_hi_mac = src_mac->ether_addr_octet[1] |
+		(src_mac->ether_addr_octet[0] << 8);
+
+	// configure destination mac address
+	dst_lo_mac = dst_mac->ether_addr_octet[5] |
+		(dst_mac->ether_addr_octet[4] << 8) |
+		(dst_mac->ether_addr_octet[3] << 16) |
+		(dst_mac->ether_addr_octet[2] << 24);
+
+	dst_hi_mac = dst_mac->ether_addr_octet[1] |
+		(dst_mac->ether_addr_octet[0] << 8);
+
+	// Select channel
 	pr_mgmt_data_t wr_data = {0};
-
-	sscanf(dst_mac, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
-                                &dmac[0],
-                                &dmac[1],
-                                &dmac[2],
-                                &dmac[3],
-                                &dmac[4],
-                                &dmac[5]);
-
 	wr_data.port_sel.port = channel_num;
 	prMgmtWrite(hssi->dfl, PR_MGMT_PORT_SEL, wr_data);
 
-	fpgaHssiFilterCsrByName(hssi, "number_of_packets", &csr);
-
-	if (!csr)
+	// Configure total #packets
+	hssi_csr pkt_csr;
+	fpgaHssiFilterCsrByName(hssi, "number_of_packets", &pkt_csr);
+	if (!pkt_csr)
 		return FPGA_INVALID_PARAM;
+	fpgaHssiWriteCsr64(hssi, pkt_csr, num_packets);
 
-	fpgaHssiWriteCsr64(hssi, csr, num_packets);
+	// configure packet length
+	hssi_csr pkt_len_csr;
+	fpgaHssiFilterCsrByName(hssi, "pkt_length", &pkt_len_csr);
+	if (!pkt_len_csr)
+		return FPGA_INVALID_PARAM;
+	fpgaHssiWriteCsr64(hssi, pkt_len_csr, pkt_len);
+
+	// configure source mac address
+	hssi_csr src_mac_hi_csr, src_mac_lo_csr;
+	fpgaHssiFilterCsrByName(hssi, "source_addr0", &src_mac_lo_csr);
+	if (!src_mac_lo_csr)
+		return FPGA_INVALID_PARAM;
+	fpgaHssiWriteCsr32(hssi, src_mac_lo_csr, src_lo_mac);
+	fpgaHssiFilterCsrByName(hssi, "source_addr1", &src_mac_hi_csr);
+	if (!src_mac_hi_csr)
+		return FPGA_INVALID_PARAM;
+	fpgaHssiWriteCsr32(hssi, src_mac_hi_csr, src_hi_mac);
 
 	// configure destination mac address
-	lo_mac = dmac[5] | (dmac[4] << 8) | (dmac[3] << 16) | (dmac[2] << 24);
-	fpgaHssiFilterCsrByName(hssi, "destination_addr0", &dest_mac0);
-	if (!dest_mac0)
+	hssi_csr dst_mac_hi_csr, dst_mac_lo_csr;
+	fpgaHssiFilterCsrByName(hssi, "destination_addr0", &dst_mac_lo_csr);
+	if (!dst_mac_lo_csr)
 		return FPGA_INVALID_PARAM;
-	fpgaHssiWriteCsr32(hssi, dest_mac0, lo_mac);
-
-	hi_mac = dmac[1] | (dmac[0] << 8);
-	fpgaHssiFilterCsrByName(hssi, "destination_addr1", &dest_mac1);
-	if (!dest_mac1)
+	fpgaHssiWriteCsr32(hssi, dst_mac_lo_csr, dst_lo_mac);
+	fpgaHssiFilterCsrByName(hssi, "destination_addr1", &dst_mac_hi_csr);
+	if (!dst_mac_hi_csr)
 		return FPGA_INVALID_PARAM;
-	fpgaHssiWriteCsr32(hssi, dest_mac1, hi_mac);
+	fpgaHssiWriteCsr32(hssi, dst_mac_hi_csr, dst_hi_mac);
 
-	fpgaHssiFilterCsrByName(hssi, "start", &csr);
-	if (!csr)
+
+	hssi_csr start_csr;
+	fpgaHssiFilterCsrByName(hssi, "start", &start_csr);
+	if (!start_csr)
 		return FPGA_INVALID_PARAM;
 
-	fpgaHssiWriteCsr64(hssi, csr, (uint64_t)1);
+	fpgaHssiWriteCsr64(hssi, start_csr, (uint64_t)1);
 	return FPGA_OK;
 }
 

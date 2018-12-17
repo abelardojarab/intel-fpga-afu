@@ -33,6 +33,9 @@
 #include <limits.h>
 #include <ctype.h>
 #include <safe_string/safe_string.h>
+#include <sys/types.h>
+#include <net/ethernet.h>
+#include <netinet/ether.h>
 #include "fpga_hssi.h"
 
 /**
@@ -43,7 +46,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#define NUM_PKT_TO_SEND 0x10000
 #define MAX_STR_LEN 256
 
 static int err_cnt;
@@ -66,7 +68,10 @@ static struct config {
 	int function;
 	int instance;
 	int channel;
-	char dst_mac[MAC_STR_LEN+1];
+	struct ether_addr src_mac;
+	struct ether_addr dst_mac;
+	uint64_t packets;
+	uint64_t pkt_len;
 	enum eth_action action;
 } config = {
 	.bus = CONFIG_UNINIT,
@@ -74,7 +79,8 @@ static struct config {
 	.function = CONFIG_UNINIT,
 	.instance = CONFIG_UNINIT,
 	.channel = 0,
-	.dst_mac = "FF:FF:FF:FF:FF:FF",
+	.packets = 0x10000,
+	.pkt_len = 0x40,
 	.action = ETH_ACT_NONE,
 };
 
@@ -84,48 +90,29 @@ static void printUsage(char *prog)
 "%s\n"
 "PAC HSSI configuration utility\n"
 "Usage:\n" 
-"     pac_hssi_e10 [-h] [-b <bus>] [-d <device>] [-f <function>] [-m Dest. MAC] "
-"-c channel -a action\n\n"
+"     pac_hssi_e10 [-h] [-b <bus>] [-d <device>] [-f <function>] [-s Src. MAC]\n"
+"                  [-m Dest. MAC] [-p Number of packets] [-l Packet length] -a action\n\n"
 "         -h,--help           Print this help\n"
 "         -b,--bus            Set target bus number\n"
 "         -d,--device         Set target device number\n"
 "         -f,--function       Set target function number\n"
 "         -c,--channel        Set HSSI channel (0 - 3)\n"
+"         -s,--src_mac        Set Source MAC (in the format AA:BB:CC:DD:EE:FF)\n"
 "         -m,--dest_mac       Set Destination MAC (in the format AA:BB:CC:DD:EE:FF)\n"
+"         -p,--packets        Total number of packets (in hex format e.g. 0x100)\n"
+"         -l,--pkt_len        Packet length bytes (in hex format e.g. 0x100)\n"
 "         -a,--action         Perform action:\n\n"
 "           stat              Print channel statistics\n"
 "           stat_clear        Clear channel statistics\n"
 "           loopback_enable   Enable internal channel loopback\n"
 "           loopback_disable  Disable internal channel loopback\n"
-"           pkt_send          Send 0x%x packets\n"
-, prog, NUM_PKT_TO_SEND);
+"           pkt_send          Send packets\n"
+, prog);
 
 	exit(1);
-
-
 }
 
 #define STR_CONST_CMP(str, str_const) strncmp(str, str_const, sizeof(str_const))
-
-static bool isValidMac(const char *str)
-{
-	int i;
-	int len = strnlen_s(str, MAC_STR_LEN);
-
-	if(len != MAC_STR_LEN)
-		return false;
-
-	for(i = 0; i < len; i++) {
-		if((i+1) % 3 == 0) { // every 3rd char is ':'
-			if(str[i] != ':')
-				return false;
-		}
-		else if(!isxdigit(str[i]))
-			return false;
-	}
-	return true;
-}
-
 
 static void parse_args(struct config *config, int argc, char *argv[])
 {
@@ -137,14 +124,17 @@ static void parse_args(struct config *config, int argc, char *argv[])
 			{"device",        required_argument, NULL, 'd'},
 			{"function",      required_argument, NULL, 'f'},
 			{"channel", required_argument, 0, 'c'},
+			{"src_mac",       optional_argument, 0,    's'},
 			{"dest_mac", optional_argument, 0, 'm'},
+			{"packets",       optional_argument, 0,    'p'},
+			{"pkt_len",       optional_argument, 0,    'l'},
 			{"action", required_argument, 0, 'a'},
 			{0, 0, 0, 0}
 		};
 		char *endptr;
 		const char *tmp_optarg;
 
-		c = getopt_long(argc, argv, "hlb:d:f:c:m:a:", options, NULL);
+		c = getopt_long(argc, argv, "hb:d:f:c:s:m:p:l:a:", options, NULL);
 		if (c == -1) {
 			break;
 		}
@@ -210,24 +200,60 @@ static void parse_args(struct config *config, int argc, char *argv[])
 			}
 			break;
 
-		case 'm':    /* Set Destination MAC */
+		case 's':    /* Set Source MAC */
 			if (NULL == tmp_optarg)
 				break;
 
-			if(!isValidMac(tmp_optarg)) {
+			struct ether_addr *saddr = ether_aton_r((char*)tmp_optarg, &config->src_mac);
+			if(!saddr) {
 				fprintf(stderr, "invalid mac: %s\n",
 					tmp_optarg);
 				printUsage(argv[0]);
 			}
-			strncpy_s(config->dst_mac, MAC_STR_LEN+1, tmp_optarg, MAC_STR_LEN+1);
+			break;
+
+
+		case 'm':    /* Set Destination MAC */
+			if (NULL == tmp_optarg)
+				break;
+
+			struct ether_addr *daddr = ether_aton_r((char*)tmp_optarg, &config->dst_mac);
+			if(!daddr) {
+				fprintf(stderr, "invalid mac: %s\n",
+					tmp_optarg);
+				printUsage(argv[0]);
+			}
+			break;
+
+		case 'p':    /* Total number of packets */
+			if (NULL == tmp_optarg)
+				break;
+			endptr = NULL;
+			config->packets = (int)strtoul(tmp_optarg, &endptr, 0);
+			if (endptr != tmp_optarg + strlen(tmp_optarg)) {
+				fprintf(stderr, "invalid number of packets: %s\n",
+					tmp_optarg);
+				printUsage(argv[0]);
+			}
+			break;
+
+		case 'l':    /* Packet length */
+			if (NULL == tmp_optarg)
+				break;
+			endptr = NULL;
+			config->pkt_len = (int)strtoul(tmp_optarg, &endptr, 0);
+			if (endptr != tmp_optarg + strlen(tmp_optarg)) {
+				fprintf(stderr, "invalid packet length: %s\n",
+					tmp_optarg);
+				printUsage(argv[0]);
+			}
 			break;
 
 		case 'a':
 			if (NULL == optarg) {
-				printf("unexpected NULL action");
+				printf("unexpected NULL action\n");
 				printUsage(argv[0]);
-			}
-			if (!STR_CONST_CMP(optarg, "stat"))
+			} else if (!STR_CONST_CMP(optarg, "stat"))
 				config->action = ETH_ACT_STAT;
 			else if (!STR_CONST_CMP(optarg, "stat_clear"))
 				config->action = ETH_ACT_STAT_CLR;
@@ -346,9 +372,13 @@ static int do_action(struct config *config, fpga_token afc_tok)
 		printf("Disabled loopback on channel %d\n", config->channel);
 		break;
 	case ETH_ACT_PKT_SEND:
-		fpgaHssiSendPacket(hssi_h, config->channel, NUM_PKT_TO_SEND, config->dst_mac);
-		printf("Sent 0x%x packets on channel %d to MAC %s\n",
-			NUM_PKT_TO_SEND, config->channel, config->dst_mac);
+		fpgaHssiSendPacket(hssi_h, config->channel, config->packets, &config->src_mac, &config->dst_mac, config->pkt_len);
+		char src_str[18];
+		char dst_str[18];
+		ether_ntoa_r(&config->src_mac, src_str);
+		ether_ntoa_r(&config->dst_mac, dst_str);
+		printf("Sent 0x%lx packets on channel %d from src=[%s] to dst=[%s]\n",
+			config->packets, config->channel, src_str, dst_str);
 		break;
 	default:
 		fprintf(stderr, "unknown action, %d\n", config->action);

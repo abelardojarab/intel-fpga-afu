@@ -99,6 +99,6 @@ fpga_hssi.o: fpga_hssi.c
 	gcc $(CFLAGS) -c -o $@ $^
 
 clean:
-	$(RM) pac_hssi_e10 *.o *.so afu_json_info.h
+	$(RM) pac_hssi_e10 *.o *.so afu_json_info.h *.d
 
 .PHONY:all clean

@@ -181,12 +181,14 @@ fpga_result fpgaHssiGetWordLockStatus(fpga_hssi_handle hssi,
  * @param[in] hssi        HSSI handle
  * @param[in] channel_num Channel number
  * @param[in] num_packets Total number of packets to send
+ * @param[in] src_mac     Pointer to source MAC address
  * @param[in] dst_mac     Pointer to destination MAC address
+ * @param[in] pkt_len     Packet length
  *
  * @returns               FPGA_OK on success, return code otherwise
  */
 fpga_result fpgaHssiSendPacket(fpga_hssi_handle hssi,
-	uint32_t channel_num, uint64_t num_packets, struct ether_addr *dst_mac);
+	uint32_t channel_num, uint64_t num_packets, struct ether_addr *src_mac, struct ether_addr *dst_mac, uint64_t pkt_len);
 
 /**
  * fpgaPrintChannelStats

@@ -163,43 +163,6 @@ logic init_start;
 logic init_done;
 
 `ifdef E2E_E10
-    `ifdef USE_QSFP0
-     eth_e2e_e10
-    #(
-        .NUM_HSSI_RAW_PR_IFCS(1),
-        .NUM_LN(4)
-    )  prz0  (
-        // ETH CSR ports
-        .eth_ctrl_addr(eth_ctrl_addr),
-        .eth_wr_data(eth_wr_data),
-        .eth_rd_data(eth_rd_data),
-        .csr_init_start(init_start),
-        .csr_init_done(init_done),
-        .clk(clk),
-        .reset(pck_cp2af_softReset_T1),
-        .hssi(hssi[0])
-    );
-    `endif
-    
-    `ifdef USE_QSFP1
-     eth_e2e_e10
-    #(
-        .NUM_HSSI_RAW_PR_IFCS(1),
-        .NUM_LN(4)
-    )  prz0  (
-        // ETH CSR ports
-        .eth_ctrl_addr(eth_ctrl_addr),
-        .eth_wr_data(eth_wr_data),
-        .eth_rd_data(eth_rd_data),
-        .csr_init_start(init_start),
-        .csr_init_done(init_done),
-        .clk(clk),
-        .reset(pck_cp2af_softReset_T1),
-        .hssi(hssi[1])
-    );
-    `endif
-
-    `ifdef USE_BOTH
      eth_e2e_e10
     #(
         .NUM_HSSI_RAW_PR_IFCS(2),
@@ -215,8 +178,6 @@ logic init_done;
         .reset(pck_cp2af_softReset_T1),
         .hssi(hssi)
     );
-    `endif
-
 `endif
 
 logic action_r = 0;

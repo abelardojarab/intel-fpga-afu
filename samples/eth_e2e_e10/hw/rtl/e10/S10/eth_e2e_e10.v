@@ -28,14 +28,10 @@
 // Nov/2018 - Modification for S10
 
 module eth_e2e_e10 #(
-    parameter NUM_HSSI_RAW_PR_IFCS = 1,
+    parameter NUM_HSSI_RAW_PR_IFCS = 2,
     parameter NUM_LN = 4
 )(
-`ifdef USE_BOTH
     pr_hssi_if.to_fiu   hssi[NUM_HSSI_RAW_PR_IFCS],
-`else
-    pr_hssi_if.to_fiu   hssi,
-`endif
 
     input clk,
     input reset,

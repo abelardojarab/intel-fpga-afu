@@ -116,12 +116,22 @@ fpga_result fpgaHssiClose(fpga_hssi_handle hssi);
 /**
  * fpgaHssiReset
  *
- * @brief           Issue HSSI channel reset
+ * @brief           Assert HSSI channel reset
  * @param[in] hssi  HSSI object handle
  *
  * @returns         FPGA_OK on success, return code otherwise
  */
-fpga_result fpgaHssiReset(fpga_hssi_handle hssi);
+fpga_result fpgaHssiAssertReset(fpga_hssi_handle hssi);
+
+/**
+ * fpgaHssiReset
+ *
+ * @brief           Deassert HSSI channel reset
+ * @param[in] hssi  HSSI object handle
+ *
+ * @returns         FPGA_OK on success, return code otherwise
+ */
+fpga_result fpgaHssiDeassertReset(fpga_hssi_handle hssi);
 
 /**
  * fpgaHssiEnumerateCsr

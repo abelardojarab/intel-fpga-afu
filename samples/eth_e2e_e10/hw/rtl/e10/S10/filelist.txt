@@ -1,4 +1,3 @@
-+define+USE_QSFP0
 ./hsl_files/alt_and3t0.v
 ./hsl_files/alt_and3t1.v
 ./hsl_files/alt_and4t0.v

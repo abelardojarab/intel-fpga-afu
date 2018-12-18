@@ -1,4 +1,3 @@
-+define+A10
 eth_e10.sdc
 i2c_contrl.v
 trans_bit.v

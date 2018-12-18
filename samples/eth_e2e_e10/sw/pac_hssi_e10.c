@@ -55,6 +55,8 @@ enum eth_action {
 	ETH_ACT_LOOP_ENABLE,
 	ETH_ACT_LOOP_DISABLE,
 	ETH_ACT_PKT_SEND,
+	ETH_ACT_ON,
+	ETH_ACT_OFF,
 };
 
 #define CONFIG_UNINIT (-1)
@@ -93,6 +95,8 @@ static void printUsage(char *prog)
 "         -c,--channel        Set HSSI channel (0 - 3)\n"
 "         -m,--dest_mac       Set Destination MAC (in the format AA:BB:CC:DD:EE:FF)\n"
 "         -a,--action         Perform action:\n\n"
+"           off               Assert MAC resets\n"
+"           on                Deassert MAC resets\n"
 "           stat              Print channel statistics\n"
 "           stat_clear        Clear channel statistics\n"
 "           loopback_enable   Enable internal channel loopback\n"
@@ -237,6 +241,10 @@ static void parse_args(struct config *config, int argc, char *argv[])
 				config->action = ETH_ACT_LOOP_DISABLE;
 			else if (!STR_CONST_CMP(optarg, "pkt_send"))
 				config->action = ETH_ACT_PKT_SEND;
+			else if (!STR_CONST_CMP(optarg, "on"))
+				config->action = ETH_ACT_ON;
+			else if (!STR_CONST_CMP(optarg, "off"))
+				config->action = ETH_ACT_OFF;
 			else {
 				printf("Invalid action specified\n");
 				printUsage(argv[0]);
@@ -338,7 +346,6 @@ static int do_action(struct config *config, fpga_token afc_tok)
 		printf("Cleared RX stats on channel %d\n", config->channel);
 		break;
 	case ETH_ACT_LOOP_ENABLE:
-		fpgaHssiReset(hssi_h);
 		fpgaHssiCtrlLoopback(hssi_h, config->channel, true);
 		printf("Enabled loopback on channel %d\n", config->channel);
 		break;
@@ -350,6 +357,14 @@ static int do_action(struct config *config, fpga_token afc_tok)
 		fpgaHssiSendPacket(hssi_h, config->channel, NUM_PKT_TO_SEND, config->dst_mac);
 		printf("Sent 0x%x packets on channel %d to MAC %s\n",
 			NUM_PKT_TO_SEND, config->channel, config->dst_mac);
+		break;
+	case ETH_ACT_OFF:
+    	fpgaHssiAssertReset(hssi_h);
+        printf ("MAC resets asserted\n");
+		break;
+	case ETH_ACT_ON:
+    	fpgaHssiDeassertReset(hssi_h);
+        printf ("MAC resets deasserted\n");
 		break;
 	default:
 		fprintf(stderr, "unknown action, %d\n", config->action);

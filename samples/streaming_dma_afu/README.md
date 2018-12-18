@@ -25,12 +25,23 @@ If test data size is greater than 2MB, less than 1GB, at-least 1 1GB hugepage ne
 echo 2 > /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages
 ```
 
-* Run a simple bandwidth test. This example transfers a single 10MB data packet 
-from host memory to FPGA stream using 4KB DMA payload.
-```
-$ ./fpga_dma_st_test -s 10485760 -p 4096 -r mtos -t fixed
-PASS! Bandwidth = 2584 MB/s
 
+* Execute the host application to transfer 100MB in 1MB portions from host memory to the FPGA pattern checker:
+```
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$TBB_HOME/lib/intel64_lin/gcc4.7 sh -c "./fpga_dma_st_test -l off -s 104857600 -p 1048576 -r mtos -t fixed"
+```
+* Execute the host application to transfer 100MB in 1MB portions from the FPGA pattern generator to host memory:
+```
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$TBB_HOME/lib/intel64_lin/gcc4.7 sh -c "./fpga_dma_st_test -l off -s 104857600 -p 1048576 -r stom -t fixed"
+```
+* Execute the host application to transfer 100MB in 1MB portions from host memory back to host memory in loopback mode:
+```
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$TBB_HOME/lib/intel64_lin/gcc4.7 sh -c "./fpga_dma_st_test -l on -s 104857600 -p 1048576 -t fixed"
+```
+Note: Above examples require reserving at-least two 1GB hugepages.
+
+* Usage
+```
 Usage:
      fpga_dma_st_test [-h] [-B <bus>] [-D <device>] [-F <function>] [-S <segment>]
                        -l <loopback on/off> -s <data size (bytes)> -p <payload size (bytes)>
